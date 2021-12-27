@@ -9,7 +9,7 @@ Steps to contribute your codes to this repository:
 1. `git pull` to get the latest version
 1. Write codes and test locally
 1. `git commit` with clean commit message
-1. Send pull request with `git push`. To avoid messing up the codebase, every push will be reviewed.
+1. Send pull request with `git push`. **[IMPORTANT]** To avoid messing up the main codebase, please always create a new branch for new changes and avoid directly push to the main branch. Create pull request in github website when you want to merge to the main branch.
 1. Repeat 2-5 for next contribution.
 
 ### Tools and Codes
