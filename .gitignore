@@ -1,3 +1,29 @@
+ # ignored folders
+datasets/*
+experiments/*
+results/*
+tb_logger/*
+tb_logger_archived/*
+wandb/*
+tmp/*
+.vscode*
+*.sh
+
+*.DS_Store
+.idea
+
+# ignored files
+version.py
+
+# ignored files with suffix
+*.html
+*.png
+*.jpeg
+*.jpg
+*.gif
+*.pth
+*.zip 
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

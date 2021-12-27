@@ -1,10 +1,10 @@
 import torch
 from collections import OrderedDict
 
-from basicsr.archs import build_network
-from basicsr.losses import build_loss
-from basicsr.utils import get_root_logger
-from basicsr.utils.registry import MODEL_REGISTRY
+from pyiqa.archs import build_network
+from pyiqa.losses import build_loss
+from pyiqa.utils import get_root_logger
+from pyiqa.utils.registry import MODEL_REGISTRY
 from .sr_model import SRModel
 
 

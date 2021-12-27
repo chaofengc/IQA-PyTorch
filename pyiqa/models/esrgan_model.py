@@ -1,7 +1,7 @@
 import torch
 from collections import OrderedDict
 
-from basicsr.utils.registry import MODEL_REGISTRY
+from pyiqa.utils.registry import MODEL_REGISTRY
 from .srgan_model import SRGANModel
 
 

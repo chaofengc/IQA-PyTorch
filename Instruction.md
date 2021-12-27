@@ -1,6 +1,6 @@
 ## Contribution Instructions
 
-To manage our codebase, it is necessary to learn some tools. This may take some time for beginners, but will benefit the rest life.
+To manage our codebase, it is necessary to learn some tools. This may take some time for beginners, but will benefit the rest life. **All the following instructions assume that the reader is familiar and comfortable with linux command line.** 
 
 ### Workflow
 
@@ -32,4 +32,8 @@ Please always use git to track your codes. Refer to the [Pro Git book](https://g
 
 #### Code Style
 
-We basically follow the [PEP8 standard](https://www.python.org/dev/peps/pep-0008/). Please also refer to the [google style guide](https://google.github.io/styleguide/pyguide.html). Please pay special attention to indentations, spaces, linebreaks, name style, comments and docstrings.
+We basically follow the [PEP8 standard](https://www.python.org/dev/peps/pep-0008/). Please also refer to the [google style guide](https://google.github.io/styleguide/pyguide.html). Please pay special attention to **indentations, spaces, linebreaks, name style, comments and docstrings**.
+
+#### Anaconda
+
+Please manage your local coding dependencies with [anaconda](https://www.anaconda.com/). 
