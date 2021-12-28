@@ -18,42 +18,38 @@ class InferenceModel():
     def __init__(self, 
                  metric_name,
                  metric_mode,
+                 net_opts=None,
                  model_path=None,
                  img_range=1.0,
                  input_size=None,
                  mean=None,
                  std=None,
-                 pre_process_x=None,
-                 pre_process_y=None,
+                 preprocess_x=None,
+                 preprocess_y=None,
             ):
         super(InferenceModel, self).__init__()
 
         self.metric_mode = metric_mode
 
         # define network
-        opt = {
-                'type': metric_name,
-                'pretrained_model_path': model_path,
-                }
-        self.net = build_network(opt)
+        self.net = build_network(net_opts)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.net = self.net.to(self.device)
 
         # load pretrained models
-        #  if model_path is not None:
-            #  self.net.load_pretrained_network(model_path)
+        if model_path is not None:
+            self.net.load_pretrained_network(model_path)
 
-        if pre_process_x is not None:
-            self.trans_x = pre_process_x 
-        if pre_process_y is not None:
-            self.trans_y = pre_process_y 
+        tf_list = []
+        tf_list.append(tv.transforms.ToTensor())
+        tf_list.append(tv.transforms.Lambda(lambda x: x * img_range))
+        if mean is not None and std is not None:
+            tf_list.append(tv.transforms.Normalize(mean, std))
+        self.trans_x = self.trans_y = tv.transforms.Compose(tf_list)
 
-        if pre_process_x is None and pre_process_y is None:
-            tf_list = []
-            tf_list.append(tv.transforms.ToTensor())
-            if mean is not None and std is not None:
-                tf_list.append(tv.transforms.Normalize(mean, std))
-            self.trans_x = self.trans_y = tv.transforms.Compose(tf_list)
+        if preprocess_x is not None and preprocess_y is not None:
+            self.trans_x = preprocess_x
+            self.trans_y = preprocess_y
     
     def test(self, x, y=None):
         x = self.trans_x(x)

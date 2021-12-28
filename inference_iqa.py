@@ -9,29 +9,7 @@ import torchvision as tv
 from PIL import Image
 from pyiqa.utils import imwrite
 from pyiqa.models.inference_model import InferenceModel
-
-IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
-IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
-
-DEFAULT_CONFIGS = {
-        'CKDN': {
-            'metric_mode': 'FR',
-            'model_path': './experiments/pretrained_models/CKDN/model_best.pth.tar',
-            'pre_process_x': tv.transforms.Compose([
-                tv.transforms.Resize(int(math.floor(288/0.875)), tv.transforms.InterpolationMode.BICUBIC),
-                tv.transforms.CenterCrop(288),
-                tv.transforms.ToTensor(),
-                tv.transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
-                ]),
-            'pre_process_y': tv.transforms.Compose([
-                tv.transforms.Resize(int(math.floor(288/0.875)), tv.transforms.InterpolationMode.NEAREST),
-                tv.transforms.CenterCrop(288),
-                tv.transforms.ToTensor(),
-                tv.transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
-                ]),
-            }
-        }
-
+from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
 def main():
     """Inference demo for pyiqa. 

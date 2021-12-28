@@ -10,6 +10,6 @@ scikit-image
 scipy
 tb-nightly
 torch>=1.8
-torchvision
+torchvision>=0.9
 tqdm
 yapf

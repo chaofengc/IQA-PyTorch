@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import random
+import math
 import torchvision as tv
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -240,11 +240,20 @@ def _resnet(arch, block, layers, pretrained, progress, **kwargs):
 
 @ARCH_REGISTRY.register()
 class CKDN(nn.Module):
-    def __init__(self, pretrained_model_path=None, **kwargs):
+    def __init__(self, 
+                 pretrained_model_path=None, 
+                 use_diff_preprocess=True, 
+                 default_mean=(0.485, 0.456, 0.406), 
+                 default_std=(0.229, 0.224, 0.225), 
+                 **kwargs):
         super().__init__()
         self.net = _resnet('resnet50', Bottleneck, [3, 4, 6, 3], True, True,**kwargs)
         if pretrained_model_path is not None:
             self.load_pretrained_network(pretrained_model_path)
+        self.use_diff_preprocess = use_diff_preprocess
+
+        self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
+        self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
         
     def load_pretrained_network(self, model_path):
         print(f'Loading pretrained model from {model_path}')
@@ -255,7 +264,34 @@ class CKDN(nn.Module):
 
         self.net.load_state_dict(new_state_dict,strict=False) 
 
+    def _diff_preprocess(self, x, y):
+        """differentiable preprocessing of CKDN: https://github.com/researchmm/CKDN
+        Useful when using this metric as losses.
+
+        It may seem weird, but is exactly the same as official codes. 
+        Results are slightly different due to different resize behavior of PIL Image and pytorch interpolate function. 
+
+        To get exactly the same results, please check the preprocess in pyiqa.default_model_configs.py
+
+        Args:
+            x, y:  
+              shape, (N, C, H, W) in RGB format; 
+              value range, 0 ~ 1
+        """
+        scaled_size = int(math.floor(288/0.875))
+        x = torch.nn.functional.interpolate(x, scaled_size, mode='bicubic')
+        y = torch.nn.functional.interpolate(y, scaled_size, mode='nearest')
+
+        x = tv.transforms.functional.center_crop(x, 288) 
+        y = tv.transforms.functional.center_crop(y, 288) 
+
+        x = (x - self.default_mean.to(x)) / self.default_std.to(x)
+        y = (y - self.default_mean.to(y)) / self.default_std.to(y)
+        return x, y
+
     def forward(self, x, y):
+        if self.use_diff_preprocess:
+            x, y = self._diff_preprocess(x, y)
         return self.net(x, y)
 
 
