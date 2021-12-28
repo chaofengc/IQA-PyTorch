@@ -1,4 +1,4 @@
-# IQA-Toolbox-Python
+# Python Toolbox for Image Quality Assessment
 An IQA toolbox with pure python.
 
 **Please follow the [contribution instructions](Instruction.md) to make contributions to this repository.**

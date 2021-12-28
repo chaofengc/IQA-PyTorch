@@ -14,10 +14,11 @@ class SCNN(nn.Module):
     Modified from https://github.com/zwx8981/DBCNN-PyTorch/blob/master/SCNN.py
 
     """
-    def __init__(self):
+    def __init__(self, use_bn=True):
         super(SCNN, self).__init__()
 
         self.num_class = 39
+        self.use_bn = use_bn
         self.features = nn.Sequential(
                                 * self._make_layers(3, 48, 3, 1, 1),
                                 * self._make_layers(48, 48, 3, 2, 1),
@@ -40,11 +41,18 @@ class SCNN(nn.Module):
         self.classifier = nn.Linear(256, self.num_class)
 
     def _make_layers(self, in_ch, out_ch, ksz, stride, pad):
-        layers = [
+        if self.use_bn:
+            layers = [
                 nn.Conv2d(in_ch, out_ch, ksz, stride, pad),
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU(True),
                 ]
+        else:
+            layers = [
+                nn.Conv2d(in_ch, out_ch, ksz, stride, pad),
+                nn.ReLU(True),
+                ]
+
         return layers
 
     def forward(self, X):
@@ -62,14 +70,14 @@ class DBCNN(nn.Module):
     Modified from https://github.com/zwx8981/DBCNN-PyTorch/blob/master/DBCNN.py
 	
 	"""
-    def __init__(self, fc=True):
+    def __init__(self, fc=True, use_bn=True, pretrained_scnn_path=None, ):
         super(DBCNN, self).__init__()
 
         # Convolution and pooling layers of VGG-16.
         self.features1 = torchvision.models.vgg16(pretrained=True).features
         self.features1 = nn.Sequential(*list(self.features1.children())
                                             [:-1])
-        scnn = SCNN()
+        scnn = SCNN(use_bn=use_bn)
               
         self.features2 = scnn.features
         

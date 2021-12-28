@@ -187,7 +187,6 @@ def train_pipeline(root_path):
                 visual_imgs = model.get_current_visuals()
                 if tb_logger and visual_imgs is not None:
                     for k, v in visual_imgs.items(): 
-                        v = (v + 1) / 2
                         tb_logger.add_images(f'ckpt_imgs/{k}', v.clamp(0, 1), current_iter)
 
             # save models and training states
