@@ -41,7 +41,7 @@ pip3 install -r requirements.txt
 
 ### Quick Inference
 
-#### Test single image
+#### [TODO] Test single image
 ```
 python inference_iqa.py --input_mode image --metric_name CKDN --image_path /path/to/image 
 ```
@@ -63,10 +63,20 @@ metric_func = LPIPS(net='alex', version='0.1').to(device)
 score = metric_func(img_tensor_x, img_tensor_y)
 ```
 
-### [**TODO**] Train 
+### Train 
+
+#### NR model
+
+Example to train DBCNN on LIVEChallenge dataset
+```
+python pyiqa/train.py -opt options/train/DBCNN/train_DBCNN.yml 
+```
+
+[**TODO**]
+- [ ] Add more examples
+
 
 ## [**TODO**] Benchmark Performances and Model Zoo
-
 
 **TODO** Please refer to the [benchmark calibration](BenchmarkCalib.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
 
@@ -80,6 +90,10 @@ score = metric_func(img_tensor_x, img_tensor_y)
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
 
 ## Citation
+
+```
+TODO
+```
 
 ## Acknowledgement
 

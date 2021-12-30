@@ -1,7 +1,6 @@
 # general settings
 name: debug_DBCNN_LIVEC 
 name: 013_DBCNN_LIVEC 
-# name: 017_DBCNN_LIVEC 
 model_type: DBCNNModel 
 num_gpu: 1  # set num_gpu: 0 for cpu mode
 manual_seed: 123 
@@ -52,9 +51,10 @@ path:
 # training settings
 train:
   optim:
-    type: Adam 
-    lr: !!float 0.1 
-    weight_decay: !!float 0 
+    type: SGD 
+    lr: !!float 1e-3 
+    momentum: 0.9
+    weight_decay: !!float 5e-4 
 
   optim_finetune:
     type: Adam 
@@ -62,43 +62,18 @@ train:
     weight_decay: !!float 5e-4 
 
   scheduler:
-    type: CosineAnnealingRestartLR
-    periods: [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]
-    restart_weights: [1, 1, 1, 1, 1, 1, 1, 1]
-
-  scheduler_finetune:
     type: MultiStepLR
     milestones: [1000]
     gamma: 1 
   
-  total_iter: 8000 
-  finetune_start_iter: 2000
+  scheduler_finetune:
+    type: MultiStepLR
+    milestones: [1000]
+    gamma: 1 
+
+  total_iter: 12000 
+  finetune_start_iter: 6000
   warmup_iter: -1  # no warm up
-
-  # optim:
-  #   type: SGD 
-  #   lr: !!float 1e-3 
-  #   momentum: 0.9
-  #   weight_decay: !!float 5e-4 
-
-  # optim_finetune:
-  #   type: Adam 
-  #   lr: !!float 1e-5 
-  #   weight_decay: !!float 5e-4 
-
-  # scheduler:
-  #   type: MultiStepLR
-  #   milestones: [1000]
-  #   gamma: 1 
-  
-  # scheduler_finetune:
-  #   type: MultiStepLR
-  #   milestones: [1000]
-  #   gamma: 1 
-
-  # total_iter: 12000 
-  # finetune_start_iter: 6000
-  # warmup_iter: -1  # no warm up
 
   # losses
   regress_opt:
