@@ -8,7 +8,6 @@ import numpy as np
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 
-
 class SCNN(nn.Module):
     """Network branch for synthetic distortions. 
     Modified from https://github.com/zwx8981/DBCNN-PyTorch/blob/master/SCNN.py
@@ -70,7 +69,12 @@ class DBCNN(nn.Module):
     Modified from https://github.com/zwx8981/DBCNN-PyTorch/blob/master/DBCNN.py
 	
 	"""
-    def __init__(self, fc=True, use_bn=True, pretrained_scnn_path=None, ):
+    def __init__(self, fc=True, 
+                use_bn=True, 
+                pretrained_scnn_path=None, 
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+                ):
         super(DBCNN, self).__init__()
 
         # Convolution and pooling layers of VGG-16.
@@ -78,31 +82,49 @@ class DBCNN(nn.Module):
         self.features1 = nn.Sequential(*list(self.features1.children())
                                             [:-1])
         scnn = SCNN(use_bn=use_bn)
+        if pretrained_scnn_path is not None:
+            old_dict = torch.load(pretrained_scnn_path)
+            new_dict = {}
+            for k, v in old_dict.items():
+                new_dict[k.replace('module.', '')] = v
+            scnn.load_state_dict(new_dict)
               
         self.features2 = scnn.features
         
         # Linear classifier.
         self.fc = torch.nn.Linear(512*128, 1)
+
+        self.default_mean = torch.Tensor(mean).view(1, 3, 1, 1)
+        self.default_std = torch.Tensor(std).view(1, 3, 1, 1)
         
         if fc:
             # Freeze all previous layers.
             for param in self.features1.parameters():
                 param.requires_grad = False
-            for param in self.features2.parameters():
-                param.requires_grad = False
+            # for param in scnn.parameters():
+            #     param.requires_grad = False
             # Initialize the fc layers.
             nn.init.kaiming_normal_(self.fc.weight.data)
             if self.fc.bias is not None:
                 nn.init.constant_(self.fc.bias.data, val=0)
 
+    def preprocess(self, x):
+        x = (x - self.default_mean.to(x)) / self.default_std.to(x)
+        return x
+
     def forward(self, X):
         """Forward pass of the network.
         """
+        X = self.preprocess(X)
+
         X1 = self.features1(X)
         X2 = self.features2(X)
-        
+
         N, _, H, W = X1.shape
-        assert X1.shape == X2.shape, 'Feature shape of two branches should be the same'
+        N, _, H2, W2 = X2.shape
+
+        if (H != H2) or (W != W2):
+            X2 = F.interpolate(X2, (H, W), mode='bilinear', align_corners=True)
 
         X1 = X1.view(N, 512, H*W)
         X2 = X2.view(N, 128, H*W)  

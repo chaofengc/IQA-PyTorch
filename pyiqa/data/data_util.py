@@ -1,11 +1,44 @@
 import cv2
 import numpy as np
 import torch
+import os
 from os import path as osp
 from torch.nn import functional as F
 
 from pyiqa.data.transforms import mod_crop
 from pyiqa.utils import img2tensor, scandir
+
+
+def paths_mos_from_meta_info_file(img_dir, meta_info_file):
+    """Generate paths and mos labels from an meta information file.
+
+    Each line in the meta information file contains the image names and
+    mos label, separated by a white space.
+
+    Example of an meta information file:
+    ```
+    100.bmp   	32.56107532210109   	19.12472638223644 # std of mos
+    ```
+
+    Args:
+        img_dir (str): directory path containing images
+        meta_info_file (str): Path to the meta information file.
+
+    Returns:
+        list[str, float]: image paths, mos label
+    """
+
+    with open(meta_info_file, 'r') as fin:
+        name_mos = [line.strip().split() for line in fin]
+
+    paths_mos = []
+    for item in name_mos:
+        img_name = item[0]
+        mos = item[1]
+        img_path = osp.join(img_dir, img_name)
+        paths_mos.append([img_path, float(mos)])
+
+    return paths_mos
 
 
 def read_img_seq(path, require_mod_crop=False, scale=1, return_imgname=False):

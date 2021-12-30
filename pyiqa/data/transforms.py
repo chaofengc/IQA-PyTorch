@@ -1,6 +1,21 @@
 import cv2
 import random
 import torch
+import torchvision.transforms as tf
+import functools 
+
+
+def transform_mapping(key, value):
+    if key == 'use_hflip' and value:
+        return [tf.RandomHorizontalFlip()] 
+    elif key == 'random_crop':
+        return [tf.RandomCrop(value)]
+    elif key == 'center_crop':
+        return [tf.CenterCrop(value)]
+    elif key == 'resize':
+        return [tf.Resize(value)]
+    else:
+        return []
 
 
 def mod_crop(img, scale):

@@ -1,4 +1,3 @@
-from .diffjpeg import DiffJPEG
 from .file_client import FileClient
 from .img_process_util import USMSharp, usm_sharp
 from .img_util import crop_border, imfrombytes, img2tensor, imwrite, tensor2img
@@ -29,8 +28,6 @@ __all__ = [
     'scandir',
     'check_resume',
     'sizeof_fmt',
-    # diffjpeg
-    'DiffJPEG',
     # img_process_util
     'USMSharp',
     'usm_sharp'

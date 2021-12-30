@@ -67,10 +67,16 @@ class BaseModel():
             if val >= self.best_metric_results[dataset_name][metric]['val']:
                 self.best_metric_results[dataset_name][metric]['val'] = val
                 self.best_metric_results[dataset_name][metric]['iter'] = current_iter
+                return True
+            else:
+                return False
         else:
             if val <= self.best_metric_results[dataset_name][metric]['val']:
                 self.best_metric_results[dataset_name][metric]['val'] = val
                 self.best_metric_results[dataset_name][metric]['iter'] = current_iter
+                return True
+            else:
+                return False
 
     def model_ema(self, decay=0.999):
         net_g = self.get_bare_model(self.net_g)
@@ -80,6 +86,12 @@ class BaseModel():
 
         for k in net_g_ema_params.keys():
             net_g_ema_params[k].data.mul_(decay).add_(net_g_params[k].data, alpha=1 - decay)
+
+    def copy_model(self, net_a, net_b):
+        """copy model from net_a to net_b"""
+        tmp_net_a = self.get_bare_model(net_a)
+        tmp_net_b = self.get_bare_model(net_b)
+        tmp_net_b.load_state_dict(tmp_net_a.state_dict())
 
     def get_current_log(self):
         return self.log_dict
@@ -101,22 +113,20 @@ class BaseModel():
         return net
 
     def get_optimizer(self, optim_type, params, lr, **kwargs):
-        if optim_type == 'Adam':
-            optimizer = torch.optim.Adam(params, lr, **kwargs)
-        else:
-            raise NotImplementedError(f'optimizer {optim_type} is not supperted yet.')
+        optim_class = getattr(torch.optim, optim_type)
+        optimizer = optim_class(params, lr, **kwargs)
         return optimizer
 
-    def setup_schedulers(self):
+    def setup_schedulers(self, scheduler_name='scheduler'):
         """Set up schedulers."""
         train_opt = self.opt['train']
-        scheduler_type = train_opt['scheduler'].pop('type')
+        scheduler_type = train_opt[scheduler_name].pop('type')
         if scheduler_type in ['MultiStepLR', 'MultiStepRestartLR']:
             for optimizer in self.optimizers:
-                self.schedulers.append(lr_scheduler.MultiStepRestartLR(optimizer, **train_opt['scheduler']))
+                self.schedulers.append(lr_scheduler.MultiStepRestartLR(optimizer, **train_opt[scheduler_name]))
         elif scheduler_type == 'CosineAnnealingRestartLR':
             for optimizer in self.optimizers:
-                self.schedulers.append(lr_scheduler.CosineAnnealingRestartLR(optimizer, **train_opt['scheduler']))
+                self.schedulers.append(lr_scheduler.CosineAnnealingRestartLR(optimizer, **train_opt[scheduler_name]))
         else:
             raise NotImplementedError(f'Scheduler {scheduler_type} is not implemented yet.')
 

@@ -3,8 +3,9 @@ from copy import deepcopy
 from pyiqa.utils.registry import METRIC_REGISTRY
 from .niqe import calculate_niqe
 from .psnr_ssim import calculate_psnr, calculate_ssim
+from .correlation_coefficient import calculate_srcc, calculate_plcc, calculate_krcc
 
-__all__ = ['calculate_psnr', 'calculate_ssim', 'calculate_niqe']
+__all__ = ['calculate_srcc', 'calculate_plcc', 'calculate_krcc']
 
 
 def calculate_metric(data, opt):
@@ -16,5 +17,5 @@ def calculate_metric(data, opt):
     """
     opt = deepcopy(opt)
     metric_type = opt.pop('type')
-    metric = METRIC_REGISTRY.get(metric_type)(**data, **opt)
+    metric = METRIC_REGISTRY.get(metric_type)(*data, **opt)
     return metric

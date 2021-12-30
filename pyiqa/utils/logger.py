@@ -143,7 +143,7 @@ def init_wandb_logger(opt):
     logger.info(f'Use wandb logger with id={wandb_id}; project={project}.')
 
 
-def get_root_logger(logger_name='basicsr', log_level=logging.INFO, log_file=None):
+def get_root_logger(logger_name='pyiqa', log_level=logging.INFO, log_file=None):
     """Get the root logger.
 
     The logger will be initialized if it has not been initialized. By default a
@@ -193,21 +193,21 @@ def get_env_info():
     import torch
     import torchvision
 
-    from basicsr.version import __version__
-    msg = r"""
-                ____                _       _____  ____
-               / __ ) ____ _ _____ (_)_____/ ___/ / __ \
-              / __  |/ __ `// ___// // ___/\__ \ / /_/ /
-             / /_/ // /_/ /(__  )/ // /__ ___/ // _, _/
-            /_____/ \__,_//____//_/ \___//____//_/ |_|
-     ______                   __   __                 __      __
-    / ____/____   ____   ____/ /  / /   __  __ _____ / /__   / /
-   / / __ / __ \ / __ \ / __  /  / /   / / / // ___// //_/  / /
-  / /_/ // /_/ // /_/ // /_/ /  / /___/ /_/ // /__ / /<    /_/
-  \____/ \____/ \____/ \____/  /_____/\____/ \___//_/|_|  (_)
-    """
-    msg += ('\nVersion Information: '
-            f'\n\tBasicSR: {__version__}'
+    # from basicsr.version import __version__
+    #  msg = r"""
+                #  ____                _       _____  ____
+               #  / __ ) ____ _ _____ (_)_____/ ___/ / __ \
+              #  / __  |/ __ `// ___// // ___/\__ \ / /_/ /
+             #  / /_/ // /_/ /(__  )/ // /__ ___/ // _, _/
+            #  /_____/ \__,_//____//_/ \___//____//_/ |_|
+     #  ______                   __   __                 __      __
+    #  / ____/____   ____   ____/ /  / /   __  __ _____ / /__   / /
+   #  / / __ / __ \ / __ \ / __  /  / /   / / / // ___// //_/  / /
+  #  / /_/ // /_/ // /_/ // /_/ /  / /___/ /_/ // /__ / /<    /_/
+  #  \____/ \____/ \____/ \____/  /_____/\____/ \___//_/|_|  (_)
+    #  """
+    msg = ('\nVersion Information: '
+            #  f'\n\tBasicSR: {__version__}'
             f'\n\tPyTorch: {torch.__version__}'
             f'\n\tTorchVision: {torchvision.__version__}')
     return msg

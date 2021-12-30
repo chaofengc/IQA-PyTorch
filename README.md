@@ -5,7 +5,24 @@ An IQA toolbox with pure python.
 
 ## [**TODO**] Introduction
 
-This is a image quality assessment toolbox with pure python, supporting many mainstream full reference and no reference metrics.
+This is a image quality assessment toolbox with pure python, supporting many mainstream full reference (FR) and no reference (NR) metrics.
+
+Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary. 
+<details close>
+<summary>Supported methods (FR):</summary>
+
+- [ ] LPIPS 
+- [ ] DISTS
+
+</details>
+
+<details close>
+<summary>Supported methods (NR):</summary>
+
+- [x] MUSIQ
+
+</details>
+
 
 ## Quick Start
 
@@ -50,21 +67,6 @@ score = metric_func(img_tensor_x, img_tensor_y)
 
 ## [**TODO**] Benchmark Performances and Model Zoo
 
-Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary. 
-<details open>
-<summary>Supported methods (FR):</summary>
-
-- [ ] LPIPS 
-- [ ] DISTS
-
-</details>
-
-<details open>
-<summary>Supported methods (NR):</summary>
-
-- [x] MUSIQ
-
-</details>
 
 **TODO** Please refer to the [benchmark calibration](BenchmarkCalib.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
 

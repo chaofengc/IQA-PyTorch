@@ -181,14 +181,7 @@ def train_pipeline(root_path):
                 log_vars.update({'time': iter_timer.get_avg_time(), 'data_time': data_timer.get_avg_time()})
                 log_vars.update(model.get_current_log())
                 msg_logger(log_vars)
-
-            # log images to tensorboard
-            if current_iter % (opt['logger']['show_imgs_freq']) == 0:
-                visual_imgs = model.get_current_visuals()
-                if tb_logger and visual_imgs is not None:
-                    for k, v in visual_imgs.items(): 
-                        tb_logger.add_images(f'ckpt_imgs/{k}', v.clamp(0, 1), current_iter)
-
+   
             # save models and training states
             if current_iter % opt['logger']['save_checkpoint_freq'] == 0:
                 logger.info('Saving models and training states.')
@@ -196,7 +189,7 @@ def train_pipeline(root_path):
 
             if current_iter % opt['logger']['save_latest_freq'] == 0:
                 logger.info('Saving latest models and training states.')
-                model.save(epoch, -1)
+                model.save(epoch, current_iter, 'latest')
 
             # validation
             if opt.get('val') is not None and (current_iter % opt['val']['val_freq'] == 0):
