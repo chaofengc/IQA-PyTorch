@@ -61,6 +61,11 @@ class BaseModel():
             init_val = float('-inf') if better == 'higher' else float('inf')
             record[metric] = dict(better=better, val=init_val, iter=-1)
         self.best_metric_results[dataset_name] = record
+        self.key_metric = self.opt['val'].get('key_metric', None)
+
+    def _update_metric_result(self, dataset_name, metric, val, current_iter):
+            self.best_metric_results[dataset_name][metric]['val'] = val
+            self.best_metric_results[dataset_name][metric]['iter'] = current_iter
 
     def _update_best_metric_result(self, dataset_name, metric, val, current_iter):
         if self.best_metric_results[dataset_name][metric]['better'] == 'higher':

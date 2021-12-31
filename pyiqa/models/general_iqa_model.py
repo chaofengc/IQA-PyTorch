@@ -146,19 +146,30 @@ class GeneralIQAModel(BaseModel):
         gt_mos = torch.cat(gt_mos, dim=0).squeeze(1).cpu().numpy()
 
         if with_metrics:
-            # calculate metrics
-            updated = []
+            # calculate all metrics 
             for name, opt_ in self.opt['val']['metrics'].items():
                 self.metric_results[name] = calculate_metric([pred_score, gt_mos], opt_)
-                tmp_updated = self._update_best_metric_result(dataset_name, name, self.metric_results[name], current_iter)
-                updated.append(tmp_updated)
             
-            # If the first best metric is updated, update best model
-            # And save best model
-            if updated[0]: 
-                self.copy_model(self.net, self.net_best)
-                self.save_network(self.net_best, 'net_best', current_iter)
-
+            if self.key_metric is not None:
+                # If the best metric is updated, update and save best model
+                to_update = self._update_best_metric_result(dataset_name, self.key_metric, self.metric_results[self.key_metric], current_iter)
+            
+                if to_update:
+                    for name, opt_ in self.opt['val']['metrics'].items():
+                        self._update_metric_result(dataset_name, name, self.metric_results[name], current_iter)
+                    self.copy_model(self.net, self.net_best)
+                    self.save_network(self.net_best, 'net_best', current_iter)
+            else:
+                # update each metric separately 
+                updated = []
+                for name, opt_ in self.opt['val']['metrics'].items():
+                    tmp_updated = self._update_best_metric_result(dataset_name, name, self.metric_results[name], current_iter)
+                    updated.append(tmp_updated)
+                # save best model if any metric is updated 
+                if sum(updated): 
+                    self.copy_model(self.net, self.net_best)
+                    self.save_network(self.net_best, 'net_best', current_iter)            
+            
             self._log_validation_metric_values(current_iter, dataset_name, tb_logger)
 
     def _log_validation_metric_values(self, current_iter, dataset_name, tb_logger):

@@ -101,8 +101,8 @@ class DBCNN(nn.Module):
             # Freeze all previous layers.
             for param in self.features1.parameters():
                 param.requires_grad = False
-            # for param in scnn.parameters():
-            #     param.requires_grad = False
+            for param in scnn.parameters():
+                param.requires_grad = False
             # Initialize the fc layers.
             nn.init.kaiming_normal_(self.fc.weight.data)
             if self.fc.bias is not None:

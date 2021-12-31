@@ -79,6 +79,28 @@ def _postprocess_yml_value(value):
     return value
 
 
+def make_paths(opt, root_path):
+    if opt['is_train']:
+        experiments_root = osp.join(root_path, 'experiments', opt['name'])
+        opt['path']['experiments_root'] = experiments_root
+        opt['path']['models'] = osp.join(experiments_root, 'models')
+        opt['path']['training_states'] = osp.join(experiments_root, 'training_states')
+        opt['path']['log'] = experiments_root
+        opt['path']['visualization'] = osp.join(experiments_root, 'visualization')
+
+        # change some options for debug mode
+        if 'debug' in opt['name']:
+            if 'val' in opt:
+                opt['val']['val_freq'] = 7
+            opt['logger']['print_freq'] = 0
+            opt['logger']['save_checkpoint_freq'] = 7
+    else:  # test
+        results_root = osp.join(root_path, 'results', opt['name'])
+        opt['path']['results_root'] = results_root
+        opt['path']['log'] = results_root
+        opt['path']['visualization'] = osp.join(results_root, 'visualization')
+
+
 def parse_options(root_path, is_train=True):
     parser = argparse.ArgumentParser()
     parser.add_argument('-opt', type=str, required=True, help='Path to option YAML file.')
@@ -154,26 +176,8 @@ def parse_options(root_path, is_train=True):
         if (val is not None) and ('resume_state' in key or 'pretrain_network' in key):
             opt['path'][key] = osp.expanduser(val)
 
-    if is_train:
-        experiments_root = osp.join(root_path, 'experiments', opt['name'])
-        opt['path']['experiments_root'] = experiments_root
-        opt['path']['models'] = osp.join(experiments_root, 'models')
-        opt['path']['training_states'] = osp.join(experiments_root, 'training_states')
-        opt['path']['log'] = experiments_root
-        opt['path']['visualization'] = osp.join(experiments_root, 'visualization')
-
-        # change some options for debug mode
-        if 'debug' in opt['name']:
-            if 'val' in opt:
-                opt['val']['val_freq'] = 8
-            opt['logger']['print_freq'] = 1
-            opt['logger']['save_checkpoint_freq'] = 8
-    else:  # test
-        results_root = osp.join(root_path, 'results', opt['name'])
-        opt['path']['results_root'] = results_root
-        opt['path']['log'] = results_root
-        opt['path']['visualization'] = osp.join(results_root, 'visualization')
-
+    make_paths(opt, root_path)
+    
     return opt, args
 
 
