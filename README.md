@@ -41,9 +41,9 @@ pip3 install -r requirements.txt
 
 ### Quick Inference
 
-#### [TODO] Test single image
+#### Test single image
 ```
-python inference_iqa.py --input_mode image --metric_name CKDN --image_path /path/to/image 
+python inference_iqa.py --input_mode image --metric_name CKDN --img_path ./CalibraTest/dist_dir/I03.bmp --ref_img_path ./CalibraTest/ref_dir/I03.bmp 
 ```
 
 #### Test with directory
