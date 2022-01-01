@@ -130,9 +130,10 @@ def train_nsplits(root_path):
     n_splits = opt['split_num']
     save_path = opt['save_final_results_path']
     all_split_results = []
+    prefix_name = opt['name']
     for i in range(n_splits):
         # update split specific options
-        opt['name'] = opt['name'] + f'_Split{i:02d}'
+        opt['name'] = prefix_name + f'_Split{i:02d}'
         make_paths(opt, root_path)
         opt['datasets']['train']['split_index'] = i + 1
         opt['datasets']['val']['split_index'] = i + 1
