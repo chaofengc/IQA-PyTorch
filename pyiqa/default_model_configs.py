@@ -29,6 +29,15 @@ DEFAULT_CONFIGS = {
                 tv.transforms.ToTensor(),
                 tv.transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
                 ]),
-            }
+            },
+        'LPIPS': {
+            'net_opts': {
+                'type': 'LPIPS',
+                'net': 'alex',
+                'version': '0.1',
+                'pretrained_model_path': './experiments/pretrained_models/LPIPS/v0.1/alex.pth',
+                },
+            'metric_mode': 'FR',
+            },
         }
 

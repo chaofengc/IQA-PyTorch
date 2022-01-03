@@ -8,3 +8,5 @@ Note that we aims to calibrate the results here. Therefore, for simplicity, we k
 | --- | --- | --- | --- | --- | --- |
 | CKDN(org) | 0.2833 | 0.5766 | 0.6367 | 0.6579 | 0.5999 |
 | CKDN(ours imported) | 0.2833 | 0.5766 | 0.6367 | 0.6579 | 0.5999 |
+| LPIPS(org) | 0.7237 | 0.2572 | 0.0508 | 0.0521 | 0.4253 |
+| LPIPS(ours imported) | 0.7237 | 0.2572 | 0.0508 | 0.0521 | 0.4253 
