@@ -14,8 +14,8 @@ experiments/*
 !experiments/pretrained_models
 experiments/pretrained_models/*
 
-!experiments/pretrained_models/LPIPS
 !experiments/pretrained_models/DISTS
+!experiments/pretrained_models/LPIPS
 
 *.DS_Store
 .idea
