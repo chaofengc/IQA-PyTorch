@@ -158,7 +158,7 @@ class GeneralIQAModel(BaseModel):
                     for name, opt_ in self.opt['val']['metrics'].items():
                         self._update_metric_result(dataset_name, name, self.metric_results[name], current_iter)
                     self.copy_model(self.net, self.net_best)
-                    self.save_network(self.net_best, 'net_best', current_iter)
+                    self.save_network(self.net_best, 'net_best', '')
             else:
                 # update each metric separately 
                 updated = []
@@ -168,7 +168,7 @@ class GeneralIQAModel(BaseModel):
                 # save best model if any metric is updated 
                 if sum(updated): 
                     self.copy_model(self.net, self.net_best)
-                    self.save_network(self.net_best, 'net_best', current_iter)            
+                    self.save_network(self.net_best, 'net_best', '')            
             
             self._log_validation_metric_values(current_iter, dataset_name, tb_logger)
 

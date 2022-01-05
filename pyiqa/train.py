@@ -189,7 +189,7 @@ def train_pipeline(root_path):
 
             if current_iter % opt['logger']['save_latest_freq'] == 0:
                 logger.info('Saving latest models and training states.')
-                model.save(epoch, current_iter, 'latest')
+                model.save(epoch, -1) 
 
             # validation
             if opt.get('val') is not None and (current_iter % opt['val']['val_freq'] == 0):
