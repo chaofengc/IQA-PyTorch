@@ -9,6 +9,9 @@ tmp/*
 .vscode*
 *.sh
 
+!experiments/pretrained_models/LPIPS
+!experiments/pretrained_models/DISTS
+
 *.DS_Store
 .idea
 
