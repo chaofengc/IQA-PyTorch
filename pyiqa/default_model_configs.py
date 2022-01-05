@@ -39,5 +39,12 @@ DEFAULT_CONFIGS = {
                 },
             'metric_mode': 'FR',
             },
+        'DISTS': {
+            'net_opts': {
+                'type': 'DISTS',
+                'pretrained_model_path': './experiments/pretrained_models/DISTS/weights.pt',
+                },
+            'metric_mode': 'FR',
+            },
         }
 
