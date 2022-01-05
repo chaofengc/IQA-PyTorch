@@ -8,14 +8,11 @@ tmp/*
 .vscode*
 *.sh
 
-!experiments/
 experiments/*
 
-!experiments/pretrained_models
-experiments/pretrained_models/*
-
-!experiments/pretrained_models/DISTS
-!experiments/pretrained_models/LPIPS
+!experiments/pretrained_models/DISTS/weights.pt
+!experiments/pretrained_models/LPIPS/v0.0/*.pth
+!experiments/pretrained_models/LPIPS/v0.1/*.pth
 
 *.DS_Store
 .idea
