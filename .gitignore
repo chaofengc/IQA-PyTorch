@@ -1,6 +1,5 @@
  # ignored folders
 datasets/*
-experiments/*
 results/*
 tb_logger/*
 tb_logger_archived/*
@@ -9,6 +8,8 @@ tmp/*
 .vscode*
 *.sh
 
+!experiments/
+experiments/*
 !experiments/pretrained_models/LPIPS
 !experiments/pretrained_models/DISTS
 
