@@ -1,13 +1,13 @@
 # Python Toolbox for Image Quality Assessment
-An IQA toolbox with pure python.
+An IQA toolbox with pure python and pytorch.
 
 **Please follow the [contribution instructions](Instruction.md) to make contributions to this repository.**
 
 ## [**TODO**] Introduction
 
-This is a image quality assessment toolbox with pure python, supporting many mainstream full reference (FR) and no reference (NR) metrics.
+This is a image quality assessment toolbox with pure python, supporting many mainstream full reference (FR) and no reference (NR) metrics. We also support training new DNN models with several public IQA datasets.
 
-Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary. 
+Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary as well as download links for IQA datasets. 
 <details close>
 <summary>Supported methods (FR):</summary>
 
@@ -20,6 +20,13 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 <summary>Supported methods (NR):</summary>
 
 - [x] MUSIQ
+
+</details>
+
+<details close>
+<summary>Supported datasets:</summary>
+
+- [x] LIVEChallenge 
 
 </details>
 
@@ -82,7 +89,7 @@ python pyiqa/train_nsplits.py -opt options/train/DBCNN/train_DBCNN.yml
 
 ## [**TODO**] Benchmark Performances and Model Zoo
 
-**TODO** Please refer to the [benchmark calibration](BenchmarkCalib.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
+**TODO** Please refer to the [results calibration](ResultsCalib.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
 
 ### Performances of the retrained models
 
@@ -101,7 +108,14 @@ TODO
 
 ## Acknowledgement
 
-The code architecture is borrowed from [BasicSR](https://github.com/xinntao/BasicSR). Several implementations are borrowed from [IQA-optimization](https://github.com/dingkeyan93/IQA-optimization) and [Image-Quality-Assessment-Toolbox](https://github.com/RyanXingQL/Image-Quality-Assessment-Toolbox). We also thanks the following works to make their codes public:
+The code architecture is borrowed from [BasicSR](https://github.com/xinntao/BasicSR). Several implementations are taken from 
+
+- [IQA-optimization](https://github.com/dingkeyan93/IQA-optimization)  
+- [Image-Quality-Assessment-Toolbox](https://github.com/RyanXingQL/Image-Quality-Assessment-Toolbox) 
+- [piq](https://github.com/photosynthesis-team/piq)
+- [piqa](https://github.com/francois-rozet/piqa)
+
+We also thanks the following works to make their codes public:
 - **TODO**
 - [DBCNN]() 
 - [MUSIQ]() 
