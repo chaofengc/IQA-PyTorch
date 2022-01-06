@@ -4,6 +4,8 @@ from .img_util import crop_border, imfrombytes, img2tensor, imwrite, tensor2img
 from .logger import AvgTimer, MessageLogger, get_env_info, get_root_logger, init_tb_logger, init_wandb_logger
 from .misc import check_resume, get_time_str, make_exp_dirs, mkdir_and_rename, scandir, set_random_seed, sizeof_fmt
 
+from .color_util import rgb2ycbcr, ycbcr2rgb
+
 __all__ = [
     # file_client.py
     'FileClient',
@@ -30,5 +32,8 @@ __all__ = [
     'sizeof_fmt',
     # img_process_util
     'USMSharp',
-    'usm_sharp'
+    'usm_sharp',
+    # color util
+    'rgb2ycbcr',
+    'ycbcr2rgb',
 ]

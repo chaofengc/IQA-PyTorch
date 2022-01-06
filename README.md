@@ -50,12 +50,12 @@ pip3 install -r requirements.txt
 
 #### Test single image
 ```
-python inference_iqa.py --input_mode image --metric_name CKDN --img_path ./CalibraTest/dist_dir/I03.bmp --ref_img_path ./CalibraTest/ref_dir/I03.bmp 
+python inference_iqa.py --input_mode image --metric_name LPIPS --img_path ./CalibraTest/dist_dir/I03.bmp --ref_img_path ./CalibraTest/ref_dir/I03.bmp 
 ```
 
 #### Test with directory
 ```
-python inference_iqa.py --input_mode dir --metric_name CKDN --input_dir ./CalibraTest/dist_dir --ref_dir ./CalibraTest/ref_dir --save_file ./CalibraTest/ckdn_imported_result.txt 
+python inference_iqa.py --input_mode dir --metric_name LPIPS --input_dir ./CalibraTest/dist_dir --ref_dir ./CalibraTest/ref_dir 
 ```
 
 #### [**TODO**] Use as function in your project
