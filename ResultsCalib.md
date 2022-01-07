@@ -1,4 +1,4 @@
-# Benchmark Calibration
+# Results Calibration
 
 We random select 5 pairs of images from TID2013 for results calibration. Images are stored under `./CalibraTest/dist_dir` and `./CalibraTest/ref_dir`. Distorted images and reference images are renamed as the same for simplicity.
 

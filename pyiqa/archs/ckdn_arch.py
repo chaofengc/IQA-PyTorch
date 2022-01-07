@@ -257,12 +257,12 @@ class CKDN(nn.Module):
         
     def load_pretrained_network(self, model_path):
         print(f'Loading pretrained model from {model_path}')
-        state_dicts = torch.load(model_path)['state_dict']
+        state_dicts = torch.load(model_path, map_location=torch.device('cpu'))['state_dict']
         new_state_dict = {}
         for k in state_dicts.keys():
             new_state_dict[k.split('module.')[1]] = state_dicts[k]
 
-        self.net.load_state_dict(new_state_dict,strict=False) 
+        self.net.load_state_dict(new_state_dict, strict=False) 
 
     def _diff_preprocess(self, x, y):
         """differentiable preprocessing of CKDN: https://github.com/researchmm/CKDN
