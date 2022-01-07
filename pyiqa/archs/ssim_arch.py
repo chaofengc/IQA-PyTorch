@@ -24,13 +24,13 @@ from pyiqa.utils.color_util import rgb2ycbcr
 def to_y_channel(img):
     """Change to Y channel of YCbCr.
     Args:
-        img (ndarray): Images with range [0, 1].
+        image tensor: tensor with shape (N, 3, H, W) in range [0, 1].
     Returns:
-        (ndarray): Images with range [0, 255] without round.
+        image tensor: Y channel of the input tensor 
     """
-    if img.ndim == 4 and img.shape[1] == 3:
-        img = rgb2ycbcr(img)
-    return img[:, 0, :, :].unsqueeze(1)
+    assert img.ndim == 4 and img.shape[1] == 3, 'input image tensor should be RGB image batches with shape (N, 3, H, W)'
+    img = rgb2ycbcr(img)
+    return img[:, [0], :, :]
 
 
 def fspecial_gauss(size, sigma, channels):
@@ -104,8 +104,8 @@ def ssim(X,
 class SSIM(torch.nn.Module):
     r"""Args:
         channel: number of channel.
-        downsample: Boolen, whether to downsample which mimics official matlab code.
-        test_y_channel: Boolen, whether to use y channel on ycbcr which mimics official matlab code.
+        downsample: boolean, whether to downsample which mimics official matlab code.
+        test_y_channel: boolean, whether to use y channel on ycbcr which mimics official matlab code.
     """
     def __init__(self, channels=3, downsample=False, test_y_channel=True):
 
@@ -114,20 +114,11 @@ class SSIM(torch.nn.Module):
         self.downsample = downsample
         self.test_y_channel = test_y_channel
 
-    def forward(self, X, Y, as_loss=False):
+    def forward(self, X, Y):
         assert X.shape == Y.shape
-        if as_loss:
-            score = ssim(X,
-                         Y,
-                         win=self.win,
-                         downsample=self.downsample,
-                         test_y_channel=self.test_y_channel)
-            return 1 - score.mean()
-        else:
-            with torch.no_grad():
-                score = ssim(X,
-                             Y,
-                             win=self.win,
-                             downsample=self.downsample,
-                             test_y_channel=self.test_y_channel)
-            return score
+        score = ssim(X,
+                     Y,
+                     win=self.win,
+                     downsample=self.downsample,
+                     test_y_channel=self.test_y_channel)
+        return score
