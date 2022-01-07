@@ -46,5 +46,13 @@ DEFAULT_CONFIGS = {
                 },
             'metric_mode': 'FR',
             },
+        'SSIM': {
+            'net_opts': {
+                'type': 'SSIM',
+                'downsample': False,
+                'test_y_channel': True,
+                },
+            'metric_mode': 'FR',
+            },
         }
 
