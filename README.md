@@ -48,14 +48,11 @@ pip3 install -r requirements.txt
 
 ### Quick Inference
 
-#### Test single image
-```
-python inference_iqa.py --input_mode image --metric_name LPIPS --img_path ./CalibraTest/dist_dir/I03.bmp --ref_img_path ./CalibraTest/ref_dir/I03.bmp 
-```
+#### Test script 
 
-#### Test with directory
+Example test script with input directory and reference directory. Single image is also supported for `-i` and `-r` options. 
 ```
-python inference_iqa.py --input_mode dir --metric_name LPIPS --input_dir ./CalibraTest/dist_dir --ref_dir ./CalibraTest/ref_dir 
+python inference_iqa.py -n LPIPS -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir 
 ```
 
 #### [**TODO**] Use as function in your project

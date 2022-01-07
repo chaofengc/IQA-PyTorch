@@ -111,10 +111,15 @@ class LPIPS(nn.Module):
             self.lins = nn.ModuleList(self.lins)
 
             if (pretrained):
-                self.load_state_dict(torch.load(pretrained_model_path), strict=False)
+                self.load_pretrained_network(pretrained_model_path)
 
         if (eval_mode):
             self.eval()
+
+    def load_pretrained_network(self, model_path):
+        print(f'Loading pretrained model from {model_path}')
+        state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+        self.load_state_dict(state_dict, strict=False)
 
     def forward(self, in1, in0, retPerLayer=False, normalize=True):
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
