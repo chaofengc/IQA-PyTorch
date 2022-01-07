@@ -12,3 +12,5 @@ Note that we aims to calibrate the results here. Therefore, for simplicity, we k
 | LPIPS(ours imported) | 0.7237 | 0.2572 | 0.0508 | 0.0521 | 0.4253 |
 | DISTS(org) | 0.4742 | 0.1424 | 0.0682 | 0.0287 | 0.3123 |
 | DISTS(ours imported) | 0.4742 | 0.1424 | 0.0682 | 0.0287 | 0.3123 |
+| SSIM(org) | 0.7326 | 0.9989 | 0.9995 | 0.9674 | 0.6790 |
+| SSIM(ours imported) | 0.7328 | 0.9989 | 0.9995 | 0.9676 | 0.6791 |
