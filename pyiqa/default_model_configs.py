@@ -54,5 +54,19 @@ DEFAULT_CONFIGS = {
                 },
             'metric_mode': 'FR',
             },
+        'PSNR': {
+            'net_opts': {
+                'type': 'PSNR',
+                'test_y_channel': False,
+                },
+            'metric_mode': 'FR',
+            },
+        'FSIM': {
+            'net_opts': {
+                'type': 'FSIM',
+                'chromatic': True,
+                },
+            'metric_mode': 'FR',
+            },
         }
 
