@@ -65,7 +65,7 @@ python inference_iqa.py -n LPIPS -i ./ResultsCalibra/dist_dir -r ./ResultsCalibr
 PyTorch backward is allowed for the following metrics: 
 
 - NR: DBCNN, 
-- FR: LPIPS, DISTS, FSIM, SSIM, PSNR
+- FR: LPIPS, DISTS, CKDN, FSIM, SSIM, PSNR
 
 ```
 from pyiqa import LPIPS 
