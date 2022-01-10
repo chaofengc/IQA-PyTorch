@@ -116,20 +116,11 @@ class SSIM(torch.nn.Module):
         self.downsample = downsample
         self.test_y_channel = test_y_channel
 
-    def forward(self, X, Y, as_loss=False):
-        assert X.shape == Y.shape
-        if as_loss:
-            score = ssim(X,
-                         Y,
-                         win=self.win,
-                         downsample=self.downsample,
-                         test_y_channel=self.test_y_channel)
-            return 1 - score.mean()
-        else:
-            with torch.no_grad():
-                score = ssim(X,
-                             Y,
-                             win=self.win,
-                             downsample=self.downsample,
-                             test_y_channel=self.test_y_channel)
-            return score
+    def forward(self, X, Y):
+        assert X.shape == Y.shape, f"Input {X.shape} and reference images should have the same shape"
+        score = ssim(X,
+                     Y,
+                     win=self.win,
+                     downsample=self.downsample,
+                     test_y_channel=self.test_y_channel)
+        return score

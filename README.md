@@ -11,15 +11,18 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 <details close>
 <summary>Supported methods (FR):</summary>
 
-- [ ] LPIPS 
-- [ ] DISTS
+- [x] LPIPS 
+- [x] DISTS
+- [x] FSIM 
+- [x] SSIM 
+- [x] PSNR 
 
 </details>
 
 <details close>
 <summary>Supported methods (NR):</summary>
 
-- [x] MUSIQ
+- [ ] MUSIQ
 
 </details>
 

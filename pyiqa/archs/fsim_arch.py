@@ -492,7 +492,7 @@ class FSIM(nn.Module):
     def forward(self,
                 X: torch.Tensor,
                 Y: torch.Tensor,
-                as_loss=False) -> torch.Tensor:
+                ) -> torch.Tensor:
         r"""Computation of FSIM as a loss function.
         Args:
             x: An input tensor. Shape :math:`(N, C, H, W)`.
@@ -501,11 +501,6 @@ class FSIM(nn.Module):
             Value of FSIM loss to be minimized in [0, 1] range.
         """
 
-        assert X.shape == Y.shape
-        if as_loss:
-            score = self.fsim(X, Y)
-            return 1 - torch.clamp(score, 0, 1)
-        else:
-            with torch.no_grad():
-                score = self.fsim(X, Y)
-            return score
+        assert X.shape == Y.shape, f"Input and reference images should have the same shape, but got {X.shape} and {Y.shape}"
+        score = self.fsim(X, Y)
+        return score

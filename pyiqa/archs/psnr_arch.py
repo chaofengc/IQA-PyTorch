@@ -59,12 +59,7 @@ class PSNR(nn.Module):
         self.test_y_channel = test_y_channel
         self.kwargs = kwargs
 
-    def forward(self, X, Y, as_loss=False):
-        assert X.shape == Y.shape
-        if as_loss:
-            score = psnr(X, Y, self.test_y_channel, **self.kwargs)
-            return -score.mean()
-        else:
-            with torch.no_grad():
-                score = psnr(X, Y, self.test_y_channel, **self.kwargs)
-            return score
+    def forward(self, X, Y):
+        assert X.shape == Y.shape, f"Input and reference images should have the same shape, but got {X.shape} and {Y.shape}"
+        score = psnr(X, Y, self.test_y_channel, **self.kwargs)
+        return score
