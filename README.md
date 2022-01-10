@@ -13,6 +13,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 
 - [x] LPIPS 
 - [x] DISTS
+- [x] CKDN
 - [x] FSIM 
 - [x] SSIM 
 - [x] PSNR 
@@ -22,6 +23,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 <details open>
 <summary>Supported methods (NR):</summary>
 
+- [x] DBCNN
 - [ ] MUSIQ
 
 </details>
