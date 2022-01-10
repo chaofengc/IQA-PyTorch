@@ -8,7 +8,7 @@ An IQA toolbox with pure python and pytorch.
 This is a image quality assessment toolbox with pure python, supporting many mainstream full reference (FR) and no reference (NR) metrics. We also support training new DNN models with several public IQA datasets.
 
 Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary as well as download links for IQA datasets. 
-<details close>
+<details open>
 <summary>Supported methods (FR):</summary>
 
 - [x] LPIPS 
@@ -19,14 +19,14 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 
 </details>
 
-<details close>
+<details open>
 <summary>Supported methods (NR):</summary>
 
 - [ ] MUSIQ
 
 </details>
 
-<details close>
+<details open>
 <summary>Supported datasets:</summary>
 
 - [x] LIVEChallenge 
@@ -59,7 +59,10 @@ python inference_iqa.py -n LPIPS -i ./ResultsCalibra/dist_dir -r ./ResultsCalibr
 ```
 
 #### [**TODO**] Use as function in your project
-PyTorch backward is allowed for the following metrics: PSNR, LPIPS,  
+PyTorch backward is allowed for the following metrics: 
+
+- NR: DBCNN, 
+- FR: LPIPS, DISTS, CKDN, FSIM, SSIM, PSNR
 
 ```
 from pyiqa import LPIPS 
