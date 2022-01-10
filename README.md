@@ -13,11 +13,9 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 
 - [x] LPIPS 
 - [x] DISTS
-- [x] CKDN
 - [x] FSIM 
 - [x] SSIM 
 - [x] PSNR 
-
 </details>
 
 <details open>
@@ -25,16 +23,19 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 
 - [x] DBCNN
 - [ ] MUSIQ
+</details>
 
+<details open>
+<summary>Other methods:</summary>
+
+- [x] CKDN
 </details>
 
 <details open>
 <summary>Supported datasets:</summary>
 
 - [x] LIVEChallenge 
-
 </details>
-
 
 ## Quick Start
 
@@ -64,7 +65,7 @@ python inference_iqa.py -n LPIPS -i ./ResultsCalibra/dist_dir -r ./ResultsCalibr
 PyTorch backward is allowed for the following metrics: 
 
 - NR: DBCNN, 
-- FR: LPIPS, DISTS, CKDN, FSIM, SSIM, PSNR
+- FR: LPIPS, DISTS, FSIM, SSIM, PSNR
 
 ```
 from pyiqa import LPIPS 
