@@ -28,7 +28,8 @@ def to_y_channel(img):
     Returns:
         image tensor: Y channel of the input tensor 
     """
-    assert img.ndim == 4 and img.shape[1] == 3, 'input image tensor should be RGB image batches with shape (N, 3, H, W)'
+    assert img.ndim == 4 and img.shape[
+        1] == 3, 'input image tensor should be RGB image batches with shape (N, 3, H, W)'
     img = rgb2ycbcr(img)
     return img[:, [0], :, :]
 
@@ -107,6 +108,7 @@ class SSIM(torch.nn.Module):
         downsample: boolean, whether to downsample which mimics official matlab code.
         test_y_channel: boolean, whether to use y channel on ycbcr which mimics official matlab code.
     """
+
     def __init__(self, channels=3, downsample=False, test_y_channel=True):
 
         super(SSIM, self).__init__()
@@ -114,11 +116,20 @@ class SSIM(torch.nn.Module):
         self.downsample = downsample
         self.test_y_channel = test_y_channel
 
-    def forward(self, X, Y):
+    def forward(self, X, Y, as_loss=False):
         assert X.shape == Y.shape
-        score = ssim(X,
-                     Y,
-                     win=self.win,
-                     downsample=self.downsample,
-                     test_y_channel=self.test_y_channel)
-        return score
+        if as_loss:
+            score = ssim(X,
+                         Y,
+                         win=self.win,
+                         downsample=self.downsample,
+                         test_y_channel=self.test_y_channel)
+            return 1 - score.mean()
+        else:
+            with torch.no_grad():
+                score = ssim(X,
+                             Y,
+                             win=self.win,
+                             downsample=self.downsample,
+                             test_y_channel=self.test_y_channel)
+            return score
