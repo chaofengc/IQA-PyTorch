@@ -54,14 +54,18 @@ def ssim(X,
          get_cs=False,
          get_weight=False,
          downsample=False,
+         data_range=1.,
          test_y_channel=True):
-    C1 = (0.01 * 255)**2
-    C2 = (0.03 * 255)**2
 
     # Whether calculate on y channel of ycbcr
-    if test_y_channel:
+    if test_y_channel and X.shape[1]==3:
+        print("to y")
         X = to_y_channel(X)
         Y = to_y_channel(Y)
+        data_range = 255
+
+    C1 = (0.01 * data_range)**2
+    C2 = (0.03 * data_range)**2
 
     # Averagepool image if the size is large enough
     f = max(1, round(min(X.size()[-2:]) / 256))

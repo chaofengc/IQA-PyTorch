@@ -15,6 +15,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 - [x] DISTS
 - [x] FSIM 
 - [x] SSIM 
+- [x] MS-SSIM
 - [x] PSNR 
 </details>
 
