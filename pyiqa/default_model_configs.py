@@ -73,6 +73,7 @@ DEFAULT_CONFIGS = {
                 'type': 'MS_SSIM',
                 'downsample': False,
                 'test_y_channel': True,
+                'is_prod': True,
                 },
             'metric_mode': 'FR',
             },

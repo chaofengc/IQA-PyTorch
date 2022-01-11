@@ -16,7 +16,13 @@ from pyiqa.archs.ssim_arch import ssim, to_y_channel, fspecial_gauss
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 
-def ms_ssim(X, Y, win, data_range=1., downsample=False, test_y_channel=True):
+def ms_ssim(X,
+            Y,
+            win,
+            data_range=1.,
+            downsample=False,
+            test_y_channel=True,
+            is_prod=True):
     r"""Compute Multiscale structural similarity for a batch of images.
     Args:
         x: An input tensor. Shape :math:`(N, C, H, W)`.
@@ -24,6 +30,7 @@ def ms_ssim(X, Y, win, data_range=1., downsample=False, test_y_channel=True):
         win: Window setting.
         downsample: Boolean, whether to downsample which mimics official SSIM matlab code.
         test_y_channel: Boolean, whether to use y channel on ycbcr.
+        is_prod: Boolean, calculate product or sum between mcs and weight.
     Returns:
         Index of similarity betwen two images. Usually in [0, 1] interval.
     """
@@ -55,8 +62,15 @@ def ms_ssim(X, Y, win, data_range=1., downsample=False, test_y_channel=True):
         Y = F.avg_pool2d(Y, kernel_size=2, padding=padding)
 
     mcs = torch.stack(mcs, dim=0)
-    msssim_val = torch.prod(
-        (mcs[:-1]**weights[:-1].unsqueeze(1)), dim=0) * (ssim_val**weights[-1])
+
+    if is_prod:
+        msssim_val = torch.prod((mcs[:-1]**weights[:-1].unsqueeze(1)),
+                                dim=0) * (ssim_val**weights[-1])
+    else:
+        weights = weights / torch.sum(weights)
+        msssim_val = torch.sum((mcs[:-1] * weights[:-1].unsqueeze(1)),
+                               dim=0) + (ssim_val * weights[-1])
+
     return msssim_val
 
 
@@ -72,11 +86,12 @@ class MS_SSIM(torch.nn.Module):
         2003, vol. 2, pp. 1398-1402. Ieee, 2003.
     """
 
-    def __init__(self, channels=3, downsample=False, test_y_channel=True):
+    def __init__(self, channels=3, downsample=False, test_y_channel=True, is_prod=True):
         super(MS_SSIM, self).__init__()
         self.win = fspecial_gauss(11, 1.5, channels)
         self.downsample = downsample
         self.test_y_channel = test_y_channel
+        self.is_prod =  is_prod
 
     def forward(self, X, Y):
         """Computation of MS-SSIM metric.
@@ -91,5 +106,6 @@ class MS_SSIM(torch.nn.Module):
                         Y,
                         win=self.win,
                         downsample=self.downsample,
-                        test_y_channel=self.test_y_channel)
+                        test_y_channel=self.test_y_channel,
+                        is_prod=self.is_prod)
         return score
