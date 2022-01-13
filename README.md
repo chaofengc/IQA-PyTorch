@@ -17,6 +17,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 - [x] SSIM 
 - [x] MS-SSIM
 - [x] PSNR 
+- [x] VIF 
 </details>
 
 <details open>
@@ -66,7 +67,7 @@ python inference_iqa.py -n LPIPS -i ./ResultsCalibra/dist_dir -r ./ResultsCalibr
 PyTorch backward is allowed for the following metrics: 
 
 - NR: DBCNN, 
-- FR: LPIPS, DISTS, CKDN, FSIM, SSIM, PSNR
+- FR: LPIPS, DISTS, CKDN, FSIM, SSIM, MS_SSIM, PSNR, VIF
 
 ```
 from pyiqa import LPIPS 

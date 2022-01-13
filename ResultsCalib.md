@@ -18,9 +18,12 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | PSNR(ours imported) | 21.11 | 20.99 | 27.01 | 23.30 | 21.62 |
 | FSIM(org) | 0.6890 | 0.9702 | 0.9927 | 0.9575 | 0.8220 |
 | FSIM(ours imported) | 0.6891 | 0.9702 | 0.9927 | 0.9575 | 0.8220 |
+| VIF<sup>5<sup>(org) | 0.0180 | 0.9960 | 0.9978 | 0.9111 | 0.1881 |
+| VIF(ours imported) | 0.0180 | 0.9960 | 0.9978 | 0.9111 | 0.1881 |
 
 #### Notice
 1. CKDN used degraded images as references in the original paper.
 2. The original SSIM matlab script downsample the image when larger than 256. We remove such constraint. 
 3. We use Y-channel of YCBCR images as input of original MS-SSIM matlab script.
 4. The original PSNR code refers to scikit-learn package with RGB 3-channel calculation (from skimage.metrics import peak_signal_noise_ratio).
+5. We use Y-channel of YCBCR images as input of original VIF matlab script.
