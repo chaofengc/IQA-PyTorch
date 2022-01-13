@@ -77,5 +77,11 @@ DEFAULT_CONFIGS = {
                 },
             'metric_mode': 'FR',
             },
+        'VIF': {
+            'net_opts': {
+                'type': 'VIF',
+                },
+            'metric_mode': 'FR',
+            },
         }
 
