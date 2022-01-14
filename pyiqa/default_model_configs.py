@@ -83,5 +83,12 @@ DEFAULT_CONFIGS = {
                 },
             'metric_mode': 'FR',
             },
+        'GMSD': {
+            'net_opts': {
+                'type': 'GMSD',
+                'test_y_channel': True,
+                },
+            'metric_mode': 'FR',
+            },
         }
 
