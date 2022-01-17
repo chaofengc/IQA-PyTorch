@@ -7,22 +7,26 @@ import pickle
 def get_meta_info():
     root_dir = '../../datasets/LIVEIQA_release2/'
 
-    sub_folders = ['jp2k', 'jpeg', 'wn', 'gblur', 'fastfading'] 
+    dmos = sio.loadmat(os.path.join(root_dir, 'dmos.mat'))
+    mos = dmos['dmos'][0]
+    org_flag = dmos['orgs'][0]
+
+    refnames = sio.loadmat(os.path.join(root_dir, 'refnames_all.mat'))
+    refnames = refnames['refnames_all'][0]
+
+    sub_folders = ['jp2k']*227 + ['jpeg']*233 + ['wn']*174 + ['gblur']*174 + ['fastfading']*174 
+    sub_indexes = list(range(1, 228)) + list(range(1, 234)) + list(range(1, 175)) * 3 
 
     save_meta_path = '../pyiqa/data/meta_info/meta_info_LIVEIQADataset.txt'
     with open(save_meta_path, 'w') as f:
-        for subf in sub_folders:
-            subf_info = [x.strip().split() for x in open(os.path.join(root_dir, subf, 'info.txt')).readlines()]
-            for si in subf_info:
-                if len(si):
-                    ref_name = si[0]
-                    dis_name = si[1]
-                    mos = float(si[2])
-                    if mos != 0:
-                        ref_name = f'refimgs/{ref_name}'
-                        name = f'{subf}/{dis_name}'
-                        msg = f'{ref_name:<15}\t{name:<15}\t{mos:<15}\n'
-                        f.write(msg)
+        for i in range(len(sub_folders)):
+            ref_name = refnames[i][0]
+            dis_name = f'{sub_folders[i]}/img{sub_indexes[i]}' 
+            tmpmos = mos[i]
+            if org_flag[i] != 1:
+                msg = f'{ref_name:<15}\t{dis_name:<15}\t{tmpmos:<15}\n'
+                #  print(msg)
+                f.write(msg)
 
 def get_random_splits(seed=123):
     random.seed(seed)
