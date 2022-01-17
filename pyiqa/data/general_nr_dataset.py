@@ -7,20 +7,15 @@ from torch.utils import data as data
 import torchvision.transforms as tf
 from torchvision.transforms.functional import normalize
 
-from pyiqa.data.data_util import read_meta_info_file
+from pyiqa.data.data_util import read_meta_info_file 
 from pyiqa.data.transforms import transform_mapping, augment, paired_random_crop
 from pyiqa.utils import FileClient, imfrombytes, img2tensor
 from pyiqa.utils.registry import DATASET_REGISTRY
 
 
 @DATASET_REGISTRY.register()
-class LIVEChallengeDataset(data.Dataset):
-    """The LIVE Challenge Dataset introduced by
-
-    D. Ghadiyaram and A.C. Bovik, 
-    "Massive Online Crowdsourced Study of Subjective and Objective Picture Quality," 
-    IEEE Transactions on Image Processing, 2016
-    url: https://live.ece.utexas.edu/research/ChallengeDB/index.html 
+class GeneralNRDataset(data.Dataset):
+    """General No Reference dataset with meta info file.
     
     Args:
         opt (dict): Config for train datasets with the following keys:
@@ -28,19 +23,19 @@ class LIVEChallengeDataset(data.Dataset):
     """
 
     def __init__(self, opt):
-        super(LIVEChallengeDataset, self).__init__()
+        super(GeneralNRDataset, self).__init__()
         self.opt = opt
 
         target_img_folder = opt['dataroot_target']
         self.paths_mos = read_meta_info_file(target_img_folder, opt['meta_info_file']) 
-        # remove first 7 training images as previous works
-        self.paths_mos = self.paths_mos[7:] 
 
         # read train/val/test splits
-        with open(opt['split_file'], 'rb') as f:
-            split_dict = pickle.load(f)
-            splits = split_dict[opt['split_index']][opt['phase']]
-        self.paths_mos = [self.paths_mos[i] for i in splits] 
+        split_file_path = opt.get('split_file', None)
+        if split_file_path:
+            with open(opt['split_file'], 'rb') as f:
+                split_dict = pickle.load(f)
+                splits = split_dict[opt['split_index']][opt['phase']]
+            self.paths_mos = [self.paths_mos[i] for i in splits] 
 
         transform_list = []
         augment_dict = opt.get('augment', None)

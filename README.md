@@ -86,10 +86,10 @@ score = metric_func(img_tensor_x, img_tensor_y)
 Example to train DBCNN on LIVEChallenge dataset
 ```
 # train for single experiment
-python pyiqa/train.py -opt options/train/DBCNN/train_DBCNN.yml 
+python pyiqa/train.py -opt options/train/train_DBCNN.yml 
 
 # train N splits for small datasets
-python pyiqa/train_nsplits.py -opt options/train/DBCNN/train_DBCNN.yml 
+python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml 
 ```
 
 [**TODO**]
@@ -102,7 +102,7 @@ python pyiqa/train_nsplits.py -opt options/train/DBCNN/train_DBCNN.yml
 
 ### Performances of the retrained models
 
-| Methods | Dataset | Kon10k | CLIVE | SPAQ | AVA | Link(pth) |
+| Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
 | --- | --- | --- | --- | --- | --- | --- |
 
 ## License

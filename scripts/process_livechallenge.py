@@ -20,8 +20,7 @@ def get_meta_info():
             img_name = name_item[0][0]
             mos = mos_labels[idx]
             std = mos_std[idx]
-            f.write(f'{img_name:<10}\t{mos:<20}\t{std}\n')
-
+            f.write(f'{img_name:<15}\t{mos:<20}\t{std}\n')
 
 def get_random_splits(seed=123):
     random.seed(seed)

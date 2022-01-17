@@ -64,11 +64,13 @@ class GeneralIQAModel(BaseModel):
 
     def feed_data(self, data):
         self.img_input = data['img'].to(self.device)
+
         if 'mos_label' in data:
             self.gt_mos = data['mos_label'].to(self.device)
-        if 'ref_input' in data:
+
+        if 'ref_img' in data:
             self.use_ref = True
-            self.ref_input = data['ref_input'].to(self.device)
+            self.ref_input = data['ref_img'].to(self.device)
         else:
             self.use_ref = False
 

@@ -92,7 +92,7 @@ def make_paths(opt, root_path):
         if 'debug' in opt['name']:
             if 'val' in opt:
                 opt['val']['val_freq'] = 7
-            opt['logger']['print_freq'] = 0
+            opt['logger']['print_freq'] = 1
             opt['logger']['save_checkpoint_freq'] = 7
     else:  # test
         results_root = osp.join(root_path, 'results', opt['name'])

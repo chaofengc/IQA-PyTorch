@@ -72,8 +72,8 @@ class DBCNN(nn.Module):
     def __init__(self, fc=True, 
                 use_bn=True, 
                 pretrained_scnn_path=None, 
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
+                default_mean=[0.485, 0.456, 0.406],
+                default_std=[0.229, 0.224, 0.225],
                 ):
         super(DBCNN, self).__init__()
 
@@ -94,8 +94,8 @@ class DBCNN(nn.Module):
         # Linear classifier.
         self.fc = torch.nn.Linear(512*128, 1)
 
-        self.default_mean = torch.Tensor(mean).view(1, 3, 1, 1)
-        self.default_std = torch.Tensor(std).view(1, 3, 1, 1)
+        self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
+        self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
         
         if fc:
             # Freeze all previous layers.
