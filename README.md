@@ -47,11 +47,11 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 - [ ] KADID-10k 
 - [ ] KonIQ-10k
 - [x] LIVEChallenge 
-- [ ] LIVEM  
-- [ ] LIVE  
+- [x] LIVEM  
+- [x] LIVE  
 - [x] TID2008
 - [x] TID2013 
-- [ ] CSIQ
+- [x] CSIQ
 </details>
 
 ## Quick Start

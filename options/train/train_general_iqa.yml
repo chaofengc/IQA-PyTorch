@@ -18,8 +18,15 @@ datasets:
     # dataroot_ref: ../datasets/tid2008/reference_images
     # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2008Dataset.txt
 
-    dataroot_target: ../datasets/LIVEIQA_release2
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.txt
+    # dataroot_target: ../datasets/LIVEIQA_release2
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.txt
+
+    # dataroot_target: ../datasets/CSIQ/dst_imgs
+    # dataroot_ref: ../datasets/CSIQ/src_imgs
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.txt
+
+    dataroot_target: ../datasets/LIVEmultidistortiondatabase
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.txt
 
     augment:
       resize: [224, 224]
@@ -42,8 +49,15 @@ datasets:
     # dataroot_ref: ../datasets/tid2008/reference_images
     # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2008Dataset.txt
 
-    dataroot_target: ../datasets/LIVEIQA_release2
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.txt
+    # dataroot_target: ../datasets/LIVEIQA_release2
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.txt
+
+    # dataroot_target: ../datasets/CSIQ/dst_imgs
+    # dataroot_ref: ../datasets/CSIQ/src_imgs
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.txt
+
+    dataroot_target: ../datasets/LIVEmultidistortiondatabase
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.txt
 
 # network structures
 network:

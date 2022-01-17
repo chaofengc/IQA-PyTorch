@@ -7,7 +7,7 @@ import pickle
 def get_meta_info():
     root_dir = '../../datasets/LIVEIQA_release2/'
 
-    dmos = sio.loadmat(os.path.join(root_dir, 'dmos.mat'))
+    dmos = sio.loadmat(os.path.join(root_dir, 'dmos.mat')) # difference of mos: test - ref. lower is better
     mos = dmos['dmos'][0]
     org_flag = dmos['orgs'][0]
 
