@@ -140,7 +140,7 @@ class GeneralIQAModel(BaseModel):
             gt_mos.append(self.gt_mos)
             if use_pbar:
                 pbar.update(1)
-                pbar.set_description(f'Test {img_name}')
+                pbar.set_description(f'Test {img_name:>20}')
         if use_pbar:
             pbar.close()
 

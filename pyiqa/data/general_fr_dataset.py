@@ -27,7 +27,7 @@ class GeneralFRDataset(data.Dataset):
         self.opt = opt
 
         target_img_folder = opt['dataroot_target']
-        ref_img_folder = opt['dataroot_ref']
+        ref_img_folder = opt.get('dataroot_ref', None)
         self.paths_mos = read_meta_info_file(target_img_folder, opt['meta_info_file'], mode='fr', ref_dir=ref_img_folder) 
 
         # read train/val/test splits

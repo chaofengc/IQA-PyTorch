@@ -10,9 +10,19 @@ datasets:
   train:
     name: general_iqa_dataset 
     type: GeneralFRDataset
-    dataroot_target: ../datasets/tid2013/distorted_images
-    dataroot_ref: ../datasets/tid2013/reference_images
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.txt
+    # dataroot_target: ../datasets/tid2013/distorted_images
+    # dataroot_ref: ../datasets/tid2013/reference_images
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.txt
+
+    # dataroot_target: ../datasets/tid2008/distorted_images
+    # dataroot_ref: ../datasets/tid2008/reference_images
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2008Dataset.txt
+
+    dataroot_target: ../datasets/LIVEIQA_release2
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.txt
+
+    augment:
+      resize: [224, 224]
 
     # data loader
     use_shuffle: true
@@ -24,9 +34,16 @@ datasets:
   val:
     name: general_iqa_dataset 
     type: GeneralFRDataset
-    dataroot_target: ../datasets/tid2013/distorted_images
-    dataroot_ref: ../datasets/tid2013/reference_images
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.txt
+    # dataroot_target: ../datasets/tid2013/distorted_images
+    # dataroot_ref: ../datasets/tid2013/reference_images
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.txt
+
+    # dataroot_target: ../datasets/tid2008/distorted_images
+    # dataroot_ref: ../datasets/tid2008/reference_images
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2008Dataset.txt
+
+    dataroot_target: ../datasets/LIVEIQA_release2
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.txt
 
 # network structures
 network:

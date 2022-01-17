@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 from PIL import Image
+import os
 
 import torch
 from torch.utils import data as data
@@ -31,7 +32,7 @@ class LIVEChallengeDataset(data.Dataset):
         super(LIVEChallengeDataset, self).__init__()
         self.opt = opt
 
-        target_img_folder = opt['dataroot_target']
+        target_img_folder = os.path.join(opt['dataroot_target'], 'Images')
         self.paths_mos = read_meta_info_file(target_img_folder, opt['meta_info_file']) 
         # remove first 7 training images as previous works
         self.paths_mos = self.paths_mos[7:] 

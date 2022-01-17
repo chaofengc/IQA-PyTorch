@@ -37,7 +37,21 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 <details open>
 <summary>Supported datasets:</summary>
 
+- [ ] PaQ-2-PiQ 
+- [ ] SPAQ 
+- [ ] AVA
+- [ ] PIPAL 
+- [ ] BAPPS 
+- [ ] PieAPP 
+- [ ] KADIS-700k
+- [ ] KADID-10k 
+- [ ] KonIQ-10k
 - [x] LIVEChallenge 
+- [ ] LIVEM  
+- [ ] LIVE  
+- [x] TID2008
+- [x] TID2013 
+- [ ] CSIQ
 </details>
 
 ## Quick Start
