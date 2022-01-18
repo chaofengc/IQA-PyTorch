@@ -14,6 +14,10 @@ from .general_iqa_model import GeneralIQAModel
 @MODEL_REGISTRY.register()
 class DBCNNModel(GeneralIQAModel):
     """General module to train an IQA network."""
+
+    def __init__(self, opt):
+        super(DBCNNModel, self).__init__(opt)
+        self.train_stage = 'train'
                 
     def reset_optimizers_finetune(self):
         logger = get_root_logger()

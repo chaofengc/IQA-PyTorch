@@ -67,8 +67,8 @@ train:
     milestones: [1000]
     gamma: 1 
 
-  total_iter: 36000 # 883 iter/epoch, train/finetune for about 20 epochs
-  finetune_start_iter: 18000 
+  total_iter: 72000 # 883 iter/epoch, train/finetune for about 30 epochs
+  finetune_start_iter: 36000 
   warmup_iter: -1  # no warm up
   
   # losses
