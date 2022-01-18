@@ -13,6 +13,44 @@ from torch.nn.modules.batchnorm import _BatchNorm
 from pyiqa.utils import get_root_logger
 
 
+class SymmetricPad2d(nn.Module):
+    """Symmetric pad 2d for pytorch.
+
+    Args:
+        pad (int or tuple): (pad_left, pad_right, pad_top, pad_bottom)
+
+    """
+
+    def __init__(self, pad):
+        super(SymmetricPad2d, self).__init__()
+        if isinstance(pad, int):
+            self.pad_l = self.pad_r = self.pad_t = self.pad_b = pad
+        elif isinstance(pad, tuple):
+            assert len(pad) == 4, f"tuple pad should have format (pad_left, pad_right, pad_top, pad_bottom), but got {pad}"
+            self.pad_l, self.pad_r, self.pad_t, self.pad_b = pad
+
+
+    def forward(self, x):
+
+        _, _, h, w = x.shape
+        sym_h = torch.flip(x, [2]) 
+        sym_w = torch.flip(x, [3]) 
+        sym_hw = torch.flip(x, [2, 3])
+        print(sym_h, sym_w, sym_hw)
+
+        row1 = torch.cat((sym_hw, sym_h, sym_hw), dim=3) 
+        row2 = torch.cat((sym_w, x, sym_w), dim=3) 
+        row3 = torch.cat((sym_hw, sym_h, sym_hw), dim=3) 
+        
+        whole_map = torch.cat((row1, row2, row3), dim=2)
+
+        pad_x = whole_map[:, :, 
+                h - self.pad_t: 2*h + self.pad_b:,
+                w - self.pad_l: 2*w + self.pad_r:,
+                ]
+        return pad_x
+
+
 @torch.no_grad()
 def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
     """Initialize network weights.
