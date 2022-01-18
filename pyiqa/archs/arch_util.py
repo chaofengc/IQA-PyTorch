@@ -20,7 +20,6 @@ class SymmetricPad2d(nn.Module):
         pad (int or tuple): (pad_left, pad_right, pad_top, pad_bottom)
 
     """
-
     def __init__(self, pad):
         super(SymmetricPad2d, self).__init__()
         if isinstance(pad, int):
@@ -29,14 +28,12 @@ class SymmetricPad2d(nn.Module):
             assert len(pad) == 4, f"tuple pad should have format (pad_left, pad_right, pad_top, pad_bottom), but got {pad}"
             self.pad_l, self.pad_r, self.pad_t, self.pad_b = pad
 
-
     def forward(self, x):
 
         _, _, h, w = x.shape
         sym_h = torch.flip(x, [2]) 
         sym_w = torch.flip(x, [3]) 
         sym_hw = torch.flip(x, [2, 3])
-        print(sym_h, sym_w, sym_hw)
 
         row1 = torch.cat((sym_hw, sym_h, sym_hw), dim=3) 
         row2 = torch.cat((sym_w, x, sym_w), dim=3) 
