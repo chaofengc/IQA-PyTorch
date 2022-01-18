@@ -45,8 +45,8 @@ This is a image quality assessment toolbox with pure python. Please refer to [Aw
 | BAPPS :hourglass_flowing_sand: | FR | 
 | PieAPP :hourglass_flowing_sand: | FR | 
 | KADIS-700k :hourglass_flowing_sand: | FR | 
-| KADID-10k :hourglass_flowing_sand: | FR | 
-| KonIQ-10k :hourglass_flowing_sand: | NR | 
+| KADID-10k | FR | 
+| KonIQ-10k | NR | 
 | LIVEChallenge | NR | 
 | LIVEM | FR | 
 | LIVE | FR | 

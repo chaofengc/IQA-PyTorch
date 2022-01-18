@@ -25,8 +25,11 @@ datasets:
     # dataroot_ref: ../datasets/CSIQ/src_imgs
     # meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.txt
 
-    dataroot_target: ../datasets/LIVEmultidistortiondatabase
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.txt
+    # dataroot_target: ../datasets/LIVEmultidistortiondatabase
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.txt
+
+    dataroot_target: ../datasets/kadid10k/images
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_KADID10kDataset.txt
 
     augment:
       resize: [224, 224]
@@ -56,8 +59,11 @@ datasets:
     # dataroot_ref: ../datasets/CSIQ/src_imgs
     # meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.txt
 
-    dataroot_target: ../datasets/LIVEmultidistortiondatabase
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.txt
+    # dataroot_target: ../datasets/LIVEmultidistortiondatabase
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.txt
+
+    dataroot_target: ../datasets/kadid10k/images
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_KADID10kDataset.txt
 
 # network structures
 network:

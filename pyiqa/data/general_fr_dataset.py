@@ -55,8 +55,8 @@ class GeneralFRDataset(data.Dataset):
 
     def __getitem__(self, index):
 
-        img_path = self.paths_mos[index][0]
-        ref_path = self.paths_mos[index][1]
+        ref_path = self.paths_mos[index][0]
+        img_path = self.paths_mos[index][1]
         mos_label = self.paths_mos[index][2]
         img_pil = Image.open(img_path)
         ref_pil = Image.open(ref_path)
