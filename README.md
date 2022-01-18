@@ -20,19 +20,19 @@ This is a image quality assessment toolbox with pure python. Please refer to [Aw
 <tr><td style="vertical-align:top;border:none">
 
 | Method | Type | Backward | 
-| --- | --- | --- | --- | 
+| --- | --- | --- | 
 | LPIPS | FR | :white_check_mark: |  NR |
 | DISTS | FR | :white_check_mark: | | SPAQ :hourglass_flowing_sand: | NR |
-| CKDN | DR<sup>[1](#fn1)</sup> | :white_check_mark: | | | |
-| FSIM | FR | :white_check_mark: | | | |
-| SSIM  | FR | :white_check_mark: | | | |
-| MS-SSIM  | FR | :white_check_mark: | | | |
-| PSNR  | FR | :white_check_mark: | | | |
-| VIF | FR | :white_check_mark: | | | |
-| GMSD  | FR | :white_check_mark: | | | |
-| | | | | | |
-| DBCNN | NR | :white_check_mark: | | | |
-| MUSIQ | NR | :white_check_mark: | | | |
+| CKDN | DR<sup>[1](#fn1)</sup> | :white_check_mark: | 
+| FSIM | FR | :white_check_mark: | 
+| SSIM  | FR | :white_check_mark: | 
+| MS-SSIM  | FR | :white_check_mark: | 
+| PSNR  | FR | :white_check_mark: | 
+| VIF | FR | :white_check_mark: | 
+| GMSD  | FR | :white_check_mark: | 
+| | | | 
+| DBCNN | NR | :white_check_mark: | 
+| MUSIQ | NR | :white_check_mark: | 
 
 </td><td style="vertical-align:top;border:none">
 
@@ -58,7 +58,7 @@ This is a image quality assessment toolbox with pure python. Please refer to [Aw
 </table>
 
 <font size="2">
-<a name="fn1">1</a>. DR means distortion reference. Please refer to the paper for details. 
+<a name="fn1">[1]</a> DR means distortion reference. Please refer to the paper for details. 
 </font>
 
 </details>
