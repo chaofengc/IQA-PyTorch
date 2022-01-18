@@ -1,57 +1,66 @@
 # Python Toolbox for Image Quality Assessment
 An IQA toolbox with pure python and pytorch.
 
-**Please follow the [contribution instructions](Instruction.md) to make contributions to this repository.**
 
-## [**TODO**] Introduction
+## Introduction
 
-This is a image quality assessment toolbox with pure python, supporting many mainstream full reference (FR) and no reference (NR) metrics. We also support training new DNN models with several public IQA datasets.
+This is a image quality assessment toolbox with pure python. Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary as well as download links for IQA datasets. We provide the following features:
 
-Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary as well as download links for IQA datasets. 
-<details open>
-<summary>Supported methods (FR):</summary>
-
-- [x] LPIPS 
-- [x] DISTS
-- [x] FSIM 
-- [x] SSIM 
-- [x] MS-SSIM
-- [x] PSNR 
-- [x] VIF 
-- [x] GMSD
-</details>
+- Support many mainstream full reference (FR) and no reference (NR) metrics
+- Support training new DNN models with several public IQA datasets
+- Most methods support pytorch backward
+- Simple inference and benchmark script
+- Results calibration of our implementation with original matlab scripts (if exist)
 
 <details open>
-<summary>Supported methods (NR):</summary>
+<summary>Supported methods and datasets:</summary>
 
-- [x] DBCNN
-- [ ] MUSIQ
-</details>
 
-<details open>
-<summary>Other methods:</summary>
+<table>
+<tr><td style="vertical-align:top;border:none">
 
-- [x] CKDN
-</details>
+| Method | Type | Backward | 
+| --- | --- | --- | --- | 
+| LPIPS | FR | :white_check_mark: |  NR |
+| DISTS | FR | :white_check_mark: | | SPAQ :hourglass_flowing_sand: | NR |
+| CKDN | DR<sup>[1](#fn1)</sup> | :white_check_mark: | | | |
+| FSIM | FR | :white_check_mark: | | | |
+| SSIM  | FR | :white_check_mark: | | | |
+| MS-SSIM  | FR | :white_check_mark: | | | |
+| PSNR  | FR | :white_check_mark: | | | |
+| VIF | FR | :white_check_mark: | | | |
+| GMSD  | FR | :white_check_mark: | | | |
+| | | | | | |
+| DBCNN | NR | :white_check_mark: | | | |
+| MUSIQ | NR | :white_check_mark: | | | |
 
-<details open>
-<summary>Supported datasets:</summary>
+</td><td style="vertical-align:top;border:none">
 
-- [ ] PaQ-2-PiQ 
-- [ ] SPAQ 
-- [ ] AVA
-- [ ] PIPAL 
-- [ ] BAPPS 
-- [ ] PieAPP 
-- [ ] KADIS-700k
-- [ ] KADID-10k 
-- [ ] KonIQ-10k
-- [x] LIVEChallenge 
-- [x] LIVEM  
-- [x] LIVE  
-- [x] TID2008
-- [x] TID2013 
-- [x] CSIQ
+| Dataset | Type |
+| --- | --- |
+| PaQ-2-PiQ :hourglass_flowing_sand: | NR | 
+| SPAQ :hourglass_flowing_sand: | NR/mobile | 
+| AVA :hourglass_flowing_sand: | NR/Aesthetic | 
+| PIPAL :hourglass_flowing_sand: | FR | 
+| BAPPS :hourglass_flowing_sand: | FR | 
+| PieAPP :hourglass_flowing_sand: | FR | 
+| KADIS-700k :hourglass_flowing_sand: | FR | 
+| KADID-10k :hourglass_flowing_sand: | FR | 
+| KonIQ-10k :hourglass_flowing_sand: | NR | 
+| LIVEChallenge | NR | 
+| LIVEM | FR | 
+| LIVE | FR | 
+| TID2013 | FR | 
+| TID2008 | FR | 
+| CSIQ | FR | 
+
+</td></tr> 
+</table>
+
+<font size="2">
+<a name="fn1">1</a>. DR means distortion reference. Please refer to the paper for details. 
+</font>
+
 </details>
 
 ## Quick Start
@@ -78,11 +87,9 @@ Example test script with input directory and reference directory. Single image i
 python inference_iqa.py -n LPIPS -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir 
 ```
 
-#### [**TODO**] Use as function in your project
-PyTorch backward is allowed for the following metrics: 
+#### [**TODO**] Used as functions in your project
 
-- NR: DBCNN, 
-- FR: LPIPS, DISTS, CKDN, FSIM, SSIM, MS_SSIM, PSNR, VIF, GMSD
+Metrics which allowed backward can be used for model optimization, such as image enhancement networks.
 
 ```
 from pyiqa import LPIPS 
@@ -118,6 +125,11 @@ python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml
 
 | Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
 | --- | --- | --- | --- | --- | --- | --- |
+
+
+## Contribution
+
+Any contributions to this repository are greatly appreciated. Please follow the [contribution instructions](Instruction.md) for contribution guidance.  
 
 ## License
 
