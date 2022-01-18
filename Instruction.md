@@ -5,12 +5,18 @@ To manage our codebase, it is necessary to learn some tools. This may take some 
 ### Workflow
 
 Steps to contribute your codes to this repository:
-1. `git clone` the database to local computer
-1. `git pull` to get the latest version
-1. Write codes and test locally
-1. `git commit` with clean commit message
-1. Send pull request with `git push`. **[IMPORTANT]** To avoid messing up the main codebase, please always create a new branch for new changes and avoid directly push to the main branch. Create pull request in github website when you want to merge to the main branch.
-1. Repeat 2-5 for next contribution.
+1. `git clone` and `git pull` the latest codes
+1. Create your own branch `git checkout -b`. Write codes and test.
+1. `git commit` your changes with clean commit message
+1. Push your branch to github with `git push origin your_branch`. 
+1. Open a pull request to merge your branch
+1. Get your PR reviewed and approved
+
+### Style
+
+- **Code style.** We basically follow the [PEP8 standard](https://www.python.org/dev/peps/pep-0008/). Please also refer to the [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html). Please pay special attention to **indentations, spaces, linebreaks, name style, comments and docstrings**.
+- **Doc style.** Please refer to [Google Python Style Docstrings](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
+- **Commit message.** Please refer to [Git Commit Message Conventions](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#) for good examples of commit message. You may also use tools like [cz-cli](https://github.com/commitizen/cz-cli).
 
 ### Tools and Codes
 
@@ -30,9 +36,7 @@ Please always use git to track your codes. Refer to the [Pro Git book](https://g
 - Write clean commit message when you push to this repository.
 - If conflict happens when you push your code, you can pull down the repository first with `git pull origin main` and fix the merge. 
 
-#### Code Style
 
-We basically follow the [PEP8 standard](https://www.python.org/dev/peps/pep-0008/). Please also refer to the [google style guide](https://google.github.io/styleguide/pyguide.html). Please pay special attention to **indentations, spaces, linebreaks, name style, comments and docstrings**.
 
 #### Anaconda
 
