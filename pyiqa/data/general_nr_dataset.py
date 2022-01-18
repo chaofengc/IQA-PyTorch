@@ -32,9 +32,10 @@ class GeneralNRDataset(data.Dataset):
         # read train/val/test splits
         split_file_path = opt.get('split_file', None)
         if split_file_path:
+            split_index = opt.get('split_index', 1)
             with open(opt['split_file'], 'rb') as f:
                 split_dict = pickle.load(f)
-                splits = split_dict[opt['split_index']][opt['phase']]
+                splits = split_dict[split_index][opt['phase']]
             self.paths_mos = [self.paths_mos[i] for i in splits] 
 
         transform_list = []
