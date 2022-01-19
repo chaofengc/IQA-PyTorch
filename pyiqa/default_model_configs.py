@@ -90,5 +90,12 @@ DEFAULT_CONFIGS = {
                 },
             'metric_mode': 'FR',
             },
+        'NLPD': {
+            'net_opts': {
+                'type': 'NLPD',
+                # 'test_y_channel': True,
+                },
+            'metric_mode': 'FR',
+            },
         }
 
