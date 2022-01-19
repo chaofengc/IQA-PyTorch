@@ -3,6 +3,7 @@ import scipy.io as sio
 import random
 import numpy
 import pickle
+import csv
 
 def get_meta_info():
     root_dir = '../../datasets/LIVEmultidistortiondatabase/'
@@ -10,8 +11,11 @@ def get_meta_info():
     parts = ['Part1', 'Part2']
     sub_img_folders = ['blurjpeg', 'blurnoise']
 
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_LIVEMDDataset.txt'
+    save_meta_path = '../pyiqa/data/meta_info/meta_info_LIVEMDDataset.csv'
     f = open(save_meta_path, 'w') 
+    csvwriter = csv.writer(f)
+    header = ['ref_name', 'dist_name', 'dmos']
+    csvwriter.writerow(header)
     for p, subf in zip(parts, sub_img_folders):
         sub_root_dir = os.path.join(root_dir, p)
 
@@ -26,8 +30,7 @@ def get_meta_info():
             ref_name = f"{p}/{subf}/{dist_names[i].split('_')[0]}.bmp"
             dmos = alldmos[i]   
             msg = f'{ref_name:<15}\t{dis_name:<15}\t{dmos:<15}\n'
-            #  print(msg)
-            f.write(msg)
+            csvwriter.writerow([ref_name, dis_name, dmos])
 
     f.close()
 

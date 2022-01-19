@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import torch
 import os
+import csv
 from os import path as osp
 from torch.nn import functional as F
 
@@ -21,7 +22,7 @@ def read_meta_info_file(img_dir, meta_info_file, mode='nr', ref_dir=None):
         100.bmp   	32.56107532210109   	19.12472638223644 
         ```
     
-    - For FR datasets: ref_name, dis_name, mos(mean), std
+    - For FR datasets: ref_name, dist_name, mos(mean), std
         ```
         I01.bmp        I01_01_1.bmp   5.51429        0.13013
         ```
@@ -35,7 +36,8 @@ def read_meta_info_file(img_dir, meta_info_file, mode='nr', ref_dir=None):
     """
 
     with open(meta_info_file, 'r') as fin:
-        name_mos = [line.strip().split() for line in fin]
+        csvreader = csv.reader(fin)
+        name_mos = list(csvreader)[1:] 
 
     paths_mos = []
     for item in name_mos:

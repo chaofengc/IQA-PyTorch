@@ -3,6 +3,7 @@ import scipy.io as sio
 import random
 import numpy
 import pickle
+import csv
 
 def get_meta_info():
     root_dir = '../../datasets/CSIQ/'
@@ -10,13 +11,21 @@ def get_meta_info():
     
     name_dmos = [x.strip().split() for x in open(label_file).readlines()]
     
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_CSIQDataset.txt'
+    #  save_meta_path = '../pyiqa/data/meta_info/meta_info_CSIQDataset.txt'
+    #  with open(save_meta_path, 'w') as f:
+        #  for dis_name, dmos in name_dmos:
+            #  ref_name = f"{dis_name.split('.')[0]}.png" 
+            #  msg = f'{ref_name:<15}\t{dis_name:<15}\t{dmos:<15}\n'
+            #  f.write(msg)
+
+    save_meta_path = '../pyiqa/data/meta_info/meta_info_CSIQDataset.csv'
     with open(save_meta_path, 'w') as f:
+        writer = csv.writer(f)
+        header = ['ref_name', 'dist_name', 'dmos']
+        writer.writerow(header)
         for dis_name, dmos in name_dmos:
             ref_name = f"{dis_name.split('.')[0]}.png" 
-            msg = f'{ref_name:<15}\t{dis_name:<15}\t{dmos:<15}\n'
-            #  print(msg)
-            f.write(msg)
+            writer.writerow([ref_name, dis_name, dmos])
 
 def get_random_splits(seed=123):
     random.seed(seed)

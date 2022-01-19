@@ -12,24 +12,24 @@ datasets:
     type: GeneralFRDataset
     # dataroot_target: ../datasets/tid2013/distorted_images
     # dataroot_ref: ../datasets/tid2013/reference_images
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.csv
 
     # dataroot_target: ../datasets/tid2008/distorted_images
     # dataroot_ref: ../datasets/tid2008/reference_images
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2008Dataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2008Dataset.csv
 
     # dataroot_target: ../datasets/LIVEIQA_release2
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.csv
 
     # dataroot_target: ../datasets/CSIQ/dst_imgs
     # dataroot_ref: ../datasets/CSIQ/src_imgs
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.csv
 
     # dataroot_target: ../datasets/LIVEmultidistortiondatabase
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.csv
 
     dataroot_target: ../datasets/kadid10k/images
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_KADID10kDataset.txt
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_KADID10kDataset.csv
 
     augment:
       resize: [224, 224]
@@ -46,24 +46,24 @@ datasets:
     type: GeneralFRDataset
     # dataroot_target: ../datasets/tid2013/distorted_images
     # dataroot_ref: ../datasets/tid2013/reference_images
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.csv
 
     # dataroot_target: ../datasets/tid2008/distorted_images
     # dataroot_ref: ../datasets/tid2008/reference_images
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2008Dataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2008Dataset.csv
 
     # dataroot_target: ../datasets/LIVEIQA_release2
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEIQADataset.csv
 
     # dataroot_target: ../datasets/CSIQ/dst_imgs
     # dataroot_ref: ../datasets/CSIQ/src_imgs
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.csv
 
     # dataroot_target: ../datasets/LIVEmultidistortiondatabase
-    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.txt
+    # meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEMDDataset.csv
 
     dataroot_target: ../datasets/kadid10k/images
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_KADID10kDataset.txt
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_KADID10kDataset.csv
 
 # network structures
 network:

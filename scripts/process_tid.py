@@ -2,6 +2,7 @@ import os
 import random
 import numpy
 import pickle
+import csv
 
 def get_meta_info(root_dir, save_meta_path):
     mos_file = os.path.join(root_dir, 'mos_with_names.txt')
@@ -11,15 +12,16 @@ def get_meta_info(root_dir, save_meta_path):
     std = [x.strip() for x in open(std_file).readlines()]
     
     with open(save_meta_path, 'w') as f:
+        csvwriter = csv.writer(f)
+        header = ['ref_name', 'dist_name', 'mos', 'std']
+        csvwriter.writerow(header)
         for idx, ((mos, name), std) in enumerate(zip(mos_names, std)):
             ref_name = f'I{name[1:3]}.BMP'
             ref_name = ref_name.replace('I25.BMP', 'i25.bmp')
             img_path = os.path.join(root_dir, 'distorted_images', name)
             if not os.path.exists(img_path):
                 name = name.replace('i', 'I')
-            msg = f'{ref_name:<15}{name:<15}{mos:<15}{std}\n'
-            #  msg = f'{ref_name}\t{name}\t{mos}\t{std}\n'
-            f.write(msg)
+            csvwriter.writerow([ref_name, name, mos, std])
 
 def get_random_splits(seed=123):
     random.seed(seed)
@@ -41,11 +43,11 @@ def get_random_splits(seed=123):
         pickle.dump(split_info, sf)
 
 if __name__ == '__main__':
-    #  root_dir = '../../datasets/tid2013/'
-    #  save_meta_path = '../pyiqa/data/meta_info/meta_info_TID2013Dataset.txt'
-    #  get_meta_info(root_dir, save_meta_path)
+    root_dir = '../../datasets/tid2013/'
+    save_meta_path = '../pyiqa/data/meta_info/meta_info_TID2013Dataset.csv'
+    get_meta_info(root_dir, save_meta_path)
 
     root_dir = '../../datasets/tid2008/'
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_TID2008Dataset.txt'
+    save_meta_path = '../pyiqa/data/meta_info/meta_info_TID2008Dataset.csv'
     get_meta_info(root_dir, save_meta_path)
     #  get_random_splits()

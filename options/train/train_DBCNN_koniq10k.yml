@@ -11,7 +11,7 @@ datasets:
     name: koniq10k 
     type: GeneralNRDataset
     dataroot_target: ../datasets/koniq10k/512x384
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_KonIQ10kDataset.txt
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_KonIQ10kDataset.csv
     split_file: ./pyiqa/data/train_split_info/koniq10k_official.pkl
 
     augment:
@@ -30,7 +30,7 @@ datasets:
     name: koniq10k 
     type: GeneralNRDataset
     dataroot_target: ../datasets/koniq10k/512x384
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_KonIQ10kDataset.txt
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_KonIQ10kDataset.csv
     split_file: ./pyiqa/data/train_split_info/koniq10k_official.pkl
     
 # network structures
