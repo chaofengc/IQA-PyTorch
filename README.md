@@ -4,13 +4,13 @@ An IQA toolbox with pure python and pytorch.
 
 ## Introduction
 
-This is a image quality assessment toolbox with pure python. We provide the following features:
+This is a image quality assessment toolbox with pure python and pytorch. We provide the following features:
 
-- Support many mainstream full reference (FR) and no reference (NR) metrics
-- Support training new DNN models with several public IQA datasets
-- Most methods support pytorch backward
-- Simple inference and benchmark script
-- Results calibration of our implementation with original matlab scripts (if exist)
+- **Comprehensive.** Support many mainstream full reference (FR) and no reference (NR) metrics
+- **Flexible.** Support training new DNN models with several public IQA datasets
+- **Differentiable.** Most methods support pytorch backward
+- **Convenient.** Quick inference and benchmark script
+- **Accurate.** Results calibration of our implementation with original matlab scripts (if exist)
 
 Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary of IQA methods, as well as download links for IQA datasets. Below are details of supported methods and datasets in this project. 
 
@@ -41,12 +41,11 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | Dataset | Type |
 | --- | --- |
 | PaQ-2-PiQ :hourglass_flowing_sand: | NR | 
-| SPAQ :hourglass_flowing_sand: | NR/mobile | 
+| SPAQ | NR/mobile | 
 | AVA :hourglass_flowing_sand: | NR/Aesthetic | 
 | PIPAL :hourglass_flowing_sand: | FR | 
 | BAPPS :hourglass_flowing_sand: | FR | 
 | PieAPP :hourglass_flowing_sand: | FR | 
-| KADIS-700k :hourglass_flowing_sand: | FR | 
 | KADID-10k | FR | 
 | KonIQ-10k | NR | 
 | LIVEChallenge | NR | 

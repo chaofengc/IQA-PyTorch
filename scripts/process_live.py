@@ -24,8 +24,8 @@ def get_meta_info():
         header = ['ref_name', 'dist_name','mos']
         csvwriter.writerow(header)
         for i in range(len(sub_folders)):
-            ref_name = refnames[i][0]
-            dis_name = f'{sub_folders[i]}/img{sub_indexes[i]}' 
+            ref_name = f'refimgs/{refnames[i][0]}'
+            dis_name = f'{sub_folders[i]}/img{sub_indexes[i]}.bmp' 
             tmpmos = mos[i]
             if org_flag[i] != 1:
                 csvwriter.writerow([ref_name, dis_name, tmpmos])
