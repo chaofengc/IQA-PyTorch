@@ -20,20 +20,19 @@ def get_meta_info():
         head = next(csvreader)
 
         csvwriter = csv.writer(sf)
-        new_head = ['img_name', 'mos', 'std', 'split']
+        new_head = ['img_name', 'mos', 'std', 'split', 'c1', 'c2', 'c3', 'c4', 'c5', 'c_total']
         csvwriter.writerow(new_head)
         for idx, row in enumerate(csvreader):
             print(row)
-            img_name = row[0] 
-            mos = row[7]
-            std = row[8]
             split = row[9]
             if split == 'training':
                 split = 'train'
             elif split == 'validation':
                 split = 'val'
             split_info[split].append(idx)
-            csvwriter.writerow([img_name, mos, std, split])
+            new_row = [row[0]] + row[7:10] + row[1:7]
+            print(new_row)
+            csvwriter.writerow(new_row)
 
     save_split_path = '../pyiqa/data/train_split_info/koniq10k_official.pkl'
     with open(save_split_path, 'wb') as sf:

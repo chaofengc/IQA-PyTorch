@@ -1,6 +1,6 @@
 # Results Calibration
 
-We random select 5 pairs of images from TID2013 for results calibration. Images are stored under `./ResultsCalibra/dist_dir` and `./ResultsCalibra/ref_dir`. Distorted images and reference images are renamed as the same for simplicity.
+We random select 5 pairs of images from TID2013 for results calibration. Images are stored under `./dist_dir` and `./ref_dir`. Results of different metrics are saved under `./results_compare/`. We also record the problems encountered during our reproduction of matlab scripts in [MatlabReproduceNote](./MatlabReproduceNote.md)
 
 | Method | I03.bmp | I04.bmp | I06.bmp | I08.bmp | I19.bmp |
 | --- | --- | --- | --- | --- | --- |

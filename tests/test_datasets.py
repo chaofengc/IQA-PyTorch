@@ -86,6 +86,6 @@ if __name__ == '__main__':
     # test('LIVE')
     # test('LIVEM')
     # test('LIVEC')
-    # test('KonIQ10k')
+    test('KonIQ10k')
     # test('KADID10k')
-    test('SPAQ')
+    # test('SPAQ')

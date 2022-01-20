@@ -120,7 +120,7 @@ python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml
 
 ## [**TODO**] Benchmark Performances and Model Zoo
 
-**TODO** Please refer to the [results calibration](ResultsCalib.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
+**TODO** Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
 
 ### Performances of the retrained models
 
