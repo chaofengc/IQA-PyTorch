@@ -37,7 +37,7 @@ def get_meta_info():
             ratings = np.array([int(x) for x in row[2:12]])
             # calculate mos
             mos = np.sum(np.arange(1, 11) * ratings) / np.sum(ratings)
-            new_row = [row[1] + '.jpg', mos] + row[2: 14]
+            new_row = [row[1] + '.jpg', f'{mos:.3}'] + row[2: 14]
             img_path = os.path.join('../../datasets/AVA_dataset/ava_images/', new_row[0])
             if os.path.exists(img_path):
                 try:
