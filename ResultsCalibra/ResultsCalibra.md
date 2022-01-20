@@ -22,6 +22,8 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | VIF(ours imported) | 0.0180 | 0.9960 | 0.9978 | 0.9111 | 0.1881 |
 | GMSD<sup>[6](#fn6)</sup>(org) | 0.2120 | 0.0002 | 0.0002 | 0.1317 | 0.1865 |
 | GMSD(ours imported) | 0.2120 | 0.0002 | 0.0002 | 0.1317 | 0.1865 |
+| NLPD<sup>[7](#fn7)</sup>(org) | 0.5127 | 0.0122 | 0.0097 |  0.2840 | 0.3948 |
+| NLPD(ours imported) | 0.5132 | 0.0122 | 0.0098 | 0.2844 | 0.3958 |
 
 #### Notice
 <a name="fn1">[1]</a> CKDN used degraded images as references in the original paper.   
@@ -29,4 +31,5 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 <a name="fn3">[3]</a> We use Y-channel of YCBCR images as input of original MS-SSIM matlab script.  
 <a name="fn4">[4]</a> The original PSNR code refers to scikit-learn package with RGB 3-channel calculation (from skimage.metrics import peak_signal_noise_ratio).  
 <a name="fn5">[5]</a> We use Y-channel of YCBCR images as input of original VIF matlab script.  
-<a name="fn6">[6]</a> We use Y-channel of YCBCR images as input of original GMSD matlab script.
+<a name="fn6">[6]</a> We use Y-channel of YCBCR images as input of original GMSD matlab script.  
+<a name="fn7">[7]</a> We use Y-channel of YCBCR images as input of original GMSD matlab script, and try to mimic 'imfilter' and 'conv2' functions in matlab.  

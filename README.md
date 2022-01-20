@@ -32,6 +32,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | PSNR  | FR | :white_check_mark: | 
 | VIF | FR | :white_check_mark: | 
 | GMSD  | FR | :white_check_mark: | 
+| NLPD  | FR | :white_check_mark: | 
 | | | | 
 | DBCNN | NR | :white_check_mark: | 
 | MUSIQ | NR | :white_check_mark: | 
