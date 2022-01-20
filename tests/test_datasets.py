@@ -3,6 +3,11 @@ import torch
 from tqdm import tqdm
 
 options = {
+    'AVA': {
+        'type': 'AVADataset',
+        'dataroot_target': '../datasets/AVA_dataset/ava_images/',
+        'meta_info_file': './pyiqa/data/meta_info/meta_info_AVADataset.csv',
+    },
     'SPAQ': {
         'type': 'GeneralNRDataset',
         'dataroot_target': '../datasets/SPAQ/TestImage',
@@ -86,6 +91,7 @@ if __name__ == '__main__':
     # test('LIVE')
     # test('LIVEM')
     # test('LIVEC')
-    test('KonIQ10k')
+    # test('KonIQ10k')
     # test('KADID10k')
     # test('SPAQ')
+    test('AVA')

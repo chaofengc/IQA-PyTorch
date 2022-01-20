@@ -27,8 +27,12 @@ def get_meta_info():
             split = row[9]
             if split == 'training':
                 split = 'train'
+                row[9] = 0 
             elif split == 'validation':
                 split = 'val'
+                row[9] = 1 
+            elif split == 'test':
+                row[9] = 2
             split_info[split].append(idx)
             new_row = [row[0]] + row[7:10] + row[1:7]
             print(new_row)

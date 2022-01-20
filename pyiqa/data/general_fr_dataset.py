@@ -58,8 +58,8 @@ class GeneralFRDataset(data.Dataset):
         ref_path = self.paths_mos[index][0]
         img_path = self.paths_mos[index][1]
         mos_label = self.paths_mos[index][2]
-        img_pil = Image.open(img_path)
-        ref_pil = Image.open(ref_path)
+        img_pil = Image.open(img_path).convert('RGB')
+        ref_pil = Image.open(ref_path).convert('RGB')
 
         img_tensor = self.trans(img_pil)
         ref_tensor = self.trans(ref_pil)

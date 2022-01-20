@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 from PIL import Image
+import cv2
 
 import torch
 from torch.utils import data as data
@@ -55,7 +56,7 @@ class GeneralNRDataset(data.Dataset):
 
         img_path = self.paths_mos[index][0]
         mos_label = self.paths_mos[index][1]
-        img_pil = Image.open(img_path)
+        img_pil = Image.open(img_path).convert('RGB')
 
         img_tensor = self.trans(img_pil)
         mos_label_tensor = torch.Tensor([mos_label])
