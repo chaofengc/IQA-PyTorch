@@ -98,5 +98,11 @@ DEFAULT_CONFIGS = {
                 },
             'metric_mode': 'FR',
             },
+        'VSI': {
+            'net_opts': {
+                'type': 'VSI',
+                },
+            'metric_mode': 'FR',
+            },
         }
 
