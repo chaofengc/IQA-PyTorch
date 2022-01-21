@@ -44,7 +44,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | --- | --- |
 | PaQ-2-PiQ :hourglass_flowing_sand: | NR | 
 | SPAQ | NR/mobile | 
-| AVA :hourglass_flowing_sand: | NR/Aesthetic | 
+| AVA | NR/Aesthetic | 
 | PIPAL :hourglass_flowing_sand: | FR | 
 | BAPPS :hourglass_flowing_sand: | FR | 
 | PieAPP :hourglass_flowing_sand: | FR | 
