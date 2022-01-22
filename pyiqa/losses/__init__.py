@@ -5,9 +5,12 @@ from pyiqa.utils.registry import LOSS_REGISTRY
 from .losses import (CharbonnierLoss, GANLoss, L1Loss, MSELoss, PerceptualLoss, WeightedTVLoss, g_path_regularize,
                      gradient_penalty_loss, r1_penalty)
 
+from .iqa_losses import EMDLoss, PLCCLoss, NiNLoss
+
 __all__ = [
     'L1Loss', 'MSELoss', 'CharbonnierLoss', 'WeightedTVLoss', 'PerceptualLoss', 'GANLoss', 'gradient_penalty_loss',
-    'r1_penalty', 'g_path_regularize'
+    'r1_penalty', 'g_path_regularize', 
+    'EMDLoss', 'PLCCLoss', 'NiNLoss'
 ]
 
 

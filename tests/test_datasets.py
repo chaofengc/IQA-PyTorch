@@ -3,6 +3,11 @@ import torch
 from tqdm import tqdm
 
 options = {
+    'KonIQ10k++': {
+        'type': 'GeneralNRDataset',
+        'dataroot_target': '../datasets/koniq10k/512x384',
+        'meta_info_file': './pyiqa/data/meta_info/meta_info_KonIQ10k++Dataset.csv',
+    },
     'AVA': {
         'type': 'AVADataset',
         'dataroot_target': '../datasets/AVA_dataset/ava_images/',
@@ -71,6 +76,7 @@ common_opt = {
 
 def test(test_dataset_name):
     print(f'========>>> Test dataset reader: {test_dataset_name}')
+    assert test_dataset_name in options.keys()
     dataset_opt = options[test_dataset_name]
     dataset_opt.update(common_opt)
     dataset = build_dataset(dataset_opt)
@@ -89,9 +95,10 @@ if __name__ == '__main__':
     # test('TID2008')
     # test('TID2013')
     # test('LIVE')
-    # test('LIVEM')
+    #  test('LIVEM')
     # test('LIVEC')
     # test('KonIQ10k')
     # test('KADID10k')
     # test('SPAQ')
-    test('AVA')
+    #  test('AVA')
+    test('KonIQ10k++')

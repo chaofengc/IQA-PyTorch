@@ -8,7 +8,7 @@ import csv
 def get_meta_info():
     root_dir = '../../datasets/LIVEmultidistortiondatabase/'
 
-    parts = ['Part1', 'Part2']
+    parts = ['Part 1', 'Part 2']
     sub_img_folders = ['blurjpeg', 'blurnoise']
 
     save_meta_path = '../pyiqa/data/meta_info/meta_info_LIVEMDDataset.csv'
