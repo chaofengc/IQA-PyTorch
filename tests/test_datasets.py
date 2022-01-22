@@ -3,6 +3,12 @@ import torch
 from tqdm import tqdm
 
 options = {
+    'PIPAL': {
+        'type': 'GeneralFRDataset',
+        'dataroot_target': '../datasets/PIPAL/Dist_Imgs',
+        'dataroot_ref': '../datasets/PIPAL/Train_Ref',
+        'meta_info_file': './pyiqa/data/meta_info/meta_info_PIPALDataset.csv',
+    },
     'KonIQ10k++': {
         'type': 'GeneralNRDataset',
         'dataroot_target': '../datasets/koniq10k/512x384',
@@ -101,4 +107,5 @@ if __name__ == '__main__':
     # test('KADID10k')
     # test('SPAQ')
     #  test('AVA')
-    test('KonIQ10k++')
+    #  test('KonIQ10k++')
+    test('PIPAL')
