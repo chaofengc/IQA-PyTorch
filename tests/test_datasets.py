@@ -3,6 +3,11 @@ import torch
 from tqdm import tqdm
 
 options = {
+    'FLIVE': {
+        'type': 'GeneralNRDataset',
+        'dataroot_target': '../datasets/FLIVE_Database/database',
+        'meta_info_file': './pyiqa/data/meta_info/meta_info_FLIVEDataset.csv',
+    },
     'PIPAL': {
         'type': 'GeneralFRDataset',
         'dataroot_target': '../datasets/PIPAL/Dist_Imgs',
@@ -108,4 +113,5 @@ if __name__ == '__main__':
     # test('SPAQ')
     #  test('AVA')
     #  test('KonIQ10k++')
-    test('PIPAL')
+    #  test('PIPAL')
+    test('FLIVE')

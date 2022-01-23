@@ -42,10 +42,10 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 
 | Dataset | Type |
 | --- | --- |
-| FLIVE(PaQ-2-PiQ) :hourglass_flowing_sand: | NR | 
+| FLIVE(PaQ-2-PiQ) | NR | 
 | SPAQ | NR/mobile | 
 | AVA | NR/Aesthetic | 
-| PIPAL :hourglass_flowing_sand: | FR | 
+| PIPAL | FR | 
 | BAPPS :hourglass_flowing_sand: | FR | 
 | PieAPP :hourglass_flowing_sand: | FR | 
 | KADID-10k | FR | 
