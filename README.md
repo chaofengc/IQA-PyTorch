@@ -47,7 +47,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | AVA | NR/Aesthetic | 
 | PIPAL | FR | 
 | BAPPS :hourglass_flowing_sand: | FR | 
-| PieAPP :hourglass_flowing_sand: | FR | 
+| PieAPP | FR | 
 | KADID-10k | FR | 
 | KonIQ-10k(++) | NR | 
 | LIVEChallenge | NR | 
@@ -103,9 +103,16 @@ metric_func = LPIPS(net='alex', version='0.1').to(device)
 score = metric_func(img_tensor_x, img_tensor_y)
 ```
 
-### Train 
+## Train 
 
-#### NR model
+### Dataset Preparation
+
+- You only need to unzip downloaded datasets from official website without any extra operation. Download links are provided in [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment).  
+- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [TODOdownload_link](). 
+
+Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](Dataset_Preparation.md) 
+
+### Example Train Script 
 
 Example to train DBCNN on LIVEChallenge dataset
 ```
@@ -115,10 +122,6 @@ python pyiqa/train.py -opt options/train/train_DBCNN.yml
 # train N splits for small datasets
 python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml 
 ```
-
-[**TODO**]
-- [ ] Add more examples
-
 
 ## [**TODO**] Benchmark Performances and Model Zoo
 

@@ -3,6 +3,16 @@ import torch
 from tqdm import tqdm
 
 options = {
+    'BAPPS': {
+        'type': 'BAPPSDataset',
+        'dataroot_target': '../datasets/PerceptualSimilarity/dataset',
+        'meta_info_file': './pyiqa/data/meta_info/meta_info_BAPPSDataset.csv',
+    },
+    'PieAPP': {
+        'type': 'PieAPPDataset',
+        'dataroot_target': '../datasets/PieAPP_dataset_CVPR_2018/',
+        'meta_info_file': './pyiqa/data/meta_info/meta_info_PieAPPDataset.csv',
+    },
     'FLIVE': {
         'type': 'GeneralNRDataset',
         'dataroot_target': '../datasets/FLIVE_Database/database',
@@ -94,12 +104,18 @@ def test(test_dataset_name):
     dataloader = build_dataloader(dataset, dataset_opt)
 
     for data in tqdm(dataloader):
-        img_tensor = data['img']
-        assert img_tensor.shape[1:] == torch.Size([3, 224, 224]), f'input image shape should be [3, 224, 224], but got {img_tensor.shape[1:]}'
-        if 'ref_img' in data.keys():
+        if 'img' in data.keys():
+            img_tensor = data['img']
+            assert img_tensor.shape[1:] == torch.Size([3, 224, 224]), f'input image shape should be [3, 224, 224], but got {img_tensor.shape[1:]}'
+        elif 'ref_img' in data.keys():
             ref_tensor = data['ref_img']
             assert ref_tensor.shape[1:] == torch.Size([3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
-
+        elif 'distA' in data.keys():
+            ref_tensor = data['distA_img']
+            assert ref_tensor.shape[1:] == torch.Size([3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
+        elif 'distB' in data.keys():
+            ref_tensor = data['distB_img']
+            assert ref_tensor.shape[1:] == torch.Size([3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
 
 if __name__ == '__main__':
     # test('CSIQ')
@@ -114,4 +130,6 @@ if __name__ == '__main__':
     #  test('AVA')
     #  test('KonIQ10k++')
     #  test('PIPAL')
-    test('FLIVE')
+    #  test('FLIVE')
+    #  test('PieAPP')
+    test('BAPPS')
