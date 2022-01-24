@@ -46,7 +46,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | SPAQ | NR/mobile | 
 | AVA | NR/Aesthetic | 
 | PIPAL | FR | 
-| BAPPS :hourglass_flowing_sand: | FR | 
+| BAPPS | FR | 
 | PieAPP | FR | 
 | KADID-10k | FR | 
 | KonIQ-10k(++) | NR | 
