@@ -13,6 +13,9 @@ import numpy as np
 import torch
 
 
+def abs(x):
+        return torch.sqrt(x[..., 0]**2 + x[..., 1]**2 + 1e-12)
+
 def roll_n(X, axis, n):
     f_idx = tuple(
         slice(None, None, None) if i != axis else slice(0, n, None)
@@ -26,10 +29,11 @@ def roll_n(X, axis, n):
 
 
 def batch_fftshift2d(x):
-    if len(x.size()) > 3:
-        real, imag = torch.unbind(x, -1)
-    else:
-        real, imag = x.real, x.imag
+    '''Args:
+        x: An complex tensor. Shape :math:`(N, C, H, W)`.
+        Pytroch version >= 1.8.0
+    '''
+    real, imag = x.real, x.imag
     for dim in range(1, len(real.size())):
         n_shift = real.size(dim) // 2
         if real.size(dim) % 2 != 0:
@@ -40,6 +44,11 @@ def batch_fftshift2d(x):
 
 
 def batch_ifftshift2d(x):
+    '''Args:
+        x: An input tensor. Shape :math:`(N, C, H, W, 2)`.
+    Return:
+        An complex tensor. Shape :math:`(N, C, H, W)`.
+    '''
     real, imag = torch.unbind(x, -1)
     for dim in range(len(real.size()) - 1, 0, -1):
         real = roll_n(real, axis=dim, n=real.size(dim) // 2)

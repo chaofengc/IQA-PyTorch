@@ -21,6 +21,7 @@ import torch
 import torch.nn.functional as F
 
 from pyiqa.archs.scfpyr_util import SCFpyr_PyTorch
+import pyiqa.utils.math_util as math_utils
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import rgb2ycbcr
 
@@ -271,9 +272,6 @@ class CW_SSIM(torch.nn.Module):
         self.test_y_channel = test_y_channel
         self.win7 = (torch.ones(channels, 1, 7, 7) / (7 * 7))
 
-    def abs(self, x):
-        return torch.sqrt(x[..., 0]**2 + x[..., 1]**2 + 1e-12)
-
     def conj(self, x, y):
         a = x[..., 0]
         b = x[..., 1]
@@ -327,13 +325,13 @@ class CW_SSIM(torch.nn.Module):
             corr_band = self.conv2d_complex(corr,
                                             self.win7,
                                             groups=self.channels)
-            varr = ((self.abs(band1))**2 + (self.abs(band2))**2).unsqueeze(1)
+            varr = ((math_utils.abs(band1))**2 + (math_utils.abs(band2))**2).unsqueeze(1)
             varr_band = F.conv2d(varr,
                                  self.win7,
                                  stride=1,
                                  padding=0,
                                  groups=self.channels)
-            cssim_map = (2 * self.abs(corr_band) + self.K) / (varr_band +
+            cssim_map = (2 * math_utils.abs(corr_band) + self.K) / (varr_band +
                                                               self.K)
             band_cssim.append(
                 (cssim_map * w.repeat(cssim_map.shape[0], 1, 1, 1)).sum(
