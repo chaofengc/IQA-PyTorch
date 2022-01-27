@@ -166,8 +166,7 @@ class SCFpyr_PyTorch(object):
                 banddft = torch.stack((banddft_real, banddft_imag), -1)
 
                 band = math_utils.batch_ifftshift2d(banddft)
-                band = torch.fft.ifft2(
-                    torch.complex(band[..., 0], band[..., 1]))
+                band = torch.fft.ifft2(band)
                 orientations.append(torch.stack((band.real, band.imag), -1))
 
             ####################################################################

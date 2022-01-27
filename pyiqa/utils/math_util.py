@@ -44,7 +44,7 @@ def batch_ifftshift2d(x):
     for dim in range(len(real.size()) - 1, 0, -1):
         real = roll_n(real, axis=dim, n=real.size(dim) // 2)
         imag = roll_n(imag, axis=dim, n=imag.size(dim) // 2)
-    return torch.stack((real, imag), -1)  # last dim=2 (real&imag)
+    return torch.complex(real, imag)  # convert to complex (real&imag)
 
 
 def prepare_grid(m, n):
