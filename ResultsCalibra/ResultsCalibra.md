@@ -14,6 +14,8 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | SSIM(ours imported) | 0.7328 | 0.9989 | 0.9995 | 0.9676 | 0.6791 |
 | MS-SSIM<sup>[3](#fn3)</sup>(org) | 0.6981 | 0.9998 | 0.9999 | 0.9570 | 0.8547 |
 | MS-SSIM(ours imported) | 0.6984 | 0.9998 | 0.9999 | 0.9571 | 0.8547 |
+| CW-SSIM<sup>[9](#fn9)</sup>(org) | 0.2764 | 0.9998 | 1.0000 |  0.9067 | 0.8659 |
+| CW-SSIM(ours imported) | 	0.2783 | 0.9998 | 1.0000 | 0.9064 | 0.8648 |
 | PSNR<sup>[4](#fn4)</sup>(org) | 21.11 | 20.99 | 27.01 | 23.30 | 21.62 |
 | PSNR(ours imported) | 21.11 | 20.99 | 27.01 | 23.30 | 21.62 |
 | FSIM(org) | 0.6890 | 0.9702 | 0.9927 | 0.9575 | 0.8220 |
@@ -38,5 +40,7 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 <a name="fn8">[8]</a> Since official matlab code is not available, we use the implement of IQA-Optimization for comparation. The differences are described as follows. After modifying the above implementation, the results are basically the same.
 1. we use interpolation to transform the image to 256*256 and then back to the image size after calculating VSMap in the SDSP function 
 2. rgb2lab's function is slightly different
-3. the range of ours is -127~128 when constructing SDMap, and the value of optimization is -128~127
-4. different down-sampling operations
+3. the range of ours is -127 to 128 when constructing SDMap, and the value of optimization is -128 to 127
+4. different down-sampling operations  
+
+<a name="fn9">[9]</a> We use Y-channel of YCBCR images as input of original CW-SSIM matlab script. The number of level is 4 and orientation is 8.

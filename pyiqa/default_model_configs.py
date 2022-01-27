@@ -104,5 +104,15 @@ DEFAULT_CONFIGS = {
                 },
             'metric_mode': 'FR',
             },
+        'CW_SSIM': {
+            'net_opts': {
+                'type': 'CW_SSIM',
+                'channels': 1,
+                'level': 4,
+                'ori': 8,
+                'test_y_channel': True,
+                },
+            'metric_mode': 'FR',
+            },
         }
 
