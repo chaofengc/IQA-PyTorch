@@ -29,6 +29,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | FSIM | FR | :white_check_mark: | 
 | SSIM  | FR | :white_check_mark: | 
 | MS-SSIM  | FR | :white_check_mark: | 
+| CW-SSIM  | FR | :white_check_mark: | 
 | PSNR  | FR | :white_check_mark: | 
 | VIF | FR | :white_check_mark: | 
 | GMSD  | FR | :white_check_mark: | 
