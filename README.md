@@ -37,9 +37,12 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | VSI  | FR | :white_check_mark: | 
 | MAD  | FR | :white_check_mark: | 
 | | | | 
-| MUSIQ :hourglass_flowing_sand: | NR | :white_check_mark: | 
+| MUSIQ :hourglass_flowing_sand: | NR | | 
 | DBCNN | NR | :white_check_mark: | 
+| PaQ-2-PiQ :hourglass_flowing_sand: | NR | | 
+| HyperIQA :hourglass_flowing_sand: | NR | | 
 | NIMA :hourglass_flowing_sand: | NR | | 
+| CNNIQA :hourglass_flowing_sand: | NR | | 
 | NRQM(Ma) :hourglass_flowing_sand: | NR | | 
 | HOSA :hourglass_flowing_sand: | NR | | 
 | BRISQUE :hourglass_flowing_sand: | NR | | 
