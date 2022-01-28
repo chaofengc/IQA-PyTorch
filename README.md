@@ -36,8 +36,13 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | NLPD  | FR | :white_check_mark: | 
 | VSI  | FR | :white_check_mark: | 
 | | | | 
-| DBCNN | NR | :white_check_mark: | 
 | MUSIQ | NR | :white_check_mark: | 
+| DBCNN | NR | :white_check_mark: | 
+| NIMA | NR | | 
+| NRQM(Ma) | NR | | 
+| HOSA | NR | | 
+| BRISQUE | NR | | 
+| NIQE | NR | | 
 
 </td><td style="vertical-align:top;border:none">
 
