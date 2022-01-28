@@ -17,9 +17,10 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 <details open>
 <summary>Supported methods and datasets:</summary>
 
+</table>
 
 <table>
-<tr><td style="vertical-align:top;border:none">
+<tr><td>
 
 | Method | Type | Backward | 
 | --- | --- | --- | 
@@ -36,7 +37,11 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | NLPD  | FR | :white_check_mark: | 
 | VSI  | FR | :white_check_mark: | 
 | MAD  | FR | :white_check_mark: | 
-| | | | 
+
+</td><td>
+
+| Method | Type | Backward | 
+| --- | --- | --- | 
 | MUSIQ :hourglass_flowing_sand: | NR | | 
 | DBCNN | NR | :white_check_mark: | 
 | PaQ-2-PiQ :hourglass_flowing_sand: | NR | | 
@@ -48,7 +53,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | BRISQUE :hourglass_flowing_sand: | NR | | 
 | NIQE :hourglass_flowing_sand: | NR | | 
 
-</td><td style="vertical-align:top;border:none">
+</td><td>
 
 | Dataset | Type |
 | --- | --- |
@@ -146,8 +151,8 @@ python benchmark_results.py
 
 #### Small datasets, n-splits validation 
 
-| Methods | CSIQ | TID2008 | TID2013 | LIVE | LIVEM | LIVEC | KonIQ-10k | KADID-10k | 
-| --- | --- | --- | --- | --- | --- | 
+<!-- | Methods | CSIQ | TID2008 | TID2013 | LIVE | LIVEM | LIVEC | KonIQ-10k | KADID-10k | 
+| --- | --- | --- | --- | --- | --- |  -->
 
 #### Large dataset performance
 
