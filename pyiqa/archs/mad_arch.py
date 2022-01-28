@@ -302,12 +302,11 @@ def lo_index(ref, dst):
 class MAD(torch.nn.Module):
     r"""Args:
         channel: Number of input channel.
-        downsample: Boolean, whether to downsample which mimics official SSIM matlab code.
         test_y_channel: Boolean, whether to use y channel on ycbcr which mimics official matlab code.
     References:
-        Wang, Zhou, Eero P. Simoncelli, and Alan C. Bovik. "Multiscale structural similarity for image 
-        quality assessment." In The Thrity-Seventh Asilomar Conference on Signals, Systems & Computers, 
-        2003, vol. 2, pp. 1398-1402. Ieee, 2003.
+        Larson, Eric Cooper, and Damon Michael Chandler. "Most apparent distortion: full-reference 
+        image quality assessment and the role of strategy." Journal of electronic imaging 19, no. 1 
+        (2010): 011006.
     """
     def __init__(self, channels=3, test_y_channel=True):
         super(MAD, self).__init__()
