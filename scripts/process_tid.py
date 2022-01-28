@@ -3,6 +3,7 @@ import random
 import numpy
 import pickle
 import csv
+import pandas as pd
 
 def get_meta_info(root_dir, save_meta_path):
     mos_file = os.path.join(root_dir, 'mos_with_names.txt')
@@ -23,31 +24,53 @@ def get_meta_info(root_dir, save_meta_path):
                 name = name.replace('i', 'I')
             csvwriter.writerow([ref_name, name, mos, std])
 
-def get_random_splits(seed=123):
+def get_random_splits(meta_info_file, save_path, seed=123):
     random.seed(seed)
-    all_img_index = list(range(1162))
-    num_splits = 10
-    save_path = f'../pyiqa/data/train_split_info/livechallenge_{seed}.pkl'
+    # meta_info_file = '../pyiqa/data/meta_info/meta_info_CSIQDataset.csv' 
+    # save_path = f'../pyiqa/data/train_split_info/csiq_{seed}.pkl'
+    ratio = 0.8
 
-    ratio = [0.8, 0.2] # train/val/test
-    sep_index = int(round(0.8 * 1162))
+    meta_info = pd.read_csv(meta_info_file)
+
+    ref_img_list = list(set(meta_info['ref_name'].tolist()))
+    ref_img_num = len(ref_img_list)
+    num_splits = 10
+    train_num = int(ratio * ref_img_num)
     
     split_info = {}
     for i in range(num_splits):
-        random.shuffle(all_img_index)
         split_info[i+1] = {
-                'train': all_img_index[:sep_index],
-                'val': all_img_index[sep_index:]
-                }
+            'train': [],
+            'val': [],
+            'test': []
+        }
+
+    for i in range(num_splits):
+        random.shuffle(ref_img_list)
+        train_ref_img_names = ref_img_list[:train_num]
+        for j in range(meta_info.shape[0]):
+            tmp_ref_name = meta_info.loc[j]['ref_name']
+            if tmp_ref_name in train_ref_img_names: 
+                split_info[i+1]['train'].append(j)
+            else:
+                split_info[i+1]['val'].append(j)
+        print(meta_info.shape[0], len(split_info[i+1]['train']), len(split_info[i+1]['val']))
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 
 if __name__ == '__main__':
-    root_dir = '../../datasets/tid2013/'
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_TID2013Dataset.csv'
-    get_meta_info(root_dir, save_meta_path)
+    # root_dir = '../../datasets/tid2013/'
+    # save_meta_path = '../pyiqa/data/meta_info/meta_info_TID2013Dataset.csv'
+    # get_meta_info(root_dir, save_meta_path)
 
-    root_dir = '../../datasets/tid2008/'
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_TID2008Dataset.csv'
-    get_meta_info(root_dir, save_meta_path)
-    #  get_random_splits()
+    # root_dir = '../../datasets/tid2008/'
+    # save_meta_path = '../pyiqa/data/meta_info/meta_info_TID2008Dataset.csv'
+    # get_meta_info(root_dir, save_meta_path)
+
+    meta_info_file = '../pyiqa/data/meta_info/meta_info_TID2013Dataset.csv'
+    save_path = '../pyiqa/data/train_split_info/tid2013_seed123.pkl'
+    get_random_splits(meta_info_file, save_path)
+
+    meta_info_file = '../pyiqa/data/meta_info/meta_info_TID2008Dataset.csv'
+    save_path = '../pyiqa/data/train_split_info/tid2008_seed123.pkl'
+    get_random_splits(meta_info_file, save_path)

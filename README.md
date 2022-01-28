@@ -133,15 +133,26 @@ python pyiqa/train.py -opt options/train/train_DBCNN.yml
 python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml 
 ```
 
-## [**TODO**] Benchmark Performances and Model Zoo
+## Benchmark Performances and Model Zoo
 
-**TODO** Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
+Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
 
-### Performances of the retrained models
+Simply run the following commands to get performance benchmark on different datasets:
+```
+python benchmark_results.py 
+```
+
+### Performances of the retrained deep learning models
+
+#### Small datasets, n-splits validation 
+
+| Methods | CSIQ | TID2008 | TID2013 | LIVE | LIVEM | LIVEC | KonIQ-10k | KADID-10k | 
+| --- | --- | --- | --- | --- | --- | 
+
+#### Large dataset performance
 
 | Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
 | --- | --- | --- | --- | --- | --- | --- |
-
 
 ## Contribution
 
