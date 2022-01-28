@@ -28,6 +28,7 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | NLPD(ours imported) | 0.5132 | 0.0122 | 0.0098 | 0.2844 | 0.3958 |
 | VSI<sup>[8](#fn8)</sup>(opt) | 0.9139 | 0.9620 | 0.9922 |  0.9571 | 0.9262 |
 | VSI(ours imported) | 0.9244 | 0.9497 | 0.9877 | 0.9541 | 0.9348 |
+| MAD<sup>[10](#fn10)</sup>(ours imported) | 188.17 | 0.0000 | 0.0000 |  89.15 | 174.02 |
 
 #### Notice
 <a name="fn1">[1]</a> CKDN used degraded images as references in the original paper.   
@@ -44,3 +45,4 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 4. different down-sampling operations  
 
 <a name="fn9">[9]</a> We use Y-channel of YCBCR images as input of original CW-SSIM matlab script. The number of level is 4 and orientation is 8.
+<a name="fn10">[10]</a> We use Y-channel of YCBCR images as input, and the original MAD matlab script is not available.
