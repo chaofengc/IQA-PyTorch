@@ -24,7 +24,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | Method | Type | Backward | 
 | --- | --- | --- | 
 | LPIPS | FR | :white_check_mark: |  NR |
-| DISTS | FR | :white_check_mark: | | SPAQ :hourglass_flowing_sand: | NR |
+| DISTS | FR | :white_check_mark: |
 | CKDN | DR<sup>[1](#fn1)</sup> | :white_check_mark: | 
 | FSIM | FR | :white_check_mark: | 
 | SSIM  | FR | :white_check_mark: | 
@@ -36,13 +36,13 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | NLPD  | FR | :white_check_mark: | 
 | VSI  | FR | :white_check_mark: | 
 | | | | 
-| MUSIQ | NR | :white_check_mark: | 
+| MUSIQ :hourglass_flowing_sand: | NR | :white_check_mark: | 
 | DBCNN | NR | :white_check_mark: | 
-| NIMA | NR | | 
-| NRQM(Ma) | NR | | 
-| HOSA | NR | | 
-| BRISQUE | NR | | 
-| NIQE | NR | | 
+| NIMA :hourglass_flowing_sand: | NR | | 
+| NRQM(Ma) :hourglass_flowing_sand: | NR | | 
+| HOSA :hourglass_flowing_sand: | NR | | 
+| BRISQUE :hourglass_flowing_sand: | NR | | 
+| NIQE :hourglass_flowing_sand: | NR | | 
 
 </td><td style="vertical-align:top;border:none">
 
