@@ -35,6 +35,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | GMSD  | FR | :white_check_mark: | 
 | NLPD  | FR | :white_check_mark: | 
 | VSI  | FR | :white_check_mark: | 
+| MAD  | FR | :white_check_mark: | 
 | | | | 
 | MUSIQ :hourglass_flowing_sand: | NR | :white_check_mark: | 
 | DBCNN | NR | :white_check_mark: | 
