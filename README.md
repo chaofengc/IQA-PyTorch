@@ -17,8 +17,6 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 <details open>
 <summary>Supported methods and datasets:</summary>
 
-</table>
-
 <table>
 <tr><td>
 
@@ -151,13 +149,14 @@ python benchmark_results.py
 
 #### Small datasets, n-splits validation 
 
-<!-- | Methods | CSIQ | TID2008 | TID2013 | LIVE | LIVEM | LIVEC | KonIQ-10k | KADID-10k | 
-| --- | --- | --- | --- | --- | --- |  -->
+| Methods | CSIQ | TID2008 | TID2013 | LIVE | LIVEM | LIVEC | 
+| --- | --- | --- | --- | --- | --- | --- | 
+| DBCNN | | | | | | | 
 
 #### Large dataset performance
 
-| Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
-| --- | --- | --- | --- | --- | --- | --- |
+<!-- | Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
+| --- | --- | --- | --- | --- | --- | --- | -->
 
 ## Contribution
 
