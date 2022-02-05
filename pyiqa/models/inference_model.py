@@ -16,9 +16,8 @@ class InferenceModel():
     """Common model for quality inference of single image with default setting of each metric.""" 
 
     def __init__(self, 
-                 metric_name,
                  metric_mode,
-                 net_opts=None,
+                 metric_opts=None,
                  model_path=None,
                  img_range=1.0,
                  input_size=None,
@@ -32,9 +31,10 @@ class InferenceModel():
         self.metric_mode = metric_mode
 
         # define network
-        self.net = build_network(net_opts)
+        self.net = build_network(metric_opts)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.net = self.net.to(self.device)
+        self.net.eval()
 
         # load pretrained models
         if model_path is not None:
@@ -52,13 +52,13 @@ class InferenceModel():
             self.trans_y = preprocess_y
     
     def test(self, x, y=None):
-        x = self.trans_x(x)
-        x = x.unsqueeze(0).to(self.device)
-        if self.metric_mode == 'FR':
-            assert y is not None, 'Please specify reference image for Full Reference metric'
-            y = self.trans_y(y)
-            y = y.unsqueeze(0).to(self.device)
-        self.net.eval()
+        if not torch.is_tensor(x):
+            x = self.trans_x(x)
+            x = x.unsqueeze(0).to(self.device)
+            if self.metric_mode == 'FR':
+                assert y is not None, 'Please specify reference image for Full Reference metric'
+                y = self.trans_y(y)
+                y = y.unsqueeze(0).to(self.device)
         with torch.no_grad():
             if self.metric_mode == 'FR':
                 output = self.net(x, y)

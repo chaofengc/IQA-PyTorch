@@ -5,13 +5,14 @@ import math
 import torch
 import torchvision as tv
 from PIL import Image
+from collections import OrderedDict
 
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 
-DEFAULT_CONFIGS = {
+DEFAULT_CONFIGS = OrderedDict({
         'CKDN': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'CKDN',
                 'pretrained_model_path': './experiments/pretrained_models/CKDN/model_best.pth.tar',
                 'use_diff_preprocess': False,
@@ -31,7 +32,7 @@ DEFAULT_CONFIGS = {
                 ]),
             },
         'LPIPS': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'LPIPS',
                 'net': 'alex',
                 'version': '0.1',
@@ -40,14 +41,14 @@ DEFAULT_CONFIGS = {
             'metric_mode': 'FR',
             },
         'DISTS': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'DISTS',
                 'pretrained_model_path': './experiments/pretrained_models/DISTS/weights.pt',
                 },
             'metric_mode': 'FR',
             },
         'SSIM': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'SSIM',
                 'downsample': False,
                 'test_y_channel': True,
@@ -55,21 +56,21 @@ DEFAULT_CONFIGS = {
             'metric_mode': 'FR',
             },
         'PSNR': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'PSNR',
                 'test_y_channel': False,
                 },
             'metric_mode': 'FR',
             },
         'FSIM': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'FSIM',
                 'chromatic': True,
                 },
             'metric_mode': 'FR',
             },
         'MS_SSIM': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'MS_SSIM',
                 'downsample': False,
                 'test_y_channel': True,
@@ -78,20 +79,20 @@ DEFAULT_CONFIGS = {
             'metric_mode': 'FR',
             },
         'VIF': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'VIF',
                 },
             'metric_mode': 'FR',
             },
         'GMSD': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'GMSD',
                 'test_y_channel': True,
                 },
             'metric_mode': 'FR',
             },
         'NLPD': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'NLPD',
                 'channels': 1,
                 'test_y_channel': True,
@@ -99,13 +100,13 @@ DEFAULT_CONFIGS = {
             'metric_mode': 'FR',
             },
         'VSI': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'VSI',
                 },
             'metric_mode': 'FR',
             },
         'CW_SSIM': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'CW_SSIM',
                 'channels': 1,
                 'level': 4,
@@ -115,11 +116,11 @@ DEFAULT_CONFIGS = {
             'metric_mode': 'FR',
             },
         'MAD': {
-            'net_opts': {
+            'metric_opts': {
                 'type': 'MAD',
                 'test_y_channel': True,
                 },
             'metric_mode': 'FR',
             },
-        }
+        })
 

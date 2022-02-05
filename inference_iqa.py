@@ -1,13 +1,7 @@
 import argparse
-import cv2
 import glob
-import numpy as np
 import os
-import math
-import torch
-import torchvision as tv
 from PIL import Image
-from pyiqa.utils import imwrite
 from pyiqa.models.inference_model import InferenceModel
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
@@ -34,10 +28,10 @@ def main():
 
     # set up IQA model 
     if metric_name in DEFAULT_CONFIGS.keys():
-        iqa_model = InferenceModel(metric_name, **DEFAULT_CONFIGS[metric_name])
+        iqa_model = InferenceModel(**DEFAULT_CONFIGS[metric_name])
         metric_mode = DEFAULT_CONFIGS[metric_name]['metric_mode']
     else:
-        iqa_model = InferenceModel(metric_name, args.metric_mode, args.model_path, 
+        iqa_model = InferenceModel(args.metric_mode, args.model_path, 
                 args.img_range, args.input_size, args.mean, args.std)
         metric_mode = args.metric_mode
 

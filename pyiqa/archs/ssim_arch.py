@@ -69,7 +69,6 @@ def ssim(X,
 
     # Whether calculate on y channel of ycbcr
     if test_y_channel and X.shape[1] == 3:
-        print("to y")
         X = to_y_channel(X)
         Y = to_y_channel(Y)
         data_range = 255

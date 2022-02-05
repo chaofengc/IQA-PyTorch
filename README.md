@@ -73,9 +73,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 </td></tr> 
 </table>
 
-<font size="2">
 <a name="fn1">[1]</a> DR means distortion reference. Please refer to the paper for details. 
-</font>
 
 </details>
 
@@ -140,10 +138,11 @@ python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml
 
 Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
 
-Simply run the following commands to get performance benchmark on different datasets:
+Here is an example script to get performance benchmark on different datasets:
 ```
-python benchmark_results.py 
+python benchmark_results.py -opt options/benchmark_test.yml
 ```
+And refer to [benchmark results](tests/benchmark_results.csv) for results.
 
 ### Performances of the retrained deep learning models
 
@@ -166,11 +165,11 @@ Any contributions to this repository are greatly appreciated. Please follow the 
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
 
-## Citation
+<!-- ## Citation
 
 ```
-TODO
-```
+TODO -->
+<!-- ``` -->
 
 ## Acknowledgement
 

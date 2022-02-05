@@ -38,6 +38,12 @@ class GeneralFRDataset(data.Dataset):
                 split_dict = pickle.load(f)
                 splits = split_dict[split_index][opt['phase']]
             self.paths_mos = [self.paths_mos[i] for i in splits] 
+        
+        if opt.get('use_dmos', False):
+            self.use_dmos = True
+            self.dmos_max = opt.get('dmos_max') 
+        else:
+            self.use_dmos = False
 
         # TODO: paired transform
         transform_list = []
@@ -63,6 +69,8 @@ class GeneralFRDataset(data.Dataset):
 
         img_tensor = self.trans(img_pil)
         ref_tensor = self.trans(ref_pil)
+        if self.use_dmos:
+            mos_label = self.dmos_max - mos_label
         mos_label_tensor = torch.Tensor([mos_label])
         
         return {'img': img_tensor, 'ref_img': ref_tensor, 'mos_label': mos_label_tensor, 'img_path': img_path, 'ref_img_path': ref_path}
