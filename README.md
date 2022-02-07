@@ -4,13 +4,13 @@ An IQA toolbox with pure python and pytorch.
 
 ## Introduction
 
-This is a image quality assessment toolbox with pure python and pytorch. We provide the following features:
+This is a image quality assessment toolbox with **pure python and pytorch**. We provide the following features:
 
 - **Comprehensive.** Support many mainstream full reference (FR) and no reference (NR) metrics
+- **Accurate.** Results calibration of our implementation with official matlab scripts (if exist)
 - **Flexible.** Support training new DNN models with several public IQA datasets
 - **Differentiable.** Most methods support pytorch backward
 - **Convenient.** Quick inference and benchmark script
-- **Accurate.** Results calibration of our implementation with original matlab scripts (if exist)
 
 Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary of IQA methods, as well as download links for IQA datasets. Below are details of supported methods and datasets in this project. 
 
@@ -101,9 +101,9 @@ Example test script with input directory and reference directory. Single image i
 python inference_iqa.py -n LPIPS -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir 
 ```
 
-#### [**TODO**] Used as functions in your project
+#### Used as functions in your project
 
-Metrics which allowed backward can be used for model optimization, such as image enhancement networks.
+Metrics which support backward can be used for optimization, such as image enhancement.
 
 ```
 from pyiqa import LPIPS 
@@ -136,13 +136,13 @@ python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml
 
 ## Benchmark Performances and Model Zoo
 
-Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to verify the correctness of imported codes and model weights, and the python implementations compared with original matlab scripts.
+Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to verify the correctness of the python implementations compared with official scripts in matlab or python.
 
 Here is an example script to get performance benchmark on different datasets:
 ```
 python benchmark_results.py -opt options/benchmark_test.yml
 ```
-And refer to [benchmark results](tests/benchmark_results.csv) for results.
+Please refer to [benchmark results](tests/benchmark_results.csv) for results.
 
 ### Performances of the retrained deep learning models
 
@@ -180,7 +180,7 @@ The code architecture is borrowed from [BasicSR](https://github.com/xinntao/Basi
 - [piq](https://github.com/photosynthesis-team/piq)
 - [piqa](https://github.com/francois-rozet/piqa)
 
-We also thanks the following works to make their codes public:
+We also thanks the following public repositories: 
 - **TODO**
 - [DBCNN]() 
 - [MUSIQ]() 

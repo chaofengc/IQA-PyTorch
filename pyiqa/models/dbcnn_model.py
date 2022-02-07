@@ -49,10 +49,10 @@ class DBCNNModel(GeneralIQAModel):
         l_total = 0
         loss_dict = OrderedDict()
         # pixel loss
-        if self.cri_reg:
-            l_reg = self.cri_reg(self.output_score, self.gt_mos)
-            l_total += l_reg
-            loss_dict['l_reg'] = l_reg 
+        if self.cri_mos:
+            l_mos = self.cri_mos(self.output_score, self.gt_mos)
+            l_total += l_mos
+            loss_dict['l_mos'] = l_mos
         
         l_total.backward()
         self.optimizer.step()

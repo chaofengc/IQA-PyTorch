@@ -76,7 +76,7 @@ train:
   warmup_iter: -1  # no warm up
   
   # losses
-  regress_opt:
+  mos_loss_opt:
     type: MSELoss 
     loss_weight: !!float 1.0
     reduction: mean

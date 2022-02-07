@@ -39,10 +39,10 @@ class GeneralIQAModel(BaseModel):
         self.net_best = build_network(self.opt['network']).to(self.device)
 
         # define losses
-        if train_opt.get('regress_opt'):
-            self.cri_reg = build_loss(train_opt['regress_opt']).to(self.device)
+        if train_opt.get('mos_loss_opt'):
+            self.cri_mos = build_loss(train_opt['mos_loss_opt']).to(self.device)
         else:
-            self.cri_reg = None
+            self.cri_mos = None
         
         # set up optimizers and schedulers
         self.setup_optimizers()
@@ -87,10 +87,10 @@ class GeneralIQAModel(BaseModel):
         l_total = 0
         loss_dict = OrderedDict()
         # pixel loss
-        if self.cri_reg:
-            l_reg = self.cri_reg(self.output_score, self.gt_mos)
-            l_total += l_reg
-            loss_dict['l_reg'] = l_reg 
+        if self.cri_mos:
+            l_mos = self.cri_mos(self.output_score, self.gt_mos)
+            l_total += l_mos
+            loss_dict['l_mos'] = l_mos
         
         l_total.backward()
         self.optimizer.step()

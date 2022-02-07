@@ -5,8 +5,9 @@ from PIL import Image
 import pickle
 import csv
 from tqdm import tqdm
+import random
 
-def get_meta_info():
+def get_meta_info(seed=123):
     """Generate meta information and train/val/test splits for AVA dataset.
 
     The split follows: 
@@ -16,10 +17,10 @@ def get_meta_info():
     all_label_file = '../../datasets/AVA_dataset/AVA.txt'
     
     # read ILGnet split
-    ILGnet_train_list = [x.strip().split()[0] for x in open('../../datasets/AVA_dataset/ILGnet_train.txt').readlines()]
-    ILGnet_test_list = [x.strip().split()[0] for x in open('../../datasets/AVA_dataset/ILGnet_val.txt').readlines()]
+    ILGnet_train_list = [x.strip().split()[0] for x in open('../../datasets/AVA_dataset/train_splits/ILGnet_train.txt').readlines()]
+    ILGnet_test_list = [x.strip().split()[0] for x in open('../../datasets/AVA_dataset/train_splits/ILGnet_val.txt').readlines()]
 
-    official_test_list = [x.strip().split()[0] + '.jpg' for x in open('../../datasets/AVA_dataset/official_test_challenges.txt')]
+    official_test_list = [x.strip().split()[0] + '.jpg' for x in open('../../datasets/AVA_dataset/train_splits/official_test_challenges.txt')]
 
     save_meta_path = '../pyiqa/data/meta_info/meta_info_AVADataset.csv'
     split_info = {
@@ -27,7 +28,7 @@ def get_meta_info():
         2: {'train': [], 'val': [], 'test': []},
         }
     
-    with open(all_label_file) as f, open(save_meta_path, 'w+') as sf:
+    with open(all_label_file) as f, open(save_meta_path, 'w') as sf:
         csvwriter = csv.writer(sf)
         header = ['img_name'] + ['MOS'] + [f'c{i}' for i in range(1, 11)] + ['semantic_tag1', 'semantic_tag2'] + ['official split', 'ILGnet split']
         csvwriter.writerow(header)
@@ -66,6 +67,16 @@ def get_meta_info():
     print(len(split_info[1]['train']), len(split_info[1]['test']))
     print(len(split_info[2]['train']), len(split_info[2]['test']))
     save_split_path = '../pyiqa/data/train_split_info/ava_official_ilgnet.pkl'
+
+    # separate 5% as validation part 
+    random.seed(seed)
+    for split_idx in split_info.keys():
+        train_split = split_info[split_idx]['train']
+        sep_idx = int(round(len(train_split) * 0.95))
+        random.shuffle(train_split)
+        split_info[split_idx]['train'] = train_split[:sep_idx]
+        split_info[split_idx]['val'] = train_split[sep_idx:]
+
     with open(save_split_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 
