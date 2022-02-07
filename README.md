@@ -44,7 +44,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | DBCNN | NR | :white_check_mark: | 
 | PaQ-2-PiQ :hourglass_flowing_sand: | NR | | 
 | HyperIQA :hourglass_flowing_sand: | NR | | 
-| NIMA :hourglass_flowing_sand: | NR | | 
+| NIMA | NR | :white_check_mark: | 
 | CNNIQA :hourglass_flowing_sand: | NR | | 
 | NRQM(Ma) :hourglass_flowing_sand: | NR | | 
 | HOSA :hourglass_flowing_sand: | NR | | 
