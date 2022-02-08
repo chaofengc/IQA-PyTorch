@@ -20,60 +20,60 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 <table>
 <tr><td>
 
-| Method | Type | Backward | 
-| --- | --- | --- | 
-| LPIPS | FR | :white_check_mark: |  NR |
-| DISTS | FR | :white_check_mark: |
-| CKDN | DR<sup>[1](#fn1)</sup> | :white_check_mark: | 
-| FSIM | FR | :white_check_mark: | 
-| SSIM  | FR | :white_check_mark: | 
-| MS-SSIM  | FR | :white_check_mark: | 
-| CW-SSIM  | FR | :white_check_mark: | 
-| PSNR  | FR | :white_check_mark: | 
-| VIF | FR | :white_check_mark: | 
-| GMSD  | FR | :white_check_mark: | 
-| NLPD  | FR | :white_check_mark: | 
-| VSI  | FR | :white_check_mark: | 
-| MAD  | FR | :white_check_mark: | 
+| FR Method                | Backward           |
+| ------------------------ | ------------------ |
+| LPIPS                    | :white_check_mark: |
+| DISTS                    | :white_check_mark: |
+| CKDN<sup>[1](#fn1)</sup> | :white_check_mark: |
+| FSIM                     | :white_check_mark: |
+| SSIM                     | :white_check_mark: |
+| MS-SSIM                  | :white_check_mark: |
+| CW-SSIM                  | :white_check_mark: |
+| PSNR                     | :white_check_mark: |
+| VIF                      | :white_check_mark: |
+| GMSD                     | :white_check_mark: |
+| NLPD                     | :white_check_mark: |
+| VSI                      | :white_check_mark: |
+| MAD                      | :white_check_mark: |
 
 </td><td>
 
-| Method | Type | Backward | 
-| --- | --- | --- | 
-| MUSIQ :hourglass_flowing_sand: | NR | | 
-| DBCNN | NR | :white_check_mark: | 
-| PaQ-2-PiQ :hourglass_flowing_sand: | NR | | 
-| HyperIQA :hourglass_flowing_sand: | NR | | 
-| NIMA | NR | :white_check_mark: | 
-| CNNIQA :hourglass_flowing_sand: | NR | | 
-| NRQM(Ma) :hourglass_flowing_sand: | NR | | 
-| HOSA :hourglass_flowing_sand: | NR | | 
-| BRISQUE :hourglass_flowing_sand: | NR | | 
-| NIQE :hourglass_flowing_sand: | NR | | 
+| NR Method                          | Backward           |
+| ---------------------------------- | ------------------ |
+| MUSIQ :hourglass_flowing_sand:     |                    |
+| DBCNN                              | :white_check_mark: |
+| PaQ-2-PiQ :hourglass_flowing_sand: |                    |
+| HyperIQA                           | :white_check_mark: |
+| NIMA                               | :white_check_mark: |
+| CNNIQA :hourglass_flowing_sand:    |                    |
+| NRQM(Ma) :hourglass_flowing_sand:  |                    |
+| HOSA :hourglass_flowing_sand:      |                    |
+| BRISQUE :hourglass_flowing_sand:   |                    |
+| NIQE :hourglass_flowing_sand:      |                    |
 
 </td><td>
 
-| Dataset | Type |
-| --- | --- |
-| FLIVE(PaQ-2-PiQ) | NR | 
-| SPAQ | NR/mobile | 
-| AVA | NR/Aesthetic | 
-| PIPAL | FR | 
-| BAPPS | FR | 
-| PieAPP | FR | 
-| KADID-10k | FR | 
-| KonIQ-10k(++) | NR | 
-| LIVEChallenge | NR | 
-| LIVEM | FR | 
-| LIVE | FR | 
-| TID2013 | FR | 
-| TID2008 | FR | 
-| CSIQ | FR | 
+| Dataset          | Type         |
+| ---------------- | ------------ |
+| FLIVE(PaQ-2-PiQ) | NR           |
+| SPAQ             | NR/mobile    |
+| AVA              | NR/Aesthetic |
+| PIPAL            | FR           |
+| BAPPS            | FR           |
+| PieAPP           | FR           |
+| KADID-10k        | FR           |
+| KonIQ-10k(++)    | NR           |
+| LIVEChallenge    | NR           |
+| LIVEM            | FR           |
+| LIVE             | FR           |
+| TID2013          | FR           |
+| TID2008          | FR           |
+| CSIQ             | FR           |
 
 </td></tr> 
 </table>
 
-<a name="fn1">[1]</a> DR means distortion reference. Please refer to the paper for details. 
+<a name="fn1">[1]</a> This method use distorted image as reference. Please refer to the paper for details. 
 
 </details>
 
@@ -148,14 +148,14 @@ Please refer to [benchmark results](tests/benchmark_results.csv) for results.
 
 #### Small datasets, n-splits validation 
 
-| Methods | CSIQ | TID2008 | TID2013 | LIVE | LIVEM | LIVEC | 
-| --- | --- | --- | --- | --- | --- | --- | 
-| DBCNN | | | | | | | 
+| Methods | CSIQ | TID2008 | TID2013 | LIVE | LIVEM | LIVEC |
+| ------- | ---- | ------- | ------- | ---- | ----- | ----- |
+| DBCNN   |      |         |         |      |       |       |
 
 #### Large dataset performance
 
-<!-- | Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
-| --- | --- | --- | --- | --- | --- | --- | -->
+| <!-- | Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
+| ---- | ------- | ------- | ------ | ----- | ---- | --- | --------- |>
 
 ## Contribution
 

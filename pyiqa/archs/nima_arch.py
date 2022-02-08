@@ -28,21 +28,13 @@ class NIMA(nn.Module):
                  base_model_name='vgg16', 
                  num_classes=10, 
                  dropout_rate=0.,
+                 pretrained_model_path=None, 
                  default_mean=[0.485, 0.456, 0.406],
                  default_std=[0.229, 0.224, 0.225],
                  ):
         super(NIMA, self).__init__()
         self.base_model = timm.create_model(base_model_name, pretrained=True, features_only=True)
-
-        # if 'vgg' in base_model_name:
-        #     self.global_pool = nn.Flatten()
-        #     in_ch = 7 * 7 * 512
-        #     p_dropout = 0.75
-        # else:
-        #     self.global_pool = nn.AdaptiveAvgPool2d(1)
-        #     in_ch = self.base_model.feature_info.channels()[-1]
-        #     p_dropout = 0.0
-
+        
         self.global_pool = nn.AdaptiveAvgPool2d(1)
         in_ch = self.base_model.feature_info.channels()[-1]
         self.num_classes = num_classes
@@ -56,6 +48,14 @@ class NIMA(nn.Module):
 
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
+
+        if pretrained_model_path is not None:
+            self.load_pretrained_network(pretrained_model_path)
+
+    def load_pretrained_network(self, model_path):
+        print(f'Loading pretrained model from {model_path}')
+        state_dict = torch.load(model_path, map_location=torch.device('cpu'))['state_dict']
+        self.net.load_state_dict(state_dict, strict=True) 
 
     def _get_mos_from_dist(self, pred_score):
         pred_score = pred_score * torch.arange(1, self.num_classes + 1).to(pred_score).unsqueeze(0)
@@ -83,13 +83,3 @@ class NIMA(nn.Module):
             return return_list
         else:
             return return_list[0]
-
-if __name__ == '__main__':
-    import torch
-    x = torch.randn(2, 3, 224, 224)
-    model = NIMA('vgg16')
-    model(x)
-    model = NIMA('inception_resnet_v2')
-    model(x)
-    model = NIMA('mobilenetv2_100')
-    model(x)
