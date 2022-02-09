@@ -1,0 +1,97 @@
+# general settings
+name: debug001_WaDIQaM_FR_TID2013
+name: 001_WaDIQaM_FR_TID2013
+model_type: WaDIQaMModel 
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 123 
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: tid2013 
+    type: GeneralFRDataset
+    dataroot_target: ../datasets/tid2013/distorted_images
+    dataroot_ref: ../datasets/tid2013/reference_images
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.csv
+    
+    # data loader
+    use_shuffle: true
+    num_worker_per_gpu: 12
+    batch_size_per_gpu: 32 
+    dataset_enlarge_ratio: 1 
+    prefetch_mode: cpu
+    num_prefetch_queue: 8 
+
+  val:
+    name: tid2013 
+    type: GeneralFRDataset
+    dataroot_target: ../datasets/tid2013/distorted_images
+    dataroot_ref: ../datasets/tid2013/reference_images
+    meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.csv
+
+    num_worker_per_gpu: 4
+    batch_size_per_gpu: 32 
+    
+# network structures
+network:
+  type: WaDIQaM
+  metric_mode: FR 
+
+# path
+path:
+  pretrain_network_g: ~
+  strict_load_g: true
+  resume_state: ~
+
+# training settings
+train:
+  optim:
+    type: Adam 
+    lr_basemodel: !!float 1e-4 
+    lr_fc_layers: !!float 1e-4 
+    lr: !!float 1e-4 
+
+  scheduler:
+    type: MultiStepLR
+    milestones: [400, 800, 1200]
+    gamma: 1 
+
+  total_iter: 4000 # 883 iter/epoch, train/finetune for about 30 epochs
+  warmup_iter: -1  # no warm up
+  
+  # losses
+  mos_loss_opt:
+    type: PLCCLoss 
+    loss_weight: !!float 1.0
+
+# validation settings
+val:
+  val_freq: !!float 100 
+  save_img: false
+  pbar: true
+
+  key_metric: srcc # if this metric improve, update all metrics. If not specified, each best metric results will be updated separately 
+  metrics:
+    srcc: 
+      type: calculate_srcc
+
+    plcc: 
+      type: calculate_plcc
+
+    krcc: 
+      type: calculate_krcc
+
+# logging settings
+logger:
+  print_freq: 20
+  save_checkpoint_freq: !!float 5e9
+  save_latest_freq: !!float 5e2
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500

@@ -111,6 +111,9 @@ class HyperNet(nn.Module):
         self.net.load_state_dict(state_dict, strict=True) 
 
     def preprocess(self, x):
+        # input must have shape of (224, 224) because of network design
+        if x.shape[2:] != torch.Size([224, 224]):
+            x = nn.functional.interpolate(x, (224, 224), mode='bicubic')
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x
     

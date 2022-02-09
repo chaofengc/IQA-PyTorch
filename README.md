@@ -20,21 +20,23 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 <table>
 <tr><td>
 
-| FR Method                | Backward           |
-| ------------------------ | ------------------ |
-| LPIPS                    | :white_check_mark: |
-| DISTS                    | :white_check_mark: |
-| CKDN<sup>[1](#fn1)</sup> | :white_check_mark: |
-| FSIM                     | :white_check_mark: |
-| SSIM                     | :white_check_mark: |
-| MS-SSIM                  | :white_check_mark: |
-| CW-SSIM                  | :white_check_mark: |
-| PSNR                     | :white_check_mark: |
-| VIF                      | :white_check_mark: |
-| GMSD                     | :white_check_mark: |
-| NLPD                     | :white_check_mark: |
-| VSI                      | :white_check_mark: |
-| MAD                      | :white_check_mark: |
+| FR Method                       | Backward           |
+| ------------------------------- | ------------------ |
+| PieAPP :hourglass_flowing_sand: |                    |
+| LPIPS                           | :white_check_mark: |
+| DISTS                           | :white_check_mark: |
+| WaDIQaM                         | :white_check_mark: |
+| CKDN<sup>[1](#fn1)</sup>        | :white_check_mark: |
+| FSIM                            | :white_check_mark: |
+| SSIM                            | :white_check_mark: |
+| MS-SSIM                         | :white_check_mark: |
+| CW-SSIM                         | :white_check_mark: |
+| PSNR                            | :white_check_mark: |
+| VIF                             | :white_check_mark: |
+| GMSD                            | :white_check_mark: |
+| NLPD                            | :white_check_mark: |
+| VSI                             | :white_check_mark: |
+| MAD                             | :white_check_mark: |
 
 </td><td>
 
@@ -45,7 +47,8 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | PaQ-2-PiQ :hourglass_flowing_sand: |                    |
 | HyperIQA                           | :white_check_mark: |
 | NIMA                               | :white_check_mark: |
-| CNNIQA :hourglass_flowing_sand:    |                    |
+| WaDIQaM                            | :white_check_mark: |
+| CNNIQA                             | :white_check_mark: |
 | NRQM(Ma) :hourglass_flowing_sand:  |                    |
 | HOSA :hourglass_flowing_sand:      |                    |
 | BRISQUE :hourglass_flowing_sand:   |                    |
@@ -181,9 +184,12 @@ The code architecture is borrowed from [BasicSR](https://github.com/xinntao/Basi
 - [piqa](https://github.com/francois-rozet/piqa)
 
 We also thanks the following public repositories: 
-- **TODO**
-- [DBCNN]() 
 - [MUSIQ]() 
+- [DBCNN](https://github.com/zwx8981/DBCNN-PyTorch) 
+- [NIMA](https://github.com/kentsyx/Neural-IMage-Assessment)
+- [HyperIQA](https://github.com/SSL92/hyperIQA)
+- [CNNIQA](https://github.com/lidq92/CNNIQA)
+- [WaDIQaM](https://github.com/lidq92/WaDIQaM)
 
 ## Contact
 

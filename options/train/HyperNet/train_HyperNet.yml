@@ -1,7 +1,7 @@
 # general settings
 # name: debug_DBCNN_LIVEC 
 name: debug001_HyperNet_KonIQ10k
-name: 001_HyperNet_KonIQ10k
+name: 004_HyperNet_KonIQ10k
 model_type: HyperNetModel 
 num_gpu: 1  # set num_gpu: 0 for cpu mode
 manual_seed: 123 
@@ -23,7 +23,7 @@ datasets:
     # data loader
     use_shuffle: true
     num_worker_per_gpu: 4
-    batch_size_per_gpu: 8 
+    batch_size_per_gpu: 96 
     dataset_enlarge_ratio: 1 
     prefetch_mode: ~
 
@@ -58,10 +58,10 @@ train:
 
   scheduler:
     type: MultiStepLR
-    milestones: [1000]
-    gamma: 1 
+    milestones: [400, 800]
+    gamma: 0.1 
 
-  total_iter: 20000 # 883 iter/epoch, train/finetune for about 30 epochs
+  total_iter: 4000 # 883 iter/epoch, train/finetune for about 30 epochs
   warmup_iter: -1  # no warm up
   
   # losses
@@ -71,7 +71,7 @@ train:
 
 # validation settings
 val:
-  val_freq: !!float 800 
+  val_freq: !!float 100 
   save_img: false
   pbar: true
 
@@ -88,7 +88,7 @@ val:
 
 # logging settings
 logger:
-  print_freq: 100
+  print_freq: 20
   save_checkpoint_freq: !!float 5e9
   save_latest_freq: !!float 5e2
   use_tb_logger: true
