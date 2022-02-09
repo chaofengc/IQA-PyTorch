@@ -51,13 +51,15 @@ class GeneralFRDataset(data.Dataset):
         if augment_dict is not None:
             for k, v in augment_dict.items():
                 transform_list += transform_mapping(k, v)
+        self.paired_trans = tf.Compose(transform_list)
 
         img_range = opt.get('img_range', 1.0)
-        transform_list += [
+        common_transform_list = [
                 tf.ToTensor(),
                 tf.Lambda(lambda x: x * img_range),
                 ]
-        self.trans = tf.Compose(transform_list)
+        self.common_trans = tf.Compose(common_transform_list)
+
 
     def __getitem__(self, index):
 
@@ -67,8 +69,10 @@ class GeneralFRDataset(data.Dataset):
         img_pil = Image.open(img_path).convert('RGB')
         ref_pil = Image.open(ref_path).convert('RGB')
 
-        img_tensor = self.trans(img_pil)
-        ref_tensor = self.trans(ref_pil)
+        img_pil, ref_pil = self.paired_trans([img_pil, ref_pil])
+
+        img_tensor = self.common_trans(img_pil)
+        ref_tensor = self.common_trans(ref_pil)
         if self.use_dmos:
             mos_label = self.dmos_max - mos_label
         mos_label_tensor = torch.Tensor([mos_label])

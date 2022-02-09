@@ -15,7 +15,7 @@ datasets:
     split_file: ./pyiqa/data/train_split_info/koniq10k_official.pkl
 
     augment:
-      use_hflip: true
+      hflip: true
       random_crop: 384 
     img_range: 1
     

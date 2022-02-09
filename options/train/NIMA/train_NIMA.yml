@@ -18,7 +18,7 @@ datasets:
     augment:
       resize: 256
       random_crop: 224 
-      use_hflip: true
+      hflip: true
     img_range: 1
     
     # data loader

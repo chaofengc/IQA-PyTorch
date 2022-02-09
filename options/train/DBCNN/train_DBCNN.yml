@@ -18,7 +18,7 @@ datasets:
     split_index: 2 # which split to use, start from 1
 
     augment:
-      use_hflip: true
+      hflip: true
       random_crop: 448
     img_range: 1
     
