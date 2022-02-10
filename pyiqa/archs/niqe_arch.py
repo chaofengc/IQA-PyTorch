@@ -6,7 +6,7 @@ Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 Reference:
     MATLAB codes: http://live.ece.utexas.edu/research/quality/niqe_release.zip
-    
+
 """
 
 import math
@@ -29,14 +29,14 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 def estimate_aggd_param(block):
     """Estimate AGGD (Asymmetric Generalized Gaussian Distribution) parameters.
     Args:
-        block (ndarray): 2D Image block.
+        block (Tensor): Image block.
     Returns:
-        tuple: alpha (float), beta_l (float) and beta_r (float) for the AGGD
-            distribution (Estimating the parames in Equation 7 in the paper).
+        Tensor: alpha, beta_l and beta_r for the AGGD distribution 
+        (Estimating the parames in Equation 7 in the paper).
     """
     block = block.flatten(1)
-    gam = torch.arange(0.2, 10.001, 0.001, requires_grad=True)
-    gam_reciprocal = torch.reciprocal(gam).detach()
+    gam = torch.arange(0.2, 10.001, 0.001)
+    gam_reciprocal = torch.reciprocal(gam)
     r_gam = torch.square(gamma(gam_reciprocal * 2)) / (gamma(gam_reciprocal) * gamma(gam_reciprocal * 3))
 
     batches = []
@@ -51,9 +51,10 @@ def estimate_aggd_param(block):
         (_, array_position) = torch.min((r_gam - rhatnorm)**2, 0)
 
         alpha = gam[array_position]
-        beta_l = left_std * torch.sqrt(gamma((1 / alpha).detach()) / gamma((3 / alpha).detach()))
-        beta_r = right_std * torch.sqrt(gamma((1 / alpha).detach()) / gamma((3 / alpha).detach()))
-        batches.append(torch.Tensor([alpha, beta_l, beta_r]))
+        beta_l = left_std * torch.sqrt(gamma(1 / alpha) / gamma(3 / alpha))
+        beta_r = right_std * torch.sqrt(gamma(1 / alpha) / gamma(3 / alpha))
+        batches.append(torch.stack([alpha, beta_l, beta_r], dim=0))
+
     return torch.stack(batches)
 
 
@@ -79,7 +80,7 @@ def compute_feature(block):
         res = estimate_aggd_param(block * shifted_block)
         alpha, beta_l, beta_r = res[:,0].unsqueeze(-1), res[:,1].unsqueeze(-1), res[:,2].unsqueeze(-1)
         # Eq. 8
-        mean = (beta_r - beta_l) * (gamma(2 / alpha) / gamma(1 / alpha))
+        mean = (beta_r - beta_l) * (gamma(2 / alpha.detach()) / gamma(1 / alpha.detach()))
         feat = torch.cat((feat, alpha, mean, beta_l, beta_r), 1)
 
     return torch.Tensor(feat)
@@ -88,15 +89,12 @@ def compute_feature(block):
 def niqe(img, mu_pris_param, cov_pris_param, gaussian_window, block_size_h=96, block_size_w=96):
     """Calculate NIQE (Natural Image Quality Evaluator) metric.
     Args:
-        img (ndarray): Input image whose quality needs to be computed. The
-            image must be a gray or Y (of YCbCr) image with shape (h, w).
-            Range [0, 255] with float type.
-        mu_pris_param (ndarray): Mean of a pre-defined multivariate Gaussian
+        img (Tensor): Input image.
+        mu_pris_param (Tensor): Mean of a pre-defined multivariate Gaussian
             model calculated on the pristine dataset.
-        cov_pris_param (ndarray): Covariance of a pre-defined multivariate
+        cov_pris_param (Tensor): Covariance of a pre-defined multivariate
             Gaussian model calculated on the pristine dataset.
-        gaussian_window (ndarray): A 7x7 Gaussian window used for smoothing the
-            image.
+        gaussian_window (Tensor): A 7x7 Gaussian window used for smoothing the image.
         block_size_h (int): Height of the blocks in to which image is divided.
             Default: 96 (the official recommended value).
         block_size_w (int): Width of the blocks in to which image is divided.
@@ -111,9 +109,9 @@ def niqe(img, mu_pris_param, cov_pris_param, gaussian_window, block_size_h=96, b
 
     distparam = []  # dist param is actually the multiscale features
     for scale in (1, 2):  # perform on two scales (1, 2)
-        rep_one = nn.ReplicationPad2d(3)
-        mu = F.conv2d(rep_one(img),gaussian_window,groups=1)
-        sigma = torch.sqrt(torch.abs(F.conv2d(rep_one(img**2),gaussian_window,groups=1) - mu**2))
+        rep_padding = nn.ReplicationPad2d(3)
+        mu = F.conv2d(rep_padding(img),gaussian_window,groups=1)
+        sigma = torch.sqrt(torch.abs(F.conv2d(rep_padding(img**2),gaussian_window,groups=1) - mu**2))
         # normalize, as in Eq. 1 in the paper
         img_nomalized = (img - mu) / (sigma + 1)
 
@@ -169,8 +167,8 @@ def calculate_niqe(img, crop_border=0, test_y_channel=True, pretrained_model_pat
     mu_pris_param = torch.from_numpy(mu_pris_param)
     cov_pris_param = torch.from_numpy(cov_pris_param)
 
-    mu_pris_param = mu_pris_param.repeat(img.size(0),1).requires_grad_()
-    cov_pris_param = cov_pris_param.repeat(img.size(0),1,1).requires_grad_()
+    mu_pris_param = mu_pris_param.repeat(img.size(0),1)
+    cov_pris_param = cov_pris_param.repeat(img.size(0),1,1)
 
     gaussian_window = fspecial_gauss(7, 7.0/6.0, 1)
     gaussian_window = gaussian_window/torch.sum(gaussian_window)
