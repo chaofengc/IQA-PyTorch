@@ -38,6 +38,13 @@ class GeneralNRDataset(data.Dataset):
                 split_dict = pickle.load(f)
                 splits = split_dict[split_index][opt['phase']]
             self.paths_mos = [self.paths_mos[i] for i in splits] 
+        
+        dmos_max = opt.get('dmos_max', 0.)
+        if dmos_max:
+            self.use_dmos = True
+            self.dmos_max = opt.get('dmos_max') 
+        else:
+            self.use_dmos = False
 
         transform_list = []
         augment_dict = opt.get('augment', None)
@@ -59,6 +66,8 @@ class GeneralNRDataset(data.Dataset):
         img_pil = Image.open(img_path).convert('RGB')
 
         img_tensor = self.trans(img_pil)
+        if self.use_dmos:
+            mos_label = self.dmos_max - mos_label
         mos_label_tensor = torch.Tensor([mos_label])
         
         return {'img': img_tensor, 'mos_label': mos_label_tensor, 'img_path': img_path}

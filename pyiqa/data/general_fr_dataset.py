@@ -39,7 +39,8 @@ class GeneralFRDataset(data.Dataset):
                 splits = split_dict[split_index][opt['phase']]
             self.paths_mos = [self.paths_mos[i] for i in splits] 
         
-        if opt.get('use_dmos', False):
+        dmos_max = opt.get('dmos_max', 0.)
+        if dmos_max:
             self.use_dmos = True
             self.dmos_max = opt.get('dmos_max') 
         else:

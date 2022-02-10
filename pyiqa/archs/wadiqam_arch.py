@@ -147,7 +147,7 @@ class WaDIQaM(nn.Module):
             x_patches, y_patches = self.get_patches(x, y)
             feat_img = self.extract_features(x_patches)
             feat_ref = self.extract_features(y_patches)
-            feat_q = torch.cat((feat_img - feat_ref, feat_img, feat_ref), dim=-1)
+            feat_q = torch.cat((feat_ref, feat_img, feat_img - feat_ref), dim=-1)
         else:
             x_patches = self.get_patches(x)
             feat_q = self.extract_features(x_patches)

@@ -15,7 +15,6 @@ datasets:
     dataroot_target: ../datasets/CSIQ/dst_imgs
     dataroot_ref: ../datasets/CSIQ/src_imgs
     meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.csv
-    use_dmos: true
     dmos_max: 1
 
   dataset2: 

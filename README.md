@@ -7,7 +7,7 @@ An IQA toolbox with pure python and pytorch.
 This is a image quality assessment toolbox with **pure python and pytorch**. We provide the following features:
 
 - **Comprehensive.** Support many mainstream full reference (FR) and no reference (NR) metrics
-- **Accurate.** Results calibration of our implementation with official matlab scripts (if exist)
+- **Accurate.** Results calibration of our implementation with official matlab scripts (if exist). For deep learning approaches, our implementation can even achieve better performance with the standardized training process. 
 - **Flexible.** Support training new DNN models with several public IQA datasets
 - **Differentiable.** Most methods support pytorch backward
 - **Convenient.** Quick inference and benchmark script
