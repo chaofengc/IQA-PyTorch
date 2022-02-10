@@ -29,6 +29,8 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | VSI<sup>[8](#fn8)</sup>(opt) | 0.9139 | 0.9620 | 0.9922 |  0.9571 | 0.9262 |
 | VSI(ours imported) | 0.9244 | 0.9497 | 0.9877 | 0.9541 | 0.9348 |
 | MAD<sup>[10](#fn10)</sup>(ours imported) | 188.17 | 0.0000 | 0.0000 |  89.15 | 174.02 |
+| NIQE<sup>[11](#fn11)</sup>(org) | 15.80 | 3.78 | 3.18 |  3.17 | 8.76 |
+| NIQE(ours imported) | 15.83 | 3.78 | 3.18 | 3.16 | 8.78 |
 
 #### Notice
 <a name="fn1">[1]</a> CKDN used degraded images as references in the original paper.   
@@ -37,7 +39,7 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 <a name="fn4">[4]</a> The original PSNR code refers to scikit-learn package with RGB 3-channel calculation (from skimage.metrics import peak_signal_noise_ratio).  
 <a name="fn5">[5]</a> We use Y-channel of YCBCR images as input of original VIF matlab script.  
 <a name="fn6">[6]</a> We use Y-channel of YCBCR images as input of original GMSD matlab script.  
-<a name="fn7">[7]</a> We use Y-channel of YCBCR images as input of original GMSD matlab script, and try to mimic 'imfilter' and 'conv2' functions in matlab.  
+<a name="fn7">[7]</a> We use Y-channel of YCBCR images as input of original NLPD matlab script, and try to mimic 'imfilter' and 'conv2' functions in matlab.  
 <a name="fn8">[8]</a> Since official matlab code is not available, we use the implement of IQA-Optimization for comparation. The differences are described as follows. After modifying the above implementation, the results are basically the same.
 1. we use interpolation to transform the image to 256*256 and then back to the image size after calculating VSMap in the SDSP function 
 2. rgb2lab's function is slightly different
@@ -46,3 +48,4 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 
 <a name="fn9">[9]</a> We use Y-channel of YCBCR images as input of original CW-SSIM matlab script. The number of level is 4 and orientation is 8.
 <a name="fn10">[10]</a> We use Y-channel of YCBCR images as input, and the original MAD matlab script is not available.
+<a name="fn11">[11]</a> We use Y-channel of YCBCR images as input of original NIQE matlab script.
