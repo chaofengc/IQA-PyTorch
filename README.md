@@ -52,7 +52,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | NRQM(Ma) :hourglass_flowing_sand:  |                    |
 | HOSA :hourglass_flowing_sand:      |                    |
 | BRISQUE :hourglass_flowing_sand:   |                    |
-| NIQE :hourglass_flowing_sand:      |                    |
+| NIQE                               | :white_check_mark: |
 
 </td><td>
 

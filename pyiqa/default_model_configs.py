@@ -122,5 +122,13 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'FR',
             },
+        'NIQE': {
+            'metric_opts': {
+                'type': 'NIQE',
+                'test_y_channel': True,
+                'pretrained_model_path': './experiments/pretrained_models/NIQE/modelparameters.mat',
+                },
+            'metric_mode': 'NR',
+            },
         })
 
