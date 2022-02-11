@@ -130,5 +130,13 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'NR',
             },
+        'BRISQUE': {
+            'metric_opts': {
+                'type': 'BRISQUE',
+                'test_y_channel': True,
+                'pretrained_model_path': './experiments/pretrained_models/BRISQUE/brisque_svm_weights.pt',
+                },
+            'metric_mode': 'NR',
+            },
         })
 
