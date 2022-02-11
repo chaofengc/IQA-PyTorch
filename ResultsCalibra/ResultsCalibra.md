@@ -31,6 +31,8 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | MAD<sup>[10](#fn10)</sup>(ours imported) | 188.17 | 0.0000 | 0.0000 |  89.15 | 174.02 |
 | NIQE<sup>[11](#fn11)</sup>(org) | 15.80 | 3.78 | 3.18 |  3.17 | 8.76 |
 | NIQE(ours imported) | 15.83 | 3.78 | 3.18 | 3.16 | 8.78 |
+| BRISQUE<sup>[12](#fn12)</sup>(org) | 109.75 | -0.1951 | 0.9376 |  5.30 | 69.99 |
+| BRISQUE(ours imported) | 109.75 | -0.1971 | 0.9905 | 5.44 | 64.59 |
 
 #### Notice
 <a name="fn1">[1]</a> CKDN used degraded images as references in the original paper.   
@@ -49,3 +51,4 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 <a name="fn9">[9]</a> We use Y-channel of YCBCR images as input of original CW-SSIM matlab script. The number of level is 4 and orientation is 8.
 <a name="fn10">[10]</a> We use Y-channel of YCBCR images as input, and the original MAD matlab script is not available.
 <a name="fn11">[11]</a> We use Y-channel of YCBCR images as input of original NIQE matlab script.
+<a name="fn11">[12]</a> We use Y-channel of YCBCR images as input of original BRISQUE matlab script.
