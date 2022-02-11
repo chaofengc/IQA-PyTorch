@@ -51,4 +51,4 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 <a name="fn9">[9]</a> We use Y-channel of YCBCR images as input of original CW-SSIM matlab script. The number of level is 4 and orientation is 8.
 <a name="fn10">[10]</a> We use Y-channel of YCBCR images as input, and the original MAD matlab script is not available.
 <a name="fn11">[11]</a> We use Y-channel of YCBCR images as input of original NIQE matlab script.
-<a name="fn11">[12]</a> We use Y-channel of YCBCR images as input of original BRISQUE matlab script.
+<a name="fn12">[12]</a> We use Y-channel of YCBCR images as input of original BRISQUE matlab script.
