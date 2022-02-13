@@ -5,6 +5,18 @@ import torch.nn as nn
 from collections import namedtuple
 
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.arch_util import load_pretrained_network
+
+
+default_model_urls = {
+    # key "url" is the default 
+    '0.0_alex': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_alex-18720f55.pth',
+    '0.0_vgg': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_vgg-b9e42362.pth',
+    '0.0_squeeze': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_squeeze-c27abd3a.pth',
+    '0.1_alex': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_alex-df73285e.pth',
+    '0.1_vgg': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_vgg-a78928a0.pth', 
+    '0.1_squeeze': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_vgg-a78928a0.pth',  
+}
 
 
 def upsample(in_tens,
@@ -25,7 +37,6 @@ def normalize_tensor(in_feat, eps=1e-10):
 
 @ARCH_REGISTRY.register()
 class LPIPS(nn.Module):
-
     def __init__(self,
                  pretrained=True,
                  net='alex',
@@ -110,16 +121,13 @@ class LPIPS(nn.Module):
                 self.lins += [self.lin5, self.lin6]
             self.lins = nn.ModuleList(self.lins)
 
-            if (pretrained):
-                self.load_pretrained_network(pretrained_model_path)
+            if pretrained_model_path is not None:
+                load_pretrained_network(self, pretrained_model_path)
+            elif pretrained:
+                load_pretrained_network(self, default_model_urls[f'{version}_{net}'])
 
         if (eval_mode):
             self.eval()
-
-    def load_pretrained_network(self, model_path):
-        print(f'Loading pretrained model from {model_path}')
-        state_dict = torch.load(model_path, map_location=torch.device('cpu'))
-        self.load_state_dict(state_dict, strict=False)
 
     def forward(self, in1, in0, retPerLayer=False, normalize=True):
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]

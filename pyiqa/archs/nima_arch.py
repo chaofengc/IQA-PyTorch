@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import timm
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.arch_util import dist_to_mos
 
 
 @ARCH_REGISTRY.register()
@@ -57,11 +58,6 @@ class NIMA(nn.Module):
         state_dict = torch.load(model_path, map_location=torch.device('cpu'))['state_dict']
         self.net.load_state_dict(state_dict, strict=True) 
 
-    def _get_mos_from_dist(self, pred_score):
-        pred_score = pred_score * torch.arange(1, self.num_classes + 1).to(pred_score).unsqueeze(0)
-        pred_score = pred_score.sum(dim=1, keepdim=True)
-        return pred_score
-
     def preprocess(self, x):
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x
@@ -72,7 +68,7 @@ class NIMA(nn.Module):
         x = self.base_model(x)[-1]
         x = self.global_pool(x)
         dist = self.classifier(x)
-        mos = self._get_mos_from_dist(dist)
+        mos = dist_to_mos(dist)
         return_list = []
         if return_mos:
             return_list.append(mos)
