@@ -51,7 +51,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 | CNNIQA                             | :white_check_mark: |
 | NRQM(Ma) :hourglass_flowing_sand:  |                    |
 | HOSA :hourglass_flowing_sand:      |                    |
-| BRISQUE :hourglass_flowing_sand:   |                    |
+| BRISQUE                            | :white_check_mark: |
 | NIQE                               | :white_check_mark: |
 
 </td><td>

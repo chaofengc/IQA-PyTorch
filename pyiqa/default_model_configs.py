@@ -130,13 +130,19 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'NR',
             },
+        'BRISQUE': {
+            'metric_opts': {
+                'type': 'BRISQUE',
+                'test_y_channel': True,
+                'pretrained_model_path': './experiments/pretrained_models/BRISQUE/brisque_svm_weights.pt',
+                },
+            'metric_mode': 'NR',
+            },
         'MUSIQ': {
             'metric_opts': {
                 'type': 'MUSIQ',
                 'num_class': 10,
                 'pretrained_model_path': './experiments/pretrained_models/MUSIQ/musiq_ava_ckpt.pth',
-                },
-            'metric_mode': 'NR',
             },
         })
 
