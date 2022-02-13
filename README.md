@@ -42,7 +42,7 @@ Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/
 
 | NR Method                          | Backward           |
 | ---------------------------------- | ------------------ |
-| MUSIQ :hourglass_flowing_sand:     |                    |
+| MUSIQ                              | :white_check_mark: |
 | DBCNN                              | :white_check_mark: |
 | PaQ-2-PiQ :hourglass_flowing_sand: |                    |
 | HyperIQA                           | :white_check_mark: |
@@ -145,9 +145,9 @@ Here is an example script to get performance benchmark on different datasets:
 ```
 python benchmark_results.py -opt options/benchmark_test.yml
 ```
-Please refer to [benchmark results](tests/benchmark_results.csv) for results.
+Please refer to [benchmark results](tests/benchmark_results.csv) for benchmark results of traditional metrics.
 
-### Performances of the retrained deep learning models
+### Performances of deep learning models
 
 #### Small datasets, n-splits validation 
 
@@ -157,8 +157,8 @@ Please refer to [benchmark results](tests/benchmark_results.csv) for results.
 
 #### Large dataset performance
 
-| <!-- | Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
-| ---- | ------- | ------- | ------ | ----- | ---- | --- | --------- |>
+| Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
+| ---- | ------- | ------- | ------ | ----- | ---- | --- | 
 
 ## Contribution
 

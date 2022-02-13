@@ -1,18 +1,13 @@
  # ignored folders
 datasets/*
 results/*
+experiments/
 tb_logger/*
 tb_logger_archived/*
 wandb/*
 tmp/*
 .vscode*
 *.sh
-
-experiments/*
-
-!experiments/pretrained_models/DISTS/weights.pt
-!experiments/pretrained_models/LPIPS/v0.0/*.pth
-!experiments/pretrained_models/LPIPS/v0.1/*.pth
 
 *.DS_Store
 .idea
