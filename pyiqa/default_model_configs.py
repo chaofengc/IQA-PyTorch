@@ -11,7 +11,7 @@ IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 
 DEFAULT_CONFIGS = OrderedDict({
-        'CKDN': {
+        'ckdn': {
             'metric_opts': {
                 'type': 'CKDN',
                 'pretrained_model_path': './experiments/pretrained_models/CKDN/model_best.pth.tar',
@@ -31,7 +31,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 tv.transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
                 ]),
             },
-        'LPIPS': {
+        'lpips': {
             'metric_opts': {
                 'type': 'LPIPS',
                 'net': 'alex',
@@ -40,14 +40,14 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'FR',
             },
-        'DISTS': {
+        'dists': {
             'metric_opts': {
                 'type': 'DISTS',
                 'pretrained_model_path': './experiments/pretrained_models/DISTS/weights.pt',
                 },
             'metric_mode': 'FR',
             },
-        'SSIM': {
+        'ssim': {
             'metric_opts': {
                 'type': 'SSIM',
                 'downsample': False,
@@ -55,21 +55,21 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'FR',
             },
-        'PSNR': {
+        'psnr': {
             'metric_opts': {
                 'type': 'PSNR',
                 'test_y_channel': False,
                 },
             'metric_mode': 'FR',
             },
-        'FSIM': {
+        'fsim': {
             'metric_opts': {
                 'type': 'FSIM',
                 'chromatic': True,
                 },
             'metric_mode': 'FR',
             },
-        'MS_SSIM': {
+        'ms_ssim': {
             'metric_opts': {
                 'type': 'MS_SSIM',
                 'downsample': False,
@@ -78,20 +78,20 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'FR',
             },
-        'VIF': {
+        'vif': {
             'metric_opts': {
                 'type': 'VIF',
                 },
             'metric_mode': 'FR',
             },
-        'GMSD': {
+        'gmsd': {
             'metric_opts': {
                 'type': 'GMSD',
                 'test_y_channel': True,
                 },
             'metric_mode': 'FR',
             },
-        'NLPD': {
+        'nlpd': {
             'metric_opts': {
                 'type': 'NLPD',
                 'channels': 1,
@@ -99,13 +99,13 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'FR',
             },
-        'VSI': {
+        'vsi': {
             'metric_opts': {
                 'type': 'VSI',
                 },
             'metric_mode': 'FR',
             },
-        'CW_SSIM': {
+        'cw_ssim': {
             'metric_opts': {
                 'type': 'CW_SSIM',
                 'channels': 1,
@@ -115,14 +115,14 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'FR',
             },
-        'MAD': {
+        'mad': {
             'metric_opts': {
                 'type': 'MAD',
                 'test_y_channel': True,
                 },
             'metric_mode': 'FR',
             },
-        'NIQE': {
+        'niqe': {
             'metric_opts': {
                 'type': 'NIQE',
                 'test_y_channel': True,
@@ -130,7 +130,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'NR',
             },
-        'BRISQUE': {
+        'brisque': {
             'metric_opts': {
                 'type': 'BRISQUE',
                 'test_y_channel': True,
@@ -138,11 +138,13 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'NR',
             },
-        'MUSIQ': {
+        'musiq': {
             'metric_opts': {
                 'type': 'MUSIQ',
                 'num_class': 10,
                 'pretrained_model_path': './experiments/pretrained_models/MUSIQ/musiq_ava_ckpt.pth',
+            },
+            'metric_mode': 'NR',
             },
         })
 

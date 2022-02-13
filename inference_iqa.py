@@ -3,7 +3,6 @@ import glob
 import os
 from PIL import Image
 from pyiqa.models.inference_model import InferenceModel
-from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
 def main():
     """Inference demo for pyiqa. 
@@ -24,16 +23,12 @@ def main():
 
     args = parser.parse_args()
 
-    metric_name = args.metric_name
+    metric_name = args.metric_name.lower()
 
     # set up IQA model 
-    if metric_name in DEFAULT_CONFIGS.keys():
-        iqa_model = InferenceModel(**DEFAULT_CONFIGS[metric_name])
-        metric_mode = DEFAULT_CONFIGS[metric_name]['metric_mode']
-    else:
-        iqa_model = InferenceModel(args.metric_mode, args.model_path, 
+    iqa_model = InferenceModel(metric_name, args.metric_mode, args.model_path, 
                 args.img_range, args.input_size, args.mean, args.std)
-        metric_mode = args.metric_mode
+    metric_mode = iqa_model.metric_mode
 
     if os.path.isfile(args.input):
         input_paths = [args.input]

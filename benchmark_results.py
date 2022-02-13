@@ -1,4 +1,5 @@
 import argparse
+from email.policy import default
 import yaml
 import csv
 from pyiqa.models.inference_model import InferenceModel
@@ -7,43 +8,80 @@ from pyiqa.default_model_configs import DEFAULT_CONFIGS
 from pyiqa.utils.options import ordered_yaml
 from pyiqa.metrics import calculate_plcc, calculate_srcc, calculate_krcc
 from tqdm import tqdm
+import torch
 
 def main():
     """benchmark test demo for pyiqa. 
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-opt', type=str, required=True, help='Path to option YAML file.')
-    parser.add_argument('-num_gpu', type=int, default=0, help='use gpu or not')
+    parser.add_argument('-m', type=str, nargs='+', default=None, help='metric name list.')
+    parser.add_argument('-d', type=str, nargs='+', default=None, help='dataset name list.')
+    parser.add_argument('--metric_opt', type=str, default=None, help='Path to custom metric option YAML file.')
+    parser.add_argument('--data_opt', type=str, default=None, help='Path to custom metric option YAML file.')
+    parser.add_argument('--save_result_path', type=str, default='tests/benchmark_results.csv', help='file to save results.')
+    parser.add_argument('--use_gpu', action="store_true", default=False, help='use gpu or not')
     args = parser.parse_args()
 
-    # parse yaml options
-    with open(args.opt, mode='r') as f:
-        opt = yaml.load(f, Loader=ordered_yaml()[0])
+    metrics_to_test = []
+    datasets_to_test = []
+    if args.m is not None:
+        metrics_to_test += args.m
+    if args.d is not None:
+        datasets_to_test += args.d
     
-    save_result_path = opt['save_result_path']
+    if args.use_gpu:
+        num_gpu = 1
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    else:
+        num_gpu = 0
+        device = torch.device('cpu')
+    
+    # ========== get metric and dataset options ===========
+    # load default options first
+    all_metric_opts = DEFAULT_CONFIGS
+    with open('./options/default_dataset_opt.yml', mode='r') as f:
+        all_data_opts = yaml.load(f, Loader=ordered_yaml()[0])
+
+    # load custom options to test
+    if args.metric_opt is not None: 
+        with open(args.metric_opt, mode='r') as f:
+            custom_metric_opt = yaml.load(f, Loader=ordered_yaml()[0])
+        all_metric_opts.update(custom_metric_opt)
+        metrics_to_test += list(custom_metric_opt.keys()) 
+    
+    if args.data_opt is not None: 
+        with open(args.data_opt, mode='r') as f:
+            custom_data_opt = yaml.load(f, Loader=ordered_yaml()[0])
+        all_data_opts.update(custom_data_opt)
+        datasets_to_test += list(custom_data_opt.keys())
+
+    # =====================================================
+    
+    save_result_path = args.save_result_path 
 
     csv_file = open(save_result_path, 'w')
     csv_writer = csv.writer(csv_file)
-    csv_writer.writerow(['Metric name'] + [ds['name']+'(PLCC/SRCC/KRCC)' for ds in opt['datasets'].values()]) 
+    csv_writer.writerow(['Metric name'] + [name +'(PLCC/SRCC/KRCC)' for name in datasets_to_test]) 
 
-    for metric_config in opt['metrics'].values():
-        metric_name = metric_config['name']
+    for metric_name in metrics_to_test:
         # if metric_name exist in default config, load default config first  
-        if metric_name in DEFAULT_CONFIGS.keys():
-            metric_opts = DEFAULT_CONFIGS[metric_name]['metric_opts']
-            if 'metric_opts' in metric_config.keys():
-                metric_opts.update(metric_config['metric_opts'])
-        else:
-            metric_opts = metric_config['metric_opts']
-        metric_mode = metric_config['metric_mode']
-        iqa_model = InferenceModel(metric_mode, metric_opts)
+        metric_opts = all_metric_opts[metric_name]['metric_opts']
+        metric_mode = all_metric_opts[metric_name]['metric_mode'] 
+        iqa_model = InferenceModel(metric_name, metric_mode, **metric_opts)
+        iqa_model.net.to(device)
 
         results_row = [metric_name]
-        for ds in opt['datasets'].values():
-            ds['phase'] = 'test'
-            dataset = build_dataset(ds)
-            dataset_name = ds['name']
-            dataloader = build_dataloader(dataset, ds, num_gpu=args.num_gpu)
+        for dataset_name in datasets_to_test:
+            data_opts = all_data_opts[dataset_name]
+            data_opts.update({
+                    'num_worker_per_gpu': 8,
+                    'prefetch_mode': 'cpu',
+                    'num_prefetch_queue': 8,
+            })
+            if 'phase' not in data_opts:
+                data_opts['phase'] = 'test' 
+            dataset = build_dataset(data_opts)
+            dataloader = build_dataloader(dataset, data_opts, num_gpu=num_gpu)
             gt_labels = []
             result_scores = []
             pbar = tqdm(total=len(dataloader), unit='image')

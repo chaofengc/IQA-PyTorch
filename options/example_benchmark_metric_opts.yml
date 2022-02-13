@@ -1,0 +1,6 @@
+# for example, psnr with y channel
+psnr-y:
+  metric_opts: 
+    type: PSNR
+    test_y_channel: true
+  metric_mode: FR

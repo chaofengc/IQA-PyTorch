@@ -18,9 +18,13 @@ from .arch_util import SimpleSamePadding2d, simple_sample_padding2d
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.data.multiscale_trans_util import get_multiscale_patches
 
+
 default_model_urls = {
-    'ava': '',
-    'koniq10k': '',
+    'ava': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_ava_ckpt-e8d3f067.pth',
+    'koniq10k': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_koniq_ckpt-e95806b9.pth',
+    'spaq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_spaq_ckpt-358bb6af.pth',
+    'paq2piq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_paq2piq_ckpt-364c0c84.pth',
+    'imagenet_pretrain': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_imagenet_pretrain-51d9b0a5.pth',
 }
 
 
@@ -30,10 +34,10 @@ class StdConv(nn.Conv2d):
     """
     def forward(self, x):
         # implement same padding
+        x = simple_sample_padding2d(x, self.kernel_size[0], self.stride[0])
         weight = self.weight
         weight = weight - weight.mean((1, 2, 3), keepdim=True)
         weight = weight / (weight.std((1, 2, 3), keepdim=True) + 1e-5)
-        x = simple_sample_padding2d(x, self.kernel_size[0], self.stride[0])
         return F.conv2d(x, weight, self.bias, self.stride)
 
 
@@ -361,12 +365,3 @@ class MUSIQ(nn.Module):
             return return_list
         else:
             return return_list[0]
-
-
-if __name__ == '__main__':
-    x = torch.randn((2, 3, 384, 512))
-    x = get_multiscale_patches(x)
-    print(x.shape)
-    model = MUSIQ()
-    y = model(x)
-    print(y.shape)

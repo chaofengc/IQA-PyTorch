@@ -1,23 +1,16 @@
 import torch
 import torchvision as tv
-from collections import OrderedDict
-from os import path as osp
-from PIL import Image
 
-from pyiqa.archs import build_network
-from pyiqa.losses import build_loss
-from pyiqa.metrics import calculate_metric
-from pyiqa.utils import get_root_logger, imwrite, tensor2img
-from pyiqa.utils.registry import MODEL_REGISTRY
-from .base_model import BaseModel
-
+from pyiqa.archs import create_metric 
+from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
 class InferenceModel():
     """Common model for quality inference of single image with default setting of each metric.""" 
 
     def __init__(self, 
+                 metric_name,
                  metric_mode,
-                 metric_opts=None,
                  model_path=None,
                  img_range=1.0,
                  input_size=None,
@@ -25,28 +18,36 @@ class InferenceModel():
                  std=None,
                  preprocess_x=None,
                  preprocess_y=None,
+                 **kwargs # Other metric options
             ):
         super(InferenceModel, self).__init__()
 
-        self.metric_mode = metric_mode
+        self.metric_name = metric_name
+        if metric_name in DEFAULT_CONFIGS.keys():
+            self.metric_mode = DEFAULT_CONFIGS[metric_name]['metric_mode']
+        else:
+            self.metric_mode = metric_mode
 
         # define network
-        self.net = build_network(metric_opts)
+        self.net = create_metric(metric_name, **kwargs)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.net = self.net.to(self.device)
         self.net.eval()
 
         # load pretrained models
         if model_path is not None:
-            self.net.load_pretrained_network(model_path)
+            load_pretrained_network(self.net, model_path)
 
         tf_list = []
+        if input_size is not None:
+            tf_list.append(tv.transforms.Resize(input_size))
         tf_list.append(tv.transforms.ToTensor())
         tf_list.append(tv.transforms.Lambda(lambda x: x * img_range))
         if mean is not None and std is not None:
             tf_list.append(tv.transforms.Normalize(mean, std))
         self.trans_x = self.trans_y = tv.transforms.Compose(tf_list)
 
+        # This is only used to specific methods which has specific preprocessing, for example, ckdn
         if preprocess_x is not None and preprocess_y is not None:
             self.trans_x = preprocess_x
             self.trans_y = preprocess_y

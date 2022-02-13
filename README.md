@@ -102,20 +102,38 @@ pip3 install -r requirements.txt
 Example test script with input directory and reference directory. Single image is also supported for `-i` and `-r` options. 
 ```
 python inference_iqa.py -n LPIPS -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir 
+
+# metric name is case insensitive, it is also ok with
+python inference_iqa.py -n lpips -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir 
+
+# example for NR metric with single image
+python inference_iqa.py -n brisque -i ./ResultsCalibra/dist_dir/I03.bmp 
 ```
 
 #### Used as functions in your project
+```
+import pyiqa 
+
+# create metric with default setting
+iqa_metric = pyiqa.create_metric('lpips').to(device)
+
+# create metric with custom setting
+iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True).to(device)
+
+# create neural network metric trained with different datasets
+iqa_metric = pyiqa.create_metric('musiq', pretrained='koniq10k').to(device)
+
+# create new neural network metric without pretrained 
+# evaluation mode is set as True by default
+iqa_metric = pyiqa.create_metric('musiq', pretrained=False, eval=False).to(device)
+
+# iqa score inference
+# img_tensor_x/y: (N, 3, H, W), RGB, 0 ~ 1
+score_fr = iqa_metric(img_tensor_x, img_tensor_y)
+score_nr = iqa_metric(img_tensor_x)
+```
 
 Metrics which support backward can be used for optimization, such as image enhancement.
-
-```
-from pyiqa import LPIPS 
-
-metric_func = LPIPS(net='alex', version='0.1').to(device)
-# img_tensor_x/y: (N, 3, H, W)
-# data format: RGB, 0 ~ 1
-score = metric_func(img_tensor_x, img_tensor_y)
-```
 
 ## Train 
 
@@ -143,7 +161,16 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 
 Here is an example script to get performance benchmark on different datasets:
 ```
-python benchmark_results.py -opt options/benchmark_test.yml
+# NOTE: this script will test ALL specified metrics on ALL specified datasets
+# Test default metrics on default datasets
+python benchmark_results.py -m psnr ssim -d csiq tid2013 tid2008 
+
+# Test with your own options
+python benchmark_results.py -m psnr --data_opt options/example_benchmark_data_opts.yml
+
+python benchmark_results.py --metric_opt options/example_benchmark_metric_opts.yml tid2013 tid2008
+
+python benchmark_results.py --metric_opt options/example_benchmark_metric_opts.yml --data_opt options/example_benchmark_data_opts.yml
 ```
 Please refer to [benchmark results](tests/benchmark_results.csv) for benchmark results of traditional metrics.
 
