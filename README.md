@@ -1,4 +1,4 @@
-# Python Toolbox for Image Quality Assessment
+# PyTorch Toolbox for Image Quality Assessment
 An IQA toolbox with pure python and pytorch.
 
 
