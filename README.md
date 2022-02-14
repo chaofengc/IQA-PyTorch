@@ -84,8 +84,16 @@ Below are details of supported methods and datasets in this project.
 
 ### :triangular_flag_on_post: Updates/Changelog
 
-- **Date**. Add xx
-- [**More**](dfkj)
+- **Feb 2, 2022**. Add MUSIQ inference code, and the converted official weights. See [Official codes](https://github.com/google-research/google-research/tree/master/musiq). 
+- [**More**](docs/history_changelog.md)
+
+---
+
+### :hourglass_flowing_sand: TODO List
+
+- :white_large_square: Benchmark with retrained models of DBCNN, NIMA, etc. 
+
+---
 
 ## :zap: Quick Start
 
