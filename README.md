@@ -85,8 +85,8 @@ Below are details of supported methods and datasets in this project.
 ### Dependencies and Installation
 - Ubuntu >= 18.04
 - Python >= 3.8
-- Pytorch >= 1.8
-- CUDA 11.0 (if use GPU)
+- Pytorch >= 1.8.1
+- CUDA 10.1 (if use GPU)
 - Other required packages in `requirements.txt`
 ```
 # git clone this repository
@@ -157,7 +157,11 @@ python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml
 
 ## Benchmark Performances and Model Zoo
 
+### Results Calibration
+
 Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to verify the correctness of the python implementations compared with official scripts in matlab or python.
+
+### Performances of classical metrics 
 
 Here is an example script to get performance benchmark on different datasets:
 ```
