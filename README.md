@@ -1,6 +1,6 @@
 # PyTorch Toolbox for Image Quality Assessment
-An IQA toolbox with pure python and pytorch.
 
+An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive survey of IQA methods, as well as download links for IQA datasets. 
 
 ## Introduction
 
@@ -12,7 +12,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 - **Differentiable.** Most methods support pytorch backward
 - **Convenient.** Quick inference and benchmark script
 
-Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive summary of IQA methods, as well as download links for IQA datasets. Below are details of supported methods and datasets in this project. 
+Below are details of supported methods and datasets in this project. 
 
 <details open>
 <summary>Supported methods and datasets:</summary>

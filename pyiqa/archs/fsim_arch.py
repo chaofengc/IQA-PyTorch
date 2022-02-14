@@ -74,7 +74,7 @@ def get_meshgrid(size: Tuple[int, int]) -> torch.Tensor:
     else:
         # Even
         y = torch.arange(-size[1] / 2, size[1] / 2) / size[1]
-    return torch.meshgrid(x, y, indexing='ij')
+    return torch.meshgrid(x, y)
 
 
 def fsim(x: torch.Tensor,

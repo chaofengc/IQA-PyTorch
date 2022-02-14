@@ -15,10 +15,14 @@ from xmlrpc.client import Boolean
 import torch
 import torch.nn.functional as F
 from pyiqa.archs.ssim_arch import to_y_channel, fspecial_gauss
+from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.matlab_functions import imresize
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.matlab_functions import imresize
 
+default_model_urls = {
+    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/brisque_svm_weights.pth'
+}
 
 def brisque(x: torch.Tensor,
             kernel_size: int = 7,
@@ -228,7 +232,10 @@ class BRISQUE(torch.nn.Module):
         self.kernel_sigma = kernel_sigma
         self.data_range = data_range
         self.test_y_channel = test_y_channel
-        self.pretrained_model_path = pretrained_model_path
+        if pretrained_model_path is not None:
+            self.pretrained_model_path = pretrained_model_path
+        else:
+            self.pretrained_model_path = load_file_from_url(default_model_urls['url'])
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""Computation of BRISQUE score as a loss function.

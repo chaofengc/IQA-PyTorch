@@ -24,8 +24,24 @@ from typing import Tuple
 from xmlrpc.client import Boolean
 
 from pyiqa.archs.ssim_arch import to_y_channel, fspecial_gauss
+from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.matlab_functions import imresize
 from pyiqa.utils.registry import ARCH_REGISTRY
+
+
+default_model_urls = {
+    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_modelparameters.mat'
+}
+
+
+def torch_cov(tensor, rowvar=True, bias=False):
+    """Estimate a covariance matrix (np.cov)
+    https://gist.github.com/ModarTensai/5ab449acba9df1a26c12060240773110
+    """
+    tensor = tensor if rowvar else tensor.transpose(-1, -2)
+    tensor = tensor - tensor.mean(dim=-1, keepdim=True)
+    factor = 1 / (tensor.shape[-1] - int(not bool(bias)))
+    return factor * tensor @ tensor.transpose(-1, -2).conj()
 
 
 def estimate_aggd_param(
@@ -158,15 +174,14 @@ def niqe(img: torch.Tensor,
     distparam = torch.cat(distparam, -1)
 
     # fit a MVG (multivariate Gaussian) model to distorted patch features
-    mu_distparam = torch.nanmean(distparam, axis=1)
+    mu_distparam = torch.mean(distparam.masked_select(~torch.isnan(distparam)).reshape_as(distparam), axis=1)
 
     distparam_no_nan = distparam * (~torch.isnan(distparam))
 
     cov_distparam = []
     for in_b in range(b):
         sample_distparam = distparam_no_nan[in_b, ...]
-        # torch.cov(): expected input to have two or fewer dimensions
-        cov_distparam.append(torch.cov(sample_distparam.T))
+        cov_distparam.append(torch_cov(sample_distparam.T))
 
     # compute niqe quality, Eq. 10 in the paper
     invcov_param = torch.linalg.pinv(
@@ -242,7 +257,10 @@ class NIQE(torch.nn.Module):
         self.channels = channels
         self.test_y_channel = test_y_channel
         self.crop_border = crop_border
-        self.pretrained_model_path = pretrained_model_path
+        if pretrained_model_path is not None:
+            self.pretrained_model_path = pretrained_model_path
+        else:
+            self.pretrained_model_path = load_file_from_url(default_model_urls['url'])
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         r"""Computation of NIQE metric.

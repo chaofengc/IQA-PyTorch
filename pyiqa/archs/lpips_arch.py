@@ -122,9 +122,9 @@ class LPIPS(nn.Module):
             self.lins = nn.ModuleList(self.lins)
 
             if pretrained_model_path is not None:
-                load_pretrained_network(self, pretrained_model_path)
+                load_pretrained_network(self, pretrained_model_path, False)
             elif pretrained:
-                load_pretrained_network(self, default_model_urls[f'{version}_{net}'])
+                load_pretrained_network(self, default_model_urls[f'{version}_{net}'], False)
 
         if (eval_mode):
             self.eval()
