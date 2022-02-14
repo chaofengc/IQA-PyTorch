@@ -2,15 +2,15 @@
 
 An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive survey of IQA methods, as well as download links for IQA datasets. 
 
-## Introduction
+## :open_book: Introduction
 
 This is a image quality assessment toolbox with **pure python and pytorch**. We provide the following features:
 
-- **Comprehensive.** Support many mainstream full reference (FR) and no reference (NR) metrics
-- **Accurate.** Results calibration of our implementation with official matlab scripts (if exist). For deep learning approaches, our implementation can even achieve better performance with the standardized training process. 
-- **Flexible.** Support training new DNN models with several public IQA datasets
-- **Differentiable.** Most methods support pytorch backward
-- **Convenient.** Quick inference and benchmark script
+- :sparkles: **Comprehensive.** Support many mainstream full reference (FR) and no reference (NR) metrics
+- :sparkles: **Accurate.** Results calibration of our implementation with official matlab scripts (if exist). 
+- :sparkles: **Flexible.** Support training new DNN models with several public IQA datasets
+- :sparkles: **Differentiable.** Most methods support pytorch backward
+- :sparkles: **Convenient.** Quick inference and benchmark script
 
 Below are details of supported methods and datasets in this project. 
 
@@ -80,7 +80,14 @@ Below are details of supported methods and datasets in this project.
 
 </details>
 
-## Quick Start
+---
+
+### :triangular_flag_on_post: Updates/Changelog
+
+- **Date**. Add xx
+- [**More**](dfkj)
+
+## :zap: Quick Start
 
 ### Dependencies and Installation
 - Ubuntu >= 18.04
@@ -135,14 +142,14 @@ score_nr = iqa_metric(img_tensor_x)
 
 Metrics which support backward can be used for optimization, such as image enhancement.
 
-## Train 
+## :hammer_and_wrench: Train 
 
 ### Dataset Preparation
 
 - You only need to unzip downloaded datasets from official website without any extra operation. Download links are provided in [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment).  
 - We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [TODOdownload_link](). 
 
-Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](Dataset_Preparation.md) 
+Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md) 
 
 ### Example Train Script 
 
@@ -193,7 +200,7 @@ Please refer to [benchmark results](tests/benchmark_results.csv) for benchmark r
 
 ## Contribution
 
-Any contributions to this repository are greatly appreciated. Please follow the [contribution instructions](Instruction.md) for contribution guidance.  
+Any contributions to this repository are greatly appreciated. Please follow the [contribution instructions](docs/Instruction.md) for contribution guidance.  
 
 ## License
 
@@ -222,6 +229,6 @@ We also thanks the following public repositories:
 - [CNNIQA](https://github.com/lidq92/CNNIQA)
 - [WaDIQaM](https://github.com/lidq92/WaDIQaM)
 
-## Contact
+## :e-mail: Contact
 
 If you have any questions, please email `chaofenghust@gmail.com`
