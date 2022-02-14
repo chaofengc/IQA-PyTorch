@@ -7,12 +7,12 @@ import csv
 import pandas as pd
 
 def get_meta_info():
-    root_dir = '../../datasets/CSIQ/'
-    label_file = '../../datasets/CSIQ/csiq_label.txt'
+    root_dir = '../datasets/CSIQ/'
+    label_file = '../datasets/CSIQ/csiq_label.txt'
     
     name_dmos = [x.strip().split() for x in open(label_file).readlines()]
     
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_CSIQDataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_CSIQDataset.csv'
     with open(save_meta_path, 'w') as f:
         writer = csv.writer(f)
         header = ['ref_name', 'dist_name', 'dmos']
@@ -23,8 +23,8 @@ def get_meta_info():
 
 def get_random_splits(seed=123):
     random.seed(seed)
-    meta_info_file = '../pyiqa/data/meta_info/meta_info_CSIQDataset.csv' 
-    save_path = f'../pyiqa/data/train_split_info/csiq_{seed}.pkl'
+    meta_info_file = './datasets/meta_info/meta_info_CSIQDataset.csv' 
+    save_path = f'./datasets/meta_info/csiq_{seed}.pkl'
     ratio = 0.8
 
     meta_info = pd.read_csv(meta_info_file)

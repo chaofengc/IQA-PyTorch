@@ -8,9 +8,9 @@ import pandas as pd
 from tqdm import tqdm
 
 def get_meta_info():
-    mos_label_file = '../../datasets/SPAQ/Annotations/MOS and Image attribute scores.xlsx'
-    scene_label_file = '../../datasets/SPAQ/Annotations/Scene category labels.xlsx'
-    exif_label_file = '../../datasets/SPAQ/Annotations/EXIF_tags.xlsx'
+    mos_label_file = '../datasets/SPAQ/Annotations/MOS and Image attribute scores.xlsx'
+    scene_label_file = '../datasets/SPAQ/Annotations/Scene category labels.xlsx'
+    exif_label_file = '../datasets/SPAQ/Annotations/EXIF_tags.xlsx'
 
     mos_label = pd.read_excel(mos_label_file)
     scene_label = pd.read_excel(scene_label_file)
@@ -20,7 +20,7 @@ def get_meta_info():
     new_head[-2] = 'Time0'
     new_head[-1] = 'Time1'
 
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_SPAQDataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_SPAQDataset.csv'
     with open(save_meta_path, 'w+') as sf:
         csvwriter = csv.writer(sf)
         csvwriter.writerow(new_head)
@@ -39,7 +39,7 @@ def get_random_splits(seed=123):
     total_num = 11125
     all_img_index = list(range(total_num))
     num_splits = 10
-    save_path = f'../pyiqa/data/train_split_info/spaq_seed{seed}.pkl'
+    save_path = f'./datasets/meta_info/spaq_seed{seed}.pkl'
 
     ratio = [0.8, 0.2] # train/val/test
     sep_index = int(round(0.8 * total_num))

@@ -7,9 +7,9 @@ import csv
 from tqdm import tqdm
 
 def get_meta_info():
-    info_file = '../../datasets/kadid10k/dmos.csv'
+    info_file = '../datasets/kadid10k/dmos.csv'
 
-    #  save_meta_path = '../pyiqa/data/meta_info/meta_info_KADID10kDataset.txt'
+    #  save_meta_path = './datasets/meta_info/meta_info_KADID10kDataset.txt'
     #  with open(info_file, 'r') as f, open(save_meta_path, 'w+') as sf:
         #  csvreader = csv.reader(f)
         #  head = next(csvreader)
@@ -23,7 +23,7 @@ def get_meta_info():
             #  msg = f'{ref_name:<15}\t{dis_name:<15}\t{dmos:<15}\t{std:<15}\n'
             #  sf.write(msg)
 
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_KADID10kDataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_KADID10kDataset.csv'
     with open(info_file, 'r') as f, open(save_meta_path, 'w+') as sf:
         csvreader = csv.reader(f)
         head = next(csvreader)

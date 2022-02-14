@@ -9,16 +9,16 @@ from tqdm import tqdm
 
 def get_meta_info():
 
-    root_path = '../../datasets/PieAPP_dataset_CVPR_2018/'
-    train_list_file = '../../datasets/PieAPP_dataset_CVPR_2018/train_reference_list.txt'
-    val_list_file = '../../datasets/PieAPP_dataset_CVPR_2018/val_reference_list.txt'
-    test_list_file = '../../datasets/PieAPP_dataset_CVPR_2018/test_reference_list.txt'
+    root_path = '../datasets/PieAPP_dataset_CVPR_2018/'
+    train_list_file = '../datasets/PieAPP_dataset_CVPR_2018/train_reference_list.txt'
+    val_list_file = '../datasets/PieAPP_dataset_CVPR_2018/val_reference_list.txt'
+    test_list_file = '../datasets/PieAPP_dataset_CVPR_2018/test_reference_list.txt'
 
     train_ref_list = [x.strip() for x in open(train_list_file).readlines()]
     val_ref_list = [x.strip() for x in open(val_list_file).readlines()]
     test_ref_list = [x.strip() for x in open(test_list_file).readlines()]
 
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_PieAPPDataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_PieAPPDataset.csv'
     split_info = {
             1: {'train': [], 'val': [], 'test': []},
             }
@@ -69,7 +69,7 @@ def get_meta_info():
                     split_info[1][sp_str].append(count)
                     count += 1
     
-    save_split_path = '../pyiqa/data/train_split_info/pieapp_official.pkl'
+    save_split_path = './datasets/meta_info/pieapp_official.pkl'
     with open(save_split_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

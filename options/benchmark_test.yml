@@ -12,14 +12,14 @@ datasets:
   dataset1: 
     name: CSIQ
     type: GeneralFRDataset
-    dataroot_target: ../datasets/CSIQ/dst_imgs
-    dataroot_ref: ../datasets/CSIQ/src_imgs
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.csv
+    dataroot_target: ./datasets/CSIQ/dst_imgs
+    dataroot_ref: ./datasets/CSIQ/src_imgs
+    meta_info_file: ./datasets/meta_info/meta_info_CSIQDataset.csv
     dmos_max: 1
 
   dataset2: 
     name: TID2013 
     type: GeneralFRDataset
-    dataroot_target: ../datasets/tid2013/distorted_images
-    dataroot_ref: ../datasets/tid2013/reference_images
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.csv
+    dataroot_target: ./datasets/tid2013/distorted_images
+    dataroot_ref: ./datasets/tid2013/reference_images
+    meta_info_file: ./datasets/meta_info/meta_info_TID2013Dataset.csv

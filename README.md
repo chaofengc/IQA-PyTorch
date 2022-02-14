@@ -92,6 +92,7 @@ Below are details of supported methods and datasets in this project.
 ### :hourglass_flowing_sand: TODO List
 
 - :white_large_square: Benchmark with retrained models of DBCNN, NIMA, etc. 
+- :white_large_square: Add pretrained models on different datasets.
 
 ---
 
@@ -155,7 +156,13 @@ Metrics which support backward can be used for optimization, such as image enhan
 ### Dataset Preparation
 
 - You only need to unzip downloaded datasets from official website without any extra operation. Download links are provided in [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment).  
-- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [TODOdownload_link](). 
+- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [download_link](https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz) and extract them to `datasets/` folder. You may also use the following commands:
+
+    ```
+    mkdir datasets && cd datasets 
+    wget https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz
+    tar -xvf data_info_files.tgz 
+    ``` 
 
 Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md) 
 
@@ -170,7 +177,7 @@ python pyiqa/train.py -opt options/train/train_DBCNN.yml
 python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml 
 ```
 
-## Benchmark Performances and Model Zoo
+## :1st_place_medal: Benchmark Performances and Model Zoo
 
 ### Results Calibration
 
@@ -206,21 +213,21 @@ Please refer to [benchmark results](tests/benchmark_results.csv) for benchmark r
 | Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
 | ---- | ------- | ------- | ------ | ----- | ---- | --- | 
 
-## Contribution
+## :beers: Contribution
 
 Any contributions to this repository are greatly appreciated. Please follow the [contribution instructions](docs/Instruction.md) for contribution guidance.  
 
-## License
+## :receipt: License
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
 
-<!-- ## Citation
+<!-- ## :bookmark_tabs: Citation
 
 ```
 TODO -->
 <!-- ``` -->
 
-## Acknowledgement
+## :heart: Acknowledgement
 
 The code architecture is borrowed from [BasicSR](https://github.com/xinntao/BasicSR). Several implementations are taken from 
 

@@ -11,9 +11,9 @@ def get_meta_info():
     Train/Val/Test split file from official github: 
         https://github.com/subpic/koniq/blob/master/metadata/koniq10k_distributions_sets.csv
     """
-    info_file = '../../datasets/koniq10k/koniq10k_distributions_sets.csv'
+    info_file = '../datasets/koniq10k/koniq10k_distributions_sets.csv'
     
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_KonIQ10kDataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
     split_info = {'train': [], 'val': [], 'test': []}
     with open(info_file, 'r') as f, open(save_meta_path, 'w+') as sf:
         csvreader = csv.reader(f)
@@ -38,7 +38,7 @@ def get_meta_info():
             print(new_row)
             csvwriter.writerow(new_row)
 
-    save_split_path = '../pyiqa/data/train_split_info/koniq10k_official.pkl'
+    save_split_path = './datasets/meta_info/koniq10k_official.pkl'
     with open(save_split_path, 'wb') as sf:
         pickle.dump({1: split_info}, sf)
     

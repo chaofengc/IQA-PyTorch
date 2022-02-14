@@ -35,26 +35,26 @@ def make_dataset(dir, max_dataset_size=float("inf")):
 def get_meta_info():
 
     # 2afc triplets
-    root_dir = '../../datasets/PerceptualSimilarity/dataset/2afc'
+    root_dir = '../datasets/PerceptualSimilarity/dataset/2afc'
 
-    ref_dir = '../../datasets/PerceptualSimilarity/dataset/2afc/*/*/ref/*.png'
-    p0_dir = '../../datasets/PerceptualSimilarity/dataset/2afc/*/*/p0/*.png'
-    p1_dir = '../../datasets/PerceptualSimilarity/dataset/2afc/*/*/p1/*.png'
-    judge_dir = '../../datasets/PerceptualSimilarity/dataset/2afc/*/*/judge/*.npy'
+    ref_dir = '../datasets/PerceptualSimilarity/dataset/2afc/*/*/ref/*.png'
+    p0_dir = '../datasets/PerceptualSimilarity/dataset/2afc/*/*/p0/*.png'
+    p1_dir = '../datasets/PerceptualSimilarity/dataset/2afc/*/*/p1/*.png'
+    judge_dir = '../datasets/PerceptualSimilarity/dataset/2afc/*/*/judge/*.npy'
     ref_path_list = sorted(list(glob(ref_dir)))
     p0_path_list = sorted(list(glob(p0_dir)))
     p1_path_list = sorted(list(glob(p1_dir)))
     judge_path_list = sorted(list(glob(judge_dir)))
 
     # jnd pairs
-    p0_dir = '../../datasets/PerceptualSimilarity/dataset/jnd/val/*/p0/*.png'
-    p1_dir = '../../datasets/PerceptualSimilarity/dataset/jnd/val/*/p1/*.png'
-    judge_dir = '../../datasets/PerceptualSimilarity/dataset/jnd/val/*/same/*.npy'
+    p0_dir = '../datasets/PerceptualSimilarity/dataset/jnd/val/*/p0/*.png'
+    p1_dir = '../datasets/PerceptualSimilarity/dataset/jnd/val/*/p1/*.png'
+    judge_dir = '../datasets/PerceptualSimilarity/dataset/jnd/val/*/same/*.npy'
     jnd_p0_path_list = sorted(list(glob(p0_dir)))
     jnd_p1_path_list = sorted(list(glob(p1_dir)))
     jnd_judge_path_list = sorted(list(glob(judge_dir)))
 
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_BAPPSDataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_BAPPSDataset.csv'
     split_info = {
             1: {'train': [], 'val': [], 'test': []},
             }
@@ -100,7 +100,7 @@ def get_meta_info():
             csvwriter.writerow(row)
             count += 1
             
-    save_split_path = '../pyiqa/data/train_split_info/bapps_official.pkl'
+    save_split_path = './datasets/meta_info/bapps_official.pkl'
     with open(save_split_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

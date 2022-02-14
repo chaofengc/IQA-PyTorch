@@ -14,15 +14,15 @@ def get_meta_info(seed=123):
         - split index 1: official 
         - split index 2: https://github.com/BestiVictory/ILGnet 
     """
-    all_label_file = '../../datasets/AVA_dataset/AVA.txt'
+    all_label_file = '../datasets/AVA_dataset/AVA.txt'
     
     # read ILGnet split
-    ILGnet_train_list = [x.strip().split()[0] for x in open('../../datasets/AVA_dataset/train_splits/ILGnet_train.txt').readlines()]
-    ILGnet_test_list = [x.strip().split()[0] for x in open('../../datasets/AVA_dataset/train_splits/ILGnet_val.txt').readlines()]
+    ILGnet_train_list = [x.strip().split()[0] for x in open('../datasets/AVA_dataset/train_splits/ILGnet_train.txt').readlines()]
+    ILGnet_test_list = [x.strip().split()[0] for x in open('../datasets/AVA_dataset/train_splits/ILGnet_val.txt').readlines()]
 
-    official_test_list = [x.strip().split()[0] + '.jpg' for x in open('../../datasets/AVA_dataset/train_splits/official_test_challenges.txt')]
+    official_test_list = [x.strip().split()[0] + '.jpg' for x in open('../datasets/AVA_dataset/train_splits/official_test_challenges.txt')]
 
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_AVADataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_AVADataset.csv'
     split_info = {
         1: {'train': [], 'val': [], 'test': []},
         2: {'train': [], 'val': [], 'test': []},
@@ -39,7 +39,7 @@ def get_meta_info(seed=123):
             # calculate mos
             mos = np.sum(np.arange(1, 11) * ratings) / np.sum(ratings)
             new_row = [row[1] + '.jpg', f'{mos:.3}'] + row[2: 14]
-            img_path = os.path.join('../../datasets/AVA_dataset/ava_images/', new_row[0])
+            img_path = os.path.join('../datasets/AVA_dataset/ava_images/', new_row[0])
             if os.path.exists(img_path):
                 try:
                     img = Image.open(img_path)
@@ -66,7 +66,7 @@ def get_meta_info(seed=123):
                     print(f'{img_path} image is broken')
     print(len(split_info[1]['train']), len(split_info[1]['test']))
     print(len(split_info[2]['train']), len(split_info[2]['test']))
-    save_split_path = '../pyiqa/data/train_split_info/ava_official_ilgnet.pkl'
+    save_split_path = './datasets/meta_info/ava_official_ilgnet.pkl'
 
     # separate 5% as validation part 
     random.seed(seed)

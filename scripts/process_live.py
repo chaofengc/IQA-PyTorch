@@ -7,7 +7,7 @@ import csv
 import pandas as pd
 
 def get_meta_info():
-    root_dir = '../../datasets/LIVEIQA_release2/'
+    root_dir = '../datasets/LIVEIQA_release2/'
 
     dmos = sio.loadmat(os.path.join(root_dir, 'dmos.mat')) # difference of mos: test - ref. lower is better
     mos = dmos['dmos'][0]
@@ -19,7 +19,7 @@ def get_meta_info():
     sub_folders = ['jp2k']*227 + ['jpeg']*233 + ['wn']*174 + ['gblur']*174 + ['fastfading']*174 
     sub_indexes = list(range(1, 228)) + list(range(1, 234)) + list(range(1, 175)) * 3 
 
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_LIVEIQADataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_LIVEIQADataset.csv'
     with open(save_meta_path, 'w') as f:
         csvwriter = csv.writer(f)
         header = ['ref_name', 'dist_name','mos']
@@ -33,8 +33,8 @@ def get_meta_info():
 
 def get_random_splits(seed=123):
     random.seed(seed)
-    meta_info_file = '../pyiqa/data/meta_info/meta_info_LIVEIQADataset.csv' 
-    save_path = f'../pyiqa/data/train_split_info/live_{seed}.pkl'
+    meta_info_file = './datasets/meta_info/meta_info_LIVEIQADataset.csv' 
+    save_path = f'./datasets/meta_info/live_{seed}.pkl'
     ratio = 0.8
 
     meta_info = pd.read_csv(meta_info_file)

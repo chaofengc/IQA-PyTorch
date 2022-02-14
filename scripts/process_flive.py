@@ -53,7 +53,7 @@ def get_meta_info():
     test_img_key_list = [x.split('/')[1] for x in test_img_list]
     val_img_key_list = [x.split('/')[1] for x in val_img_list]
 
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_FLIVEDataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_FLIVEDataset.csv'
     split_info = {
             1: {'train': [], 'val': [], 'test': []},
             }
@@ -108,7 +108,7 @@ def get_meta_info():
     print(all_img_label.shape[0] + all_patch_label.shape[0])
     print(len(split_info[1]['train']), len(split_info[1]['val']), len(split_info[1]['test']))
     print(sum([len(split_info[1]['train']), len(split_info[1]['val']), len(split_info[1]['test'])]))
-    save_split_path = '../pyiqa/data/train_split_info/flive_official.pkl'
+    save_split_path = './datasets/meta_info/flive_official.pkl'
     with open(save_split_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

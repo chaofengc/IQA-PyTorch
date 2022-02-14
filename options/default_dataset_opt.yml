@@ -1,98 +1,98 @@
 csiq: 
   name: CSIQ
   type: GeneralFRDataset
-  dataroot_target: ../datasets/CSIQ/dst_imgs
-  dataroot_ref: ../datasets/CSIQ/src_imgs
-  meta_info_file: ./pyiqa/data/meta_info/meta_info_CSIQDataset.csv
+  dataroot_target: ./datasets/CSIQ/dst_imgs
+  dataroot_ref: ./datasets/CSIQ/src_imgs
+  meta_info_file: ./datasets/meta_info/meta_info_CSIQDataset.csv
   dmos_max: 1
 
 tid2008:
   name: TID2008
   type: GeneralFRDataset
-  dataroot_target: ../datasets/tid2008/distorted_images
-  dataroot_ref: ../datasets/tid2008/reference_images
-  meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2008Dataset.csv
+  dataroot_target: ./datasets/tid2008/distorted_images
+  dataroot_ref: ./datasets/tid2008/reference_images
+  meta_info_file: ./datasets/meta_info/meta_info_TID2008Dataset.csv
 
 tid2013:
   name: TID2013 
   type: GeneralFRDataset
-  dataroot_target: ../datasets/tid2013/distorted_images
-  dataroot_ref: ../datasets/tid2013/reference_images
-  meta_info_file: ./pyiqa/data/meta_info/meta_info_TID2013Dataset.csv
+  dataroot_target: ./datasets/tid2013/distorted_images
+  dataroot_ref: ./datasets/tid2013/reference_images
+  meta_info_file: ./datasets/meta_info/meta_info_TID2013Dataset.csv
 
 live:
   name: LIVE
   type: GeneralFRDataset
-  dataroot_target: '../datasets/LIVEIQA_release2'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_LIVEIQADataset.csv'
+  dataroot_target: './datasets/LIVEIQA_release2'
+  meta_info_file: './datasets/meta_info/meta_info_LIVEIQADataset.csv'
   dmos_max: 100
 
 livem:
   name: LIVEM
   type: GeneralFRDataset
-  dataroot_target: '../datasets/LIVEmultidistortiondatabase'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_LIVEMDDataset.csv'
+  dataroot_target: './datasets/LIVEmultidistortiondatabase'
+  meta_info_file: './datasets/meta_info/meta_info_LIVEMDDataset.csv'
 
 livec:
   name: LIVEC 
   type: LIVEChallengeDataset
-  dataroot_target: ../datasets/LIVEC/
-  meta_info_file: ./pyiqa/data/meta_info/meta_info_LIVEChallengeDataset.csv
+  dataroot_target: ./datasets/LIVEC/
+  meta_info_file: ./datasets/meta_info/meta_info_LIVEChallengeDataset.csv
 
 koniq10k:
   name: KonIQ10k 
   type: GeneralNRDataset
-  dataroot_target: '../datasets/koniq10k/512x384'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_KonIQ10kDataset.csv'
+  dataroot_target: './datasets/koniq10k/512x384'
+  meta_info_file: './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
 
 koniq10k++:
   name: KonIQ10k++
   type: GeneralNRDataset
-  dataroot_target: '../datasets/koniq10k/512x384'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_KonIQ10k++Dataset.csv'
+  dataroot_target: './datasets/koniq10k/512x384'
+  meta_info_file: './datasets/meta_info/meta_info_KonIQ10k++Dataset.csv'
 
 kadid10k:
   name: KADID10k 
   type: GeneralFRDataset
-  dataroot_target: '../datasets/kadid10k/images'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_KADID10kDataset.csv'
+  dataroot_target: './datasets/kadid10k/images'
+  meta_info_file: './datasets/meta_info/meta_info_KADID10kDataset.csv'
 
 spaq:
   name: SPAQ
   type: GeneralNRDataset
-  dataroot_target: '../datasets/SPAQ/TestImage'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_SPAQDataset.csv'
+  dataroot_target: './datasets/SPAQ/TestImage'
+  meta_info_file: './datasets/meta_info/meta_info_SPAQDataset.csv'
 
 ava:
   name: AVA
   type: AVADataset
-  dataroot_target: '../datasets/AVA_dataset/ava_images/'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_AVADataset.csv'
-  split_file: './pyiqa/data/train_split_info/ava_official_ilgnet.pkl'
+  dataroot_target: './datasets/AVA_dataset/ava_images/'
+  meta_info_file: './datasets/meta_info/meta_info_AVADataset.csv'
+  split_file: './datasets/meta_info/ava_official_ilgnet.pkl'
   split_index: 1 # use official split  
 
 pipal:
   name: PIPAL 
   type: GeneralFRDataset
-  dataroot_target: '../datasets/PIPAL/Dist_Imgs'
-  dataroot_ref: '../datasets/PIPAL/Train_Ref'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_PIPALDataset.csv'
+  dataroot_target: './datasets/PIPAL/Dist_Imgs'
+  dataroot_ref: './datasets/PIPAL/Train_Ref'
+  meta_info_file: './datasets/meta_info/meta_info_PIPALDataset.csv'
 
 flive:
   name: FLIVE 
   type: GeneralNRDataset
-  dataroot_target: '../datasets/FLIVE_Database/database'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_FLIVEDataset.csv'
-  split_file: './pyiqa/data/train_split_info/flive_official.pkl' 
+  dataroot_target: './datasets/FLIVE_Database/database'
+  meta_info_file: './datasets/meta_info/meta_info_FLIVEDataset.csv'
+  split_file: './datasets/meta_info/flive_official.pkl' 
 
 pieapp:
   name: PieAPPDataset 
   type: GeneralNRDataset
-  dataroot_target: '../datasets/PieAPP_dataset_CVPR_2018/'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_PieAPPDataset.csv'
+  dataroot_target: './datasets/PieAPP_dataset_CVPR_2018/'
+  meta_info_file: './datasets/meta_info/meta_info_PieAPPDataset.csv'
 
 bapps:
   name: BAPPS 
   type: BAPPSDataset
-  dataroot_target: '../datasets/PerceptualSimilarity/dataset'
-  meta_info_file: './pyiqa/data/meta_info/meta_info_BAPPSDataset.csv'
+  dataroot_target: './datasets/PerceptualSimilarity/dataset'
+  meta_info_file: './datasets/meta_info/meta_info_BAPPSDataset.csv'

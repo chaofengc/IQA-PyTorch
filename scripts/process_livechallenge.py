@@ -6,7 +6,7 @@ import pickle
 import csv
 
 def get_meta_info():
-    root_dir = '../../datasets/LIVEC/'
+    root_dir = '../datasets/LIVEC/'
     names = sio.loadmat(os.path.join(root_dir, 'Data', 'AllImages_release.mat')) 
     mos_labels = sio.loadmat(os.path.join(root_dir, 'Data', 'AllMOS_release.mat'))
     mos_std = sio.loadmat(os.path.join(root_dir, 'Data', 'AllStdDev_release.mat'))
@@ -15,7 +15,7 @@ def get_meta_info():
     mos_labels = mos_labels['AllMOS_release'][0]
     mos_std = mos_std['AllStdDev_release'][0]
 
-    save_meta_path = '../pyiqa/data/meta_info/meta_info_LIVEChallengeDataset.csv'
+    save_meta_path = './datasets/meta_info/meta_info_LIVEChallengeDataset.csv'
     with open(save_meta_path, 'w') as f:
         csvwriter = csv.writer(f)
         header = ['img_name', 'mos', 'std']
@@ -34,7 +34,7 @@ def get_random_splits(seed=123):
     ratio = [0.8, 0.2] # train/val/test
     sep_index = int(round(0.8 * 1162))
     
-    save_path = f'../pyiqa/data/train_split_info/livechallenge_{seed}.pkl'
+    save_path = f'./datasets/meta_info/livechallenge_{seed}.pkl'
     split_info = {}
     for i in range(num_splits):
         random.shuffle(all_img_index)

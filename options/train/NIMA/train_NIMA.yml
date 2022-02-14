@@ -10,9 +10,9 @@ datasets:
   train:
     name: ava 
     type: AVADataset 
-    dataroot_target: ../datasets/AVA_dataset/ava_images/
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_AVADataset.csv
-    split_file: ./pyiqa/data/train_split_info/ava_official_ilgnet.pkl
+    dataroot_target: ./datasets/AVA_dataset/ava_images/
+    meta_info_file: ./datasets/meta_info/meta_info_AVADataset.csv
+    split_file: ./datasets/meta_info/ava_official_ilgnet.pkl
     split_index: 1 # use official split  
 
     augment:
@@ -32,9 +32,9 @@ datasets:
   val:
     name: ava 
     type: AVADataset 
-    dataroot_target: ../datasets/AVA_dataset/ava_images/
-    meta_info_file: ./pyiqa/data/meta_info/meta_info_AVADataset.csv
-    split_file: ./pyiqa/data/train_split_info/ava_official_ilgnet.pkl
+    dataroot_target: ./datasets/AVA_dataset/ava_images/
+    meta_info_file: ./datasets/meta_info/meta_info_AVADataset.csv
+    split_file: ./datasets/meta_info/ava_official_ilgnet.pkl
     split_index: 1 # use official split  
 
     augment:
