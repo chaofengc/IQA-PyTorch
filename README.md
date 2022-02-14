@@ -155,16 +155,23 @@ Metrics which support backward can be used for optimization, such as image enhan
 
 ### Dataset Preparation
 
-- You only need to unzip downloaded datasets from official website without any extra operation. Download links are provided in [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment).  
-- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [download_link](https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz) and extract them to `datasets/` folder. You may also use the following commands:
+- You only need to unzip downloaded datasets from official website without any extra operation. And then make soft links of these dataset folder under `datasets/` folder. Download links are provided in [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment).  
+- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [download_link](https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz) and extract them to `datasets/` folder. 
 
-    ```
-    mkdir datasets && cd datasets 
-    wget https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz
-    tar -xvf data_info_files.tgz 
-    ``` 
+You may also use the following commands:
 
-Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md) 
+```
+mkdir datasets && cd datasets 
+
+# make soft links of your dataset
+ln -sf your/dataset/path datasetname
+
+# download meta info files and train split files
+wget https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz
+tar -xvf data_info_files.tgz 
+``` 
+
+Examples to specific dataset options can be found in `./options/default_dataset_opt.yml`. Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md) 
 
 ### Example Train Script 
 
