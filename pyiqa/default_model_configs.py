@@ -14,7 +14,7 @@ DEFAULT_CONFIGS = OrderedDict({
         'ckdn': {
             'metric_opts': {
                 'type': 'CKDN',
-                'pretrained_model_path': './experiments/pretrained_models/CKDN/model_best.pth.tar',
+                'pretrained_model_path': './experiments/pretrained_models/CKDN/model_best.pth',
                 'use_diff_preprocess': False,
                 },
             'metric_mode': 'FR',
@@ -143,6 +143,13 @@ DEFAULT_CONFIGS = OrderedDict({
                 'type': 'MUSIQ',
                 'num_class': 10,
                 'pretrained_model_path': './experiments/pretrained_models/MUSIQ/musiq_ava_ckpt.pth',
+            },
+            'metric_mode': 'NR',
+            },
+        'dbcnn': {
+            'metric_opts': {
+                'type': 'DBCNN',
+                'pretrained_scnn_path': './experiments/pretrained_models/DBCNN/DBCNN_scnn.pth',
             },
             'metric_mode': 'NR',
             },

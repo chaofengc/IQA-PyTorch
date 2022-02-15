@@ -294,7 +294,6 @@ class CW_SSIM(torch.nn.Module):
         """
         # Whether calculate on y channel of ycbcr
         if test_y_channel and x.shape[1] == 3:
-            print("to y")
             x = to_y_channel(x)
             y = to_y_channel(y)
 
