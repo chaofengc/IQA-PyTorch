@@ -14,7 +14,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from pyiqa.archs.ssim_arch import to_y_channel
+from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 

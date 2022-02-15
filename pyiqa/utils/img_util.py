@@ -5,6 +5,23 @@ import os
 import torch
 from torchvision.utils import make_grid
 
+from PIL import Image
+import torchvision.transforms.functional as TF
+
+
+def imread2tensor(img_path, rgb=True):
+    """Read image to tensor.
+
+    Args: 
+        img_path (str): path of image
+        rgb: convert input to RGB if true 
+    """
+    img = Image.open(img_path)
+    if rgb:
+        img = img.convert('RGB')
+    img_tensor = TF.to_tensor(img)
+    return img_tensor
+
 
 def img2tensor(imgs, bgr2rgb=True, float32=True):
     """Numpy array to tensor.

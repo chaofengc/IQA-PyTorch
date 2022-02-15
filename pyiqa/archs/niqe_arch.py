@@ -23,9 +23,9 @@ from tokenize import String
 from typing import Tuple
 from xmlrpc.client import Boolean
 
-from pyiqa.archs.ssim_arch import to_y_channel, fspecial_gauss
+from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.utils.matlab_functions import imresize
+from pyiqa.utils.matlab_functions import imresize, fspecial_gauss
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 

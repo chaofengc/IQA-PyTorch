@@ -1,11 +1,11 @@
 from copy import deepcopy
 
 from pyiqa.utils.registry import METRIC_REGISTRY
-from .niqe import calculate_niqe
-from .psnr_ssim import calculate_psnr, calculate_ssim
 from .correlation_coefficient import calculate_srcc, calculate_plcc, calculate_krcc
 
-__all__ = ['calculate_srcc', 'calculate_plcc', 'calculate_krcc']
+__all__ = [
+    'calculate_srcc', 'calculate_plcc', 'calculate_krcc',
+    ]
 
 
 def calculate_metric(data, opt):

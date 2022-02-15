@@ -12,7 +12,7 @@ Refer to:
 import torch
 from torch.nn import functional as F
 import numpy as np
-from pyiqa.archs.ssim_arch import to_y_channel
+from pyiqa.utils.color_util import to_y_channel
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 

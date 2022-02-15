@@ -21,35 +21,10 @@ import torch
 import torch.nn.functional as F
 
 from pyiqa.archs.scfpyr_util import SCFpyr_PyTorch
-import pyiqa.utils.math_util as math_utils
+from pyiqa.utils import math_util as math_utils
+from pyiqa.utils.color_util import to_y_channel 
+from pyiqa.utils.matlab_functions  import fspecial_gauss
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.utils.color_util import rgb2ycbcr
-
-
-def to_y_channel(img):
-    """Change to Y channel of YCbCr.
-    Args:
-        image tensor: tensor with shape (N, 3, H, W) in range [0, 1].
-    Returns:
-        image tensor: Y channel of the input tensor 
-    """
-    assert img.ndim == 4 and img.shape[
-        1] == 3, 'input image tensor should be RGB image batches with shape (N, 3, H, W)'
-    img = rgb2ycbcr(img)
-    return img[:, [0], :, :]
-
-
-def fspecial_gauss(size, sigma, channels):
-    # Function to mimic the 'fspecial' gaussian MATLAB function
-    if type(size) is int:
-        x, y = np.mgrid[-size // 2 + 1:size // 2 + 1,
-                        -size // 2 + 1:size // 2 + 1]
-    else:
-        x, y = np.mgrid[-size[0] // 2 + 1:size[0] // 2 + 1,
-                        -size[1] // 2 + 1:size[1] // 2 + 1]
-    g = np.exp(-((x**2 + y**2) / (2.0 * sigma**2)))
-    g = torch.from_numpy(g / g.sum()).float().unsqueeze(0).unsqueeze(0)
-    return g.repeat(channels, 1, 1, 1)
 
 
 def gaussian_filter(input, win):
@@ -294,7 +269,6 @@ class CW_SSIM(torch.nn.Module):
         """
         # Whether calculate on y channel of ycbcr
         if test_y_channel and x.shape[1] == 3:
-            print("to y")
             x = to_y_channel(x)
             y = to_y_channel(y)
 

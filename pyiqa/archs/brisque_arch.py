@@ -14,11 +14,10 @@ from typing import Union, Tuple
 from xmlrpc.client import Boolean
 import torch
 import torch.nn.functional as F
-from pyiqa.archs.ssim_arch import to_y_channel, fspecial_gauss
+from pyiqa.utils.color_util import to_y_channel
+from pyiqa.utils.matlab_functions  import fspecial_gauss, imresize
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.utils.matlab_functions import imresize
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.utils.matlab_functions import imresize
 
 default_model_urls = {
     'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/brisque_svm_weights.pth'

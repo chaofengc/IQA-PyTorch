@@ -9,6 +9,19 @@ from typing import Union, Dict
 import torch
 
 
+def to_y_channel(img):
+    """Change to Y channel of YCbCr.
+    Args:
+        image tensor: tensor with shape (N, 3, H, W) in range [0, 1].
+    Returns:
+        image tensor: Y channel of the input tensor 
+    """
+    assert img.ndim == 4 and img.shape[
+        1] == 3, 'input image tensor should be RGB image batches with shape (N, 3, H, W)'
+    img = rgb2ycbcr(img)
+    return img[:, [0], :, :]
+
+
 def rgb2ycbcr(x: torch.Tensor) -> torch.Tensor:
     r"""Convert a batch of RGB images to a batch of YCbCr images
 

@@ -6,6 +6,7 @@ tb_logger/*
 tb_logger_archived/*
 wandb/*
 tmp/*
+tmp*
 .vscode*
 *.sh
 

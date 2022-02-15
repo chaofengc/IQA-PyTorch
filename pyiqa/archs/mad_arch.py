@@ -16,8 +16,8 @@ import torch.nn.functional as F
 from numpy.fft import fftshift
 import math
 
-import pyiqa.utils.math_util as math_utils
-from pyiqa.archs.ssim_arch import to_y_channel
+from pyiqa.utils import math_util as math_utils
+from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 MAX = nn.MaxPool2d((2, 2), stride=1, padding=1)
