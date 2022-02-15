@@ -48,19 +48,13 @@ class GeneralFRDataset(data.Dataset):
 
         # do paired transform first and then do common transform
         paired_transform_list = []
-        augment_dict = opt.get('paired_augment', None)
+        augment_dict = opt.get('augment', None)
         if augment_dict is not None:
             for k, v in augment_dict.items():
                 paired_transform_list += transform_mapping(k, v)
         self.paired_trans = tf.Compose(paired_transform_list)
 
         common_transform_list = []
-        augment_dict = opt.get('augment', None)
-        if augment_dict is not None:
-            for k, v in augment_dict.items():
-                assert 'pair' not in k, f'Common transform should not use paired transform {k}'
-                common_transform_list += transform_mapping(k, v)
-
         img_range = opt.get('img_range', 1.0)
         common_transform_list += [
                 tf.ToTensor(),

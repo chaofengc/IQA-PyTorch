@@ -1,29 +1,30 @@
-from turtle import forward
 import cv2
 import random
 import functools 
+from typing import Union
+from PIL import Image
 
 import torch
 import torchvision.transforms as tf
 import torchvision.transforms.functional as F
 
+
 def transform_mapping(key, value):
     if key == 'hflip' and value:
-        return [tf.RandomHorizontalFlip()] 
-    elif key == 'paired_hflip' and value:
         return [PairedRandomHorizontalFlip()] 
     elif key == 'random_crop':
-        return [tf.RandomCrop(value)]
-    elif key == 'paired_random_crop':
         return [PairedRandomCrop(value)]
     elif key == 'center_crop':
         return [tf.CenterCrop(value)]
     elif key == 'resize':
-        return [tf.Resize(value)]
-    elif key == 'paired_resize':
         return [PairedResize(value)]
     else:
         return []
+
+
+def _check_pair(x):
+    if isinstance(x, (tuple, list)) and len(x) == 2:
+        return True
 
 
 class PairedRandomCrop(tf.RandomCrop):
@@ -44,32 +45,44 @@ class PairedRandomCrop(tf.RandomCrop):
         return img
 
     def forward(self, imgs):
-        img1, img2 = imgs
-        img1 = self._pad(img1)
-        img2 = self._pad(img2)
-        i, j, h, w = self.get_params(img1, self.size)
-        img1 = F.crop(img1, i, j, h, w)
-        img2 = F.crop(img2, i, j, h, w)
-        return [img1, img2]
+        if _check_pair(imgs):
+            img1, img2 = imgs
+            img1 = self._pad(img1)
+            img2 = self._pad(img2)
+            i, j, h, w = self.get_params(img1, self.size)
+            img1 = F.crop(img1, i, j, h, w)
+            img2 = F.crop(img2, i, j, h, w)
+            return [img1, img2]
+        elif isinstance(imgs, Image.Image):
+            img1 = imgs
+            return super().forward(img1)
 
 
 class PairedRandomHorizontalFlip(tf.RandomHorizontalFlip):
     """Pair version of random hflip"""
     def forward(self, imgs):
-        img1, img2 = imgs
-        if torch.rand(1) < self.p:
-            img1 = F.hflip(img1)
-            img2 = F.hflip(img2)
-        return [img1, img2]
+        if _check_pair(imgs):
+            img1, img2 = imgs
+            if torch.rand(1) < self.p:
+                img1 = F.hflip(img1)
+                img2 = F.hflip(img2)
+            return [img1, img2]
+        elif isinstance(imgs, Image.Image):
+            img1 = imgs
+            return super().forward(img1)
 
 
 class PairedResize(tf.Resize):
     """Pair version of resize"""
     def forward(self, imgs):
-        img1, img2 = imgs
-        img1 = F.resize(img1, self.size, self.interpolation, self.max_size, self.antialias)
-        img2 = F.resize(img2, self.size, self.interpolation, self.max_size, self.antialias)
-        return [img1, img2]
+        if _check_pair(imgs):
+            img1, img2 = imgs
+            img1 = super().forward(img1)
+            img2 = super().forward(img2)
+            return [img1, img2]
+        elif isinstance(imgs, Image.Image): 
+            img1 = imgs
+            return super().forward(img1)
 
 
 def mod_crop(img, scale):

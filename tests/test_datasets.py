@@ -115,7 +115,6 @@ def test(test_dataset_name):
         elif 'distB' in data.keys():
             ref_tensor = data['distB_img']
             assert ref_tensor.shape[1:] == torch.Size([3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
-        break
 
 if __name__ == '__main__':
     test('CSIQ')

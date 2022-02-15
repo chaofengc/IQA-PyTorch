@@ -14,8 +14,8 @@ We create general interfaces for FR and NR datasets in `pyiqa/data/general_fr_da
     - `dataroot_ref [optional]`: path of reference image folder. 
     - `meta_info_file`: file containing meta information of images, including relative image paths, mos labels and other labels.
     - `augment [optional]` data augmentation transform list
-        - `hflip/paired_hflip`: flip input images or pairs 
-        - `random_crop/paired_random_crop`: int or tuple, random crop input images 
+        - `hflip`: flip input images or pairs 
+        - `random_crop`: int or tuple, random crop input images or pairs
     - `split_file [optional]`: `train/val/test` split file `*.pkl`. If not specified, will load the whole dataset. 
     - `split_index [optional]`: default `1`, which split to use, only valid when `split_file` is specified.   
     - `dmos max`: some dataset use difference of mos. Set this to non-zero will change dmos to mos with `mos = dmos_max - dmos`.
