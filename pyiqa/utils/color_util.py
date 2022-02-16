@@ -9,8 +9,13 @@ from typing import Union, Dict
 import torch
 
 
-def to_y_channel(img):
-    """Change to Y channel of YCbCr.
+def safe_frac_pow(x: torch.Tensor, p) -> torch.Tensor:
+    EPS = torch.finfo(x.dtype).eps
+    return torch.sign(x) * torch.abs(x + EPS).pow(p)
+
+
+def to_y_channel(img: torch.Tensor) -> torch.Tensor:
+    r"""Change to Y channel of YCbCr.
     Args:
         image tensor: tensor with shape (N, 3, H, W) in range [0, 1].
     Returns:
@@ -62,7 +67,7 @@ def ycbcr2rgb(x: torch.Tensor) -> torch.Tensor:
                                        [0, -0.00153632, 0.00791071],
                                        [0.00625893, -0.00318811, 0]]).to(x)
     bias_ycbcr_to_rgb = torch.tensor([-222.921, 135.576, -276.836]).view(1, 3, 1, 1).to(x)
-    x_ycbcr = torch.matmul(x.permute(0, 2, 3, 1), weights_ycbcr_to_rgb).permute(0, 3, 1, 2) \
+    x_rgb = torch.matmul(x.permute(0, 2, 3, 1), weights_ycbcr_to_rgb).permute(0, 3, 1, 2) \
             + bias_ycbcr_to_rgb 
     x_rgb = x_rgb / 255.
     return x_rgb 
@@ -140,7 +145,7 @@ def xyz2lab(x: torch.Tensor, illuminant: str = 'D50', observer: str = '2') -> to
 
     mask_below = tmp <= epsilon
     mask_above = tmp > epsilon
-    tmp = torch.pow(tmp, 1. / 3.) * mask_above + (kappa * tmp + 16.) / 116. * mask_below
+    tmp = safe_frac_pow(tmp, 1. / 3.) * mask_above + (kappa * tmp + 16.) / 116. * mask_below
 
     weights_xyz_to_lab = torch.tensor([[0, 116., 0],
                                        [500., -500., 0],

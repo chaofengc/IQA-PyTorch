@@ -127,8 +127,8 @@ class NLPD(nn.Module):
 
             # Upsample. Official matlab code interpolate '0' to upsample.
             I_pad = self.rep_one(I)
-            I_rep1, I_rep2, I_rep3 = torch.zeros(I_pad.size()), torch.zeros(
-                I_pad.size()), torch.zeros(I_pad.size())
+            I_rep1, I_rep2, I_rep3 = torch.zeros_like(I_pad), torch.zeros_like(
+                I_pad), torch.zeros_like(I_pad)
             R = torch.cat([I_pad * 4, I_rep1, I_rep2, I_rep3], dim=1)
             I_up = self.ps(R)
 

@@ -144,7 +144,7 @@ def _extract_patches_and_positions_from_image(
     # Concatenating is a hacky way to pass both patches, positions and input
     # mask to the model.
     # Shape (n_crops, c * patch_size * patch_size + 3, num_patches)
-    out = torch.cat([p, spatial_p, scale_p, mask_p], dim=1)
+    out = torch.cat([p, spatial_p.to(p), scale_p.to(p), mask_p.to(p)], dim=1)
     if max_seq_len >= 0:
         out = _pad_or_cut_to_max_seq_len(out, max_seq_len)
     return out

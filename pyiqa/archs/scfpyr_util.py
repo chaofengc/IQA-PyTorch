@@ -17,9 +17,9 @@ import numpy as np
 import torch
 from scipy.special import factorial
 
-import pyiqa.utils.math_util as math_utils
+from pyiqa.utils import math_util 
 
-pointOp = math_utils.pointOp
+pointOp = math_util.pointOp
 
 ################################################################################
 ################################################################################
@@ -80,10 +80,10 @@ class SCFpyr_PyTorch(object):
                 'Cannot build {} levels, image too small.'.format(self.height))
 
         # Prepare a grid
-        log_rad, angle = math_utils.prepare_grid(height, width)
+        log_rad, angle = math_util.prepare_grid(height, width)
 
         # Radial transition function (a raised cosine in log-frequency):
-        Xrcos, Yrcos = math_utils.rcosFn(1, -0.5)
+        Xrcos, Yrcos = math_util.rcosFn(1, -0.5)
         Yrcos = np.sqrt(Yrcos)
 
         YIrcos = np.sqrt(1 - Yrcos**2)
@@ -99,7 +99,7 @@ class SCFpyr_PyTorch(object):
 
         # Fourier transform (2D) and shifting
         batch_dft = torch.fft.fft2(im_batch)
-        batch_dft = math_utils.batch_fftshift2d(batch_dft)
+        batch_dft = math_util.batch_fftshift2d(batch_dft)
 
         # Low-pass
         lo0dft = batch_dft * lo0mask
@@ -110,7 +110,7 @@ class SCFpyr_PyTorch(object):
 
         # High-pass
         hi0dft = batch_dft * hi0mask
-        hi0 = math_utils.batch_ifftshift2d(hi0dft)
+        hi0 = math_util.batch_ifftshift2d(hi0dft)
         hi0 = torch.fft.ifft2(hi0)
         hi0_real = hi0.real
         coeff.insert(0, hi0_real)
@@ -121,7 +121,7 @@ class SCFpyr_PyTorch(object):
         if height <= 0:
 
             # Low-pass
-            lo0 = math_utils.batch_ifftshift2d(lodft)
+            lo0 = math_util.batch_ifftshift2d(lodft)
             lo0 = torch.fft.ifft2(lo0)
             lo0_real = lo0.real
             coeff = [lo0_real]
@@ -165,7 +165,7 @@ class SCFpyr_PyTorch(object):
                     1] + self.complex_fact_construct.imag * banddft[0]
                 banddft = torch.stack((banddft_real, banddft_imag), -1)
 
-                band = math_utils.batch_ifftshift2d(banddft)
+                band = math_util.batch_ifftshift2d(banddft)
                 band = torch.fft.ifft2(band)
                 orientations.append(torch.stack((band.real, band.imag), -1))
 

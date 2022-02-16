@@ -26,67 +26,14 @@ from xmlrpc.client import Boolean
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.matlab_functions import imresize, fspecial_gauss
+from pyiqa.utils.resize import padding
+from .func_util import estimate_aggd_param, torch_cov, normalize_img_with_guass
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 
 default_model_urls = {
     'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_modelparameters.mat'
 }
-
-
-def torch_cov(tensor, rowvar=True, bias=False):
-    """Estimate a covariance matrix (np.cov)
-    https://gist.github.com/ModarTensai/5ab449acba9df1a26c12060240773110
-    """
-    tensor = tensor if rowvar else tensor.transpose(-1, -2)
-    tensor = tensor - tensor.mean(dim=-1, keepdim=True)
-    factor = 1 / (tensor.shape[-1] - int(not bool(bias)))
-    return factor * tensor @ tensor.transpose(-1, -2).conj()
-
-
-def estimate_aggd_param(
-        block: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Estimate AGGD (Asymmetric Generalized Gaussian Distribution) parameters.
-    Args:
-        block (Tensor): Image block.
-    Returns:
-        Tensor: alpha, beta_l and beta_r for the AGGD distribution 
-        (Estimating the parames in Equation 7 in the paper).
-    """
-    gam = torch.arange(0.2, 10 + 0.001, 0.001).to(block)
-    r_gam = (2 * torch.lgamma(2. / gam) -
-             (torch.lgamma(1. / gam) + torch.lgamma(3. / gam))).exp()
-    r_gam = r_gam.repeat(block.size(0), 1)
-
-    mask_left = block < 0
-    mask_right = block > 0
-    count_left = mask_left.sum(dim=(-1, -2), dtype=torch.float32)
-    count_right = mask_right.sum(dim=(-1, -2), dtype=torch.float32)
-
-    assert (count_left > 0).all(), 'Expected input tensor (pairwise products of neighboring MSCN coefficients)' \
-                                   '  with values below zero to compute parameters of AGGD'
-    assert (count_right > 0).all(), 'Expected input tensor (pairwise products of neighboring MSCN coefficients)' \
-                                    ' with values above zero to compute parameters of AGGD'
-
-    left_std = ((block * mask_left).pow(2).sum(dim=(-1, -2)) /
-                count_left).sqrt()
-    right_std = ((block * mask_right).pow(2).sum(dim=(-1, -2)) /
-                 count_right).sqrt()
-
-    gammahat = left_std / right_std
-    rhat = block.abs().mean(dim=(-1, -2)).pow(2) / block.pow(2).mean(dim=(-1,
-                                                                          -2))
-    rhatnorm = (rhat * (gammahat.pow(3) + 1) *
-                (gammahat + 1)) / (gammahat.pow(2) + 1).pow(2)
-    array_position = (r_gam - rhatnorm).abs().argmin(dim=-1)
-
-    alpha = gam[array_position]
-    beta_l = left_std.squeeze(-1) * (torch.lgamma(1 / alpha) -
-                                     torch.lgamma(3 / alpha)).exp().sqrt()
-    beta_r = right_std.squeeze(-1) * (torch.lgamma(1 / alpha) -
-                                      torch.lgamma(3 / alpha)).exp().sqrt()
-
-    return alpha, beta_l, beta_r
 
 
 def compute_feature(block: torch.Tensor) -> torch.Tensor:
@@ -118,7 +65,6 @@ def compute_feature(block: torch.Tensor) -> torch.Tensor:
 def niqe(img: torch.Tensor,
          mu_pris_param: torch.Tensor,
          cov_pris_param: torch.Tensor,
-         gaussian_window: torch.Tensor,
          block_size_h: int = 96,
          block_size_w: int = 96) -> torch.Tensor:
     """Calculate NIQE (Natural Image Quality Evaluator) metric.
@@ -145,20 +91,13 @@ def niqe(img: torch.Tensor,
 
     distparam = []  # dist param is actually the multiscale features
     for scale in (1, 2):  # perform on two scales (1, 2)
-        rep_padding = nn.ReplicationPad2d(3)
-        mu = F.conv2d(rep_padding(img), gaussian_window, groups=1)
-        sigma = torch.sqrt(
-            torch.abs(
-                F.conv2d(rep_padding(img**2), gaussian_window, groups=1) -
-                mu**2))
-        # normalize, as in Eq. 1 in the paper
-        img_nomalized = (img - mu) / (sigma + 1)
+        img_normalized = normalize_img_with_guass(img, padding='replicate')
 
         feat = []
         for idx_w in range(num_block_w):
             for idx_h in range(num_block_h):
                 # process ecah block
-                block = img_nomalized[..., idx_h * block_size_h //
+                block = img_normalized[..., idx_h * block_size_h //
                                       scale:(idx_h + 1) * block_size_h //
                                       scale, idx_w * block_size_w //
                                       scale:(idx_w + 1) * block_size_w //
@@ -213,14 +152,11 @@ def calculate_niqe(img: torch.Tensor,
     params = scipy.io.loadmat(pretrained_model_path)
     mu_pris_param = np.ravel(params['mu_prisparam'])
     cov_pris_param = params['cov_prisparam']
-    mu_pris_param = torch.from_numpy(mu_pris_param)
-    cov_pris_param = torch.from_numpy(cov_pris_param)
+    mu_pris_param = torch.from_numpy(mu_pris_param).to(img)
+    cov_pris_param = torch.from_numpy(cov_pris_param).to(img)
 
     mu_pris_param = mu_pris_param.repeat(img.size(0), 1)
     cov_pris_param = cov_pris_param.repeat(img.size(0), 1, 1)
-
-    gaussian_window = fspecial_gauss(7, 7.0 / 6.0, 1)
-    gaussian_window = gaussian_window / torch.sum(gaussian_window)
 
     if test_y_channel and img.shape[1] == 3:
         img = to_y_channel(img)
@@ -228,7 +164,7 @@ def calculate_niqe(img: torch.Tensor,
     if crop_border != 0:
         img = img[..., crop_border:-crop_border, crop_border:-crop_border]
 
-    niqe_result = niqe(img, mu_pris_param, cov_pris_param, gaussian_window)
+    niqe_result = niqe(img, mu_pris_param, cov_pris_param)
 
     return niqe_result
 

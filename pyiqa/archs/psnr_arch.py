@@ -1,4 +1,4 @@
-r"""SSIM Metric
+r"""Peak signal-to-noise ratio (PSNR) Metric
 
 Created by: https://github.com/photosynthesis-team/piq
 
@@ -14,10 +14,10 @@ import torch
 import torch.nn as nn
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.utils.color_util import rgb2ycbcr
+from pyiqa.utils.color_util import to_y_channel 
 
 
-def psnr(x, y, test_y_channel=False, data_range=1.0):
+def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8):
     r"""Compute Peak Signal-to-Noise Ratio for a batch of images.
     Supports both greyscale and color images with RGB channel order.
     Args:
@@ -29,32 +29,35 @@ def psnr(x, y, test_y_channel=False, data_range=1.0):
     Returns:
         PSNR Index of similarity betwen two images.
     """
-    # Constant for numerical stability
-    EPS = 1e-8
 
-    if (x.size(1) == 3) and test_y_channel:
+    if (x.shape[1] == 3) and test_y_channel:
         # Convert RGB image to YCbCr and use Y-channel
-        x = rgb2ycbcr(x)[:, 0, :, :].unsqueeze(1)
-        y = rgb2ycbcr(y)[:, 0, :, :].unsqueeze(1)
+        x = to_y_channel(x)
+        y = to_y_channel(y)
 
         data_range = 255.
 
     mse = torch.mean((x - y)**2, dim=[1, 2, 3])
-    score = 10 * torch.log10(data_range**2 / (mse + EPS))
+    score = 10 * torch.log10(data_range**2 / (mse + eps))
 
     return score
 
 
 @ARCH_REGISTRY.register()
 class PSNR(nn.Module):
-    r"""Args:
+    r"""
+    Args:
+        X, Y (torch.Tensor): distorted image and reference image tensor with shape (B, 3, H, W)
         test_y_channel: Convert RGB image to YCbCr format and computes PSNR
             only on luminance channel if `True`. Compute on all 3 channels otherwise.
-        `**kwargs` are transmitted to `psnr`.
+        kwargs: other parameters, including
+            - data_range: maximun numeric value
+            - eps: small constant for numeric stability
+    Return:
+        score (torch.Tensor): (B, 1)
     """
 
     def __init__(self, test_y_channel=False, **kwargs):
-
         super().__init__()
         self.test_y_channel = test_y_channel
         self.kwargs = kwargs

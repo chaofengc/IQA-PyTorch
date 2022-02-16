@@ -16,6 +16,7 @@ import torch
 import torch.nn.functional as F
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.matlab_functions  import fspecial_gauss, imresize
+from .func_util import estimate_ggd_param, estimate_aggd_param, safe_sqrt, normalize_img_with_guass
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -66,6 +67,8 @@ def brisque(x: torch.Tensor,
 
     if pretrained_model_path:
         sv_coef, sv = torch.load(pretrained_model_path)
+        sv_coef = sv_coef.to(x)
+        sv = sv.to(x)
 
     # gamma and rho are SVM model parameters taken from official implementation of BRISQUE on MATLAB
     # Source: https://live.ece.utexas.edu/research/Quality/index_algorithms.htm
@@ -77,71 +80,11 @@ def brisque(x: torch.Tensor,
     return score - rho
 
 
-def estimate_ggd_param(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-    gamma = torch.arange(0.2, 10 + 0.001, 0.001).to(x)
-    r_table = (torch.lgamma(1. / gamma) + torch.lgamma(3. / gamma) -
-               2 * torch.lgamma(2. / gamma)).exp()
-    r_table = r_table.repeat(x.size(0), 1)
-
-    sigma_sq = x.pow(2).mean(dim=(-1, -2))
-    sigma = sigma_sq.sqrt().squeeze(dim=-1)
-
-    assert not torch.isclose(sigma, torch.zeros_like(sigma)).all(), \
-        'Expected image with non zero variance of pixel values'
-
-    E = x.abs().mean(dim=(-1, -2))
-    rho = sigma_sq / E**2
-
-    indexes = (rho - r_table).abs().argmin(dim=-1)
-    solution = gamma[indexes]
-    return solution, sigma
-
-
-def estimate_aggd_param(
-        x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    gamma = torch.arange(0.2, 10 + 0.001, 0.001).to(x)
-    r_table = torch.exp(2 * torch.lgamma(2. / gamma) -
-                        torch.lgamma(1. / gamma) - torch.lgamma(3. / gamma))
-    r_table = r_table.repeat(x.size(0), 1)
-
-    mask_left = x < 0
-    mask_right = x > 0
-    count_left = mask_left.sum(dim=(-1, -2), dtype=torch.float32)
-    count_right = mask_right.sum(dim=(-1, -2), dtype=torch.float32)
-
-    assert (count_left > 0).all(), 'Expected input tensor (pairwise products of neighboring MSCN coefficients)' \
-                                   '  with values below zero to compute parameters of AGGD'
-    assert (count_right > 0).all(), 'Expected input tensor (pairwise products of neighboring MSCN coefficients)' \
-                                    ' with values above zero to compute parameters of AGGD'
-
-    left_sigma = ((x * mask_left).pow(2).sum(dim=(-1, -2)) / count_left).sqrt()
-    right_sigma = ((x * mask_right).pow(2).sum(dim=(-1, -2)) /
-                   count_right).sqrt()
-
-    assert (left_sigma > 0).all() and (right_sigma > 0).all(), f'Expected non-zero left and right variances, ' \
-                                                               f'got {left_sigma} and {right_sigma}'
-
-    gamma_hat = left_sigma / right_sigma
-    ro_hat = x.abs().mean(dim=(-1, -2)).pow(2) / x.pow(2).mean(dim=(-1, -2))
-    ro_hat_norm = (ro_hat * (gamma_hat.pow(3) + 1) *
-                   (gamma_hat + 1)) / (gamma_hat.pow(2) + 1).pow(2)
-
-    indexes = (ro_hat_norm - r_table).abs().argmin(dim=-1)
-    solution = gamma[indexes]
-    return solution, left_sigma.squeeze(dim=-1), right_sigma.squeeze(dim=-1)
-
-
 def natural_scene_statistics(luma: torch.Tensor,
                              kernel_size: int = 7,
                              sigma: float = 7. / 6) -> torch.Tensor:
-    kernel = fspecial_gauss(kernel_size, sigma, 1).to(luma)
-    C = 1
-    mu = F.conv2d(luma, kernel, padding=kernel_size // 2)
-    mu_sq = mu**2
-    std = F.conv2d(luma**2, kernel, padding=kernel_size // 2)
-    std = ((std - mu_sq).abs().sqrt())
-
-    luma_nrmlzd = (luma - mu) / (std + C)
+    
+    luma_nrmlzd = normalize_img_with_guass(luma, kernel_size, sigma, padding='same')
     alpha, sigma = estimate_ggd_param(luma_nrmlzd)
     features = [alpha, sigma.pow(2)]
 
@@ -152,7 +95,7 @@ def natural_scene_statistics(luma: torch.Tensor,
                                          shifts=shift,
                                          dims=(-2, -1))
         alpha, sigma_l, sigma_r = estimate_aggd_param(luma_nrmlzd *
-                                                      shifted_luma_nrmlzd)
+                                                      shifted_luma_nrmlzd, return_sigma=True)
         eta = (sigma_r - sigma_l) * torch.exp(
             torch.lgamma(2. / alpha) -
             (torch.lgamma(1. / alpha) + torch.lgamma(3. / alpha)) / 2)

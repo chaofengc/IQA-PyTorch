@@ -18,31 +18,7 @@ from torch.nn.functional import avg_pool2d, interpolate, pad
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import rgb2lmn, rgb2lab
-from pyiqa.archs.fsim_arch import ifftshift, gradient_map, get_meshgrid
-
-
-# Gradient operator kernels
-def scharr_filter() -> torch.Tensor:
-    r"""Utility function that returns a normalized 3x3 Scharr kernel in X direction
-    Returns:
-        kernel: Tensor with shape (1, 3, 3)
-    """
-    return torch.tensor([[[-3., 0., 3.], [-10., 0., 10.], [-3., 0., 3.]]]) / 16
-
-
-def similarity_map(map_x: torch.Tensor,
-                   map_y: torch.Tensor,
-                   constant: float,
-                   alpha: float = 0.0) -> torch.Tensor:
-    r""" Compute similarity_map between two tensors using Dice-like equation.
-    Args:
-        map_x: Tensor with map to be compared
-        map_y: Tensor with map to be compared
-        constant: Used for numerical stability
-        alpha: Masking coefficient. Substracts - `alpha` * map_x * map_y from denominator and nominator
-    """
-    return (2.0 * map_x * map_y - alpha * map_x * map_y + constant) / \
-           (map_x ** 2 + map_y ** 2 - alpha * map_x * map_y + constant)
+from .func_util import ifftshift, gradient_map, get_meshgrid, similarity_map, scharr_filter, safe_sqrt
 
 
 def vsi(x: torch.Tensor,
@@ -109,6 +85,8 @@ def vsi(x: torch.Tensor,
                 sigma_f=sigma_f,
                 sigma_d=sigma_d,
                 sigma_c=sigma_c)
+    
+    return vs_x.mean() + vs_y.mean()
 
     # Convert to LMN colour space
     x_lmn = rgb2lmn(x)
@@ -197,7 +175,7 @@ def sdsp(x: torch.Tensor,
     x_fft = torch.fft.fft2(x_lab)
     x_ifft_real = torch.fft.ifft2(x_fft * lg).real
 
-    s_f = x_ifft_real.pow(2).sum(dim=1, keepdim=True).sqrt()
+    s_f = safe_sqrt(x_ifft_real.pow(2).sum(dim=1, keepdim=True))
 
     coordinates = torch.stack(get_meshgrid(size_to_use), dim=0).to(x)
     coordinates = coordinates * size_to_use[0] + 1

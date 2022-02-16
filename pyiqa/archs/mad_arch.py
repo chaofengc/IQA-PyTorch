@@ -342,6 +342,6 @@ class MAD(torch.nn.Module):
         Returns:
             Value of MAD metric in [0, 1] range.
         """
-        assert X.shape == Y.shape, f"Input {X.shape} and reference images should have the same shape"
+        assert X.shape == Y.shape, f"Input and reference images should have the same shape, but got {X.shape} and {Y.shape}"
         score = self.mad(Y, X)
         return score

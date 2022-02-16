@@ -464,6 +464,6 @@ class VIF(torch.nn.Module):
             y: A reference tensor. Shape :math:`(N, C, H, W)`.
             Order of input is important.
         """
-        assert X.shape == Y.shape, f"Input {X.shape} and reference images should have the same shape"
+        assert X.shape == Y.shape, f"Input and reference images should have the same shape, but got {X.shape} and {Y.shape}"
         score = self.vif(X, Y)
         return score

@@ -42,13 +42,10 @@ def gmsd(
         y = y * 255.
 
     dx = (torch.Tensor([[1, 0, -1], [1, 0, -1], [1, 0, -1]]) /
-          3.).unsqueeze(0).unsqueeze(0).repeat(channels, 1, 1, 1)
+          3.).unsqueeze(0).unsqueeze(0).repeat(channels, 1, 1, 1).to(x)
     dy = (torch.Tensor([[1, 1, 1], [0, 0, 0], [-1, -1, -1]]) /
-          3.).unsqueeze(0).unsqueeze(0).repeat(channels, 1, 1, 1)
-    dx = nn.Parameter(dx, requires_grad=False)
-    dy = nn.Parameter(dy, requires_grad=False)
-    aveKernel = nn.Parameter(torch.ones(channels, 1, 2, 2) / 4.,
-                             requires_grad=False)
+          3.).unsqueeze(0).unsqueeze(0).repeat(channels, 1, 1, 1).to(x)
+    aveKernel = torch.ones(channels, 1, 2, 2).to(x) / 4.
 
     Y1 = F.conv2d(x, aveKernel, stride=2, padding=0, groups=channels)
     Y2 = F.conv2d(y, aveKernel, stride=2, padding=0, groups=channels)
@@ -91,7 +88,7 @@ class GMSD(nn.Module):
             y: A reference tensor. Shape :math:`(N, C, H, W)`.
             Order of input is important.
         """
-        assert x.shape == y.shape, f"Input {x.shape} and reference images should have the same shape"
+        assert x.shape == y.shape, f"Input and reference images should have the same shape, but got {x.shape} and {y.shape}"
         score = gmsd(x,
                      y,
                      channels=self.channels,
