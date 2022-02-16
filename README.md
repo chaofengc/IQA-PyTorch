@@ -106,7 +106,7 @@ Below are details of supported methods and datasets in this project.
 - Other required packages in `requirements.txt`
 ```
 # Install with pip
-pip install iqa-pytorch
+pip install pyiqa
 
 # Install latest github version
 pip install git+https://github.com/chaofengc/IQA-PyTorch.git
