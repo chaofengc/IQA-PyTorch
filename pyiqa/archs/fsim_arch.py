@@ -131,7 +131,7 @@ def fsim(x: torch.Tensor,
 
     result = score.sum(dim=[1, 2, 3]) / pc_max.sum(dim=[1, 2, 3])
 
-    return result.mean(dim=0)
+    return result
 
 
 def _construct_filters(x: torch.Tensor,

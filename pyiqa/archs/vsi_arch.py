@@ -86,8 +86,6 @@ def vsi(x: torch.Tensor,
                 sigma_d=sigma_d,
                 sigma_c=sigma_c)
     
-    return vs_x.mean() + vs_y.mean()
-
     # Convert to LMN colour space
     x_lmn = rgb2lmn(x)
     y_lmn = rgb2lmn(y)
