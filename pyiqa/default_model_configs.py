@@ -1,11 +1,8 @@
-import cv2
-import numpy as np
-import os
 import math
-import torch
 import torchvision as tv
-from PIL import Image
 from collections import OrderedDict
+import fnmatch
+import re
 
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
@@ -148,3 +145,34 @@ DEFAULT_CONFIGS = OrderedDict({
             },
         })
 
+
+def _natural_key(string_):
+    return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_.lower())]
+
+
+def list_models(filter='', exclude_filters=''):
+    """ Return list of available model names, sorted alphabetically
+    Args:
+        filter (str) - Wildcard filter string that works with fnmatch
+        exclude_filters (str or list[str]) - Wildcard filters to exclude models after including them with filter
+    Example:
+        model_list('*ssim*') -- returns all models including 'ssim'
+    """
+    all_models = DEFAULT_CONFIGS.keys()
+    if filter:
+        models = []
+        include_filters = filter if isinstance(filter, (tuple, list)) else [filter]
+        for f in include_filters:
+            include_models = fnmatch.filter(all_models, f)  # include these models
+            if len(include_models):
+                models = set(models).union(include_models)
+    else:
+        models = all_models
+    if exclude_filters:
+        if not isinstance(exclude_filters, (tuple, list)):
+            exclude_filters = [exclude_filters]
+        for xf in exclude_filters:
+            exclude_models = fnmatch.filter(models, xf)  # exclude these models
+            if len(exclude_models):
+                models = set(models).difference(exclude_models)
+    return list(sorted(models, key=_natural_key))

@@ -1,0 +1,40 @@
+repos:
+  #  flake8
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.8.2
+    hooks:
+      - id: flake8
+        args: [
+          --max-line-length, "120",
+          "--max-complexity", "10",
+          "--ignore", "W293,W503,W504,E126,E741",
+          "--exclude", ".git,__pycache__",
+          ]
+
+    # yapf
+  - repo: https://github.com/pre-commit/mirrors-yapf
+    rev: v0.30.0
+    hooks:
+      - id: yapf
+
+  # codespell
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.1.0
+    hooks:
+      - id: codespell
+        args: ["--ignore-words-list", "ist"]
+
+  # pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: trailing-whitespace  # Trim trailing whitespace
+      - id: check-yaml  # Attempt to load all yaml files to verify syntax
+      - id: check-merge-conflict  # Check for files that contain merge conflict strings
+      - id: double-quote-string-fixer  # Replace double quoted strings with single quoted strings
+      - id: end-of-file-fixer  # Make sure files end in a newline and only a newline
+      - id: requirements-txt-fixer  # Sort entries in requirements.txt and remove incorrect entry for pkg-resources==0.0.0
+      - id: fix-encoding-pragma  # Remove the coding pragma: # -*- coding: utf-8 -*-
+        args: ["--remove"]
+      - id: mixed-line-ending  # Replace or check mixed line ending
+        args: ["--fix=lf"]

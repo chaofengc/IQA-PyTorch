@@ -105,10 +105,17 @@ Below are details of supported methods and datasets in this project.
 - CUDA 10.1 (if use GPU)
 - Other required packages in `requirements.txt`
 ```
-# git clone this repository
-git clone https://github.com/chaofengc/IQA-Toolbox-Python.git
-cd IQA-Toolbox-Python
-pip3 install -r requirements.txt
+# Install with pip
+pip install iqa-pytorch
+
+# Install latest github version
+pip install git+https://github.com/chaofengc/IQA-PyTorch.git
+
+# Install with git clone 
+git clone https://github.com/chaofengc/IQA-PyTorch.git
+cd IQA-PyTorch
+pip install -r requirements.txt
+python setup.py develop 
 ```
 
 ### Quick Inference
@@ -117,10 +124,8 @@ pip3 install -r requirements.txt
 
 Example test script with input directory and reference directory. Single image is also supported for `-i` and `-r` options. 
 ```
-python inference_iqa.py -n LPIPS -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir 
-
-# metric name is case insensitive, it is also ok with
-python inference_iqa.py -n lpips -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir 
+# example for FR metric with dirs 
+python inference_iqa.py -n LPIPS[or lpips] -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir 
 
 # example for NR metric with single image
 python inference_iqa.py -n brisque -i ./ResultsCalibra/dist_dir/I03.bmp 
@@ -130,20 +135,16 @@ python inference_iqa.py -n brisque -i ./ResultsCalibra/dist_dir/I03.bmp
 ```
 import pyiqa 
 
+# list all available metrics
+print(pyiqa.list_models())
+
 # create metric with default setting
 iqa_metric = pyiqa.create_metric('lpips').to(device)
 
 # create metric with custom setting
 iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True).to(device)
 
-# create neural network metric trained with different datasets
-iqa_metric = pyiqa.create_metric('musiq', pretrained='koniq10k').to(device)
-
-# create new neural network metric without pretrained 
-# evaluation mode is set as True by default
-iqa_metric = pyiqa.create_metric('musiq', pretrained=False, eval=False).to(device)
-
-# iqa score inference
+# example for iqa score inference
 # img_tensor_x/y: (N, 3, H, W), RGB, 0 ~ 1
 score_fr = iqa_metric(img_tensor_x, img_tensor_y)
 score_nr = iqa_metric(img_tensor_x)
