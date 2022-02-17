@@ -1,3 +1,11 @@
+r"""LPIPS Model.
+
+Created by: https://github.com/richzhang/PerceptualSimilarity.
+
+Modified by: Jiadi Mo (https://github.com/JiadiMo)
+
+"""
+
 import numpy as np
 import torch
 from torchvision import models
@@ -37,29 +45,10 @@ def normalize_tensor(in_feat, eps=1e-10):
 
 @ARCH_REGISTRY.register()
 class LPIPS(nn.Module):
-    def __init__(self,
-                 pretrained=True,
-                 net='alex',
-                 version='0.1',
-                 lpips=True,
-                 spatial=False,
-                 pnet_rand=False,
-                 pnet_tune=False,
-                 use_dropout=True,
-                 pretrained_model_path=None,
-                 eval_mode=True,
-                 **kwargs):
-        """ Refer to offical code https://github.com/richzhang/PerceptualSimilarity
-        
-        Parameters (default listed first)
-        ---------------------------------
-        lpips : bool
-            [True] use linear layers on top of base/trunk network
-            [False] means no linear layers; each layer is averaged together
-        pretrained : bool
-            This flag controls the linear layers, which are only in effect when lpips=True above
-            [True] means linear layers are calibrated with human perceptual judgments
-            [False] means linear layers are randomly initialized
+    """ LPIPS model.
+    Args:
+        lpips (Boolean) : Whether to use linear layers on top of base/trunk network.
+        pretrained (Boolean): Whether means linear layers are calibrated with human perceptual judgments.
         pnet_rand : bool
             [False] means trunk loaded with ImageNet classification weights
             [True] means randomly initialized trunk
@@ -83,6 +72,19 @@ class LPIPS(nn.Module):
             [True] to use dropout when training linear layers
             [False] for no dropout when training linear layers
         """
+    def __init__(self,
+                 pretrained=True,
+                 net='alex',
+                 version='0.1',
+                 lpips=True,
+                 spatial=False,
+                 pnet_rand=False,
+                 pnet_tune=False,
+                 use_dropout=True,
+                 pretrained_model_path=None,
+                 eval_mode=True,
+                 **kwargs):
+        
 
         super(LPIPS, self).__init__()
 

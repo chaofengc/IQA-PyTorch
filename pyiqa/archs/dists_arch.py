@@ -1,3 +1,11 @@
+r"""DISTS metric
+
+Created by: https://github.com/dingkeyan93/DISTS/blob/master/DISTS_pytorch/DISTS_pt.py
+
+Modified by: Jiadi Mo (https://github.com/JiadiMo)
+
+"""
+
 import numpy as np
 import torch
 from torchvision import models
@@ -36,6 +44,11 @@ class L2pooling(nn.Module):
 
 @ARCH_REGISTRY.register()
 class DISTS(torch.nn.Module):
+    r'''DISTS model.
+    Args:
+        pretrained_model_path (String): Pretrained model path.
+        
+    '''
 
     def __init__(self, pretrained=True, pretrained_model_path=None, **kwargs):
         """Refer to offical code https://github.com/dingkeyan93/DISTS
@@ -99,18 +112,29 @@ class DISTS(torch.nn.Module):
         h_relu5_3 = h
         return [x, h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3]
 
-    def forward(self, x, y, require_grad=False, batch_average=False):
-        if require_grad:
-            feats0 = self.forward_once(x)
-            feats1 = self.forward_once(y)
-        else:
-            with torch.no_grad():
-                feats0 = self.forward_once(x)
-                feats1 = self.forward_once(y)
+    def forward(self, x, y):
+        r"""Compute IQA using DISTS model.
+
+        Args:
+            x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            y: An reference tensor with (N, C, H, W) shape. RGB channel order for colour images.
+
+        Returns:
+            Value of DISTS model.
+            
+        """
+        feats0 = self.forward_once(x)
+        feats1 = self.forward_once(y)
+<<<<<<< HEAD
+
+=======
+        
+>>>>>>> ed26c128f8f650a5a17fbf17cf4a3da7251dcf65
         dist1 = 0
         dist2 = 0
         c1 = 1e-6
         c2 = 1e-6
+
         w_sum = self.alpha.sum() + self.beta.sum()
         alpha = torch.split(self.alpha / w_sum, self.chns, dim=1)
         beta = torch.split(self.beta / w_sum, self.chns, dim=1)
@@ -128,7 +152,5 @@ class DISTS(torch.nn.Module):
             dist2 = dist2 + (beta[k] * S2).sum(1, keepdim=True)
 
         score = 1 - (dist1 + dist2).squeeze()
-        if batch_average:
-            return score.mean()
-        else:
-            return score
+        
+        return score

@@ -1,4 +1,4 @@
-r"""NIQE Metric
+r"""BRISQUE Metric
 
 Created by: https://github.com/photosynthesis-team/piq/blob/master/piq/brisque.py
 
@@ -9,6 +9,7 @@ Reference:
     Pretrained model from: https://github.com/photosynthesis-team/piq/releases/download/v0.4.0/brisque_svm_weights.pt
     
 """
+
 from tokenize import String
 from typing import Union, Tuple
 from xmlrpc.client import Boolean
@@ -149,12 +150,12 @@ class BRISQUE(torch.nn.Module):
     r"""Creates a criterion that measures the BRISQUE score.
 
     Args:
-        kernel_size: By default, the mean and covariance of a pixel is obtained
+        kernel_size (int): By default, the mean and covariance of a pixel is obtained
             by convolution with given filter_size. Must be an odd value.
-        kernel_sigma: Standard deviation for Gaussian kernel.
-        data_range: Maximum value range of images (usually 1.0 or 255).
-        to_y_channel: Whether use the y-channel of YCBCR.
-        pretrained_model_path: The model path.
+        kernel_sigma (float): Standard deviation for Gaussian kernel.
+        data_range (int | float): Maximum value range of images (usually 1.0 or 255).
+        to_y_channel (Boolean): Whether use the y-channel of YCBCR.
+        pretrained_model_path (String): The model path.
 
     """
 
@@ -187,6 +188,7 @@ class BRISQUE(torch.nn.Module):
 
         Returns:
             Value of BRISQUE metric.
+
         """
         return brisque(x,
                        kernel_size=self.kernel_size,
