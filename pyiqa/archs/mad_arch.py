@@ -1,4 +1,4 @@
-r"""VSI Metric
+r"""MAD Metric
 
 Created by: https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/MAD.py
 
@@ -130,19 +130,6 @@ def ical_std(x, p=16, s=4):
     std = std.reshape(B, C, (H - (p - s)) // s, (W - (p - s)) // s)
 
     return mean, std
-
-
-def min_std(x, p=8, s=4):
-    B, C, H, W = x.shape
-    STD = torch.zeros_like(x)
-    for i in range(0, H - p + 1, s):
-        for j in range(0, W - p + 1, s):
-            x1 = x[:, :, i:i + p, j:j + p]
-            STD[:, :, i:i + s,
-                j:j + s] = torch.min(torch.min(x1, 2, keepdim=True)[0],
-                                     3,
-                                     keepdim=True)[0].repeat(1, 1, s, s)
-    return STD
 
 
 def hi_index(ref_img, dst_img):
