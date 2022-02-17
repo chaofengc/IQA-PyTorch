@@ -5,7 +5,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.arch_util import load_pretrained_network
 
+default_model_urls = {
+    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DISTS_weights-f5e65c96.pth'
+}
 
 class L2pooling(nn.Module):
 
@@ -33,7 +37,7 @@ class L2pooling(nn.Module):
 @ARCH_REGISTRY.register()
 class DISTS(torch.nn.Module):
 
-    def __init__(self, pretrained_model_path=None, **kwargs):
+    def __init__(self, pretrained=True, pretrained_model_path=None, **kwargs):
         """Refer to offical code https://github.com/dingkeyan93/DISTS
         """
         super(DISTS, self).__init__()
@@ -75,10 +79,11 @@ class DISTS(torch.nn.Module):
             "beta", nn.Parameter(torch.randn(1, sum(self.chns), 1, 1)))
         self.alpha.data.normal_(0.1, 0.01)
         self.beta.data.normal_(0.1, 0.01)
+
         if pretrained_model_path is not None:
-            weights = torch.load(pretrained_model_path)
-            self.alpha.data = weights['alpha']
-            self.beta.data = weights['beta']
+            load_pretrained_network(self, pretrained_model_path, False)
+        elif pretrained:
+            load_pretrained_network(self, default_model_urls['url'], False)
 
     def forward_once(self, x):
         h = (x - self.mean) / self.std

@@ -282,8 +282,6 @@ class CKDN(nn.Module):
         Useful when using this metric as losses.
         Results are slightly different due to different resize behavior of PIL Image and pytorch interpolate function. 
 
-        To get exactly the same results, please check the preprocess in pyiqa.default_model_configs.py
-
         Args:
             x, y:  
               shape, (N, C, H, W) in RGB format; 
