@@ -1,13 +1,30 @@
+"""CKDN model proposed by
+
+Zheng, Heliang, Huan Yang, Jianlong Fu, Zheng-Jun Zha, and Jiebo Luo. 
+"Learning conditional knowledge distillation for degraded-reference image quality assessment." 
+In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp. 10242-10251. 2021.
+
+Ref url: https://github.com/researchmm/CKDN
+
+"""
+
+
 import torch
 import torch.nn as nn
 import math
 import torchvision as tv
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.arch_util import load_pretrained_network
 
 try:
-        from torch.hub import load_state_dict_from_url
+    from torch.hub import load_state_dict_from_url
 except ImportError:
-        from torch.utils.model_zoo import load_url as load_state_dict_from_url
+    from torch.utils.model_zoo import load_url as load_state_dict_from_url
+
+
+default_model_urls = {
+    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CKDN_model_best-58f46163.pth'
+}
 
 
 model_urls = {
@@ -241,8 +258,9 @@ def _resnet(arch, block, layers, pretrained, progress, **kwargs):
 @ARCH_REGISTRY.register()
 class CKDN(nn.Module):
     def __init__(self, 
+                 pretrained=True,
                  pretrained_model_path=None, 
-                 use_diff_preprocess=True, 
+                 use_default_preprocess=True, 
                  default_mean=(0.485, 0.456, 0.406), 
                  default_std=(0.229, 0.224, 0.225), 
                  **kwargs):
@@ -250,10 +268,15 @@ class CKDN(nn.Module):
         self.net = _resnet('resnet50', Bottleneck, [3, 4, 6, 3], True, True,**kwargs)
         if pretrained_model_path is not None:
             self.load_pretrained_network(pretrained_model_path)
-        self.use_diff_preprocess = use_diff_preprocess
+        self.use_default_preprocess = use_default_preprocess 
 
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
+
+        if pretrained_model_path is not None:
+            self.load_pretrained_network(pretrained_model_path)
+        elif pretrained:
+            load_pretrained_network(self, default_model_urls['url'])
         
     def load_pretrained_network(self, model_path):
         print(f'Loading pretrained model from {model_path}')
@@ -264,11 +287,9 @@ class CKDN(nn.Module):
 
         self.net.load_state_dict(new_state_dict, strict=False) 
 
-    def _diff_preprocess(self, x, y):
-        """differentiable preprocessing of CKDN: https://github.com/researchmm/CKDN
+    def _default_preprocess(self, x, y):
+        """default preprocessing of CKDN: https://github.com/researchmm/CKDN
         Useful when using this metric as losses.
-
-        It may seem weird, but is exactly the same as official codes. 
         Results are slightly different due to different resize behavior of PIL Image and pytorch interpolate function. 
 
         To get exactly the same results, please check the preprocess in pyiqa.default_model_configs.py
@@ -279,8 +300,8 @@ class CKDN(nn.Module):
               value range, 0 ~ 1
         """
         scaled_size = int(math.floor(288/0.875))
-        x = torch.nn.functional.interpolate(x, scaled_size, mode='bicubic')
-        y = torch.nn.functional.interpolate(y, scaled_size, mode='nearest')
+        x = tv.transforms.functional.resize(x, scaled_size, tv.transforms.InterpolationMode.BICUBIC)
+        y = tv.transforms.functional.resize(y, scaled_size, tv.transforms.InterpolationMode.NEAREST)
 
         x = tv.transforms.functional.center_crop(x, 288) 
         y = tv.transforms.functional.center_crop(y, 288) 
@@ -290,8 +311,8 @@ class CKDN(nn.Module):
         return x, y
 
     def forward(self, x, y):
-        if self.use_diff_preprocess:
-            x, y = self._diff_preprocess(x, y)
+        if self.use_default_preprocess:
+            x, y = self._default_preprocess(x, y)
         return self.net(x, y)
 
 

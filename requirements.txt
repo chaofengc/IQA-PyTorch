@@ -14,3 +14,4 @@ torchvision>=0.9
 timm
 tqdm
 yapf
+pandas

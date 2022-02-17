@@ -5,6 +5,7 @@ from pyiqa.archs import create_metric
 from pyiqa.archs.arch_util import load_pretrained_network
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
+
 class InferenceModel():
     """Common model for quality inference of single image with default setting of each metric.""" 
 
@@ -16,15 +17,14 @@ class InferenceModel():
                  input_size=None,
                  mean=None,
                  std=None,
-                 preprocess_x=None,
-                 preprocess_y=None,
                  **kwargs # Other metric options
             ):
         super(InferenceModel, self).__init__()
 
         self.metric_name = metric_name
+        metric_default_cfg = DEFAULT_CONFIGS[metric_name]
         if metric_name in DEFAULT_CONFIGS.keys():
-            self.metric_mode = DEFAULT_CONFIGS[metric_name]['metric_mode']
+            self.metric_mode = metric_default_cfg['metric_mode']
         else:
             self.metric_mode = metric_mode
 
@@ -45,20 +45,15 @@ class InferenceModel():
         tf_list.append(tv.transforms.Lambda(lambda x: x * img_range))
         if mean is not None and std is not None:
             tf_list.append(tv.transforms.Normalize(mean, std))
-        self.trans_x = self.trans_y = tv.transforms.Compose(tf_list)
-
-        # This is only used to specific methods which has specific preprocessing, for example, ckdn
-        if preprocess_x is not None and preprocess_y is not None:
-            self.trans_x = preprocess_x
-            self.trans_y = preprocess_y
+        self.trans = tv.transforms.Compose(tf_list)
     
     def test(self, x, y=None):
         if not torch.is_tensor(x):
-            x = self.trans_x(x)
+            x = self.trans(x)
             x = x.unsqueeze(0).to(self.device)
             if self.metric_mode == 'FR':
                 assert y is not None, 'Please specify reference image for Full Reference metric'
-                y = self.trans_y(y)
+                y = self.trans(y)
                 y = y.unsqueeze(0).to(self.device)
         with torch.no_grad():
             if self.metric_mode == 'FR':

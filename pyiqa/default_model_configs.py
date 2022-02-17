@@ -11,36 +11,28 @@ DEFAULT_CONFIGS = OrderedDict({
         'ckdn': {
             'metric_opts': {
                 'type': 'CKDN',
-                'pretrained_model_path': './experiments/pretrained_models/CKDN/model_best.pth.tar',
-                'use_diff_preprocess': False,
                 },
             'metric_mode': 'FR',
-            'preprocess_x': tv.transforms.Compose([
-                tv.transforms.Resize(int(math.floor(288/0.875)), tv.transforms.InterpolationMode.BICUBIC),
-                tv.transforms.CenterCrop(288),
-                tv.transforms.ToTensor(),
-                tv.transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
-                ]),
-            'preprocess_y': tv.transforms.Compose([
-                tv.transforms.Resize(int(math.floor(288/0.875)), tv.transforms.InterpolationMode.NEAREST),
-                tv.transforms.CenterCrop(288),
-                tv.transforms.ToTensor(),
-                tv.transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
-                ]),
             },
         'lpips': {
             'metric_opts': {
                 'type': 'LPIPS',
                 'net': 'alex',
                 'version': '0.1',
-                'pretrained_model_path': './experiments/pretrained_models/LPIPS/v0.1/alex.pth',
+                },
+            'metric_mode': 'FR',
+            },
+        'lpips-vgg': {
+            'metric_opts': {
+                'type': 'LPIPS',
+                'net': 'vgg',
+                'version': '0.1',
                 },
             'metric_mode': 'FR',
             },
         'dists': {
             'metric_opts': {
                 'type': 'DISTS',
-                'pretrained_model_path': './experiments/pretrained_models/DISTS/weights.pt',
                 },
             'metric_mode': 'FR',
             },
@@ -123,7 +115,6 @@ DEFAULT_CONFIGS = OrderedDict({
             'metric_opts': {
                 'type': 'NIQE',
                 'test_y_channel': True,
-                'pretrained_model_path': './experiments/pretrained_models/NIQE/modelparameters.mat',
                 },
             'metric_mode': 'NR',
             },
@@ -131,15 +122,34 @@ DEFAULT_CONFIGS = OrderedDict({
             'metric_opts': {
                 'type': 'BRISQUE',
                 'test_y_channel': True,
-                'pretrained_model_path': './experiments/pretrained_models/BRISQUE/brisque_svm_weights.pt',
                 },
             'metric_mode': 'NR',
             },
         'musiq': {
             'metric_opts': {
                 'type': 'MUSIQ',
-                'num_class': 10,
-                'pretrained_model_path': './experiments/pretrained_models/MUSIQ/musiq_ava_ckpt.pth',
+                'pretrained': 'ava'
+            },
+            'metric_mode': 'NR',
+            },
+        'musiq-koniq': {
+            'metric_opts': {
+                'type': 'MUSIQ',
+                'pretrained': 'koniq10k'
+            },
+            'metric_mode': 'NR',
+            },
+        'musiq-paq2piq': {
+            'metric_opts': {
+                'type': 'MUSIQ',
+                'pretrained': 'paq2piq'
+            },
+            'metric_mode': 'NR',
+            },
+        'musiq-spaq': {
+            'metric_opts': {
+                'type': 'MUSIQ',
+                'pretrained': 'spaq'
             },
             'metric_mode': 'NR',
             },
