@@ -23,9 +23,10 @@ def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8):
     Args:
         x: An input tensor. Shape :math:`(N, C, H, W)`.
         y: A target tensor. Shape :math:`(N, C, H, W)`.
-        test_y_channel: Convert RGB image to YCbCr format and computes PSNR
+        test_y_channel (Boolean): Convert RGB image to YCbCr format and computes PSNR
             only on luminance channel if `True`. Compute on all 3 channels otherwise.
         data_range: Maximum value range of images (default 1.0).
+
     Returns:
         PSNR Index of similarity betwen two images.
     """
@@ -48,7 +49,7 @@ class PSNR(nn.Module):
     r"""
     Args:
         X, Y (torch.Tensor): distorted image and reference image tensor with shape (B, 3, H, W)
-        test_y_channel: Convert RGB image to YCbCr format and computes PSNR
+        test_y_channel (Boolean): Convert RGB image to YCbCr format and computes PSNR
             only on luminance channel if `True`. Compute on all 3 channels otherwise.
         kwargs: other parameters, including
             - data_range: maximun numeric value

@@ -48,29 +48,25 @@ class LPIPS(nn.Module):
     """ LPIPS model.
     Args:
         lpips (Boolean) : Whether to use linear layers on top of base/trunk network.
-        pretrained (Boolean): Whether means linear layers are calibrated with human perceptual judgments.
-        pnet_rand : bool
-            [False] means trunk loaded with ImageNet classification weights
-            [True] means randomly initialized trunk
-        net : str
-            ['alex','vgg','squeeze'] are the base/trunk networks available
-        version : str
-            ['v0.1'] is the default and latest
-            ['v0.0'] contained a normalization bug; corresponds to old arxiv v1 (https://arxiv.org/abs/1801.03924v1)
-        pretrained_model_path : 'str'
-            [None] is default and loads the pretrained weights from paper https://arxiv.org/abs/1801.03924v1
+        pretrained (Boolean): Whether means linear layers are calibrated with human 
+            perceptual judgments.
+        pnet_rand (Boolean): Whether to randomly initialized trunk.
+        net (String): ['alex','vgg','squeeze'] are the base/trunk networks available.
+        version (String): choose the version ['v0.1'] is the default and latest;
+            ['v0.0'] contained a normalization bug.
+        pretrained_model_path (String): Petrained model path.
 
-        The following parameters should only be changed if training the network
+        The following parameters should only be changed if training the network:
 
-        eval_mode : bool
-            [True] is for test mode (default)
-            [False] is for training mode
-        pnet_tune
-            [False] keep base/trunk frozen
-            [True] tune the base/trunk network
-        use_dropout : bool
-            [True] to use dropout when training linear layers
-            [False] for no dropout when training linear layers
+        eval_mode (Boolean): choose the mode; True is for test mode (default).
+        pnet_tune (Boolean): Whether to tune the base/trunk network.
+        use_dropout (Boolean): Whether to use dropout when training linear layers.
+    
+    Reference:
+        Zhang, Richard, et al. "The unreasonable effectiveness of deep features as 
+        a perceptual metric." Proceedings of the IEEE conference on computer vision 
+        and pattern recognition. 2018.
+
         """
     def __init__(self,
                  pretrained=True,
@@ -132,6 +128,19 @@ class LPIPS(nn.Module):
             self.eval()
 
     def forward(self, in1, in0, retPerLayer=False, normalize=True):
+        r"""Computation IQA using LPIPS.
+        Args:
+            in1: An input tensor. Shape :math:`(N, C, H, W)`.
+            in0: A reference tensor. Shape :math:`(N, C, H, W)`.
+            retPerLayer (Boolean): return result contains ressult of 
+                each layer or not. Default: False.
+            normalize (Boolean): Whether to normalize image data range 
+                in [0,1] to [-1,1]. Default: True.
+
+        Returns:
+            Quality score.
+
+        """
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1

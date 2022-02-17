@@ -1,4 +1,4 @@
-r"""MS-SSIM Metric
+r"""VIF Metric
 
 Created by: https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/VIF.py
 
@@ -206,9 +206,9 @@ def SteerablePyramidSpace(image, height=4, order=5, channels=1):
     r'''Construct a steerable pyramid on image.
     Args:
         image: A tensor. Shape :math:`(N, C, H, W)`.
-        height: Number of pyramid levels to build.
-        order: Number of orientations.
-        channels: Number of channels.
+        height (int): Number of pyramid levels to build.
+        order (int): Number of orientations.
+        channels (int): Number of channels.
     '''
     num_orientations = order + 1
     filters = sp5_filters()
@@ -233,9 +233,9 @@ def SteerablePyramidSpace(image, height=4, order=5, channels=1):
 class VIF(torch.nn.Module):
     r'''Image Information and Visual Quality metric
     Args:
-        channels: Number of channels.
-        level: Number of levels to build.
-        ori: Number of orientations.
+        channels (int): Number of channels.
+        level (int): Number of levels to build.
+        ori (int): Number of orientations.
     Reference:
         Sheikh, Hamid R., and Alan C. Bovik. "Image information and visual quality." 
         IEEE Transactions on image processing 15, no. 2 (2006): 430-444.
@@ -263,10 +263,10 @@ class VIF(torch.nn.Module):
         Args:
             image: A tensor. Shape :math:`(N, C, H, W)`.
             filt: A filter.
-            step: Downsampling factors.
-            channels: Number of channels.
-            start: The window over which the convolution occurs.
-            end: The window over which the convolution occurs.
+            step (int): Downsampling factors.
+            channels (int): Number of channels.
+            start (list): The window over which the convolution occurs.
+            end (list): The window over which the convolution occurs.
         '''
 
         filt_ = torch.from_numpy(filt).float().unsqueeze(0).unsqueeze(

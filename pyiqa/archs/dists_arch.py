@@ -125,11 +125,6 @@ class DISTS(torch.nn.Module):
         """
         feats0 = self.forward_once(x)
         feats1 = self.forward_once(y)
-<<<<<<< HEAD
-
-=======
-        
->>>>>>> ed26c128f8f650a5a17fbf17cf4a3da7251dcf65
         dist1 = 0
         dist2 = 0
         c1 = 1e-6

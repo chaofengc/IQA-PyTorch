@@ -1,3 +1,14 @@
+r"""WaDIQaM model.
+
+Created by: https://github.com/lidq92/WaDIQaM
+
+Modified by: Chaofeng Chen (https://github.com/chaofengc)
+
+Refer to:
+    Official code from https://github.com/dmaniry/deepIQA
+
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -21,13 +32,20 @@ def make_layers(cfg: List[Union[str, int]]) -> nn.Sequential:
 
 @ARCH_REGISTRY.register()
 class WaDIQaM(nn.Module):
-    """WaDIQaM model proposed by 
+    """WaDIQaM model.
+    Args:
+        metric_mode (String): Choose metric mode.
+        weighted_average (Boolean): Average the weight.
+        train_patch_num (int): Number of patch trained. Default: 32.
+        pretrained_model_path (String): The pretrained model path. 
+        load_feature_weight_only (Boolean): Only load featureweight.
+        eps (float): Constant value.
 
-    Bosse, Sebastian, Dominique Maniry, Klaus-Robert Müller, Thomas Wiegand, and Wojciech Samek. 
-    "Deep neural networks for no-reference and full-reference image quality assessment." 
-    IEEE Transactions on image processing 27, no. 1 (2017): 206-219.
-
-    Ref url: https://github.com/lidq92/WaDIQaM
+    Reference:
+        Bosse, Sebastian, Dominique Maniry, Klaus-Robert Müller, Thomas Wiegand, 
+        and Wojciech Samek. "Deep neural networks for no-reference and full-reference 
+        image quality assessment." IEEE Transactions on image processing 27, no. 1 
+        (2017): 206-219.
 
     """
     def __init__(self, 
@@ -142,6 +160,11 @@ class WaDIQaM(nn.Module):
         return h
 
     def forward(self, x, y=None):
+        r"""WaDIQaM model.
+        Args:
+            x: An input tensor. Shape :math:`(N, C, H, W)`.
+            y: A reference tensor. Shape :math:`(N, C, H, W)`.
+        """
         if self.metric_mode == 'FR':
             assert y != None, f'Full reference metric requires reference input'
             x_patches, y_patches = self.get_patches(x, y)

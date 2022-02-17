@@ -1,3 +1,11 @@
+r"""NIMA model.
+
+Created by: https://github.com/yunxiaoshi/Neural-IMage-Assessment/blob/master/model/model.py
+
+Modified by: Chaofeng Chen (https://github.com/chaofengc)
+
+"""
+
 import torch
 import torch.nn as nn
 import timm
@@ -7,11 +15,7 @@ from pyiqa.archs.arch_util import dist_to_mos
 
 @ARCH_REGISTRY.register()
 class NIMA(nn.Module):
-    """Neural IMage Assessment model proposed by 
-
-    Talebi, Hossein, and Peyman Milanfar. 
-    "NIMA: Neural image assessment." 
-    IEEE transactions on image processing 27, no. 8 (2018): 3998-4011.
+    """Neural IMage Assessment model.
 
     Modification: 
         - for simplicity, we use global average pool for all models
@@ -24,6 +28,9 @@ class NIMA(nn.Module):
         default input shape:
             - vgg and mobilenet: (N, 3, 224, 224)
             - inception: (N, 3, 299, 299)
+    Reference:
+        Talebi, Hossein, and Peyman Milanfar. "NIMA: Neural image assessment." 
+        IEEE transactions on image processing 27, no. 8 (2018): 3998-4011.
     """
     def __init__(self, 
                  base_model_name='vgg16', 
@@ -63,6 +70,13 @@ class NIMA(nn.Module):
         return x
 
     def forward(self, x, return_mos=True, return_dist=False):
+        r"""Computation image quality using NIMA.
+        Args:
+            x: An input tensor. Shape :math:`(N, C, H, W)`.
+            return_mos: Whether to return mos_score.
+            retuen_dist: Whether to return dist_score.
+
+        """
         # imagenet normalization of input is hard coded 
         x = self.preprocess(x)
         x = self.base_model(x)[-1]

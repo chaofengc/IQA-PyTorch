@@ -1,12 +1,9 @@
-r"""MUSIQ model proposed by 
+r"""MUSIQ model.
 
-Ke, Junjie, Qifei Wang, Yilin Wang, Peyman Milanfar, and Feng Yang. 
-"Musiq: Multi-scale image quality transformer." 
-In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp. 5148-5157. 2021.
+Implemented by: Chaofeng Chen (https://github.com/chaofengc)
 
-Ref url: https://github.com/google-research/google-research/tree/master/musiq
-
-Pytorch implementation by: Chaofeng Chen (https://github.com/chaofengc)
+Refer to:
+    Official code from: https://github.com/google-research/google-research/tree/master/musiq
 
 """
 
@@ -253,6 +250,11 @@ class MUSIQ(nn.Module):
     
     Evaluation:
         - n_crops: currently only test with 1 crop evaluation
+        
+    Reference:
+        Ke, Junjie, Qifei Wang, Yilin Wang, Peyman Milanfar, and Feng Yang. 
+        "Musiq: Multi-scale image quality transformer." In Proceedings of the 
+        IEEE/CVF International Conference on Computer Vision (ICCV), pp. 5148-5157. 2021.
     """
     def __init__(self, 
                  patch_size=32,
