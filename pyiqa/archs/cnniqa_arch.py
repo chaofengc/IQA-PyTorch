@@ -1,3 +1,14 @@
+r"""CNNIQA Model.
+
+Created by: https://github.com/lidq92/CNNIQA
+
+Modified by: Chaofeng Chen (https://github.com/chaofengc)
+
+Modification:
+    - We use 3 channel RGB input.
+
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,16 +17,19 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 
 @ARCH_REGISTRY.register()
 class CNNIQA(nn.Module):
-    """CNNIQA model proposed by 
+    r"""CNNIQA model.
+    Args:
+        ker_size (int): Kernel size.
+        n_kers (int): Number of kernals.
+        n1_nodes (int): Number of n1 nodes.
+        n2_nodes (int): Number of n2 nodes.
+        pretrained_model_path (String): Pretrained model path.
 
-    Kang, Le, Peng Ye, Yi Li, and David Doermann. 
-    "Convolutional neural networks for no-reference image quality assessment." 
-    In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 1733-1740. 2014.
-
-    Ref url: https://github.com/lidq92/CNNIQA 
-
-    Modification:
-        - We use 3 channel RGB input.
+    Reference:
+        Kang, Le, Peng Ye, Yi Li, and David Doermann. "Convolutional 
+        neural networks for no-reference image quality assessment." 
+        In Proceedings of the IEEE conference on computer vision and 
+        pattern recognition, pp. 1733-1740. 2014.
 
     """
     def __init__(self, 
@@ -42,6 +56,15 @@ class CNNIQA(nn.Module):
         self.net.load_state_dict(state_dict, strict=True) 
 
     def forward(self, x):
+        r"""Compute IQA using CNNIQA model.
+
+        Args:
+            x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+
+        Returns:
+            Value of CNNIQA model.
+            
+        """
         h  = self.conv1(x)
 
         h1 = F.max_pool2d(h, (h.size(-2), h.size(-1)))

@@ -1,4 +1,4 @@
-r"""MS-SSIM Metric
+r"""GMSD Metric
 
 Created by: https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/GMSD.py
 
@@ -13,18 +13,19 @@ Refer to:
 import torch
 from torch import nn
 from torch.nn import functional as F
+from xmlrpc.client import Boolean
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 
 def gmsd(
-    x,
-    y,
-    T=170,
-    channels=3,
-    test_y_channel=True,
-):
+    x: torch.Tensor,
+    y: torch.Tensor,
+    T: int = 170,
+    channels: int = 3,
+    test_y_channel: Boolean = True,
+) -> torch.Tensor:
     r"""GMSD metric.
     Args:
         x: A distortion tensor. Shape :math:`(N, C, H, W)`.
@@ -61,6 +62,7 @@ def gmsd(
     quality_map = (2 * gradientMap1 * gradientMap2 + T) / (gradientMap1**2 +
                                                            gradientMap2**2 + T)
     score = torch.std(quality_map.view(quality_map.shape[0], -1), dim=1)
+
     return score
 
 
@@ -77,12 +79,12 @@ class GMSD(nn.Module):
         Processing 23, no. 2 (2013): 684-695.
     '''
 
-    def __init__(self, channels=3, test_y_channel=True):
+    def __init__(self, channels: int = 3, test_y_channel: Boolean = True) -> None:
         super(GMSD, self).__init__()
         self.channels = channels
         self.test_y_channel = test_y_channel
 
-    def forward(self, x, y):
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r"""Args:
             x: A distortion tensor. Shape :math:`(N, C, H, W)`.
             y: A reference tensor. Shape :math:`(N, C, H, W)`.
@@ -93,4 +95,5 @@ class GMSD(nn.Module):
                      y,
                      channels=self.channels,
                      test_y_channel=self.test_y_channel)
+
         return score

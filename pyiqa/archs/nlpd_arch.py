@@ -33,10 +33,12 @@ class NLPD(nn.Module):
     Args:
         channels: Number of channel expected to calculate.
         test_y_channel: Boolean, whether to use y channel on ycbcr which mimics official matlab code.
+
     References:
         Laparra, Valero, Johannes Ballé, Alexander Berardino, and Eero P. Simoncelli. 
         "Perceptual image quality assessment using a normalized Laplacian pyramid." 
         Electronic Imaging 2016, no. 16 (2016): 1-6.
+
     """
 
     def __init__(self, channels=1, test_y_channel=True, k=6, filt=None):
@@ -191,8 +193,10 @@ class NLPD(nn.Module):
         Args:
             X: An input tensor. Shape :math:`(N, C, H, W)`.
             Y: A target tensor. Shape :math:`(N, C, H, W)`.
+
         Returns:
             Value of NLPD metric in [0, 1] range.
+            
         """
         assert X.shape == Y.shape, f"Input {X.shape} and reference images should have the same shape"
 

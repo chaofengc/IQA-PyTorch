@@ -17,13 +17,13 @@ from pyiqa.utils.download_util import load_file_from_url
 # IQA utils 
 # --------------------------------------------
 
-def dist_to_mos(dist_score):
+def dist_to_mos(dist_score: torch.Tensor) -> torch.Tensor:
     """Convert distribution prediction to mos score.
     For datasets with detailed score labels, such as AVA  
 
     Args:
         dist_score (tensor): (*, C), C is the class number
-    
+
     Output:
         mos_score (tensor): (*, 1)
     """
@@ -45,14 +45,15 @@ def load_pretrained_network(net, model_path, strict=True):
 
 @torch.no_grad()
 def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
-    """Initialize network weights.
-
+    r"""Initialize network weights.
+    
     Args:
         module_list (list[nn.Module] | nn.Module): Modules to be initialized.
         scale (float): Scale initialized weights, especially for residual
             blocks. Default: 1.
-        bias_fill (float): The value to fill bias. Default: 0
+        bias_fill (float): The value to fill bias. Default: 0.
         kwargs (dict): Other arguments for initialization function.
+
     """
     if not isinstance(module_list, list):
         module_list = [module_list]
@@ -75,7 +76,7 @@ def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
 
 
 class SymmetricPad2d(nn.Module):
-    """Symmetric pad 2d for pytorch.
+    r"""Symmetric pad 2d for pytorch.
 
     Args:
         pad (int or tuple): (pad_left, pad_right, pad_top, pad_bottom)
@@ -106,10 +107,20 @@ class SymmetricPad2d(nn.Module):
                 h - self.pad_t: 2*h + self.pad_b:,
                 w - self.pad_l: 2*w + self.pad_r:,
                 ]
+
         return pad_x
 
 
 def simple_sample_padding2d(x, kernel, stride, dilation=1):
+    r"""Simple same padding for 4D tensor. Only support int kernel, stride and dilation.
+
+    Args:
+        x (tensor): The input. Shape :math:`(N, C, H, W)`.
+        kernel (int): Kernel size.
+        stride (int): Stride size.
+        dilation (int): Dilation size, default with 1.
+
+    """
     assert len(x.shape) == 4, f'Only support 4D tensor input, but got {x.shape}'
     b,c,h,w = x.shape
     h2 = math.ceil(h / stride)
@@ -121,7 +132,13 @@ def simple_sample_padding2d(x, kernel, stride, dilation=1):
 
 
 class SimpleSamePadding2d(nn.Module):
-    """Simple same padding for 4D tensor. Only support int kernel, stride and dilation.
+    r"""Simple same padding for 4D tensor. Only support int kernel, stride and dilation.
+
+    Args:
+        kernel (int): kernel size.
+        stride (int): stride size.
+        dilation (int): dilation size, default with 1.
+
     """
     def __init__(self, kernel, stride, dilation=1):
         super().__init__()

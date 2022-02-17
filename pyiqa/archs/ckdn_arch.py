@@ -1,10 +1,9 @@
-"""CKDN model proposed by
+"""CKDN model.
 
-Zheng, Heliang, Huan Yang, Jianlong Fu, Zheng-Jun Zha, and Jiebo Luo. 
-"Learning conditional knowledge distillation for degraded-reference image quality assessment." 
-In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp. 10242-10251. 2021.
+Created by: Chaofeng Chen (https://github.com/chaofengc)
 
-Ref url: https://github.com/researchmm/CKDN
+Refer to: 
+    https://github.com/researchmm/CKDN.
 
 """
 
@@ -258,6 +257,21 @@ def _resnet(arch, block, layers, pretrained, progress, **kwargs):
 
 @ARCH_REGISTRY.register()
 class CKDN(nn.Module):
+    r"""CKDN metric.
+
+    Args:
+        pretrained_model_path (String):  The model path.
+        use_default_preprocess (Boolean): Whether use default preprocess, default: True.
+        default_mean (tuple): The mean value.
+        default_std (tuple): The std value.
+    
+    Reference:
+        Zheng, Heliang, Huan Yang, Jianlong Fu, Zheng-Jun Zha, and Jiebo Luo. 
+        "Learning conditional knowledge distillation for degraded-reference image 
+        quality assessment." In Proceedings of the IEEE/CVF International Conference 
+        on Computer Vision (ICCV), pp. 10242-10251. 2021.
+
+    """
     def __init__(self, 
                  pretrained=True,
                  pretrained_model_path=None, 
@@ -286,6 +300,7 @@ class CKDN(nn.Module):
             x, y:  
               shape, (N, C, H, W) in RGB format; 
               value range, 0 ~ 1
+              
         """
         scaled_size = int(math.floor(288/0.875))
         x = tv.transforms.functional.resize(x, scaled_size, tv.transforms.InterpolationMode.BICUBIC)
@@ -299,8 +314,16 @@ class CKDN(nn.Module):
         return x, y
 
     def forward(self, x, y):
+        r"""Compute IQA using CKDN model.
+
+        Args:
+            x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            y: An reference tensor with (N, C, H, W) shape. RGB channel order for colour images.
+
+        Returns:
+            Value of CKDN model.
+            
+        """
         if self.use_default_preprocess:
             x, y = self._default_preprocess(x, y)
         return self.net(x, y)
-
-

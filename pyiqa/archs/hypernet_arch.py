@@ -1,3 +1,11 @@
+r"""HyperNet Metric
+
+Created by: https://github.com/SSL92/hyperIQA
+
+Modified by: Chaofeng Chen (https://github.com/chaofengc)
+
+"""
+
 import torch
 import torch.nn as nn
 import torchvision.transforms.functional as TF
@@ -7,16 +15,21 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 
 @ARCH_REGISTRY.register()
 class HyperNet(nn.Module):
-    """HyperNet proposed by 
-
-    Su, Shaolin, Qingsen Yan, Yu Zhu, Cheng Zhang, Xin Ge, Jinqiu Sun, and Yanning Zhang. 
-    "Blindly assess image quality in the wild guided by a self-adaptive hyper network." 
-    In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 3667-3676. 2020.
-    Url: https://github.com/SSL92/hyperIQA
-
+    """HyperNet Model.
     Args:
-        base_model_name: pretrained model to extract features, can be any models supported by timm.
-                         Default, resnet50
+        base_model_name (String): pretrained model to extract features, 
+            can be any models supported by timm. Default: resnet50.
+        pretrained_model_path (String): Pretrained model path.
+        default_mean (list): Default mean value.
+        default_std (list): Default std value.
+
+    Reference:
+        Su, Shaolin, Qingsen Yan, Yu Zhu, Cheng Zhang, Xin Ge, 
+        Jinqiu Sun, and Yanning Zhang. "Blindly assess image 
+        quality in the wild guided by a self-adaptive hyper network." 
+        In Proceedings of the IEEE/CVF Conference on Computer Vision 
+        and Pattern Recognition (CVPR), pp. 3667-3676. 2020.
+        
     """
     def __init__(self, 
                  base_model_name='resnet50', 
@@ -131,6 +144,11 @@ class HyperNet(nn.Module):
         return results.unsqueeze(-1)
 
     def forward(self, x):
+        r"""HYPERNET model.
+        Args:
+            x: A distortion tensor. Shape :math:`(N, C, H, W)`.
+
+        """
         # imagenet normalization of input is hard coded 
         x = self.preprocess(x)
 
@@ -160,6 +178,7 @@ class HyperNet(nn.Module):
                 x = torch.sigmoid(torch.bmm(x, target_fc_w[i].transpose(1, 2)) + target_fc_b[i].unsqueeze(1))
             else:
                 x = torch.bmm(x, target_fc_w[i].transpose(1, 2)) + target_fc_b[i].unsqueeze(1)
+
         return x.squeeze(-1)
 
         

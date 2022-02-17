@@ -15,6 +15,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy.fft import fftshift
 import math
+from xmlrpc.client import Boolean
 
 from pyiqa.utils import math_util as math_utils
 from pyiqa.utils.color_util import to_y_channel
@@ -23,11 +24,11 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 MAX = nn.MaxPool2d((2, 2), stride=1, padding=1)
 
 
-def extract_patches_2d(img,
-                       patch_shape=[64, 64],
-                       step=[27, 27],
-                       batch_first=False,
-                       keep_last_patch=False):
+def extract_patches_2d(img: torch.Tensor,
+                       patch_shape: list = [64, 64],
+                       step: list = [27, 27],
+                       batch_first: Boolean = False,
+                       keep_last_patch: Boolean = False) -> torch.Tensor:
     patch_H, patch_W = patch_shape[0], patch_shape[1]
 
     if (img.size(2) < patch_H):
@@ -73,7 +74,7 @@ def extract_patches_2d(img,
     return patches
 
 
-def make_csf(rows, cols, nfreq=32):
+def make_csf(rows, cols, nfreq):
     xvals = np.arange(-(cols - 1) / 2., (cols + 1) / 2.)
     yvals = np.arange(-(rows - 1) / 2., (rows + 1) / 2.)
 

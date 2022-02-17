@@ -1,4 +1,4 @@
-r"""SSIM Metric
+r"""SSIM, MS-SSIM, CW-SSIM Metric
 
 Created by: 
 - https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/SSIM.py

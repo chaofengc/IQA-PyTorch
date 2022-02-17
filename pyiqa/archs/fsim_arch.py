@@ -6,7 +6,7 @@ Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 Refer to:
     Official matlab code from https://www4.comp.polyu.edu.hk/~cslzhang/IQA/FSIM/Files/FeatureSIM.m
-    QIQA from https://github.com/francois-rozet/piqa/blob/master/piqa/fsim.py
+    PIQA from https://github.com/francois-rozet/piqa/blob/master/piqa/fsim.py
 
 """
 
@@ -14,7 +14,6 @@ import math
 import functools
 from typing import Tuple
 import torch.nn as nn
-
 import torch
 
 from pyiqa.utils.registry import ARCH_REGISTRY

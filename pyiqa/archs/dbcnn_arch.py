@@ -1,3 +1,11 @@
+r"""DBCNN Metric
+
+Created by: https://github.com/zwx8981/DBCNN-PyTorch/blob/master/DBCNN.py
+
+Modified by: Chaofeng Chen (https://github.com/chaofengc)
+
+"""
+
 import os
 
 import torch
@@ -10,6 +18,9 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 
 class SCNN(nn.Module):
     """Network branch for synthetic distortions. 
+    Args:
+        use_bn (Boolean): Whether to use batch normalization.
+    
     Modified from https://github.com/zwx8981/DBCNN-PyTorch/blob/master/SCNN.py
 
     """
@@ -60,13 +71,24 @@ class SCNN(nn.Module):
         X = self.projection(X)
         X = X.view(X.shape[0], -1)          
         X = self.classifier(X)
+
         return X
 
 
 @ARCH_REGISTRY.register()
 class DBCNN(nn.Module):
     """Full DBCNN network. 
-    Modified from https://github.com/zwx8981/DBCNN-PyTorch/blob/master/DBCNN.py
+    Args:
+        fc (Boolean): Whether initialize the fc layers.
+        use_bn (Boolean): Whether use batch normalization.
+        pretrained_scnn_path (String): Pretrained scnn path.
+        default_mean (list): Default mean value.
+        default_std (list): Default std value.
+    
+    Reference:
+        Zhang, Weixia, et al. "Blind image quality assessment using 
+        a deep bilinear convolutional neural network." IEEE Transactions 
+        on Circuits and Systems for Video Technology 30.1 (2018): 36-47.
 	
 	"""
     def __init__(self, fc=True, 
@@ -113,7 +135,14 @@ class DBCNN(nn.Module):
         return x
 
     def forward(self, X):
-        """Forward pass of the network.
+        r"""Compute IQA using DBCNN model.
+
+        Args:
+            X: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+
+        Returns:
+            Value of DBCNN model.
+            
         """
         X = self.preprocess(X)
 
@@ -133,6 +162,7 @@ class DBCNN(nn.Module):
         X = torch.sqrt(X + 1e-8)
         X = torch.nn.functional.normalize(X)
         X = self.fc(X)
+
         return X
 
 

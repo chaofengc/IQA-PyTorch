@@ -1,4 +1,4 @@
-r"""VSI Metric
+r"""VSI Metric.
 
 Created by: https://github.com/photosynthesis-team/piq/blob/master/piq/vsi.py
 
@@ -34,30 +34,29 @@ def vsi(x: torch.Tensor,
         sigma_d: float = 145.,
         sigma_c: float = 0.001) -> torch.Tensor:
     r"""Compute Visual Saliency-induced Index for a batch of images.
-    Both inputs are supposed to have RGB channels order in accordance with the original approach.
-    Nevertheless, the method supports greyscale images, which they are converted to RGB by copying the grey
-    channel 3 times.
     Args:
         x: An input tensor. Shape :math:`(N, C, H, W)`.
         y: A target tensor. Shape :math:`(N, C, H, W)`.
-        reduction: Specifies the reduction type:
-            ``'none'`` | ``'mean'`` | ``'sum'``. Default:``'mean'``
         data_range: Maximum value range of images (usually 1.0 or 255).
-        c1: coefficient to calculate saliency component of VSI
-        c2: coefficient to calculate gradient component of VSI
-        c3: coefficient to calculate color component of VSI
-        alpha: power for gradient component of VSI
-        beta: power for color component of VSI
-        omega_0: coefficient to get log Gabor filter at SDSP
-        sigma_f: coefficient to get log Gabor filter at SDSP
-        sigma_d: coefficient to get SDSP
-        sigma_c: coefficient to get SDSP
+        c1: coefficient to calculate saliency component of VSI.
+        c2: coefficient to calculate gradient component of VSI.
+        c3: coefficient to calculate color component of VSI.
+        alpha: power for gradient component of VSI.
+        beta: power for color component of VSI.
+        omega_0: coefficient to get log Gabor filter at SDSP.
+        sigma_f: coefficient to get log Gabor filter at SDSP.
+        sigma_d: coefficient to get SDSP.
+        sigma_c: coefficient to get SDSP.
+
     Returns:
         Index of similarity between two images. Usually in [0, 1] range.
+
     References:
-        L. Zhang, Y. Shen and H. Li, "VSI: A Visual Saliency-Induced Index for Perceptual Image Quality Assessment,"
-        IEEE Transactions on Image Processing, vol. 23, no. 10, pp. 4270-4281, Oct. 2014, doi: 10.1109/TIP.2014.2346028
+        L. Zhang, Y. Shen and H. Li, "VSI: A Visual Saliency-Induced Index for Perceptual 
+        Image Quality Assessment," IEEE Transactions on Image Processing, vol. 23, no. 10, 
+        pp. 4270-4281, Oct. 2014, doi: 10.1109/TIP.2014.2346028
         https://ieeexplore.ieee.org/document/6873260
+
     Note:
         The original method supports only RGB image.
     """
@@ -153,6 +152,7 @@ def sdsp(x: torch.Tensor,
         sigma_f: coefficient for log Gabor filter
         sigma_d: coefficient for the central areas, which have a bias towards attention
         sigma_c: coefficient for the warm colors, which have a bias towards attention
+
     Returns:
         torch.Tensor: Visual saliency map
     """
@@ -206,6 +206,7 @@ def _log_gabor(size: Tuple[int, int], omega_0: float,
         size: size of the requires log Gabor filter
         omega_0: center frequency of the filter
         sigma_f: bandwidth of the filter
+
     Returns:
         log Gabor filter
     """
@@ -238,9 +239,11 @@ class VSI(nn.Module):
         sigma_f: coefficient to get log Gabor filter at SDSP
         sigma_d: coefficient to get SDSP
         sigma_c: coefficient to get SDSP
+
     References:
-        L. Zhang, Y. Shen and H. Li, "VSI: A Visual Saliency-Induced Index for Perceptual Image Quality Assessment,"
-        IEEE Transactions on Image Processing, vol. 23, no. 10, pp. 4270-4281, Oct. 2014, doi: 10.1109/TIP.2014.2346028
+        L. Zhang, Y. Shen and H. Li, "VSI: A Visual Saliency-Induced Index for Perceptual 
+        Image Quality Assessment," IEEE Transactions on Image Processing, vol. 23, no. 10, 
+        pp. 4270-4281, Oct. 2014, doi: 10.1109/TIP.2014.2346028
         https://ieeexplore.ieee.org/document/6873260
     """
 
