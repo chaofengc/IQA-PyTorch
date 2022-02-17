@@ -15,6 +15,7 @@ import math
 import torchvision as tv
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.utils.download_util import load_file_from_url
 
 try:
     from torch.hub import load_state_dict_from_url
@@ -23,7 +24,7 @@ except ImportError:
 
 
 default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CKDN_model_best-58f46163.pth'
+    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CKDN_model_best-38b27dc6.pth' 
 }
 
 
@@ -266,27 +267,16 @@ class CKDN(nn.Module):
                  **kwargs):
         super().__init__()
         self.net = _resnet('resnet50', Bottleneck, [3, 4, 6, 3], True, True,**kwargs)
-        if pretrained_model_path is not None:
-            self.load_pretrained_network(pretrained_model_path)
         self.use_default_preprocess = use_default_preprocess 
 
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
 
         if pretrained_model_path is not None:
-            self.load_pretrained_network(pretrained_model_path)
+            load_pretrained_network(self, pretrained_model_path)
         elif pretrained:
             load_pretrained_network(self, default_model_urls['url'])
-        
-    def load_pretrained_network(self, model_path):
-        print(f'Loading pretrained model from {model_path}')
-        state_dicts = torch.load(model_path, map_location=torch.device('cpu'))['state_dict']
-        new_state_dict = {}
-        for k in state_dicts.keys():
-            new_state_dict[k.split('module.')[1]] = state_dicts[k]
-
-        self.net.load_state_dict(new_state_dict, strict=False) 
-
+    
     def _default_preprocess(self, x, y):
         """default preprocessing of CKDN: https://github.com/researchmm/CKDN
         Useful when using this metric as losses.

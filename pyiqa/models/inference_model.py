@@ -28,15 +28,15 @@ class InferenceModel():
         else:
             self.metric_mode = metric_mode
 
+        # load pretrained models
+        if model_path is not None:
+            kwargs['pretrained_model_path'] = model_path
+
         # define network
         self.net = create_metric(metric_name, **kwargs)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.net = self.net.to(self.device)
         self.net.eval()
-
-        # load pretrained models
-        if model_path is not None:
-            load_pretrained_network(self.net, model_path)
 
         tf_list = []
         if input_size is not None:
