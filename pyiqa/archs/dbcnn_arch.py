@@ -6,8 +6,6 @@ Modified by: Chaofeng Chen (https://github.com/chaofengc)
 
 """
 
-import os
-
 import torch
 import torchvision
 import torch.nn as nn

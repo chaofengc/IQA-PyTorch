@@ -1,4 +1,7 @@
 r"""NIMA model.
+Reference:
+    Talebi, Hossein, and Peyman Milanfar. "NIMA: Neural image assessment." 
+    IEEE transactions on image processing 27, no. 8 (2018): 3998-4011.
 
 Created by: https://github.com/yunxiaoshi/Neural-IMage-Assessment/blob/master/model/model.py
 
@@ -28,9 +31,6 @@ class NIMA(nn.Module):
         default input shape:
             - vgg and mobilenet: (N, 3, 224, 224)
             - inception: (N, 3, 299, 299)
-    Reference:
-        Talebi, Hossein, and Peyman Milanfar. "NIMA: Neural image assessment." 
-        IEEE transactions on image processing 27, no. 8 (2018): 3998-4011.
     """
     def __init__(self, 
                  base_model_name='vgg16', 

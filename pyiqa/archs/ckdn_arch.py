@@ -14,7 +14,6 @@ import math
 import torchvision as tv
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
-from pyiqa.utils.download_util import load_file_from_url
 
 try:
     from torch.hub import load_state_dict_from_url

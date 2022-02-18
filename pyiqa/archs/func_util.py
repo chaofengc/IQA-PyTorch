@@ -8,8 +8,8 @@ from .arch_util import SimpleSamePadding2d, SymmetricPad2d
 
 
 def torch_cov(tensor, rowvar=True, bias=False):
-    """Estimate a covariance matrix (np.cov)
-    https://gist.github.com/ModarTensai/5ab449acba9df1a26c12060240773110
+    r"""Estimate a covariance matrix (np.cov)
+    Ref: https://gist.github.com/ModarTensai/5ab449acba9df1a26c12060240773110
     """
     tensor = tensor if rowvar else tensor.transpose(-1, -2)
     tensor = tensor - tensor.mean(dim=-1, keepdim=True)
@@ -18,6 +18,11 @@ def torch_cov(tensor, rowvar=True, bias=False):
 
 
 def safe_sqrt(x: torch.Tensor) -> torch.Tensor:
+    r"""Safe sqrt with EPS to ensure numeric stability.
+
+    Args:
+        x (torch.Tensor): should be non-negative 
+    """
     EPS = torch.finfo(x.dtype).eps
     return torch.sqrt(x + EPS)
 

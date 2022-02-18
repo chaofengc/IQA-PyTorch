@@ -44,8 +44,7 @@ def load_org_results():
 
 
 def run_test(test_metric_names):
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'============> Testing on {device}')
 
     img_batch, ref_batch = load_test_img_batch()

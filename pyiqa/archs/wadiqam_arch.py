@@ -1,9 +1,13 @@
 r"""WaDIQaM model.
 
+Reference:
+    Bosse, Sebastian, Dominique Maniry, Klaus-Robert Müller, Thomas Wiegand, 
+    and Wojciech Samek. "Deep neural networks for no-reference and full-reference 
+    image quality assessment." IEEE Transactions on image processing 27, no. 1 
+    (2017): 206-219.
+
 Created by: https://github.com/lidq92/WaDIQaM
-
 Modified by: Chaofeng Chen (https://github.com/chaofengc)
-
 Refer to:
     Official code from https://github.com/dmaniry/deepIQA
 
@@ -40,12 +44,6 @@ class WaDIQaM(nn.Module):
         pretrained_model_path (String): The pretrained model path. 
         load_feature_weight_only (Boolean): Only load featureweight.
         eps (float): Constant value.
-
-    Reference:
-        Bosse, Sebastian, Dominique Maniry, Klaus-Robert Müller, Thomas Wiegand, 
-        and Wojciech Samek. "Deep neural networks for no-reference and full-reference 
-        image quality assessment." IEEE Transactions on image processing 27, no. 1 
-        (2017): 206-219.
 
     """
     def __init__(self, 

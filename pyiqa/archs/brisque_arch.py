@@ -16,8 +16,8 @@ from xmlrpc.client import Boolean
 import torch
 import torch.nn.functional as F
 from pyiqa.utils.color_util import to_y_channel
-from pyiqa.utils.matlab_functions  import fspecial_gauss, imresize
-from .func_util import estimate_ggd_param, estimate_aggd_param, safe_sqrt, normalize_img_with_guass
+from pyiqa.utils.matlab_functions  import imresize
+from .func_util import estimate_ggd_param, estimate_aggd_param, normalize_img_with_guass
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.registry import ARCH_REGISTRY
 
