@@ -35,8 +35,8 @@ def gmsd(
         test_y_channel: Boolean, whether to use y channel on ycbcr.
     """
     if test_y_channel:
-        x = to_y_channel(x)
-        y = to_y_channel(y)
+        x = to_y_channel(x, 255)
+        y = to_y_channel(y, 255)
         channels = 1
     else:
         x = x * 255.

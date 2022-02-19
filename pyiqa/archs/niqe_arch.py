@@ -159,7 +159,7 @@ def calculate_niqe(img: torch.Tensor,
     cov_pris_param = cov_pris_param.repeat(img.size(0), 1, 1)
 
     if test_y_channel and img.shape[1] == 3:
-        img = to_y_channel(img)
+        img = to_y_channel(img, 255)
 
     if crop_border != 0:
         img = img[..., crop_border:-crop_border, crop_border:-crop_border]

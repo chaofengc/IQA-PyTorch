@@ -17,7 +17,7 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import to_y_channel 
 
 
-def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8):
+def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8, color_space='yiq'):
     r"""Compute Peak Signal-to-Noise Ratio for a batch of images.
     Supports both greyscale and color images with RGB channel order.
     Args:
@@ -33,10 +33,8 @@ def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8):
 
     if (x.shape[1] == 3) and test_y_channel:
         # Convert RGB image to YCbCr and use Y-channel
-        x = to_y_channel(x)
-        y = to_y_channel(y)
-
-        data_range = 255.
+        x = to_y_channel(x, data_range, color_space)
+        y = to_y_channel(y, data_range, color_space)
 
     mse = torch.mean((x - y)**2, dim=[1, 2, 3])
     score = 10 * torch.log10(data_range**2 / (mse + eps))

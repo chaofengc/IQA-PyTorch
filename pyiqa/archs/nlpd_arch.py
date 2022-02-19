@@ -175,8 +175,8 @@ class NLPD(nn.Module):
         ), f"Number of channel and convert to YCBCR should be match"
 
         if self.test_y_channel and self.channels == 1:
-            x1 = to_y_channel(x1) / 255
-            x2 = to_y_channel(x2) / 255
+            x1 = to_y_channel(x1) 
+            x2 = to_y_channel(x2) 
 
         y1 = self.pyramid(x1)
         y2 = self.pyramid(x2)
