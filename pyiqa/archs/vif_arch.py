@@ -411,8 +411,8 @@ class VIF(torch.nn.Module):
             y: A reference tensor. Shape :math:`(N, C, H, W)`.
         """
         # Convert RGB image to YCBCR and use the Y-channel.
-        x = to_y_channel(x)
-        y = to_y_channel(y)
+        x = to_y_channel(x, 255)
+        y = to_y_channel(y, 255)
 
         sp_x = SteerablePyramidSpace(x,
                                      height=self.level,

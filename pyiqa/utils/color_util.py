@@ -15,8 +15,14 @@ def safe_frac_pow(x: torch.Tensor, p) -> torch.Tensor:
 
 
 def to_y_channel(img: torch.Tensor,
+<<<<<<< HEAD
                 range: int = 255.) -> torch.Tensor:
     r"""Change to Y channel of YCbCr.
+=======
+                 out_data_range: float = 1.,
+                 color_space: str = 'yiq') -> torch.Tensor:
+    r"""Change to Y channel 
+>>>>>>> origin/main
     Args:
         image tensor: tensor with shape (N, 3, H, W) in range [0, 1].
     Returns:
@@ -24,9 +30,18 @@ def to_y_channel(img: torch.Tensor,
     """
     assert img.ndim == 4 and img.shape[
         1] == 3, 'input image tensor should be RGB image batches with shape (N, 3, H, W)'
+<<<<<<< HEAD
     img = rgb2ycbcr(img) * 255.
     # img = rgb2yiq(img) * 255.
     return img[:, [0], :, :]
+=======
+    color_space = color_space.lower()
+    if color_space == 'yiq': 
+        img = rgb2yiq(img)
+    elif color_space == 'ycbcr':
+        img = rgb2ycbcr(img)
+    return img[:, [0], :, :] * out_data_range 
+>>>>>>> origin/main
 
 
 def rgb2ycbcr(x: torch.Tensor) -> torch.Tensor:
