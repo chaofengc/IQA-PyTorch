@@ -52,7 +52,7 @@ def brisque(x: torch.Tensor,
     """
 
     if test_y_channel and x.size(1) == 3:
-        x = x / float(data_range)
+        x = x / float(data_range) 
         x = to_y_channel(x)
     else:
         x = x / float(data_range) * 255
@@ -61,7 +61,7 @@ def brisque(x: torch.Tensor,
     num_of_scales = 2
     for _ in range(num_of_scales):
         features.append(natural_scene_statistics(x, kernel_size, kernel_sigma))
-        x = imresize(x / 255., scale=0.5, antialiasing=True) * 255
+        x = imresize(x, scale=0.5, antialiasing=True) 
 
     features = torch.cat(features, dim=-1)
     scaled_features = scale_features(features)
