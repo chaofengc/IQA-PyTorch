@@ -14,8 +14,10 @@ def safe_frac_pow(x: torch.Tensor, p) -> torch.Tensor:
     return torch.sign(x) * torch.abs(x + EPS).pow(p)
 
 
-def to_y_channel(img: torch.Tensor) -> torch.Tensor:
-    r"""Change to Y channel of YCbCr.
+def to_y_channel(img: torch.Tensor,
+                 out_data_range: float = 1.,
+                 color_space: str = 'yiq') -> torch.Tensor:
+    r"""Change to Y channel 
     Args:
         image tensor: tensor with shape (N, 3, H, W) in range [0, 1].
     Returns:
@@ -23,8 +25,12 @@ def to_y_channel(img: torch.Tensor) -> torch.Tensor:
     """
     assert img.ndim == 4 and img.shape[
         1] == 3, 'input image tensor should be RGB image batches with shape (N, 3, H, W)'
-    img = rgb2ycbcr(img)
-    return img[:, [0], :, :]
+    color_space = color_space.lower()
+    if color_space == 'yiq': 
+        img = rgb2yiq(img)
+    elif color_space == 'ycbcr':
+        img = rgb2ycbcr(img)
+    return img[:, [0], :, :] * out_data_range 
 
 
 def rgb2ycbcr(x: torch.Tensor) -> torch.Tensor:
@@ -40,7 +46,6 @@ def rgb2ycbcr(x: torch.Tensor) -> torch.Tensor:
     Returns:
         Batch of images with shape (N, 3, H, W). YCbCr color space.
     """
-    x = x * 255.
     weights_rgb_to_ycbcr = torch.tensor([[65.481, -37.797, 112.0],
                                        [128.553, -74.203, -93.786],
                                        [24.966, 112.0, -18.214]]).to(x)

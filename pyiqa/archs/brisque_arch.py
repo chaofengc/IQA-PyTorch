@@ -28,7 +28,6 @@ default_model_urls = {
 def brisque(x: torch.Tensor,
             kernel_size: int = 7,
             kernel_sigma: float = 7 / 6,
-            data_range: Union[int, float] = 1.,
             test_y_channel: Boolean = True,
             pretrained_model_path: String = None) -> torch.Tensor:
     r"""Interface of BRISQUE index.
@@ -52,10 +51,9 @@ def brisque(x: torch.Tensor,
     """
 
     if test_y_channel and x.size(1) == 3:
-        x = x / float(data_range)
-        x = to_y_channel(x)
+        x = to_y_channel(x, 255.)
     else:
-        x = x / float(data_range) * 255
+        x = x * 255
 
     features = []
     num_of_scales = 2
@@ -153,7 +151,6 @@ class BRISQUE(torch.nn.Module):
         kernel_size (int): By default, the mean and covariance of a pixel is obtained
             by convolution with given filter_size. Must be an odd value.
         kernel_sigma (float): Standard deviation for Gaussian kernel.
-        data_range (int | float): Maximum value range of images (usually 1.0 or 255).
         to_y_channel (Boolean): Whether use the y-channel of YCBCR.
         pretrained_model_path (String): The model path.
 
@@ -162,7 +159,6 @@ class BRISQUE(torch.nn.Module):
     def __init__(self,
                  kernel_size: int = 7,
                  kernel_sigma: float = 7 / 6,
-                 data_range: Union[int, float] = 1.,
                  test_y_channel: Boolean = True,
                  pretrained_model_path: String = None) -> None:
         super().__init__()
@@ -173,7 +169,6 @@ class BRISQUE(torch.nn.Module):
         assert kernel_size % 2 == 1, f'Kernel size must be odd, got [{kernel_size}]'
 
         self.kernel_sigma = kernel_sigma
-        self.data_range = data_range
         self.test_y_channel = test_y_channel
         if pretrained_model_path is not None:
             self.pretrained_model_path = pretrained_model_path
@@ -193,6 +188,5 @@ class BRISQUE(torch.nn.Module):
         return brisque(x,
                        kernel_size=self.kernel_size,
                        kernel_sigma=self.kernel_sigma,
-                       data_range=self.data_range,
                        test_y_channel=self.test_y_channel,
                        pretrained_model_path=self.pretrained_model_path)

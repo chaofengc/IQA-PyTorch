@@ -308,8 +308,8 @@ class MAD(torch.nn.Module):
             dst: A distortion tensor. Shape :math:`(N, C, H, W)`.
         """
         if self.test_y_channel and ref.shape[1] == 3:
-            ref = to_y_channel(ref)
-            dst = to_y_channel(dst)
+            ref = to_y_channel(ref, 255.)
+            dst = to_y_channel(dst, 255.)
             self.channels = 1
 
         HI = hi_index(ref, dst)
