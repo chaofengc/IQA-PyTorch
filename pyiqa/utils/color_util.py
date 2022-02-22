@@ -30,7 +30,10 @@ def to_y_channel(img: torch.Tensor,
         img = rgb2yiq(img)
     elif color_space == 'ycbcr':
         img = rgb2ycbcr(img)
-    return img[:, [0], :, :] * out_data_range 
+    out_img = img[:, [0], :, :] * out_data_range
+    if out_data_range >= 255:
+        out_img = out_img.round()
+    return out_img
 
 
 def rgb2ycbcr(x: torch.Tensor) -> torch.Tensor:
