@@ -6,11 +6,13 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | --------------------------------------------------- | ------- | ------- | ------- | ------- | ------- |
 
 | NIQE(org)                                           | 15.7536 | 3.6549  | 3.2355  | 3.1840  | 8.6352  |
-| NIQE(ours imported with round)                      | 15.6541 | 3.6541  | 3.2365  | 3.2030  | 9.1032  |
+| NIQE(ours imported with round)                      | 15.6541 | 3.6541  | 3.2365  | 3.2030  | 9.1032  | !!
+                                                        15.6527,  3.6542,  3.2342,  3.2075,  9.1106
 | NIQE(ours imported)                                 | 15.3001 | 3.6416  | 3.1897  | 3.1844  | 8.8653  |
 
 | BRISQUE(org)                                        | 94.6421 | -0.1076 | 0.9929  | 5.3583  | 72.2617 |
-| BRISQUE(ours imported)                              | 94.6418 | -0.1043 | 1.0773  | 5.1486  | 66.8376 |
+| BRISQUE(ours imported)                              | 94.6418 | -0.1043 | 1.0773  | 5.1486  | 66.8376 | !!
+                                                        94.6457, -0.1087,  1.0812,  5.1437, 66.8386
 
 | SSIM(org)                                           | 0.6993  | 0.9978  | 0.9989  | 0.9669  | 0.6519  |
 | SSIM(ours imported)                                 | 0.6997  | 0.9978  | 0.9989  | 0.9671  | 0.6521  |
@@ -20,6 +22,7 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 
 | MS-SSIM(org)                                        | 0.6733  | 0.9996  | 0.9998  | 0.9566  | 0.8462  |
 | MS-SSIM(ours imported)                              | 0.6698  | 0.9993  | 0.9996  | 0.9567  | 0.8418  |
+                                                        0.6699  | 0.9993  | 0.9996  | 0.9567  | 0.8418
 
 | VIF(org)                                            | 0.0172  | 0.9891  | 0.9924  | 0.9103  | 0.1745  |
 | VIF(ours imported)                                  | 0.0172  | 0.9891  | 0.9924  | 0.9103  | 0.1745  |
@@ -39,3 +42,4 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | PSNR(ours imported)                                 | 21.11   | 20.99   | 27.01   | 23.30   | 21.62   |
 
 | MAD(ours imported)                                  |194.9324 | 0.0000  | 0.0000  | 91.6206 | 181.9651|
+                                                        155.5415,  26.1180,  21.0799, 135.2712, 131.1859

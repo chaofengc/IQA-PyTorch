@@ -31,7 +31,7 @@ def load_test_img_batch():
 
 
 def load_org_results():
-    results_path = './ResultsCalibra/results_original.csv'
+    results_path = './ResultsCalibra/results_original_color.csv'
     results = {}
     with open(results_path) as csv_file:
         csv_reader = csv.reader(csv_file)
@@ -63,11 +63,13 @@ def run_test(test_metric_names):
             score = iqa_metric(img_batch, ref_batch)
         else:
             score = iqa_metric(img_batch)
+        print(score)
         # Results check
         if metric_name in org_results.keys():
             org_score = np.array([float(x) for x in org_results[metric_name]])
             our_score = score.squeeze().data.cpu().numpy()
-            diff = np.abs(np.abs(org_score) - np.abs(our_score)) / (np.abs(org_score) + 1e-8)
+            print(org_score, our_score)
+            diff = np.abs(org_score - our_score) / (np.abs(org_score) + 1e-8)
             diff = diff.mean()
             # assert diff < 0.01, f'Results average difference {diff*100:.2f}% is too big !!!'
             if diff > 0.01:
@@ -94,4 +96,5 @@ if __name__ == '__main__':
     fr_metric_name = ['psnr', 'ssim', 'ms_ssim', 'cw_ssim', 'fsim', 'vif', 'vsi', 'gmsd', 'nlpd', 'mad', 'lpips', 'dists']
     nr_metric_name = ['niqe', 'brisque', 'musiq']
     test_metric_names = fr_metric_name + nr_metric_name
+    test_metric_names = ['mad']
     run_test(test_metric_names)
