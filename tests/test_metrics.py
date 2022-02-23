@@ -31,7 +31,7 @@ def load_test_img_batch():
 
 
 def load_org_results():
-    results_path = './ResultsCalibra/results_original.csv'
+    results_path = './ResultsCalibra/results_original_color.csv'
     results = {}
     with open(results_path) as csv_file:
         csv_reader = csv.reader(csv_file)
@@ -63,6 +63,7 @@ def run_test(test_metric_names):
             score = iqa_metric(img_batch, ref_batch)
         else:
             score = iqa_metric(img_batch)
+        print(score)
         # Results check
         if metric_name in org_results.keys():
             org_score = np.array([float(x) for x in org_results[metric_name]])
