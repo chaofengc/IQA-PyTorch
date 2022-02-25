@@ -153,6 +153,13 @@ DEFAULT_CONFIGS = OrderedDict({
             },
             'metric_mode': 'NR',
             },
+        'il_niqe':{
+            'metric_opts': {
+                'type': 'IL_NIQE',
+                'pretrained_model_path': "./experiments/pretrained_models/IL_NIQE/templateModel.mat"
+                },
+            'metric_mode': 'NR',
+        }
         })
 
 
