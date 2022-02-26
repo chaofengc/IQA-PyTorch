@@ -63,7 +63,6 @@ def run_test(test_metric_names):
             score = iqa_metric(img_batch, ref_batch)
         else:
             score = iqa_metric(img_batch)
-        print(score)
         # Results check
         if metric_name in org_results.keys():
             org_score = np.array([float(x) for x in org_results[metric_name]])
@@ -96,5 +95,4 @@ if __name__ == '__main__':
     fr_metric_name = ['psnr', 'ssim', 'ms_ssim', 'cw_ssim', 'fsim', 'vif', 'vsi', 'gmsd', 'nlpd', 'mad', 'lpips', 'dists']
     nr_metric_name = ['niqe', 'brisque', 'musiq', 'nrqm']
     test_metric_names = fr_metric_name + nr_metric_name
-    test_metric_names = ['nrqm']
     run_test(test_metric_names)
