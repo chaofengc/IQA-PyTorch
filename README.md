@@ -49,7 +49,7 @@ Below are details of supported methods and datasets in this project.
 | NIMA                               | :white_check_mark: |
 | WaDIQaM                            | :white_check_mark: |
 | CNNIQA                             | :white_check_mark: |
-| NRQM(Ma) :hourglass_flowing_sand:  |                    |
+| NRQM(Ma)<sup>[2](#fn2)</sup>       | :x:                |
 | HOSA :hourglass_flowing_sand:      |                    |
 | BRISQUE                            | :white_check_mark: |
 | NIQE                               | :white_check_mark: |
@@ -76,7 +76,8 @@ Below are details of supported methods and datasets in this project.
 </td></tr> 
 </table>
 
-<a name="fn1">[1]</a> This method use distorted image as reference. Please refer to the paper for details. 
+<a name="fn1">[1]</a> This method use distorted image as reference. Please refer to the paper for details.   
+<a name="fn2">[2]</a> Currently, only naive random forest regression is implemented and **does not** support backward and GPU. Nevertheless, with fast GPU feature calculation, our implementation is still **x2 faster** than Matlab (5s v.s. 10s with 512x384 input image)
 
 </details>
 
@@ -219,7 +220,7 @@ Please refer to [benchmark results](tests/benchmark_results.csv) for benchmark r
 #### Large dataset performance
 
 | Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
-| ---- | ------- | ------- | ------ | ----- | ---- | --- | 
+| ------- | ------- | ------ | ----- | ---- | --- | --------- |
 
 ## :beers: Contribution
 

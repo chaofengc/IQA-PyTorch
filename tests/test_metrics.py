@@ -78,22 +78,23 @@ def run_test(test_metric_names):
             print(f'============> No official results for {metric_name}')
 
         # Backward check
-        score.mean().backward()        
+        if metric_name not in ['nrqm']:
+            score.mean().backward()        
 
-        grad_map = img_batch.grad
-        nan_num = torch.isnan(grad_map).sum()
-        if nan_num == 0:
-            print(f'============> Gradient of {metric_name} is normal !')
-        else:
-            failed_metrics.append(f'Metric {metric_name}, gradient wrong with {nan_num}')
-            print(f'============> Wrong gradient of {metric_name} with {nan_num} numbers !')
+            grad_map = img_batch.grad
+            nan_num = torch.isnan(grad_map).sum()
+            if nan_num == 0:
+                print(f'============> Gradient of {metric_name} is normal !')
+            else:
+                failed_metrics.append(f'Metric {metric_name}, gradient wrong with {nan_num}')
+                print(f'============> Wrong gradient of {metric_name} with {nan_num} numbers !')
         
     for fm in failed_metrics:
         print(fm)
 
 if __name__ == '__main__':
     fr_metric_name = ['psnr', 'ssim', 'ms_ssim', 'cw_ssim', 'fsim', 'vif', 'vsi', 'gmsd', 'nlpd', 'mad', 'lpips', 'dists']
-    nr_metric_name = ['niqe', 'brisque', 'musiq']
+    nr_metric_name = ['niqe', 'brisque', 'musiq', 'nrqm']
     test_metric_names = fr_metric_name + nr_metric_name
-    test_metric_names = ['mad']
+    test_metric_names = ['nrqm']
     run_test(test_metric_names)

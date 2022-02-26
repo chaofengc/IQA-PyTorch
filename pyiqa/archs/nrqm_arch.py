@@ -78,14 +78,16 @@ def get_var_gen_gauss(x, eps=1e-7):
     return rho
 
 
-def gamma_gen_gauss(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+def gamma_gen_gauss(x: Tensor):
     r"""General gaussian distribution estimation.
     """
+    pshape = x.shape[:-1]
+    x = x.reshape(-1, x.shape[-1])
     eps = 1e-7
     gamma = torch.arange(0.003, 10 + 0.001, 0.001).to(x)
     r_table = (torch.lgamma(1. / gamma) + torch.lgamma(3. / gamma) -
                2 * torch.lgamma(2. / gamma)).exp()
-    r_table = r_table.repeat(x.size(0), 1)
+    r_table = r_table.unsqueeze(0)
 
     mean = x.mean(dim=-1, keepdim=True)
     var = x.var(dim=-1, keepdim=True)
@@ -94,7 +96,7 @@ def gamma_gen_gauss(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
     rho = var / (mean_abs + eps)
 
     indexes = (rho - r_table).abs().argmin(dim=-1)
-    solution = gamma[indexes]
+    solution = gamma[indexes].reshape(*pshape)
     return solution
 
 
@@ -426,6 +428,7 @@ class NRQM(torch.nn.Module):
 
     def __init__(self,
                  test_y_channel: bool = True,
+                 crop_border: int = 0,
                  pretrained_model_path: str = None) -> None:
 
         super(NRQM, self).__init__()
