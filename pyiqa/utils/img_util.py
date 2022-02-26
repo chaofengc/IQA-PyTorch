@@ -9,7 +9,7 @@ from PIL import Image
 import torchvision.transforms.functional as TF
 
 
-def imread2tensor(img_path, rgb=True):
+def imread2tensor(img_path, rgb=False):
     """Read image to tensor.
 
     Args: 

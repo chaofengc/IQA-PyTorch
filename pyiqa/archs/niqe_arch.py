@@ -26,7 +26,6 @@ from xmlrpc.client import Boolean
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.matlab_functions import imresize, fspecial_gauss
-from pyiqa.utils.resize import padding
 from .func_util import estimate_aggd_param, torch_cov, normalize_img_with_guass
 from pyiqa.utils.registry import ARCH_REGISTRY
 
