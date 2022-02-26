@@ -30,7 +30,12 @@ def to_y_channel(img: torch.Tensor,
         img = rgb2yiq(img)
     elif color_space == 'ycbcr':
         img = rgb2ycbcr(img)
-    return img[:, [0], :, :] * out_data_range 
+    elif color_space == 'lhm':
+        img = rgb2lhm(img)
+    out_img = img[:, [0], :, :] * out_data_range 
+    if out_data_range >= 255:
+        out_img = out_img.round()
+    return out_img
 
 
 def rgb2ycbcr(x: torch.Tensor) -> torch.Tensor:
@@ -52,7 +57,7 @@ def rgb2ycbcr(x: torch.Tensor) -> torch.Tensor:
     bias_rgb_to_ycbcr = torch.tensor([16, 128, 128]).view(1, 3, 1, 1).to(x)
     x_ycbcr = torch.matmul(x.permute(0, 2, 3, 1), weights_rgb_to_ycbcr).permute(0, 3, 1, 2) \
             + bias_rgb_to_ycbcr
-    x_ycbcr = x_ycbcr / 255.
+    x_ycbcr = x_ycbcr / 255. 
     return x_ycbcr
 
 

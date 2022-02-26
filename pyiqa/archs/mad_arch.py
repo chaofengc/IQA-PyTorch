@@ -27,7 +27,7 @@ MAX = nn.MaxPool2d((2, 2), stride=1, padding=1)
 def extract_patches_2d(img: torch.Tensor,
                        patch_shape: list = [64, 64],
                        step: list = [27, 27],
-                       batch_first: Boolean = False,
+                       batch_first: Boolean = True,
                        keep_last_patch: Boolean = False) -> torch.Tensor:
     patch_H, patch_W = patch_shape[0], patch_shape[1]
 

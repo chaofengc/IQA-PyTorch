@@ -41,6 +41,8 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | MUSIQ/paq2piq(ours imported)                        | 46.018  | 72.665  | 73.765  | 74.387  | 69.721  |
 | MUSIQ/spaq(org)                                     | 17.685  | 70.492  | 78.740  | 79.015  | 49.105  |
 | MUSIQ/spaq(ours imported)                           | 17.680  | 70.653  | 79.036  | 79.318  | 50.452  |
+| NRQM                                                | 1.3894  | 8.9394  | 8.9735  | 6.8290  | 6.3120  |
+| NRQM (ours imported)                                | 1.4027  | 8.6239  | 8.9491  | 6.7400  | 6.3013  |
 
 #### Notice
 <a name="fn1">[1]</a> CKDN used degraded images as references in the original paper.   

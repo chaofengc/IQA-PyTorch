@@ -125,6 +125,12 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'NR',
             },
+        'nrqm': {
+            'metric_opts': {
+                'type': 'NRQM',
+                },
+            'metric_mode': 'NR',
+            },
         'musiq': {
             'metric_opts': {
                 'type': 'MUSIQ',
