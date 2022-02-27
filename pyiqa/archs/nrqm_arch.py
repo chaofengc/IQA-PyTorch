@@ -23,6 +23,7 @@ from pyiqa.archs.func_util import dct2d, extract_2d_patches
 from pyiqa.archs.scfpyr_util import SCFpyr_PyTorch
 from pyiqa.archs.ssim_arch import SSIM
 from pyiqa.archs.arch_util import SimpleSamePadding2d
+from pyiqa.archs.niqe_arch import NIQE
 
 
 default_model_urls = {
@@ -63,7 +64,7 @@ def get_guass_pyramid(x: Tensor,
     pad_func = SimpleSamePadding2d(3, stride=1)
     for i in range(scale):
         x = F.conv2d(pad_func(x), kernel, groups=x.shape[1])
-        x = x[:, :, ::2, ::2]
+        x = x[:, :, 1::2, 1::2]
         pyr.append(x)
 
     return pyr
@@ -72,7 +73,7 @@ def get_guass_pyramid(x: Tensor,
 def get_var_gen_gauss(x, eps=1e-7):
     r"""Get mean and variance of input local patch.
     """
-    std = x.abs().std(dim=-1)
+    std = x.abs().std(dim=-1, unbiased=True)
     mean = x.abs().mean(dim=-1)
     rho = std / (mean + eps)
     return rho
@@ -84,13 +85,13 @@ def gamma_gen_gauss(x: Tensor):
     pshape = x.shape[:-1]
     x = x.reshape(-1, x.shape[-1])
     eps = 1e-7
-    gamma = torch.arange(0.003, 10 + 0.001, 0.001).to(x)
+    gamma = torch.arange(0.03, 10 + 0.001, 0.001).to(x)
     r_table = (torch.lgamma(1. / gamma) + torch.lgamma(3. / gamma) -
                2 * torch.lgamma(2. / gamma)).exp()
     r_table = r_table.unsqueeze(0)
 
     mean = x.mean(dim=-1, keepdim=True)
-    var = x.var(dim=-1, keepdim=True)
+    var = x.var(dim=-1, keepdim=True, unbiased=True)
     mean_abs = (x - mean).abs().mean(dim=-1, keepdim=True) ** 2
 
     rho = var / (mean_abs + eps)
@@ -168,7 +169,7 @@ def block_dct(img: Tensor):
     features = []
     # general gaussian distribution features
     gamma_L1 = gamma_dct(dct_img_blocks)
-    p10_gamma_L1 = gamma_L1[:, :math.ceil(0.1 * gamma_L1.shape[-1])].mean(dim=-1)
+    p10_gamma_L1 = gamma_L1[:, :math.ceil(0.1 * gamma_L1.shape[-1])+1].mean(dim=-1)
     p100_gamma_L1 = gamma_L1.mean(dim=-1)
     features += [p10_gamma_L1, p100_gamma_L1]
 
@@ -367,13 +368,14 @@ def nrqm(img: Tensor,
         preds = torch.cat((preds, tmp_pred), dim=1)
     quality = preds @ torch.Tensor(linear_param)
 
-    return quality
+    return quality.squeeze()
 
 
 def calculate_nrqm(img: torch.Tensor,
                    crop_border: int = 0,
                    test_y_channel: bool = True,
                    pretrained_model_path: str = None,
+                   color_space: str = 'yiq',
                    **kwargs) -> torch.Tensor:
     """Calculate NRQM 
     Args:
@@ -400,14 +402,14 @@ def calculate_nrqm(img: torch.Tensor,
         rf_params_list.append(tmp_list)
 
     if test_y_channel and img.shape[1] == 3:
-        img = to_y_channel(img, 255)
+        img = to_y_channel(img, 255, color_space)
 
     if crop_border != 0:
         img = img[..., crop_border:-crop_border, crop_border:-crop_border]
 
     nrqm_result = nrqm(img, linear_param, rf_params_list)
 
-    return nrqm_result
+    return nrqm_result.to(img)
 
 
 @ARCH_REGISTRY.register()
@@ -428,12 +430,14 @@ class NRQM(torch.nn.Module):
 
     def __init__(self,
                  test_y_channel: bool = True,
+                 color_space: str = 'yiq',
                  crop_border: int = 0,
                  pretrained_model_path: str = None) -> None:
 
         super(NRQM, self).__init__()
         self.test_y_channel = test_y_channel
         self.crop_border = crop_border
+        self.color_space = color_space
 
         if pretrained_model_path is not None:
             self.pretrained_model_path = pretrained_model_path
@@ -448,5 +452,39 @@ class NRQM(torch.nn.Module):
             Value of nrqm metric.
         """
         score = calculate_nrqm(X, self.crop_border, self.test_y_channel,
-                               self.pretrained_model_path)
+                               self.pretrained_model_path, self.color_space)
+        return score
+
+
+@ARCH_REGISTRY.register()
+class PI(torch.nn.Module):
+    r""" Perceptual Index (PI), introduced by 
+
+    Blau, Yochai, Roey Mechrez, Radu Timofte, Tomer Michaeli, and Lihi Zelnik-Manor. 
+    "The 2018 pirm challenge on perceptual image super-resolution." 
+    In Proceedings of the European Conference on Computer Vision (ECCV) Workshops, pp. 0-0. 2018.
+    Ref url: https://github.com/roimehrez/PIRM2018
+
+    It is a combination of NIQE and NRQM: 1/2 * ((10 - NRQM) + NIQE)
+
+    Args:
+        color_space (str): color space of y channel, default ycbcr.
+        crop_border (int): Cropped pixels in each edge of an image, default 4.
+    """
+
+    def __init__(self, crop_border=4, color_space='ycbcr'):
+        super(PI, self).__init__()
+        self.nrqm = NRQM(crop_border=crop_border, color_space=color_space)
+        self.niqe = NIQE(crop_border=crop_border, color_space=color_space)
+        
+    def forward(self, X: Tensor) -> Tensor:
+        r"""Computation of PI metric.
+        Args:
+            X: An input tensor. Shape :math:`(N, C, H, W)`.
+        Returns:
+            Value of PI metric.
+        """
+        nrqm_score = self.nrqm(X)
+        niqe_score = self.niqe(X)
+        score = 1 / 2 * (10 - nrqm_score + niqe_score)
         return score

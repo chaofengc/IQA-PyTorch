@@ -63,6 +63,7 @@ def run_test(test_metric_names):
             score = iqa_metric(img_batch, ref_batch)
         else:
             score = iqa_metric(img_batch)
+        print(score.shape)
         # Results check
         if metric_name in org_results.keys():
             org_score = np.array([float(x) for x in org_results[metric_name]])
@@ -77,7 +78,7 @@ def run_test(test_metric_names):
             print(f'============> No official results for {metric_name}')
 
         # Backward check
-        if metric_name not in ['nrqm']:
+        if metric_name not in ['nrqm', 'pi']:
             score.mean().backward()        
 
             grad_map = img_batch.grad
@@ -93,6 +94,6 @@ def run_test(test_metric_names):
 
 if __name__ == '__main__':
     fr_metric_name = ['psnr', 'ssim', 'ms_ssim', 'cw_ssim', 'fsim', 'vif', 'vsi', 'gmsd', 'nlpd', 'mad', 'lpips', 'dists']
-    nr_metric_name = ['niqe', 'brisque', 'musiq', 'nrqm']
+    nr_metric_name = ['niqe', 'brisque', 'musiq', 'nrqm', 'pi']
     test_metric_names = fr_metric_name + nr_metric_name
     run_test(test_metric_names)

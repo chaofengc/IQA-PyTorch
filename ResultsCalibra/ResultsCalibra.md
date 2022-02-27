@@ -42,7 +42,10 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | MUSIQ/spaq(org)                                     | 17.685  | 70.492  | 78.740  | 79.015  | 49.105  |
 | MUSIQ/spaq(ours imported)                           | 17.680  | 70.653  | 79.036  | 79.318  | 50.452  |
 | NRQM                                                | 1.3894  | 8.9394  | 8.9735  | 6.8290  | 6.3120  |
-| NRQM (ours imported)                                | 1.4027  | 8.6239  | 8.9491  | 6.7400  | 6.3013  |
+| NRQM (ours imported)                                | 1.3771  | 8.6328  | 8.9501  | 6.8060  | 6.4441  |
+| PI<sup>[14](#fn14)</sup>                            | 11.9235 | 3.0720  | 2.6180  | 2.8074  | 6.7713  |
+| PI (ours imported )                                 | 11.9185 | 3.3382  | 2.6490  | 2.8111  | 6.9541  |
+
 
 #### Notice
 <a name="fn1">[1]</a> CKDN used degraded images as references in the original paper.   
@@ -63,4 +66,5 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 <a name="fn10">[10]</a> We use Y-channel of YCBCR images as input, and the original MAD matlab script is not available.  
 <a name="fn11">[11]</a> We use Y-channel of YCBCR images as input of original NIQE matlab script.  
 <a name="fn12">[12]</a> We use Y-channel of YCBCR images as input of original BRISQUE matlab script.  
-<a name="fn13">[13]</a> Results have about ±2% difference with tensorflow codes because of some detailed implementation differences between TensorFlow and PyTorch. For example, PyTorch does not support gaussian interpolation, different default epsilon value, etc. 
+<a name="fn13">[13]</a> Results have about ±2% difference with tensorflow codes because of some detailed implementation differences between TensorFlow and PyTorch. For example, PyTorch does not support gaussian interpolation, different default epsilon value, etc.   
+<a name="fn14">[14]</a> Perceptual Index (PI) use YCBCR color space and crop border with size 4.

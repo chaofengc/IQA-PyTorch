@@ -366,4 +366,4 @@ class MUSIQ(nn.Module):
         if len(return_list) > 1:
             return return_list
         else:
-            return return_list[0]
+            return return_list[0].squeeze()

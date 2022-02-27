@@ -131,6 +131,13 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'NR',
             },
+        'pi': {
+            'metric_opts': {
+                'type': 'PI',
+                },
+            'metric_mode': 'NR',
+            },
+
         'musiq': {
             'metric_opts': {
                 'type': 'MUSIQ',

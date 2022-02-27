@@ -50,6 +50,7 @@ Below are details of supported methods and datasets in this project.
 | WaDIQaM                            | :white_check_mark: |
 | CNNIQA                             | :white_check_mark: |
 | NRQM(Ma)<sup>[2](#fn2)</sup>       | :x:                |
+| PI(Perceptual Index)               | :x:                |
 | HOSA :hourglass_flowing_sand:      |                    |
 | BRISQUE                            | :white_check_mark: |
 | NIQE                               | :white_check_mark: |

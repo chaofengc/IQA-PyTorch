@@ -136,6 +136,7 @@ def calculate_niqe(img: torch.Tensor,
                    crop_border: int = 0,
                    test_y_channel: Boolean = True,
                    pretrained_model_path: String = None,
+                   color_space: str = 'yiq',
                    **kwargs) -> torch.Tensor:
     """Calculate NIQE (Natural Image Quality Evaluator) metric.
     Args:
@@ -158,7 +159,7 @@ def calculate_niqe(img: torch.Tensor,
     cov_pris_param = cov_pris_param.repeat(img.size(0), 1, 1)
 
     if test_y_channel and img.shape[1] == 3:
-        img = to_y_channel(img, 255)
+        img = to_y_channel(img, 255, color_space)
 
     if crop_border != 0:
         img = img[..., crop_border:-crop_border, crop_border:-crop_border]
@@ -185,12 +186,14 @@ class NIQE(torch.nn.Module):
     def __init__(self,
                  channels: int = 1,
                  test_y_channel: Boolean = True,
+                 color_space: str = 'yiq',
                  crop_border: int = 0,
                  pretrained_model_path: String = None) -> None:
 
         super(NIQE, self).__init__()
         self.channels = channels
         self.test_y_channel = test_y_channel
+        self.color_space = color_space
         self.crop_border = crop_border
         if pretrained_model_path is not None:
             self.pretrained_model_path = pretrained_model_path
@@ -205,5 +208,5 @@ class NIQE(torch.nn.Module):
             Value of niqe metric in [0, 1] range.
         """
         score = calculate_niqe(X, self.crop_border, self.test_y_channel,
-                               self.pretrained_model_path)
+                               self.pretrained_model_path, self.color_space)
         return score
