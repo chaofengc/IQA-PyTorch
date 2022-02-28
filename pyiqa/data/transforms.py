@@ -33,7 +33,7 @@ class PairedRandomCrop(tf.RandomCrop):
         if self.padding is not None:
             img = F.pad(img, self.padding, self.fill, self.padding_mode)
 
-        width, height = F.get_image_size(img)
+        width, height = img.size 
         # pad the width if needed
         if self.pad_if_needed and width < self.size[1]:
             padding = [self.size[1] - width, 0]
