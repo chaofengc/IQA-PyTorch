@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from pyiqa.utils.matlab_functions import fspecial_gauss
 from .arch_util import SimpleSamePadding2d, SymmetricPad2d
 
+EPS = torch.finfo(torch.float32).eps
 
 def extract_2d_patches(x, kernel, stride=1, dilation=1):
     """
@@ -103,7 +104,6 @@ def similarity_map(map_x: torch.Tensor,
         constant: Used for numerical stability
         alpha: Masking coefficient. Substracts - `alpha` * map_x * map_y from denominator and nominator
     """
-    EPS = torch.finfo(map_x.dtype).eps
     return (2.0 * map_x * map_y - alpha * map_x * map_y + constant) / \
            (map_x ** 2 + map_y ** 2 - alpha * map_x * map_y + constant + EPS)
 
@@ -174,15 +174,10 @@ def estimate_aggd_param(
     count_left = mask_left.sum(dim=(-1, -2), dtype=torch.float32)
     count_right = mask_right.sum(dim=(-1, -2), dtype=torch.float32)
 
-    assert (count_left > 0).all(), 'Expected input tensor (pairwise products of neighboring MSCN coefficients)' \
-                                   '  with values below zero to compute parameters of AGGD'
-    assert (count_right > 0).all(), 'Expected input tensor (pairwise products of neighboring MSCN coefficients)' \
-                                    ' with values above zero to compute parameters of AGGD'
-
-    left_std = ((block * mask_left).pow(2).sum(dim=(-1, -2)) /
-                count_left).sqrt()
-    right_std = ((block * mask_right).pow(2).sum(dim=(-1, -2)) /
-                 count_right).sqrt()
+    left_std = safe_sqrt((block * mask_left).pow(2).sum(dim=(-1, -2)) /
+                (count_left + EPS))
+    right_std = safe_sqrt((block * mask_right).pow(2).sum(dim=(-1, -2)) /
+                 (count_right + EPS))
 
     gammahat = left_std / right_std
     rhat = block.abs().mean(dim=(-1, -2)).pow(2) / block.pow(2).mean(dim=(-1,

@@ -18,7 +18,7 @@ def main():
     parser.add_argument('-d', type=str, nargs='+', default=None, help='dataset name list.')
     parser.add_argument('--metric_opt', type=str, default=None, help='Path to custom metric option YAML file.')
     parser.add_argument('--data_opt', type=str, default=None, help='Path to custom metric option YAML file.')
-    parser.add_argument('--save_result_path', type=str, default='tests/benchmark_results.csv', help='file to save results.')
+    parser.add_argument('--save_result_path', type=str, default=None, help='file to save results.')
     parser.add_argument('--use_gpu', action="store_true", default=False, help='use gpu or not')
     args = parser.parse_args()
 
@@ -59,14 +59,16 @@ def main():
     
     save_result_path = args.save_result_path 
 
-    csv_file = open(save_result_path, 'w')
-    csv_writer = csv.writer(csv_file)
-    csv_writer.writerow(['Metric name'] + [name +'(PLCC/SRCC/KRCC)' for name in datasets_to_test]) 
+    if save_result_path is not None:
+        csv_file = open(save_result_path, 'w')
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['Metric name'] + [name +'(PLCC/SRCC/KRCC)' for name in datasets_to_test]) 
 
     for metric_name in metrics_to_test:
         # if metric_name exist in default config, load default config first  
         metric_opts = all_metric_opts[metric_name]['metric_opts']
         metric_mode = all_metric_opts[metric_name]['metric_mode'] 
+        lower_better = all_metric_opts[metric_name].get('lower_better', False)
         iqa_model = InferenceModel(metric_name, metric_mode, **metric_opts)
         iqa_model.net.to(device)
 
@@ -88,24 +90,29 @@ def main():
             for data in dataloader:
                 gt_labels.append(data['mos_label'].cpu().item())
                 if metric_mode == 'FR':
-                    tar_img = data['img'] 
-                    ref_img = data['ref_img'] 
+                    tar_img = data['img'].to(device)
+                    ref_img = data['ref_img'].to(device)
                     iqa_score = iqa_model.test(tar_img, ref_img)
                 else:
-                    tar_img = data['img'] 
+                    tar_img = data['img'].to(device) 
                     iqa_score = iqa_model.test(tar_img)
                 result_scores.append(iqa_score)
                 pbar.update(1)
                 pbar.set_description(f'Test {metric_name} on {dataset_name}')
             pbar.close()
-            
-            plcc_score = round(calculate_plcc(result_scores, gt_labels), 4)
-            srcc_score = round(calculate_srcc(result_scores, gt_labels), 4)
-            krcc_score = round(calculate_krcc(result_scores, gt_labels), 4)
+
+            if lower_better:
+                results_scores_for_cc = [-x for x in result_scores]
+
+            plcc_score = round(calculate_plcc(results_scores_for_cc, gt_labels), 4)
+            srcc_score = round(calculate_srcc(results_scores_for_cc, gt_labels), 4)
+            krcc_score = round(calculate_krcc(results_scores_for_cc, gt_labels), 4)
             results_row.append(f'{plcc_score}/{srcc_score}/{krcc_score}')
             print(f'Results of metric {metric_name} on {dataset_name} is [PLCC|SRCC|KRCC]: {plcc_score}, {srcc_score}, {krcc_score}')
-        csv_writer.writerow(results_row)
-    csv_file.close()
+        if save_result_path is not None:
+            csv_writer.writerow(results_row)
+    if save_result_path is not None:
+        csv_file.close()
         
 if __name__ == '__main__':
     main()

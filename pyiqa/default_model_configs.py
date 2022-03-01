@@ -21,6 +21,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 'version': '0.1',
                 },
             'metric_mode': 'FR',
+            'lower_better': True,
             },
         'lpips-vgg': {
             'metric_opts': {
@@ -29,12 +30,14 @@ DEFAULT_CONFIGS = OrderedDict({
                 'version': '0.1',
                 },
             'metric_mode': 'FR',
+            'lower_better': True,
             },
         'dists': {
             'metric_opts': {
                 'type': 'DISTS',
                 },
             'metric_mode': 'FR',
+            'lower_better': True,
             },
         'ssim': {
             'metric_opts': {
@@ -124,6 +127,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 'test_y_channel': True,
                 },
             'metric_mode': 'NR',
+            'lower_better': True,
             },
         'nrqm': {
             'metric_opts': {
@@ -136,8 +140,8 @@ DEFAULT_CONFIGS = OrderedDict({
                 'type': 'PI',
                 },
             'metric_mode': 'NR',
+            'lower_better': True,
             },
-
         'musiq': {
             'metric_opts': {
                 'type': 'MUSIQ',
