@@ -17,7 +17,7 @@ def main():
     parser.add_argument('-m', type=str, nargs='+', default=None, help='metric name list.')
     parser.add_argument('-d', type=str, nargs='+', default=None, help='dataset name list.')
     parser.add_argument('--metric_opt', type=str, default=None, help='Path to custom metric option YAML file.')
-    parser.add_argument('--data_opt', type=str, default=None, help='Path to custom metric option YAML file.')
+    parser.add_argument('--data_opt', type=str, default=None, help='Path to custom data option YAML file.')
     parser.add_argument('--save_result_path', type=str, default=None, help='file to save results.')
     parser.add_argument('--use_gpu', action="store_true", default=False, help='use gpu or not')
     args = parser.parse_args()
