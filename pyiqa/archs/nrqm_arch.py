@@ -189,7 +189,7 @@ def block_dct(img: Tensor):
     return dct_feat
 
 
-def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=2):
+def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=3):
     r"""Normalize pyramid with local spatial neighbor and band neighbor
     """
     border = blksz // 2
@@ -210,7 +210,7 @@ def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=2):
             parent_idx = idx + num_bands
             if parent_idx < len(pyr):
                 tmp_parent = pyr[parent_idx]
-                tmp_parent = imresize(tmp_parent, 2)
+                tmp_parent = imresize(tmp_parent, sizes=current_band.shape[-2:])
                 tmp_parent = tmp_parent[:, border:-border, border:-border].reshape(b, hw, 1)
                 tmp = torch.cat((tmp, tmp_parent), dim=-1)
                 N += 1

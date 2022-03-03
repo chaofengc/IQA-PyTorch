@@ -103,6 +103,8 @@ def main():
 
             if lower_better:
                 results_scores_for_cc = [-x for x in result_scores]
+            else:
+                results_scores_for_cc = result_scores
 
             plcc_score = round(calculate_plcc(results_scores_for_cc, gt_labels), 4)
             srcc_score = round(calculate_srcc(results_scores_for_cc, gt_labels), 4)

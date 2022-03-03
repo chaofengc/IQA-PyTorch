@@ -120,6 +120,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 'test_y_channel': True,
                 },
             'metric_mode': 'NR',
+            'lower_better': True,
             },
         'brisque': {
             'metric_opts': {
