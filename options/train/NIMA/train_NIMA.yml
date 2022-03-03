@@ -12,7 +12,7 @@ datasets:
     type: AVADataset 
     dataroot_target: ./datasets/AVA_dataset/ava_images/
     meta_info_file: ./datasets/meta_info/meta_info_AVADataset.csv
-    split_file: ./datasets/meta_info/ava_official_ilgnet.pkl
+    split_file: ./datasets/train_split_info/ava_official_ilgnet.pkl
     split_index: 1 # use official split  
 
     augment:
@@ -34,7 +34,7 @@ datasets:
     type: AVADataset 
     dataroot_target: ./datasets/AVA_dataset/ava_images/
     meta_info_file: ./datasets/meta_info/meta_info_AVADataset.csv
-    split_file: ./datasets/meta_info/ava_official_ilgnet.pkl
+    split_file: ./datasets/train_split_info/ava_official_ilgnet.pkl
     split_index: 1 # use official split  
 
     augment:
