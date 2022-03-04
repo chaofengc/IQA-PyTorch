@@ -210,3 +210,5 @@ class NIQE(torch.nn.Module):
         score = calculate_niqe(X, self.crop_border, self.test_y_channel,
                                self.pretrained_model_path, self.color_space)
         return score
+
+

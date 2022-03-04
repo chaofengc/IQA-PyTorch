@@ -44,12 +44,16 @@ koniq10k:
   type: GeneralNRDataset
   dataroot_target: './datasets/koniq10k/512x384'
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
+  split_file: './datasets/train_split_info/koniq10k_official.pkl' 
+  phase: 'test'
 
 koniq10k++:
   name: KonIQ10k++
   type: GeneralNRDataset
   dataroot_target: './datasets/koniq10k/512x384'
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10k++Dataset.csv'
+  split_file: './datasets/train_split_info/koniq10k_official.pkl' 
+  phase: 'test'
 
 kadid10k:
   name: KADID10k 
