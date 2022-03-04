@@ -214,9 +214,9 @@ Please refer to [benchmark results](tests/benchmark_results.csv) for benchmark r
 
 #### Small datasets, n-splits validation 
 
-| Methods | CSIQ | TID2008 | TID2013 | LIVE | LIVEM | LIVEC |
-| ------- | ---- | ------- | ------- | ---- | ----- | ----- |
-| DBCNN   |      |         |         |      |       |       |
+| Methods | CSIQ(PLCC/SRCC/KRCC)| TID2008(PLCC/SRCC/KRCC)| TID2013(PLCC/SRCC/KRCC)| LIVE(PLCC/SRCC/KRCC)| LIVEM(PLCC/SRCC/KRCC)| LIVEC(PLCC/SRCC/KRCC)|
+| ------- | ----                | -------                | -------                | ----                | -----                | -----                |
+| DBCNN   | 0.8965/0.9086/0.7256| 0.8322/0.8463/0.6458   | 0.7985/0.8320/0.6053   | 0.9418/0.9308/0.7906| 0.9461/0.9371/0.7817 | 0.8375/0.8530/0.6499 |
 
 #### Large dataset performance
 
