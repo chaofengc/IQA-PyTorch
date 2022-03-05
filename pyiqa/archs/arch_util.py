@@ -106,7 +106,7 @@ class SymmetricPad2d(nn.Module):
         return pad_x
 
 
-def simple_sample_padding2d(x, kernel, stride, dilation=1):
+def simple_sample_padding2d(x, kernel, stride=1, dilation=1, mode='constant'):
     r"""Simple same padding for 4D tensor. Only support int kernel, stride and dilation.
 
     Args:
@@ -122,7 +122,7 @@ def simple_sample_padding2d(x, kernel, stride, dilation=1):
     w2 = math.ceil(w / stride)
     pad_row = (h2 - 1) * stride + (kernel - 1) * dilation + 1 - h
     pad_col = (w2 - 1) * stride + (kernel - 1) * dilation + 1 - w
-    x = F.pad(x, (pad_col//2, pad_col - pad_col//2, pad_row//2, pad_row - pad_row//2))
+    x = F.pad(x, (pad_col//2, pad_col - pad_col//2, pad_row//2, pad_row - pad_row//2), mode=mode)
     return x
 
 
@@ -135,11 +135,12 @@ class SimpleSamePadding2d(nn.Module):
         dilation (int): dilation size, default with 1.
 
     """
-    def __init__(self, kernel, stride, dilation=1):
+    def __init__(self, kernel, stride, dilation=1, mode='constant'):
         super().__init__()
         self.kernel = kernel
         self.stride = stride
         self.dilation = dilation
+        self.mode = mode
     
     def forward(self, x):
-        return simple_sample_padding2d(x, self.kernel, self.stride, self.dilation)
+        return simple_sample_padding2d(x, self.kernel, self.stride, self.dilation, self.mode)

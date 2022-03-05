@@ -63,13 +63,13 @@ def run_test(test_metric_names):
             score = iqa_metric(img_batch, ref_batch)
         else:
             score = iqa_metric(img_batch)
-        print(score.shape)
         # Results check
         if metric_name in org_results.keys():
             org_score = np.array([float(x) for x in org_results[metric_name]])
             our_score = score.squeeze().data.cpu().numpy()
-            diff = np.abs(np.abs(org_score) - np.abs(our_score)) / (np.abs(org_score) + 1e-8)
-            diff = diff.mean()
+            diff = np.abs(np.abs(org_score) - np.abs(our_score)) 
+            diff = diff * (diff > 0.01)                         # remove small difference
+            diff = (diff / (np.abs(org_score) + 1e-8)).mean()   # calculate relative error
             # assert diff < 0.01, f'Results average difference {diff*100:.2f}% is too big !!!'
             if diff > 0.01:
                 failed_metrics.append(f'Metric {metric_name}, diff {diff}')
@@ -94,6 +94,6 @@ def run_test(test_metric_names):
 
 if __name__ == '__main__':
     fr_metric_name = ['psnr', 'ssim', 'ms_ssim', 'cw_ssim', 'fsim', 'vif', 'vsi', 'gmsd', 'nlpd', 'mad', 'lpips', 'dists']
-    nr_metric_name = ['niqe', 'brisque', 'musiq', 'nrqm', 'pi']
+    nr_metric_name = ['niqe', 'ilniqe', 'brisque', 'musiq', 'nrqm', 'pi']
     test_metric_names = fr_metric_name + nr_metric_name
     run_test(test_metric_names)

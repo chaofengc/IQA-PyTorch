@@ -122,6 +122,13 @@ DEFAULT_CONFIGS = OrderedDict({
             'metric_mode': 'NR',
             'lower_better': True,
             },
+        'ilniqe': {
+            'metric_opts': {
+                'type': 'ILNIQE',
+                },
+            'metric_mode': 'NR',
+            'lower_better': True,
+        },
         'brisque': {
             'metric_opts': {
                 'type': 'BRISQUE',

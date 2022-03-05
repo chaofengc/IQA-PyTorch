@@ -87,6 +87,7 @@ def main():
             gt_labels = []
             result_scores = []
             pbar = tqdm(total=len(dataloader), unit='image')
+            pbar.set_description(f'Testing *{metric_name}* on ({dataset_name})')
             for data in dataloader:
                 gt_labels.append(data['mos_label'].cpu().item())
                 if metric_mode == 'FR':
@@ -98,7 +99,6 @@ def main():
                     iqa_score = iqa_model.test(tar_img)
                 result_scores.append(iqa_score)
                 pbar.update(1)
-                pbar.set_description(f'Test {metric_name} on {dataset_name}')
             pbar.close()
 
             if lower_better:
@@ -110,7 +110,7 @@ def main():
             srcc_score = round(calculate_srcc(results_scores_for_cc, gt_labels), 4)
             krcc_score = round(calculate_krcc(results_scores_for_cc, gt_labels), 4)
             results_row.append(f'{plcc_score}/{srcc_score}/{krcc_score}')
-            print(f'Results of metric {metric_name} on {dataset_name} is [PLCC|SRCC|KRCC]: {plcc_score}, {srcc_score}, {krcc_score}')
+            print(f'Results of *{metric_name}* on ({dataset_name}) is [PLCC|SRCC|KRCC]: {plcc_score}, {srcc_score}, {krcc_score}')
         if save_result_path is not None:
             csv_writer.writerow(results_row)
     if save_result_path is not None:
