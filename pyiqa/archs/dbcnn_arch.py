@@ -11,8 +11,17 @@ import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-
+from .arch_util import load_pretrained_network
 from pyiqa.utils.registry import ARCH_REGISTRY
+
+default_model_urls = {
+    'csiq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_CSIQ-8677d071.pth',
+    'tid2008': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_TID2008-4b47c5d1.pth',
+    'tid2013': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_TID2013-485d021d.pth',
+    'live': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_LIVE-97262bf4.pth',
+    'livec': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_LIVEC-83f6dad3.pth',
+    'livem': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_LIVEM-698474e3.pth'
+}
 
 class SCNN(nn.Module):
     """Network branch for synthetic distortions. 
@@ -92,8 +101,10 @@ class DBCNN(nn.Module):
     def __init__(self, fc=True, 
                 use_bn=True, 
                 pretrained_scnn_path=None, 
+                pretrained_model_path=None,
                 default_mean=[0.485, 0.456, 0.406],
                 default_std=[0.229, 0.224, 0.225],
+                pretrained = True
                 ):
         super(DBCNN, self).__init__()
 
@@ -127,6 +138,12 @@ class DBCNN(nn.Module):
             nn.init.kaiming_normal_(self.fc.weight.data)
             if self.fc.bias is not None:
                 nn.init.constant_(self.fc.bias.data, val=0)
+        
+        if pretrained_model_path is None and pretrained:
+            url_key = pretrained if isinstance(pretrained, bool) else pretrained 
+            pretrained_model_path = default_model_urls[url_key]
+        if pretrained_model_path is not None:
+            load_pretrained_network(self, pretrained_model_path, True, "params")
 
     def preprocess(self, x):
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)

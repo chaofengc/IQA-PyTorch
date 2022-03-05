@@ -31,11 +31,13 @@ def dist_to_mos(dist_score: torch.Tensor) -> torch.Tensor:
 # Common utils 
 # --------------------------------------------
 
-def load_pretrained_network(net, model_path, strict=True):
+def load_pretrained_network(net, model_path, strict=True, param_key=None):
     if model_path.startswith('https://') or model_path.startswith('http://'):
         model_path = load_file_from_url(model_path)
     print(f'Loading pretrained model {net.__class__.__name__} from {model_path}')
     state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+    if param_key is not None:
+        state_dict = state_dict[param_key]
     net.load_state_dict(state_dict, strict=strict) 
 
 @torch.no_grad()

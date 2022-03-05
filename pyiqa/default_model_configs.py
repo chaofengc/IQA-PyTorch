@@ -177,7 +177,14 @@ DEFAULT_CONFIGS = OrderedDict({
                 'pretrained_model_path': "./experiments/pretrained_models/IL_NIQE/templateModel.mat"
                 },
             'metric_mode': 'NR',
-        }
+            },
+        'dbcnn':{
+            'metric_opts': {
+                'type': 'DBCNN',
+                'pretrained': 'csiq'
+                },
+            'metric_mode': 'NR',
+            }
         })
 
 
