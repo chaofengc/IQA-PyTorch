@@ -188,6 +188,13 @@ DEFAULT_CONFIGS = OrderedDict({
             },
             'metric_mode': 'NR',
             },
+        'dbcnn':{
+            'metric_opts': {
+                'type': 'DBCNN',
+                'pretrained': 'csiq'
+                },
+            'metric_mode': 'NR',
+            }
         })
 
 
