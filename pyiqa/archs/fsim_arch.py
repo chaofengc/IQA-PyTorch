@@ -140,7 +140,8 @@ def _construct_filters(x: torch.Tensor,
                        mult: int = 2,
                        sigma_f: float = 0.55,
                        delta_theta: float = 1.2,
-                       k: float = 2.0):
+                       k: float = 2.0,
+                       use_lowpass_filter=True):
     """Creates a stack of filters used for computation of phase congruensy maps
     
     Args:
@@ -198,7 +199,8 @@ def _construct_filters(x: torch.Tensor,
         omega_0 = 1.0 / wavelength
         gabor_filter = torch.exp(
             (-torch.log(radius / omega_0)**2) / (2 * math.log(sigma_f)**2))
-        gabor_filter = gabor_filter * lp
+        if use_lowpass_filter:
+            gabor_filter = gabor_filter * lp
         gabor_filter[0, 0] = 0
         log_gabor.append(gabor_filter)
 

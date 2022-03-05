@@ -30,6 +30,14 @@ def extract_2d_patches(x, kernel, stride=1, dilation=1):
     return patches
 
 
+def nanmean(v, *args, inplace=False, **kwargs):
+    if not inplace:
+        v = v.clone()
+    is_nan = torch.isnan(v)
+    v[is_nan] = 0
+    return v.sum(*args, **kwargs) / (~is_nan).float().sum(*args, **kwargs)
+
+
 def torch_cov(tensor, rowvar=True, bias=False):
     r"""Estimate a covariance matrix (np.cov)
     Ref: https://gist.github.com/ModarTensai/5ab449acba9df1a26c12060240773110
@@ -37,7 +45,7 @@ def torch_cov(tensor, rowvar=True, bias=False):
     tensor = tensor if rowvar else tensor.transpose(-1, -2)
     tensor = tensor - tensor.mean(dim=-1, keepdim=True)
     factor = 1 / (tensor.shape[-1] - int(not bool(bias)))
-    return factor * tensor @ tensor.transpose(-1, -2).conj()
+    return factor * tensor @ tensor.transpose(-1, -2)
 
 
 def safe_sqrt(x: torch.Tensor) -> torch.Tensor:
@@ -50,6 +58,21 @@ def safe_sqrt(x: torch.Tensor) -> torch.Tensor:
     return torch.sqrt(x + EPS)
 
 
+def imfilter(input, weight, bias=None, stride=1, padding='same', dilation=1, groups=1):
+    """imfilter same as matlab.
+    """
+    kernel_size = weight.shape[-1]
+    if padding.lower() == 'same':
+        pad_func = SimpleSamePadding2d(kernel_size, stride=1, mode='constant')
+    elif padding.lower() == 'replicate':
+        pad_func = SimpleSamePadding2d(kernel_size, stride=1, mode='replicate')
+    elif padding.lower() == 'symmetric':
+        pad_func = SymmetricPad2d(kernel_size//2)
+    
+    return F.conv2d(
+        pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
+
+
 def normalize_img_with_guass(img: torch.Tensor, 
                              kernel_size: int = 7, 
                              sigma: float = 7. / 6, 
@@ -59,7 +82,8 @@ def normalize_img_with_guass(img: torch.Tensor,
     if padding.lower() == 'same':
         pad_func = SimpleSamePadding2d(kernel_size, stride=1)
     elif padding.lower() == 'replicate':
-        pad_func = nn.ReplicationPad2d(kernel_size//2)
+        pad_func = SimpleSamePadding2d(kernel_size, stride=1, mode='replicate')
+        # pad_func = nn.ReplicationPad2d(kernel_size//2)
     elif padding.lower() == 'symmetric':
         pad_func = SymmetricPad2d(kernel_size//2)
 
@@ -136,6 +160,11 @@ def get_meshgrid(size: Tuple[int, int]) -> torch.Tensor:
 
 
 def estimate_ggd_param(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Estimate general gaussian distribution.
+
+    Args:
+        x (Tensor): shape (b, 1, h, w)
+    """
     gamma = torch.arange(0.2, 10 + 0.001, 0.001).to(x)
     r_table = (torch.lgamma(1. / gamma) + torch.lgamma(3. / gamma) -
                2 * torch.lgamma(2. / gamma)).exp()
@@ -159,7 +188,7 @@ def estimate_aggd_param(
         block: torch.Tensor, return_sigma=False) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Estimate AGGD (Asymmetric Generalized Gaussian Distribution) parameters.
     Args:
-        block (Tensor): Image block.
+        block (Tensor): Image block with shape (b, 1, h, w).
     Returns:
         Tensor: alpha, beta_l and beta_r for the AGGD distribution 
         (Estimating the parames in Equation 7 in the paper).
@@ -196,69 +225,6 @@ def estimate_aggd_param(
         return alpha, left_std.squeeze(-1), right_std.squeeze(-1)
     else:
         return alpha, beta_l, beta_r
-
-
-
-def _normalize(N: int) -> Tensor:
-    r"""
-    Computes the constant scale factor which makes the DCT orthonormal
-    """
-    n = torch.ones((N, 1))
-    n[0, 0] = 1 / math.sqrt(2)
-    return n @ n.t()
-
-
-def _harmonics(N: int) -> Tensor:
-    r"""
-    Computes the cosine harmonics for the DCT transform
-    """
-    spatial = torch.arange(float(N)).reshape((N, 1))
-    spectral = torch.arange(float(N)).reshape((1, N))
-
-    spatial = 2 * spatial + 1
-    spectral = (spectral * math.pi) / (2 * N)
-
-    return torch.cos(spatial @ spectral)
-
-
-def dct_2d(blocks: Tensor) -> Tensor:
-    r"""
-    Computes the DCT of square image patches 
-
-    Args:
-        blocks (Tensor): Non-overlapping blocks to perform the DCT on in :math:`(N, C, L, H, W)` format.
-    
-    Returns:
-        Tensor: The DCT coefficients of each block in the same shape as the input.
-
-    Note:
-        The function computes the forward DCT on each block given by 
-
-        .. math::
-
-            D_{i,j}={\frac {1}{\sqrt{2N}}}\alpha (i)\alpha (j)\sum _{x=0}^{N}\sum _{y=0}^{N}I_{x,y}\cos \left[{\frac {(2x+1)i\pi }{2N}}\right]\cos \left[{\frac {(2y+1)j\pi }{2N}}\right]
-        
-        Where :math:`i,j` are the spatial frequency indices, :math:`N` is the block size and :math:`I` is the image with pixel positions :math:`x, y`. 
-        
-        :math:`\alpha` is a scale factor which ensures the transform is orthonormal given by 
-
-        .. math::
-
-            \alpha(u) = \begin{cases}{
-                    \frac{1}{\sqrt{2}}} &{\text{if }}u=0 \\
-                    1 &{\text{otherwise}}
-                \end{cases}
-        
-        There is technically no restriction on the range of pixel values but to match JPEG it is recommended to use the range [-128, 127].
-    """
-    N = blocks.shape[-1]
-
-    n = _normalize(N).to(blocks)
-    h = _harmonics(N).to(blocks)
-
-    coeff = (1 / math.sqrt(2 * N)) * n * (h.t() @ blocks @ h)
-
-    return coeff
 
 
 def dct(x, norm=None):

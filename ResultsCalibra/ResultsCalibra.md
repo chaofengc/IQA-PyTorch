@@ -2,8 +2,8 @@
 
 We random select 5 pairs of images from TID2013 for results calibration. Images are stored under `./dist_dir` and `./ref_dir`. Results of different metrics are saved under `./results_compare/`. We also record the problems encountered during our reproduction of matlab scripts in [MatlabReproduceNote](./MatlabReproduceNote.md)
 
-| Method                                              | I03.bmp  | I04.bmp | I06.bmp | I08.bmp | I19.bmp  |
-| --------------------------------------------------- | -------- | ------- | ------- | ------- | -------- |
+| Method                                              | I03.bmp  | I04.bmp | I06.bmp | I08.bmp | I19.bmp  | Speed (/image) |
+| --------------------------------------------------- | -------- | ------- | ------- | ------- | -------- | -------------- |
 | CKDN<sup>[1](#fn1)</sup>(org)                       | 0.2833   | 0.5766  | 0.6367  | 0.6579  | 0.5999   |
 | CKDN(ours imported)                                 | 0.2833   | 0.5766  | 0.6367  | 0.6579  | 0.5999   |
 | LPIPS(org)                                          | 0.7237   | 0.2572  | 0.0508  | 0.0521  | 0.4253   |
@@ -31,6 +31,8 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | MAD<sup>[10](#fn10)</sup>(ours imported)            | 194.9324 | 0.0000  | 0.0000  | 91.6206 | 181.9651 |
 | NIQE<sup>[11](#fn11)</sup>(org)                     | 15.7536  | 3.6549  | 3.2355  | 3.1840  | 8.6352   |
 | NIQE(ours imported)                                 | 15.6530  | 3.6541  | 3.2343  | 3.2076  | 9.1060   |
+| ILNIQE(org)                                         | 113.4801 | 23.9968 | 19.9750 | 22.4493 | 56.6721  | 10s            |
+| ILNIQE(ours imported)                               | 115.6144 | 24.0634 | 19.7497 | 22.3253 | 54.7657  | 1s             |
 | BRISQUE<sup>[12](#fn12)</sup>(org)                  | 94.6421  | -0.1076 | 0.9929  | 5.3583  | 72.2617  |
 | BRISQUE(ours imported)                              | 94.6448  | -0.1103 | 1.0772  | 5.1418  | 66.8405  |
 | MUSIQ/AVA(org)                                      | 3.398    | 5.648   | 4.635   | 5.186   | 4.128    |
@@ -41,8 +43,8 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | MUSIQ/paq2piq(ours imported)                        | 46.018   | 72.665  | 73.765  | 74.387  | 69.721   |
 | MUSIQ/spaq(org)                                     | 17.685   | 70.492  | 78.740  | 79.015  | 49.105   |
 | MUSIQ/spaq(ours imported)                           | 17.680   | 70.653  | 79.036  | 79.318  | 50.452   |
-| NRQM                                                | 1.3894   | 8.9394  | 8.9735  | 6.8290  | 6.3120   |
-| NRQM (ours imported)                                | 1.3983   | 8.9982  | 8.9314  | 6.8174  | 6.2868   |
+| NRQM                                                | 1.3894   | 8.9394  | 8.9735  | 6.8290  | 6.3120   | 10s            |
+| NRQM (ours imported)                                | 1.3983   | 8.9982  | 8.9314  | 6.8174  | 6.2868   | 5s             |
 | PI<sup>[14](#fn14)</sup>                            | 11.9235  | 3.0720  | 2.6180  | 2.8074  | 6.7713   |
 | PI (ours imported )                                 | 11.9185  | 3.3382  | 2.6490  | 2.8111  | 6.9541   |
 

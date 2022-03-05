@@ -8,6 +8,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 
 - :sparkles: **Comprehensive.** Support many mainstream full reference (FR) and no reference (NR) metrics
 - :sparkles: **Accurate.** Results calibration of our implementation with official matlab scripts (if exist). 
+- :sparkles: **Fast.** With GPU acceleration, most of our implementation is much faster than Matlab. 
 - :sparkles: **Flexible.** Support training new DNN models with several public IQA datasets
 - :sparkles: **Differentiable.** Most methods support pytorch backward
 - :sparkles: **Convenient.** Quick inference and benchmark script
@@ -53,6 +54,7 @@ Below are details of supported methods and datasets in this project.
 | PI(Perceptual Index)               | :x:                |
 | HOSA :hourglass_flowing_sand:      |                    |
 | BRISQUE                            | :white_check_mark: |
+| ILNIQE                             | :white_check_mark: |
 | NIQE                               | :white_check_mark: |
 
 </td><td>
