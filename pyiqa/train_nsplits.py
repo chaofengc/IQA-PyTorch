@@ -77,7 +77,7 @@ def train_single_split_pipeline(root_path, opt, args):
             # update learning rate
             model.update_learning_rate(current_iter, warmup_iter=opt['train'].get('warmup_iter', -1))
             # training
-            model.feed_data(train_data)
+            model.feed_data(train_data, opt['use_ref'])
             model.optimize_parameters(current_iter)
             iter_timer.record()
             if current_iter == 1:

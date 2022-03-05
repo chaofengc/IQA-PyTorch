@@ -68,13 +68,13 @@ class GeneralIQAModel(BaseModel):
         self.optimizer = self.get_optimizer(optim_type, optim_params, **train_opt['optim'])
         self.optimizers.append(self.optimizer)
 
-    def feed_data(self, data):
+    def feed_data(self, data, use_ref=True):
         self.img_input = data['img'].to(self.device)
 
         if 'mos_label' in data:
             self.gt_mos = data['mos_label'].to(self.device)
 
-        if 'ref_img' in data:
+        if 'ref_img' in data and use_ref:
             self.use_ref = True
             self.ref_input = data['ref_img'].to(self.device)
         else:
@@ -128,6 +128,7 @@ class GeneralIQAModel(BaseModel):
         dataset_name = dataloader.dataset.opt['name']
         with_metrics = self.opt['val'].get('metrics') is not None
         use_pbar = self.opt['val'].get('pbar', False)
+        use_ref = self.opt.get('use_ref', True)
 
         if with_metrics:
             if not hasattr(self, 'metric_results'):  # only execute in the first run
@@ -145,7 +146,7 @@ class GeneralIQAModel(BaseModel):
         gt_mos = []
         for idx, val_data in enumerate(dataloader):
             img_name = osp.basename(val_data['img_path'][0])
-            self.feed_data(val_data)
+            self.feed_data(val_data, use_ref)
             self.test()
             pred_score.append(self.output_score)
             gt_mos.append(self.gt_mos)
