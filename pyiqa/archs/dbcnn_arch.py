@@ -25,6 +25,15 @@ default_model_urls = {
 }
 
 
+default_model_urls = {
+    'csiq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_CSIQ-8677d071.pth',
+    'tid2008': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_TID2008-4b47c5d1.pth',
+    'tid2013': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_TID2013-485d021d.pth',
+    'live': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_LIVE-97262bf4.pth',
+    'livec': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_LIVEC-83f6dad3.pth',
+    'livem': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_LIVEM-698474e3.pth'
+}
+
 class SCNN(nn.Module):
     """Network branch for synthetic distortions. 
     Args:
