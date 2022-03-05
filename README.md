@@ -88,6 +88,7 @@ Below are details of supported methods and datasets in this project.
 
 ### :triangular_flag_on_post: Updates/Changelog
 
+- **March 5, 2022**. Add NRQM, PI, ILNIQE metrics. 
 - **Feb 2, 2022**. Add MUSIQ inference code, and the converted official weights. See [Official codes](https://github.com/google-research/google-research/tree/master/musiq). 
 - [**More**](docs/history_changelog.md)
 
