@@ -178,6 +178,13 @@ DEFAULT_CONFIGS = OrderedDict({
             },
             'metric_mode': 'NR',
             },
+        'nima': {
+            'metric_opts': {
+                'type': 'NIMA',
+                'pretrained': 'ava'
+            },
+            'metric_mode': 'NR',
+            },
         })
 
 

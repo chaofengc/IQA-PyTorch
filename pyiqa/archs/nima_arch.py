@@ -13,8 +13,12 @@ import torch
 import torch.nn as nn
 import timm
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import dist_to_mos
+from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network
 
+
+default_model_urls = {
+    'ava': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA_VGG16_ava-dc4e8265.pth'
+}
 
 @ARCH_REGISTRY.register()
 class NIMA(nn.Module):
@@ -36,12 +40,18 @@ class NIMA(nn.Module):
                  base_model_name='vgg16', 
                  num_classes=10, 
                  dropout_rate=0.,
+                 pretrained=True,
                  pretrained_model_path=None, 
                  default_mean=[0.485, 0.456, 0.406],
                  default_std=[0.229, 0.224, 0.225],
                  ):
         super(NIMA, self).__init__()
         self.base_model = timm.create_model(base_model_name, pretrained=True, features_only=True)
+
+        if pretrained_model_path is None and pretrained:
+            url_key = 'ava' if isinstance(pretrained, bool) else pretrained 
+            num_class = 10 if url_key == 'ava' else num_class
+            pretrained_model_path = default_model_urls[url_key]
         
         self.global_pool = nn.AdaptiveAvgPool2d(1)
         in_ch = self.base_model.feature_info.channels()[-1]
@@ -58,12 +68,7 @@ class NIMA(nn.Module):
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
 
         if pretrained_model_path is not None:
-            self.load_pretrained_network(pretrained_model_path)
-
-    def load_pretrained_network(self, model_path):
-        print(f'Loading pretrained model from {model_path}')
-        state_dict = torch.load(model_path, map_location=torch.device('cpu'))['state_dict']
-        self.net.load_state_dict(state_dict, strict=True) 
+            load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
 
     def preprocess(self, x):
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
