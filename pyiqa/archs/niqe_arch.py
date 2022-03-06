@@ -21,9 +21,8 @@ import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.utils.matlab_functions import imresize, fspecial_gauss
-from .func_util import estimate_aggd_param, torch_cov, normalize_img_with_guass, nanmean, imfilter
-from .arch_util import SimpleSamePadding2d, SymmetricPad2d
+from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter
+from .func_util import estimate_aggd_param, torch_cov, normalize_img_with_guass, nanmean 
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -258,22 +257,6 @@ def gauDerivative(sigma, in_ch=1, out_ch=1, device=None):
     return dx, dy 
 
 
-def conv2d(input, weight, bias=None, stride=1, padding='same', dilation=1, groups=1):
-    """matlab like conv2d, weights needs to be reversed 
-    """
-    kernel_size = weight.shape[-1]
-    if padding.lower() == 'same':
-        pad_func = SimpleSamePadding2d(kernel_size, stride=1, mode='constant')
-    elif padding.lower() == 'replicate':
-        pad_func = SimpleSamePadding2d(kernel_size, stride=1, mode='replicate')
-    elif padding.lower() == 'symmetric':
-        pad_func = SymmetricPad2d(kernel_size//2)
-    
-    weight = torch.flip(weight, dims=(-1, -2)) 
-    return F.conv2d(
-        pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
-
-
 def ilniqe(img: torch.Tensor,
            mu_pris_param: torch.Tensor,
            cov_pris_param: torch.Tensor,
@@ -466,6 +449,8 @@ def calculate_ilniqe(img: torch.Tensor,
 
     params = scipy.io.loadmat(pretrained_model_path)
     img = img * 255.
+    img = img.round()
+    # float64 precision is critical to be consistent with matlab codes
     img = img.to(torch.float64)
 
     mu_pris_param = np.ravel(params['templateModel'][0][0])

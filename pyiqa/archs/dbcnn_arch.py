@@ -10,8 +10,6 @@ import torch
 import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 class SCNN(nn.Module):

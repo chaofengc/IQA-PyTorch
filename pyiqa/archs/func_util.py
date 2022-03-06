@@ -3,11 +3,9 @@ import numpy as np
 import math
 import torch
 from torch import Tensor
-import torch.nn as nn
 import torch.nn.functional as F
 
-from pyiqa.utils.matlab_functions import fspecial_gauss
-from .arch_util import SimpleSamePadding2d, SymmetricPad2d
+from pyiqa.matlab_utils import fspecial_gauss, imfilter
 
 EPS = torch.finfo(torch.float32).eps
 
@@ -58,38 +56,15 @@ def safe_sqrt(x: torch.Tensor) -> torch.Tensor:
     return torch.sqrt(x + EPS)
 
 
-def imfilter(input, weight, bias=None, stride=1, padding='same', dilation=1, groups=1):
-    """imfilter same as matlab.
-    """
-    kernel_size = weight.shape[-1]
-    if padding.lower() == 'same':
-        pad_func = SimpleSamePadding2d(kernel_size, stride=1, mode='constant')
-    elif padding.lower() == 'replicate':
-        pad_func = SimpleSamePadding2d(kernel_size, stride=1, mode='replicate')
-    elif padding.lower() == 'symmetric':
-        pad_func = SymmetricPad2d(kernel_size//2)
-    
-    return F.conv2d(
-        pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
-
-
 def normalize_img_with_guass(img: torch.Tensor, 
                              kernel_size: int = 7, 
                              sigma: float = 7. / 6, 
                              C: int = 1,
                              padding: str = 'same'):
-
-    if padding.lower() == 'same':
-        pad_func = SimpleSamePadding2d(kernel_size, stride=1)
-    elif padding.lower() == 'replicate':
-        pad_func = SimpleSamePadding2d(kernel_size, stride=1, mode='replicate')
-        # pad_func = nn.ReplicationPad2d(kernel_size//2)
-    elif padding.lower() == 'symmetric':
-        pad_func = SymmetricPad2d(kernel_size//2)
-
+    
     kernel = fspecial_gauss(kernel_size, sigma, 1).to(img)
-    mu = F.conv2d(pad_func(img), kernel, groups=1)
-    std = F.conv2d(pad_func(img**2), kernel, groups=1)
+    mu = imfilter(img, kernel, padding=padding)
+    std = imfilter(img**2, kernel, padding=padding)
     sigma = safe_sqrt((std - mu**2).abs())
     img_normalized = (img - mu) / (sigma + C)
     return img_normalized
@@ -227,47 +202,4 @@ def estimate_aggd_param(
         return alpha, beta_l, beta_r
 
 
-def dct(x, norm=None):
-    """
-    Discrete Cosine Transform, Type II (a.k.a. the DCT)
-    For the meaning of the parameter `norm`, see:
-    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.fftpack.dct.html
-    :param x: the input signal
-    :param norm: the normalization, None or 'ortho'
-    :return: the DCT-II of the signal over the last dimension
-    """
-    x_shape = x.shape
-    N = x_shape[-1]
-    x = x.contiguous().view(-1, N)
 
-    v = torch.cat([x[:, ::2], x[:, 1::2].flip([1])], dim=-1)
-
-    Vc = torch.view_as_real(torch.fft.fft(v, dim=-1))
-
-    k = - torch.arange(N, dtype=x.dtype, device=x.device)[None, :] * np.pi / (2 * N)
-    W_r = torch.cos(k)
-    W_i = torch.sin(k)
-
-    V = Vc[:, :, 0] * W_r - Vc[:, :, 1] * W_i
-
-    if norm == 'ortho':
-        V[:, 0] /= np.sqrt(N) * 2
-        V[:, 1:] /= np.sqrt(N / 2) * 2
-
-    V = 2 * V.view(*x_shape)
-
-    return V
-
-
-def dct2d(x, norm='ortho'):
-    """
-    2-dimentional Discrete Cosine Transform, Type II (a.k.a. the DCT)
-    For the meaning of the parameter `norm`, see:
-    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.fftpack.dct.html
-    :param x: the input signal
-    :param norm: the normalization, None or 'ortho'
-    :return: the DCT-II of the signal over the last 2 dimensions
-    """
-    X1 = dct(x, norm=norm)
-    X2 = dct(X1.transpose(-1, -2), norm=norm)
-    return X2.transpose(-1, -2)

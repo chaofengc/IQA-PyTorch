@@ -149,6 +149,9 @@ iqa_metric = pyiqa.create_metric('lpips').to(device)
 # create metric with custom setting
 iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True).to(device)
 
+# check if lower better or higher better
+print(iqa_metric.lower_better)
+
 # example for iqa score inference
 # img_tensor_x/y: (N, 3, H, W), RGB, 0 ~ 1
 score_fr = iqa_metric(img_tensor_x, img_tensor_y)

@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .arch_util import dist_to_mos, load_pretrained_network
-from .arch_util import SimpleSamePadding2d, simple_sample_padding2d 
+from .arch_util import ExactPadding2d, excact_padding_2d
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.data.multiscale_trans_util import get_multiscale_patches
 
@@ -31,7 +31,7 @@ class StdConv(nn.Conv2d):
     """
     def forward(self, x):
         # implement same padding
-        x = simple_sample_padding2d(x, self.kernel_size[0], self.stride[0])
+        x = excact_padding_2d(x, self.kernel_size, self.stride, mode='same')
         weight = self.weight
         weight = weight - weight.mean((1, 2, 3), keepdim=True)
         weight = weight / (weight.std((1, 2, 3), keepdim=True) + 1e-5)
@@ -299,7 +299,7 @@ class MUSIQ(nn.Module):
         self.gn_root = nn.GroupNorm(32, resnet_token_dim, eps=1e-6)
         self.root_pool = nn.Sequential(
             nn.ReLU(True),
-            SimpleSamePadding2d(3, 2),
+            ExactPadding2d(3, 2, mode='same'),
             nn.MaxPool2d(3, 2),
         )
 

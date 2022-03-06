@@ -17,7 +17,7 @@ import torchvision.transforms.functional as tf
 
 from pyiqa.archs.ssim_arch import to_y_channel
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import SymmetricPad2d
+from pyiqa.archs.arch_util import ExactPadding2d 
 
 LAPLACIAN_FILTER = np.array([[0.0025, 0.0125, 0.0200, 0.0125, 0.0025],
                              [0.0125, 0.0625, 0.1000, 0.0625, 0.0125],
@@ -53,7 +53,7 @@ class NLPD(nn.Module):
         self.dn_filts, self.sigmas = self.DN_filters()
         self.pad_zero_one = nn.ZeroPad2d(1)
         self.pad_zero_two = nn.ZeroPad2d(2)
-        self.pad_sym = SymmetricPad2d(2)
+        self.pad_sym = ExactPadding2d(5, mode='symmetric')
         self.rep_one = nn.ReplicationPad2d(1)
         self.ps = nn.PixelShuffle(2)
 

@@ -6,7 +6,6 @@ Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 """
 
-import numpy as np
 import torch
 from torchvision import models
 import torch.nn as nn

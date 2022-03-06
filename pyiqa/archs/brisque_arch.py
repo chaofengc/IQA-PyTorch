@@ -10,13 +10,9 @@ Reference:
     
 """
 
-from tokenize import String
-from typing import Union, Tuple
-from xmlrpc.client import Boolean
 import torch
-import torch.nn.functional as F
 from pyiqa.utils.color_util import to_y_channel
-from pyiqa.utils.matlab_functions  import imresize
+from pyiqa.matlab_utils import imresize
 from .func_util import estimate_ggd_param, estimate_aggd_param, normalize_img_with_guass
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -28,8 +24,8 @@ default_model_urls = {
 def brisque(x: torch.Tensor,
             kernel_size: int = 7,
             kernel_sigma: float = 7 / 6,
-            test_y_channel: Boolean = True,
-            pretrained_model_path: String = None) -> torch.Tensor:
+            test_y_channel: bool = True,
+            pretrained_model_path: str = None) -> torch.Tensor:
     r"""Interface of BRISQUE index.
 
     Args:
@@ -150,16 +146,16 @@ class BRISQUE(torch.nn.Module):
         kernel_size (int): By default, the mean and covariance of a pixel is obtained
             by convolution with given filter_size. Must be an odd value.
         kernel_sigma (float): Standard deviation for Gaussian kernel.
-        to_y_channel (Boolean): Whether use the y-channel of YCBCR.
-        pretrained_model_path (String): The model path.
+        to_y_channel (bool): Whether use the y-channel of YCBCR.
+        pretrained_model_path (str): The model path.
 
     """
 
     def __init__(self,
                  kernel_size: int = 7,
                  kernel_sigma: float = 7 / 6,
-                 test_y_channel: Boolean = True,
-                 pretrained_model_path: String = None) -> None:
+                 test_y_channel: bool = True,
+                 pretrained_model_path: str = None) -> None:
         super().__init__()
         self.kernel_size = kernel_size
 

@@ -15,10 +15,9 @@ Refer to:
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 
-from typing import Union, List, Dict, Any, cast
+from typing import Union, List, cast
 
 def make_layers(cfg: List[Union[str, int]]) -> nn.Sequential:
     layers: List[nn.Module] = []

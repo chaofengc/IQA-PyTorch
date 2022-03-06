@@ -1,4 +1,6 @@
 import math
+import collections.abc
+from itertools import repeat
 
 import torch
 from torch import nn as nn
@@ -40,6 +42,23 @@ def load_pretrained_network(net, model_path, strict=True, weight_keys=None):
         state_dict = state_dict[weight_keys]
     net.load_state_dict(state_dict, strict=strict) 
 
+
+def _ntuple(n):
+
+    def parse(x):
+        if isinstance(x, collections.abc.Iterable):
+            return x
+        return tuple(repeat(x, n))
+
+    return parse
+
+to_1tuple = _ntuple(1)
+to_2tuple = _ntuple(2)
+to_3tuple = _ntuple(3)
+to_4tuple = _ntuple(4)
+to_ntuple = _ntuple
+
+
 @torch.no_grad()
 def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
     r"""Initialize network weights.
@@ -72,24 +91,22 @@ def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
                     m.bias.data.fill_(bias_fill)
 
 
-class SymmetricPad2d(nn.Module):
-    r"""Symmetric pad 2d for pytorch.
+def excact_padding_2d(x, kernel, stride=1, dilation=1, mode='same'):
+    assert len(x.shape) == 4, f'Only support 4D tensor input, but got {x.shape}'
+    kernel = to_2tuple(kernel)
+    stride = to_2tuple(stride)
+    dilation = to_2tuple(dilation)
+    b, c, h, w = x.shape
+    h2 = math.ceil(h / stride[0])
+    w2 = math.ceil(w / stride[1])
+    pad_row = (h2 - 1) * stride[0] + (kernel[0] - 1) * dilation[0] + 1 - h
+    pad_col = (w2 - 1) * stride[1] + (kernel[1] - 1) * dilation[1] + 1 - w
+    pad_l, pad_r, pad_t, pad_b = (pad_col//2, pad_col - pad_col//2, pad_row//2, pad_row - pad_row//2)
 
-    Args:
-        pad (int or tuple): (pad_left, pad_right, pad_top, pad_bottom)
-
-    """
-    def __init__(self, pad):
-        super(SymmetricPad2d, self).__init__()
-        if isinstance(pad, int):
-            self.pad_l = self.pad_r = self.pad_t = self.pad_b = pad
-        elif isinstance(pad, tuple):
-            assert len(pad) == 4, f"tuple pad should have format (pad_left, pad_right, pad_top, pad_bottom), but got {pad}"
-            self.pad_l, self.pad_r, self.pad_t, self.pad_b = pad
-
-    def forward(self, x):
-
-        _, _, h, w = x.shape
+    mode = mode if mode != 'same' else 'constant'
+    if mode != 'symmetric':
+        x = F.pad(x, (pad_l, pad_r, pad_t, pad_b), mode=mode)
+    elif mode == 'symmetric':
         sym_h = torch.flip(x, [2]) 
         sym_w = torch.flip(x, [3]) 
         sym_hw = torch.flip(x, [2, 3])
@@ -97,52 +114,34 @@ class SymmetricPad2d(nn.Module):
         row1 = torch.cat((sym_hw, sym_h, sym_hw), dim=3) 
         row2 = torch.cat((sym_w, x, sym_w), dim=3) 
         row3 = torch.cat((sym_hw, sym_h, sym_hw), dim=3) 
-        
+    
         whole_map = torch.cat((row1, row2, row3), dim=2)
 
-        pad_x = whole_map[:, :, 
-                h - self.pad_t: 2*h + self.pad_b:,
-                w - self.pad_l: 2*w + self.pad_r:,
+        x = whole_map[:, :, 
+                h - pad_t: 2*h + pad_b,
+                w - pad_l: 2*w + pad_r,
                 ]
 
-        return pad_x
-
-
-def simple_sample_padding2d(x, kernel, stride=1, dilation=1, mode='constant'):
-    r"""Simple same padding for 4D tensor. Only support int kernel, stride and dilation.
-
-    Args:
-        x (tensor): The input. Shape :math:`(N, C, H, W)`.
-        kernel (int): Kernel size.
-        stride (int): Stride size.
-        dilation (int): Dilation size, default with 1.
-
-    """
-    assert len(x.shape) == 4, f'Only support 4D tensor input, but got {x.shape}'
-    b,c,h,w = x.shape
-    h2 = math.ceil(h / stride)
-    w2 = math.ceil(w / stride)
-    pad_row = (h2 - 1) * stride + (kernel - 1) * dilation + 1 - h
-    pad_col = (w2 - 1) * stride + (kernel - 1) * dilation + 1 - w
-    x = F.pad(x, (pad_col//2, pad_col - pad_col//2, pad_row//2, pad_row - pad_row//2), mode=mode)
     return x
 
-
-class SimpleSamePadding2d(nn.Module):
-    r"""Simple same padding for 4D tensor. Only support int kernel, stride and dilation.
+class ExactPadding2d(nn.Module):
+    r"""This function calculate exact padding values for 4D tensor inputs,
+    and support the same padding mode as tensorflow.
 
     Args:
-        kernel (int): kernel size.
-        stride (int): stride size.
-        dilation (int): dilation size, default with 1.
+        kernel (int or tuple): kernel size.
+        stride (int or tuple): stride size.
+        dilation (int or tuple): dilation size, default with 1.
+        mode (srt): padding mode can be ('same', 'symmetric', 'replicate', 'circular')
 
     """
-    def __init__(self, kernel, stride, dilation=1, mode='constant'):
+    def __init__(self, kernel, stride=1, dilation=1, mode='same'):
         super().__init__()
-        self.kernel = kernel
-        self.stride = stride
-        self.dilation = dilation
+        self.kernel = to_2tuple(kernel)
+        self.stride = to_2tuple(stride)
+        self.dilation = to_2tuple(dilation)
         self.mode = mode
     
     def forward(self, x):
-        return simple_sample_padding2d(x, self.kernel, self.stride, self.dilation, self.mode)
+        return excact_padding_2d(x, self.kernel, self.stride, self.dilation, self.mode)
+

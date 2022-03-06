@@ -20,10 +20,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from pyiqa.archs.scfpyr_util import SCFpyr_PyTorch
 from pyiqa.utils import math_util 
 from pyiqa.utils.color_util import to_y_channel 
-from pyiqa.utils.matlab_functions  import fspecial_gauss
+from pyiqa.matlab_utils import fspecial_gauss, SCFpyr_PyTorch
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 
