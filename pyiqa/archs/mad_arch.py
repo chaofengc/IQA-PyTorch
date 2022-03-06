@@ -15,7 +15,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy.fft import fftshift
 import math
-from xmlrpc.client import Boolean
 
 from pyiqa.utils import math_util as math_utils
 from pyiqa.utils.color_util import to_y_channel
@@ -27,8 +26,8 @@ MAX = nn.MaxPool2d((2, 2), stride=1, padding=1)
 def extract_patches_2d(img: torch.Tensor,
                        patch_shape: list = [64, 64],
                        step: list = [27, 27],
-                       batch_first: Boolean = True,
-                       keep_last_patch: Boolean = False) -> torch.Tensor:
+                       batch_first: bool = True,
+                       keep_last_patch: bool = False) -> torch.Tensor:
     patch_H, patch_W = patch_shape[0], patch_shape[1]
 
     if (img.size(2) < patch_H):
@@ -290,7 +289,7 @@ def lo_index(ref, dst):
 class MAD(torch.nn.Module):
     r"""Args:
         channel: Number of input channel.
-        test_y_channel: Boolean, whether to use y channel on ycbcr which mimics official matlab code.
+        test_y_channel: bool, whether to use y channel on ycbcr which mimics official matlab code.
     References:
         Larson, Eric Cooper, and Damon Michael Chandler. "Most apparent distortion: full-reference 
         image quality assessment and the role of strategy." Journal of electronic imaging 19, no. 1 

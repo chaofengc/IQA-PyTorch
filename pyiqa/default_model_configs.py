@@ -82,6 +82,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 'test_y_channel': True,
                 },
             'metric_mode': 'FR',
+            'lower_better': True,
             },
         'nlpd': {
             'metric_opts': {
@@ -90,6 +91,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 'test_y_channel': True,
                 },
             'metric_mode': 'FR',
+            'lower_better': True,
             },
         'vsi': {
             'metric_opts': {
@@ -113,6 +115,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 'test_y_channel': True,
                 },
             'metric_mode': 'FR',
+            'lower_better': True,
             },
         'niqe': {
             'metric_opts': {

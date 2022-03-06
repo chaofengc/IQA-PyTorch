@@ -13,7 +13,6 @@ Refer to:
 import torch
 from torch import nn
 from torch.nn import functional as F
-from xmlrpc.client import Boolean
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -24,7 +23,7 @@ def gmsd(
     y: torch.Tensor,
     T: int = 170,
     channels: int = 3,
-    test_y_channel: Boolean = True,
+    test_y_channel: bool = True,
 ) -> torch.Tensor:
     r"""GMSD metric.
     Args:
@@ -32,7 +31,7 @@ def gmsd(
         y: A reference tensor. Shape :math:`(N, C, H, W)`.
         T: A positive constant that supplies numerical stability.
         channels: Number of channels.
-        test_y_channel: Boolean, whether to use y channel on ycbcr.
+        test_y_channel: bool, whether to use y channel on ycbcr.
     """
     if test_y_channel:
         x = to_y_channel(x, 255)
@@ -71,7 +70,7 @@ class GMSD(nn.Module):
     r'''Gradient Magnitude Similarity Deviation Metric.
     Args:
         channels: Number of channels.
-        test_y_channel: Boolean, whether to use y channel on ycbcr.
+        test_y_channel: bool, whether to use y channel on ycbcr.
     Reference:
         Xue, Wufeng, Lei Zhang, Xuanqin Mou, and Alan C. Bovik. 
         "Gradient magnitude similarity deviation: A highly efficient 
@@ -79,7 +78,7 @@ class GMSD(nn.Module):
         Processing 23, no. 2 (2013): 684-695.
     '''
 
-    def __init__(self, channels: int = 3, test_y_channel: Boolean = True) -> None:
+    def __init__(self, channels: int = 3, test_y_channel: bool = True) -> None:
         super(GMSD, self).__init__()
         self.channels = channels
         self.test_y_channel = test_y_channel

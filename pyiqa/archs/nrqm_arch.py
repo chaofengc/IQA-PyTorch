@@ -13,16 +13,14 @@ import scipy.io
 import torch
 from torch import Tensor
 import torch.nn.functional as F
-from typing import Tuple
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.utils.matlab_functions import imresize, fspecial_gauss
-from pyiqa.archs.func_util import dct2d, extract_2d_patches
-from pyiqa.archs.scfpyr_util import SCFpyr_PyTorch
+from pyiqa.matlab_utils import imresize, fspecial_gauss, SCFpyr_PyTorch, dct2d
+from pyiqa.archs.func_util import extract_2d_patches
 from pyiqa.archs.ssim_arch import SSIM
-from pyiqa.archs.arch_util import SimpleSamePadding2d
+from pyiqa.archs.arch_util import ExactPadding2d 
 from pyiqa.archs.niqe_arch import NIQE
 
 
@@ -61,7 +59,7 @@ def get_guass_pyramid(x: Tensor,
     """
     pyr = [x]
     kernel = fspecial_gauss(3, 0.5, x.shape[1]).to(x)
-    pad_func = SimpleSamePadding2d(3, stride=1)
+    pad_func = ExactPadding2d(3, stride=1, mode='same')
     for i in range(scale):
         x = F.conv2d(pad_func(x), kernel, groups=x.shape[1])
         x = x[:, :, 1::2, 1::2]
