@@ -21,7 +21,7 @@ import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter
+from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter, fitweibull
 from .func_util import estimate_aggd_param, torch_cov, normalize_img_with_guass, nanmean 
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -32,48 +32,6 @@ default_model_urls = {
     'niqe': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_modelparameters.mat',
     'ilniqe': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/ILNIQE_templateModel.mat',
 }
-
-
-def fitweibull(x, iters=50, eps=1e-2):
-    """
-    ref: https://github.com/mlosch/python-weibullfit/blob/master/weibull/backend_pytorch.py
-
-    Fits a 2-parameter Weibull distribution to the given data using maximum-likelihood estimation.
-    :param x (tensor): (B, N), batch of samples from an (unknown) distribution. Each value must satisfy x > 0.
-    :param iters: Maximum number of iterations
-    :param eps: Stopping criterion. Fit is stopped ff the change within two iterations is smaller than eps.
-    :param use_cuda: Use gpu
-    :return: Tuple (Shape, Scale) which can be (NaN, NaN) if a fit is impossible.
-        Impossible fits may be due to 0-values in x.
-    """
-    ln_x = torch.log(x)
-    k = 1.2 / torch.std(ln_x, dim=1, keepdim=True)
-    k_t_1 = k
-
-    for t in range(iters):
-        # Partial derivative df/dk
-        x_k = x ** k.repeat(1, x.shape[1])
-        x_k_ln_x = x_k * ln_x
-        ff = torch.sum(x_k_ln_x, dim=-1, keepdim=True)
-        fg = torch.sum(x_k, dim=-1, keepdim=True)
-        f1 = torch.mean(ln_x, dim=-1, keepdim=True)
-        f = ff/fg - f1 - (1.0 / k)
-
-        ff_prime = torch.sum(x_k_ln_x * ln_x, dim=-1, keepdim=True)
-        fg_prime = ff
-        f_prime = (ff_prime / fg - (ff / fg * fg_prime / fg)) + (1. / (k * k))
-
-        # Newton-Raphson method k = k - f(k;x)/f'(k;x)
-        k = k - f / f_prime
-        error = torch.abs(k - k_t_1).max().item()
-        if error < eps:
-            break
-        k_t_1 = k
-
-    # Lambda (scale) can be calculated directly
-    lam = torch.mean(x ** k.repeat(1, x.shape[1]), dim=-1, keepdim=True) ** (1.0 / k)
-
-    return k, lam  # Shape (SC), Scale (FE)
 
 
 def compute_feature(block: torch.Tensor,
@@ -107,8 +65,8 @@ def compute_feature(block: torch.Tensor,
     if ilniqe:
         tmp_block = block[:, 1:4]
         channels = 4 - 1
-        shape, scale = fitweibull(tmp_block.reshape(bsz * channels, -1))
-        scale_shape = torch.stack((scale.reshape(bsz, channels), shape.reshape(bsz, channels)), dim=-1).reshape(bsz, -1)
+        shape_scale = fitweibull(tmp_block.reshape(bsz * channels, -1))
+        scale_shape = shape_scale[:, [1, 0]].reshape(bsz, -1)
         feat.append(scale_shape)
 
         mu = torch.mean(block[:, 4:7], dim=(2,3))
@@ -127,8 +85,8 @@ def compute_feature(block: torch.Tensor,
 
         tmp_block = block[:, 85:109]
         channels = 109 - 85
-        shape, scale = fitweibull(tmp_block.reshape(bsz * channels, -1))
-        scale_shape = torch.stack((scale.reshape(bsz, channels), shape.reshape(bsz, channels)), dim=-1).reshape(bsz, -1)
+        shape_scale = fitweibull(tmp_block.reshape(bsz * channels, -1))
+        scale_shape = shape_scale[:, [1, 0]].reshape(bsz, -1)
         feat.append(scale_shape)
     
     feat = torch.cat(feat, dim=-1)
