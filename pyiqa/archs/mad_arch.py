@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from numpy.fft import fftshift
 import math
 
-from pyiqa.utils import math_util as math_utils
+from pyiqa.matlab_utils import math_util
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -150,13 +150,13 @@ def hi_index(ref_img, dst_img):
                                                           2).to(ref.device)
 
     x = torch.fft.fft2(ref)
-    x1 = math_utils.batch_fftshift2d(x)
-    x2 = math_utils.batch_ifftshift2d(x1 * csf)
+    x1 = math_util.batch_fftshift2d(x)
+    x2 = math_util.batch_ifftshift2d(x1 * csf)
     ref = torch.fft.ifft2(x2).real
 
     x = torch.fft.fft2(dst)
-    x1 = math_utils.batch_fftshift2d(x)
-    x2 = math_utils.batch_ifftshift2d(x1 * csf)
+    x1 = math_util.batch_fftshift2d(x)
+    x2 = math_util.batch_ifftshift2d(x1 * csf)
     dst = torch.fft.ifft2(x2).real
 
     m1_1, std_1 = ical_std(ref)
@@ -274,9 +274,9 @@ def lo_index(ref, dst):
     for gb_i in range(4):
         for gb_j in range(5):
             stdref, skwref, krtref = ical_stat(
-                math_utils.abs(gabRef[gb_i][gb_j]))
+                math_util.abs(gabRef[gb_i][gb_j]))
             stddst, skwdst, krtdst = ical_stat(
-                math_utils.abs(gabDst[gb_i][gb_j]))
+                math_util.abs(gabDst[gb_i][gb_j]))
             mp = mp + s[gb_i] * (torch.abs(stdref - stddst) +
                                  2 * torch.abs(skwref - skwdst) +
                                  torch.abs(krtref - krtdst))

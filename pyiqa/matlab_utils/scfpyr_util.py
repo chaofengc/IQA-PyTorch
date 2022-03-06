@@ -17,7 +17,7 @@ import numpy as np
 import torch
 from scipy.special import factorial
 
-from pyiqa.utils import math_util 
+from . import math_util
 
 pointOp = math_util.pointOp
 

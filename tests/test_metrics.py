@@ -93,7 +93,5 @@ def run_test(test_metric_names):
         print(fm)
 
 if __name__ == '__main__':
-    fr_metric_name = ['psnr', 'ssim', 'ms_ssim', 'cw_ssim', 'fsim', 'vif', 'vsi', 'gmsd', 'nlpd', 'mad', 'lpips', 'dists']
-    nr_metric_name = ['niqe', 'ilniqe', 'brisque', 'musiq', 'nrqm', 'pi']
-    test_metric_names = fr_metric_name + nr_metric_name
+    test_metric_names = pyiqa.list_models()
     run_test(test_metric_names)
