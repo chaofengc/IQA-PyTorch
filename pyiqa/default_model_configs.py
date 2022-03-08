@@ -156,6 +156,13 @@ DEFAULT_CONFIGS = OrderedDict({
         'musiq': {
             'metric_opts': {
                 'type': 'MUSIQ',
+                'pretrained': 'koniq10k'
+            },
+            'metric_mode': 'NR',
+            },
+        'musiq-ava': {
+            'metric_opts': {
+                'type': 'MUSIQ',
                 'pretrained': 'ava'
             },
             'metric_mode': 'NR',
