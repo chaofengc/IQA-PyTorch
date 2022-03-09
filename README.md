@@ -21,23 +21,23 @@ Below are details of supported methods and datasets in this project.
 <table>
 <tr><td>
 
-| FR Method                       | Backward           |
-| ------------------------------- | ------------------ |
-| PieAPP :hourglass_flowing_sand: |                    |
-| LPIPS                           | :white_check_mark: |
-| DISTS                           | :white_check_mark: |
-| WaDIQaM                         | :white_check_mark: |
-| CKDN<sup>[1](#fn1)</sup>        | :white_check_mark: |
-| FSIM                            | :white_check_mark: |
-| SSIM                            | :white_check_mark: |
-| MS-SSIM                         | :white_check_mark: |
-| CW-SSIM                         | :white_check_mark: |
-| PSNR                            | :white_check_mark: |
-| VIF                             | :white_check_mark: |
-| GMSD                            | :white_check_mark: |
-| NLPD                            | :white_check_mark: |
-| VSI                             | :white_check_mark: |
-| MAD                             | :white_check_mark: |
+| FR Method                | Backward           |
+| ------------------------ | ------------------ |
+| PieAPP                   | :white_check_mark: |
+| LPIPS                    | :white_check_mark: |
+| DISTS                    | :white_check_mark: |
+| WaDIQaM                  | :white_check_mark: |
+| CKDN<sup>[1](#fn1)</sup> | :white_check_mark: |
+| FSIM                     | :white_check_mark: |
+| SSIM                     | :white_check_mark: |
+| MS-SSIM                  | :white_check_mark: |
+| CW-SSIM                  | :white_check_mark: |
+| PSNR                     | :white_check_mark: |
+| VIF                      | :white_check_mark: |
+| GMSD                     | :white_check_mark: |
+| NLPD                     | :white_check_mark: |
+| VSI                      | :white_check_mark: |
+| MAD                      | :white_check_mark: |
 
 </td><td>
 

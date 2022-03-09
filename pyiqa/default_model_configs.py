@@ -195,6 +195,13 @@ DEFAULT_CONFIGS = OrderedDict({
             },
             'metric_mode': 'NR',
             },
+        'pieapp': {
+            'metric_opts': {
+                'type': 'PieAPP',
+                },
+            'metric_mode': 'FR',
+            'lower_better': True,
+            },
         })
 
 

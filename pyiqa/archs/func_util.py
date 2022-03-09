@@ -6,20 +6,18 @@ from torch import Tensor
 import torch.nn.functional as F
 
 from pyiqa.matlab_utils import fspecial_gauss, imfilter
+from .arch_util import excact_padding_2d
 
 EPS = torch.finfo(torch.float32).eps
 
-def extract_2d_patches(x, kernel, stride=1, dilation=1):
+
+def extract_2d_patches(x, kernel, stride=1, dilation=1, padding='same'):
     """
     Ref: https://stackoverflow.com/a/65886666
     """
-    # Do TF 'SAME' Padding
-    b,c,h,w = x.shape
-    h2 = math.ceil(h / stride)
-    w2 = math.ceil(w / stride)
-    pad_row = (h2 - 1) * stride + (kernel - 1) * dilation + 1 - h
-    pad_col = (w2 - 1) * stride + (kernel - 1) * dilation + 1 - w
-    x = F.pad(x, (pad_col//2, pad_col - pad_col//2, pad_row//2, pad_row - pad_row//2))
+    b, c, h, w = x.shape
+    if padding != 'none':
+        x = excact_padding_2d(x, kernel, stride, dilation, mode=padding)
     
     # Extract patches
     patches = F.unfold(x, kernel, dilation, stride=stride)
