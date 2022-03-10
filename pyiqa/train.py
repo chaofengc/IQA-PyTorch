@@ -183,7 +183,8 @@ def train_pipeline(root_path):
                 msg_logger(log_vars)
    
             # save models and training states
-            if current_iter % opt['logger']['save_checkpoint_freq'] == 0:
+            save_ckpt_freq = opt['logger'].get('save_checkpoint_freq', 9e9)
+            if current_iter % save_ckpt_freq == 0:
                 logger.info('Saving models and training states.')
                 model.save(epoch, current_iter)
 

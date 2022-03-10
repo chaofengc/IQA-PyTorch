@@ -43,6 +43,12 @@ class GeneralIQAModel(BaseModel):
             self.cri_mos = build_loss(train_opt['mos_loss_opt']).to(self.device)
         else:
             self.cri_mos = None
+
+        # define metric related loss, such as plcc loss
+        if train_opt.get('metric_loss_opt'):
+            self.cri_metric = build_loss(train_opt['metric_loss_opt']).to(self.device)
+        else:
+            self.cri_metric = None
         
         # set up optimizers and schedulers
         self.setup_optimizers()
@@ -91,6 +97,11 @@ class GeneralIQAModel(BaseModel):
             l_mos = self.cri_mos(self.output_score, self.gt_mos)
             l_total += l_mos
             loss_dict['l_mos'] = l_mos
+
+        if self.cri_metric:
+            l_metric = self.cri_metric(self.output_score, self.gt_mos)
+            l_total += l_metric
+            loss_dict['l_metric'] = l_metric
         
         l_total.backward()
         self.optimizer.step()

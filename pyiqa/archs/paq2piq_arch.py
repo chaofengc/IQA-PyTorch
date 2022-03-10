@@ -64,7 +64,7 @@ class PAQ2PIQ(nn.Module):
         self.roi_pool = RoIPool((2,2), spatial_scale)
 
         if pretrained_model_path is not None:
-            load_pretrained_network(self, pretrained_model_path, False)
+            load_pretrained_network(self, pretrained_model_path)
         elif pretrained:
             load_pretrained_network(self, default_model_urls['url'])
     

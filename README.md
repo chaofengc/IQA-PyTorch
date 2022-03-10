@@ -187,10 +187,10 @@ Examples to specific dataset options can be found in `./options/default_dataset_
 Example to train DBCNN on LIVEChallenge dataset
 ```
 # train for single experiment
-python pyiqa/train.py -opt options/train/train_DBCNN.yml 
+python pyiqa/train.py -opt options/train/DBCNN/train_DBCNN.yml 
 
 # train N splits for small datasets
-python pyiqa/train_nsplits.py -opt options/train/train_DBCNN.yml 
+python pyiqa/train_nsplits.py -opt options/train/DBCNN/train_DBCNN.yml 
 ```
 
 ## :1st_place_medal: Benchmark Performances and Model Zoo

@@ -43,24 +43,4 @@ class DBCNNModel(GeneralIQAModel):
             self.reset_optimizers_finetune()
             self.train_stage = 'finetune'
 
-        self.optimizer.zero_grad()
-        self.output_score = self.net_forward(self.net)
-
-        l_total = 0
-        loss_dict = OrderedDict()
-        # pixel loss
-        if self.cri_mos:
-            l_mos = self.cri_mos(self.output_score, self.gt_mos)
-            l_total += l_mos
-            loss_dict['l_mos'] = l_mos
-        
-        l_total.backward()
-        self.optimizer.step()
-
-        self.log_dict = self.reduce_loss_dict(loss_dict)
-
-        # log metrics in training batch
-        pred_score = self.output_score.squeeze(1).cpu().detach().numpy()
-        gt_mos = self.gt_mos.squeeze(1).cpu().detach().numpy()
-        for name, opt_ in self.opt['val']['metrics'].items():
-            self.log_dict[f'train_metrics/{name}'] = calculate_metric([pred_score, gt_mos], opt_)
+        super().optimize_parameters(current_iter)

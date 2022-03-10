@@ -208,6 +208,13 @@ DEFAULT_CONFIGS = OrderedDict({
                 },
             'metric_mode': 'NR',
             },
+         'dbcnn':{
+            'metric_opts': {
+                'type': 'DBCNN',
+                'pretrained': 'koniq'
+                },
+            'metric_mode': 'NR',
+            },
         })
 
 

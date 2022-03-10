@@ -1,6 +1,6 @@
 # general settings
 # name: debug_DBCNN_LIVEC 
-name: 002_DBCNN_KonIQ10k
+name: 003_DBCNN_KonIQ10k
 model_type: DBCNNModel 
 num_gpu: 1  # set num_gpu: 0 for cpu mode
 manual_seed: 123 
@@ -12,7 +12,7 @@ datasets:
     type: GeneralNRDataset
     dataroot_target: ./datasets/koniq10k/512x384
     meta_info_file: ./datasets/meta_info/meta_info_KonIQ10kDataset.csv
-    split_file: ./datasets/meta_info/koniq10k_official.pkl
+    split_file: ./datasets/train_split_info/koniq10k_official.pkl
 
     augment:
       hflip: true
@@ -31,7 +31,7 @@ datasets:
     type: GeneralNRDataset
     dataroot_target: ./datasets/koniq10k/512x384
     meta_info_file: ./datasets/meta_info/meta_info_KonIQ10kDataset.csv
-    split_file: ./datasets/meta_info/koniq10k_official.pkl
+    split_file: ./datasets/train_split_info/koniq10k_official.pkl
     
 # network structures
 network:
@@ -73,6 +73,10 @@ train:
   
   # losses
   mos_loss_opt:
+    type: MSELoss 
+    loss_weight: !!float 1.0
+
+  metric_loss_opt:
     type: PLCCLoss 
     loss_weight: !!float 1.0
 
@@ -96,7 +100,6 @@ val:
 # logging settings
 logger:
   print_freq: 100
-  save_checkpoint_freq: !!float 5e9
   save_latest_freq: !!float 5e2
   use_tb_logger: true
   wandb:

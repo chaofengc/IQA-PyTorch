@@ -68,7 +68,7 @@ class PieAPP(nn.Module):
         self.stride = stride
 
         if pretrained_model_path is not None:
-            load_pretrained_network(self, pretrained_model_path, False)
+            load_pretrained_network(self, pretrained_model_path)
         elif pretrained:
             load_pretrained_network(self, default_model_urls['url'])
 
