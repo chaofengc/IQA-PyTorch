@@ -18,7 +18,7 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
 
 default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/P2P_RoIPoolModel-fit.10.bs.120-5ece3dcd.pth',
+    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/P2P_RoIPoolModel-fit.10.bs.120-ca69882e.pth',
 }
 
 
@@ -41,7 +41,7 @@ class PAQ2PIQ(nn.Module):
         super(PAQ2PIQ, self).__init__()
 
         if backbone == 'resnet18':
-            model = tv.models.resnet18(pretrained=True)
+            model = tv.models.resnet18(pretrained=False)
             cut = -2
             spatial_scale = 1/32
         
@@ -66,7 +66,7 @@ class PAQ2PIQ(nn.Module):
         if pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, False)
         elif pretrained:
-            load_pretrained_network(self, default_model_urls['url'], weight_keys='model')
+            load_pretrained_network(self, default_model_urls['url'])
     
     def forward(self, x):
         im_data = x
