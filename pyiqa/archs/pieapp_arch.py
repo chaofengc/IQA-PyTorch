@@ -12,7 +12,6 @@ Modified by: Chaofeng Chen (https://github.com/chaofengc)
                     rather than from multiple subimages as the original codes.
 """
 
-from turtle import forward
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

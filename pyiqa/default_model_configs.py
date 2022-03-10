@@ -202,6 +202,12 @@ DEFAULT_CONFIGS = OrderedDict({
             'metric_mode': 'FR',
             'lower_better': True,
             },
+        'paq2piq': {
+            'metric_opts': {
+                'type': 'PAQ2PIQ',
+                },
+            'metric_mode': 'NR',
+            },
         })
 
 
