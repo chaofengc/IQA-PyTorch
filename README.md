@@ -41,21 +41,21 @@ Below are details of supported methods and datasets in this project.
 
 </td><td>
 
-| NR Method                     | Backward           |
-| ----------------------------- | ------------------ |
-| MUSIQ                         | :white_check_mark: |
-| DBCNN                         | :white_check_mark: |
-| PaQ-2-PiQ                     | :white_check_mark: |
-| HyperIQA                      | :white_check_mark: |
-| NIMA                          | :white_check_mark: |
-| WaDIQaM                       | :white_check_mark: |
-| CNNIQA                        | :white_check_mark: |
-| NRQM(Ma)<sup>[2](#fn2)</sup>  | :x:                |
-| PI(Perceptual Index)          | :x:                |
-| HOSA :hourglass_flowing_sand: |                    |
-| BRISQUE                       | :white_check_mark: |
-| ILNIQE                        | :white_check_mark: |
-| NIQE                          | :white_check_mark: |
+| NR Method                     | Backward                 |
+| ----------------------------- | ------------------------ |
+| MUSIQ                         | :white_check_mark:       |
+| DBCNN                         | :white_check_mark:       |
+| PaQ-2-PiQ                     | :white_check_mark:       |
+| HyperIQA                      | :white_check_mark:       |
+| NIMA                          | :white_check_mark:       |
+| WaDIQaM                       | :white_check_mark:       |
+| CNNIQA                        | :white_check_mark:       |
+| NRQM(Ma)<sup>[2](#fn2)</sup>  | :heavy_multiplication_x: |
+| PI(Perceptual Index)          | :heavy_multiplication_x: |
+| HOSA :hourglass_flowing_sand: |                          |
+| BRISQUE                       | :white_check_mark:       |
+| ILNIQE                        | :white_check_mark:       |
+| NIQE                          | :white_check_mark:       |
 
 </td><td>
 
@@ -88,6 +88,7 @@ Below are details of supported methods and datasets in this project.
 
 ### :triangular_flag_on_post: Updates/Changelog
 
+- **March 11, 2022**. Add pretrained DBCNN, NIMA, and official model of PieAPP, paq2piq. 
 - **March 5, 2022**. Add NRQM, PI, ILNIQE metrics. 
 - **Feb 2, 2022**. Add MUSIQ inference code, and the converted official weights. See [Official codes](https://github.com/google-research/google-research/tree/master/musiq). 
 - [**More**](docs/history_changelog.md)
@@ -96,7 +97,7 @@ Below are details of supported methods and datasets in this project.
 
 ### :hourglass_flowing_sand: TODO List
 
-- :white_large_square: Benchmark with retrained models of DBCNN, NIMA, etc. 
+- :white_check_mark: Benchmark with retrained models of DBCNN, NIMA, etc. 
 - :white_large_square: Add pretrained models on different datasets.
 
 ---
@@ -107,8 +108,7 @@ Below are details of supported methods and datasets in this project.
 - Ubuntu >= 18.04
 - Python >= 3.8
 - Pytorch >= 1.8.1
-- CUDA 10.1 (if use GPU)
-- Other required packages in `requirements.txt`
+- CUDA >= 10.1 (if use GPU)
 ```
 # Install with pip
 pip install pyiqa
@@ -218,11 +218,13 @@ Please refer to [FR benchmark results](tests/FR_benchmark_results.csv) and [NR b
 
 ### Performances of deep learning models
 
-#### Small datasets, n-splits validation 
+We report PLCC/SRCC here.
 
-| Methods | CSIQ | TID2008 | TID2013 | LIVE | LIVEM | LIVEC |
-| ------- | ---- | ------- | ------- | ---- | ----- | ----- |
-| DBCNN   |      |         |         |      |       |       |
+#### Small datasets, validation of split 1
+
+| Methods | CSIQ          | TID2008       | TID2013       | LIVE          | LIVEM         | LIVEC         |
+| ------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| DBCNN   | 0.8965/0.9086 | 0.8322/0.8463 | 0.7985/0.8320 | 0.9418/0.9308 | 0.9461/0.9371 | 0.8375/0.8530 |
 
 #### Large dataset performance
 
@@ -233,7 +235,7 @@ Please refer to [FR benchmark results](tests/FR_benchmark_results.csv) and [NR b
 
 Any contributions to this repository are greatly appreciated. Please follow the [contribution instructions](docs/Instruction.md) for contribution guidance.  
 
-## :receipt: License
+## :scroll: License
 
 This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
 
@@ -255,12 +257,14 @@ The code architecture is borrowed from [BasicSR](https://github.com/xinntao/Basi
 - [piqa](https://github.com/francois-rozet/piqa)
 
 We also thanks the following public repositories: 
-- [MUSIQ]() 
+- [MUSIQ](https://github.com/google-research/google-research/tree/master/musiq) 
 - [DBCNN](https://github.com/zwx8981/DBCNN-PyTorch) 
 - [NIMA](https://github.com/kentsyx/Neural-IMage-Assessment)
 - [HyperIQA](https://github.com/SSL92/hyperIQA)
 - [CNNIQA](https://github.com/lidq92/CNNIQA)
 - [WaDIQaM](https://github.com/lidq92/WaDIQaM)
+- [PieAPP](https://github.com/prashnani/PerceptualImageError)
+- [paq2piq](https://github.com/baidut/paq2piq)
 
 ## :e-mail: Contact
 
