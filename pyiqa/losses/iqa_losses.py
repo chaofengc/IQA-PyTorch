@@ -66,6 +66,21 @@ class PLCCLoss(nn.Module):
         return self.loss_weight * plcc_loss(pred, target)
 
 
+@LOSS_REGISTRY.register()
+class SRCCLoss(nn.Module):
+    """Ranked PLCC loss, induced from Spearman correlation coefficient
+
+    """
+    def __init__(self, loss_weight=1.0):
+        super(PLCCLoss, self).__init__()
+        self.loss_weight = loss_weight
+
+    def forward(self, pred, target):
+        pred = torch.sort(pred, dim=-1)
+        target = torch.sort(target, dim=-1)
+        return self.loss_weight * plcc_loss(pred, target)
+
+
 def norm_loss_with_normalization(pred, target, p, q):
     """
     Args:
