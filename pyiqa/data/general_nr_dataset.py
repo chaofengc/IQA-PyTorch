@@ -52,10 +52,9 @@ class GeneralNRDataset(data.Dataset):
             for k, v in augment_dict.items():
                 transform_list += transform_mapping(k, v)
 
-        img_range = opt.get('img_range', 1.0)
+        self.img_range = opt.get('img_range', 1.0)
         transform_list += [
                 tf.ToTensor(),
-                tf.Lambda(lambda x: x * img_range),
                 ]
         self.trans = tf.Compose(transform_list)
 
@@ -65,7 +64,7 @@ class GeneralNRDataset(data.Dataset):
         mos_label = self.paths_mos[index][1]
         img_pil = Image.open(img_path).convert('RGB')
 
-        img_tensor = self.trans(img_pil)
+        img_tensor = self.trans(img_pil) * self.img_range
         if self.use_dmos:
             mos_label = self.dmos_max - mos_label
         mos_label_tensor = torch.Tensor([mos_label])

@@ -55,10 +55,9 @@ class GeneralFRDataset(data.Dataset):
         self.paired_trans = tf.Compose(paired_transform_list)
 
         common_transform_list = []
-        img_range = opt.get('img_range', 1.0)
+        self.img_range = opt.get('img_range', 1.0)
         common_transform_list += [
                 tf.ToTensor(),
-                tf.Lambda(lambda x: x * img_range),
                 ]
         self.common_trans = tf.Compose(common_transform_list)
 
@@ -73,8 +72,8 @@ class GeneralFRDataset(data.Dataset):
 
         img_pil, ref_pil = self.paired_trans([img_pil, ref_pil])
 
-        img_tensor = self.common_trans(img_pil)
-        ref_tensor = self.common_trans(ref_pil)
+        img_tensor = self.common_trans(img_pil) * self.img_range
+        ref_tensor = self.common_trans(ref_pil) * self.img_range
         if self.use_dmos:
             mos_label = self.dmos_max - mos_label
         mos_label_tensor = torch.Tensor([mos_label])

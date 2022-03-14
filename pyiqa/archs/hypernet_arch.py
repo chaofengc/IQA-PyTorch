@@ -139,21 +139,15 @@ class HyperNet(nn.Module):
             j = torch.randint(0, w - tw + 1, size=(1, )).item()
             cropped_x.append(x[:, :, i: i + th, j: j + tw])
         cropped_x = torch.cat(cropped_x, dim=0)
-        results = self.forward(cropped_x) 
+        results = self.forward_patch(cropped_x) 
         results = results.reshape(sample_num, b).mean(dim=0)
         return results.unsqueeze(-1)
-
-    def forward(self, x):
-        r"""HYPERNET model.
-        Args:
-            x: A distortion tensor. Shape :math:`(N, C, H, W)`.
-
-        """
-        # imagenet normalization of input is hard coded 
+    
+    def forward_patch(self, x):
+        assert x.shape[2:] == torch.Size([224, 224]), f'Input patch size must be (224, 224), but got {x.shape[2:]}'
         x = self.preprocess(x)
 
         base_feats = self.base_model(x)[1:]
-
         # multi-scale local distortion aware features
         lda_feat_list = []
         for bf, ldam in zip(base_feats, self.lda_modules):
@@ -181,4 +175,16 @@ class HyperNet(nn.Module):
 
         return x.squeeze(-1)
 
+    def forward(self, x):
+        r"""HYPERNET model.
+        Args:
+            x: A distortion tensor. Shape :math:`(N, C, H, W)`.
+        """
+        # imagenet normalization of input is hard coded 
+
+        if self.training:
+            return self.forward_patch(x)
+        else:
+            return self.random_crop_test(x)
+        
         
