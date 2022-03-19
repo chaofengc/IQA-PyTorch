@@ -72,7 +72,7 @@ class PAQ2PIQ(nn.Module):
 
         feats = self.body(im_data)
         global_rois = torch.tensor([0, 0, x.shape[-1], x.shape[-2]]).reshape(1, 4).to(x)
-        feats = self.roi_pool(feats, [global_rois])
+        feats = self.roi_pool(feats, [global_rois] * batch_size)
 
         preds = self.head(feats)
         return preds.view(batch_size, -1)

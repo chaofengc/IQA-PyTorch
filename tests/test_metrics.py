@@ -3,6 +3,7 @@ import csv
 import numpy as np
 import torch
 import pyiqa
+import argparse
 from pyiqa.utils.img_util import imread2tensor
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
@@ -35,7 +36,6 @@ def load_org_results():
     results = {}
     with open(results_path) as csv_file:
         csv_reader = csv.reader(csv_file)
-        head = next(csv_reader)
         for row in csv_reader:
             if row[0].startswith('vsi'):
                 row[0] = 'vsi'
@@ -94,5 +94,12 @@ def run_test(test_metric_names):
 
 
 if __name__ == '__main__':
-    test_metric_names = pyiqa.list_models()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--metric_names', type=str, nargs='+', default=None, help='metric name list.')
+    args = parser.parse_args()
+
+    if args.metric_names is not None:
+        test_metric_names = args.metric_names
+    else:
+        test_metric_names = pyiqa.list_models()
     run_test(test_metric_names)

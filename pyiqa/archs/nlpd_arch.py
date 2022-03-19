@@ -141,7 +141,7 @@ class NLPD(nn.Module):
             Index of similarity betwen two images. Usually in [0, 1] interval.
         """
         assert (self.test_y_channel and self.channels == 1) or (
-            not self.test_y_channel and self.channels == 3), f'Number of channel and convert to YCBCR should be match'
+            not self.test_y_channel and self.channels == 3), 'Number of channel and convert to YCBCR should be match'
 
         if self.test_y_channel and self.channels == 1:
             x1 = to_y_channel(x1)
