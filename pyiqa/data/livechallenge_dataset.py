@@ -1,4 +1,3 @@
-import numpy as np
 import pickle
 from PIL import Image
 import os
@@ -8,9 +7,7 @@ from torch.utils import data as data
 import torchvision.transforms as tf
 from torchvision.transforms.functional import normalize
 
-from pyiqa.data.data_util import read_meta_info_file
-from pyiqa.data.transforms import transform_mapping, augment, paired_random_crop
-from pyiqa.utils import FileClient, imfrombytes, img2tensor
+from pyiqa.data.transforms import transform_mapping
 from pyiqa.utils.registry import DATASET_REGISTRY
 
 
