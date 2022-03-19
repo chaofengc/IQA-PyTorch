@@ -177,7 +177,7 @@ def parse_options(root_path, is_train=True):
             opt['path'][key] = osp.expanduser(val)
 
     make_paths(opt, root_path)
-    
+
     return opt, args
 
 

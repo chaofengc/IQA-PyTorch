@@ -8,6 +8,7 @@ import shutil
 
 from .dist_util import master_only
 
+
 def set_random_seed(seed):
     """Set random seeds."""
     random.seed(seed)

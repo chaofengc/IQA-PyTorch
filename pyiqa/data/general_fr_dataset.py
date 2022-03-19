@@ -1,22 +1,19 @@
-import numpy as np
 import pickle
 from PIL import Image
 
 import torch
 from torch.utils import data as data
 import torchvision.transforms as tf
-from torchvision.transforms.functional import normalize
 
-from pyiqa.data.data_util import read_meta_info_file 
-from pyiqa.data.transforms import transform_mapping, augment, paired_random_crop
-from pyiqa.utils import FileClient, imfrombytes, img2tensor
+from pyiqa.data.data_util import read_meta_info_file
+from pyiqa.data.transforms import transform_mapping
 from pyiqa.utils.registry import DATASET_REGISTRY
 
 
 @DATASET_REGISTRY.register()
 class GeneralFRDataset(data.Dataset):
     """General Full Reference dataset with meta info file.
-    
+
     Args:
         opt (dict): Config for train datasets with the following keys:
             phase (str): 'train' or 'val'.
@@ -28,7 +25,8 @@ class GeneralFRDataset(data.Dataset):
 
         target_img_folder = opt['dataroot_target']
         ref_img_folder = opt.get('dataroot_ref', None)
-        self.paths_mos = read_meta_info_file(target_img_folder, opt['meta_info_file'], mode='fr', ref_dir=ref_img_folder) 
+        self.paths_mos = read_meta_info_file(
+            target_img_folder, opt['meta_info_file'], mode='fr', ref_dir=ref_img_folder)
 
         # read train/val/test splits
         split_file_path = opt.get('split_file', None)
@@ -37,12 +35,12 @@ class GeneralFRDataset(data.Dataset):
             with open(opt['split_file'], 'rb') as f:
                 split_dict = pickle.load(f)
                 splits = split_dict[split_index][opt['phase']]
-            self.paths_mos = [self.paths_mos[i] for i in splits] 
-        
+            self.paths_mos = [self.paths_mos[i] for i in splits]
+
         dmos_max = opt.get('dmos_max', 0.)
         if dmos_max:
             self.use_dmos = True
-            self.dmos_max = opt.get('dmos_max') 
+            self.dmos_max = opt.get('dmos_max')
         else:
             self.use_dmos = False
 
@@ -57,10 +55,9 @@ class GeneralFRDataset(data.Dataset):
         common_transform_list = []
         self.img_range = opt.get('img_range', 1.0)
         common_transform_list += [
-                tf.ToTensor(),
-                ]
+            tf.ToTensor(),
+        ]
         self.common_trans = tf.Compose(common_transform_list)
-
 
     def __getitem__(self, index):
 
@@ -77,8 +74,14 @@ class GeneralFRDataset(data.Dataset):
         if self.use_dmos:
             mos_label = self.dmos_max - mos_label
         mos_label_tensor = torch.Tensor([mos_label])
-        
-        return {'img': img_tensor, 'ref_img': ref_tensor, 'mos_label': mos_label_tensor, 'img_path': img_path, 'ref_img_path': ref_path}
+
+        return {
+            'img': img_tensor,
+            'ref_img': ref_tensor,
+            'mos_label': mos_label_tensor,
+            'img_path': img_path,
+            'ref_img_path': ref_path
+        }
 
     def __len__(self):
         return len(self.paths_mos)

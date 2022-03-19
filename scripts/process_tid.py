@@ -5,13 +5,14 @@ import pickle
 import csv
 import pandas as pd
 
+
 def get_meta_info(root_dir, save_meta_path):
     mos_file = os.path.join(root_dir, 'mos_with_names.txt')
     std_file = os.path.join(root_dir, 'mos_std.txt')
 
     mos_names = [x.strip().split() for x in open(mos_file).readlines()]
     std = [x.strip() for x in open(std_file).readlines()]
-    
+
     with open(save_meta_path, 'w') as f:
         csvwriter = csv.writer(f)
         header = ['ref_name', 'dist_name', 'mos', 'std']
@@ -24,9 +25,10 @@ def get_meta_info(root_dir, save_meta_path):
                 name = name.replace('i', 'I')
             csvwriter.writerow([ref_name, name, mos, std])
 
+
 def get_random_splits(meta_info_file, save_path, seed=123):
     random.seed(seed)
-    # meta_info_file = './datasets/meta_info/meta_info_CSIQDataset.csv' 
+    # meta_info_file = './datasets/meta_info/meta_info_CSIQDataset.csv'
     # save_path = f'./datasets/meta_info/csiq_{seed}.pkl'
     ratio = 0.8
 
@@ -36,27 +38,24 @@ def get_random_splits(meta_info_file, save_path, seed=123):
     ref_img_num = len(ref_img_list)
     num_splits = 10
     train_num = int(ratio * ref_img_num)
-    
+
     split_info = {}
     for i in range(num_splits):
-        split_info[i+1] = {
-            'train': [],
-            'val': [],
-            'test': []
-        }
+        split_info[i + 1] = {'train': [], 'val': [], 'test': []}
 
     for i in range(num_splits):
         random.shuffle(ref_img_list)
         train_ref_img_names = ref_img_list[:train_num]
         for j in range(meta_info.shape[0]):
             tmp_ref_name = meta_info.loc[j]['ref_name']
-            if tmp_ref_name in train_ref_img_names: 
-                split_info[i+1]['train'].append(j)
+            if tmp_ref_name in train_ref_img_names:
+                split_info[i + 1]['train'].append(j)
             else:
-                split_info[i+1]['val'].append(j)
-        print(meta_info.shape[0], len(split_info[i+1]['train']), len(split_info[i+1]['val']))
+                split_info[i + 1]['val'].append(j)
+        print(meta_info.shape[0], len(split_info[i + 1]['train']), len(split_info[i + 1]['val']))
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
+
 
 if __name__ == '__main__':
     # root_dir = '../datasets/tid2013/'

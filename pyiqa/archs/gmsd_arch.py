@@ -5,10 +5,9 @@ Created by: https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pyto
 Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 Refer to:
-    Matlab code from https://www4.comp.polyu.edu.hk/~cslzhang/IQA/GMSD/GMSD.m; 
+    Matlab code from https://www4.comp.polyu.edu.hk/~cslzhang/IQA/GMSD/GMSD.m;
 
 """
-
 
 import torch
 from torch import nn
@@ -41,10 +40,10 @@ def gmsd(
         x = x * 255.
         y = y * 255.
 
-    dx = (torch.Tensor([[1, 0, -1], [1, 0, -1], [1, 0, -1]]) /
-          3.).unsqueeze(0).unsqueeze(0).repeat(channels, 1, 1, 1).to(x)
-    dy = (torch.Tensor([[1, 1, 1], [0, 0, 0], [-1, -1, -1]]) /
-          3.).unsqueeze(0).unsqueeze(0).repeat(channels, 1, 1, 1).to(x)
+    dx = (torch.Tensor([[1, 0, -1], [1, 0, -1], [1, 0, -1]]) / 3.).unsqueeze(0).unsqueeze(0).repeat(channels, 1, 1,
+                                                                                                    1).to(x)
+    dy = (torch.Tensor([[1, 1, 1], [0, 0, 0], [-1, -1, -1]]) / 3.).unsqueeze(0).unsqueeze(0).repeat(channels, 1, 1,
+                                                                                                    1).to(x)
     aveKernel = torch.ones(channels, 1, 2, 2).to(x) / 4.
 
     Y1 = F.conv2d(x, aveKernel, stride=2, padding=0, groups=channels)
@@ -58,8 +57,7 @@ def gmsd(
     IyY2 = F.conv2d(Y2, dy, stride=1, padding=1, groups=channels)
     gradientMap2 = torch.sqrt(IxY2**2 + IyY2**2 + 1e-12)
 
-    quality_map = (2 * gradientMap1 * gradientMap2 + T) / (gradientMap1**2 +
-                                                           gradientMap2**2 + T)
+    quality_map = (2 * gradientMap1 * gradientMap2 + T) / (gradientMap1**2 + gradientMap2**2 + T)
     score = torch.std(quality_map.view(quality_map.shape[0], -1), dim=1)
 
     return score
@@ -72,9 +70,9 @@ class GMSD(nn.Module):
         channels: Number of channels.
         test_y_channel: bool, whether to use y channel on ycbcr.
     Reference:
-        Xue, Wufeng, Lei Zhang, Xuanqin Mou, and Alan C. Bovik. 
-        "Gradient magnitude similarity deviation: A highly efficient 
-        perceptual image quality index." IEEE Transactions on Image 
+        Xue, Wufeng, Lei Zhang, Xuanqin Mou, and Alan C. Bovik.
+        "Gradient magnitude similarity deviation: A highly efficient
+        perceptual image quality index." IEEE Transactions on Image
         Processing 23, no. 2 (2013): 684-695.
     '''
 
@@ -89,10 +87,7 @@ class GMSD(nn.Module):
             y: A reference tensor. Shape :math:`(N, C, H, W)`.
             Order of input is important.
         """
-        assert x.shape == y.shape, f"Input and reference images should have the same shape, but got {x.shape} and {y.shape}"
-        score = gmsd(x,
-                     y,
-                     channels=self.channels,
-                     test_y_channel=self.test_y_channel)
+        assert x.shape == y.shape, f'Input and reference images should have the same shape, but got {x.shape} and {y.shape}'
+        score = gmsd(x, y, channels=self.channels, test_y_channel=self.test_y_channel)
 
         return score

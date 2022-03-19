@@ -3,15 +3,15 @@ future
 lmdb
 numpy
 opencv-python
+pandas
 Pillow
 pyyaml
 requests
 scikit-image
 scipy
 tb-nightly
+timm
 torch>=1.8.1
 torchvision>=0.9
-timm
 tqdm
 yapf
-pandas

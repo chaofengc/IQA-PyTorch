@@ -7,6 +7,7 @@ import csv
 import pandas as pd
 from tqdm import tqdm
 
+
 def get_meta_info():
     mos_label_file = '../datasets/SPAQ/Annotations/MOS and Image attribute scores.xlsx'
     scene_label_file = '../datasets/SPAQ/Annotations/Scene category labels.xlsx'
@@ -41,16 +42,13 @@ def get_random_splits(seed=123):
     num_splits = 10
     save_path = f'./datasets/meta_info/spaq_seed{seed}.pkl'
 
-    ratio = [0.8, 0.2] # train/val/test
+    ratio = [0.8, 0.2]  # train/val/test
     sep_index = int(round(0.8 * total_num))
-    
+
     split_info = {}
     for i in range(num_splits):
         random.shuffle(all_img_index)
-        split_info[i+1] = {
-                'train': all_img_index[:sep_index],
-                'val': all_img_index[sep_index:]
-                }
+        split_info[i + 1] = {'train': all_img_index[:sep_index], 'val': all_img_index[sep_index:]}
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

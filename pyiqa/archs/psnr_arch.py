@@ -14,7 +14,7 @@ import torch
 import torch.nn as nn
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.utils.color_util import to_y_channel 
+from pyiqa.utils.color_util import to_y_channel
 
 
 def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8, color_space='yiq'):
@@ -62,6 +62,6 @@ class PSNR(nn.Module):
         self.kwargs = kwargs
 
     def forward(self, X, Y):
-        assert X.shape == Y.shape, f"Input and reference images should have the same shape, but got {X.shape} and {Y.shape}"
+        assert X.shape == Y.shape, f'Input and reference images should have the same shape, but got {X.shape} and {Y.shape}'
         score = psnr(X, Y, self.test_y_channel, **self.kwargs)
         return score

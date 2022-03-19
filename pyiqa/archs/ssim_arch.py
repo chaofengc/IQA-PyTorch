@@ -1,6 +1,6 @@
 r"""SSIM, MS-SSIM, CW-SSIM Metric
 
-Created by: 
+Created by:
 - https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/SSIM.py
 - https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/MS_SSIM.py
 - https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/CW_SSIM.py
@@ -8,11 +8,12 @@ Created by:
 Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 Refer to:
-    - Offical SSIM matlab code from https://www.cns.nyu.edu/~lcv/ssim/; 
+    - Offical SSIM matlab code from https://www.cns.nyu.edu/~lcv/ssim/;
     - PIQ from https://github.com/photosynthesis-team/piq;
     - BasicSR from https://github.com/xinntao/BasicSR/blob/master/basicsr/metrics/psnr_ssim.py;
-    - Offical MS-SSIM matlab code from https://ece.uwaterloo.ca/~z70wang/research/iwssim/msssim.zip; 
-    - Offical CW-SSIM matlab code from https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/43017/versions/1/download/zip;
+    - Offical MS-SSIM matlab code from https://ece.uwaterloo.ca/~z70wang/research/iwssim/msssim.zip;
+    - Offical CW-SSIM matlab code from
+    https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/43017/versions/1/download/zip;
 
 """
 
@@ -20,7 +21,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from pyiqa.utils.color_util import to_y_channel 
+from pyiqa.utils.color_util import to_y_channel
 from pyiqa.matlab_utils import fspecial_gauss, SCFpyr_PyTorch, math_util
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -69,9 +70,7 @@ def ssim(X,
     sigma12 = gaussian_filter(X * Y, win) - mu1_mu2
 
     cs_map = (2 * sigma12 + C2) / (sigma1_sq + sigma2_sq + C2)
-    cs_map = F.relu(
-        cs_map
-    )  #force the ssim response to be nonnegative to avoid negative results.
+    cs_map = F.relu(cs_map)  # force the ssim response to be nonnegative to avoid negative results.
     ssim_map = ((2 * mu1_mu2 + C1) / (mu1_sq + mu2_sq + C1)) * cs_map
     ssim_val = ssim_map.mean([1, 2, 3])
 
@@ -105,24 +104,18 @@ class SSIM(torch.nn.Module):
         self.color_space = color_space
 
     def forward(self, X, Y):
-        assert X.shape == Y.shape, f"Input {X.shape} and reference images should have the same shape"
-        score = ssim(X,
-                     Y,
-                     win=self.win,
-                     downsample=self.downsample,
-                     test_y_channel=self.test_y_channel,
-                     color_space=self.color_space)
+        assert X.shape == Y.shape, f'Input {X.shape} and reference images should have the same shape'
+        score = ssim(
+            X,
+            Y,
+            win=self.win,
+            downsample=self.downsample,
+            test_y_channel=self.test_y_channel,
+            color_space=self.color_space)
         return score
 
 
-def ms_ssim(X,
-            Y,
-            win,
-            data_range=1.,
-            downsample=False,
-            test_y_channel=True,
-            is_prod=True,
-            color_space='yiq'):
+def ms_ssim(X, Y, win, data_range=1., downsample=False, test_y_channel=True, is_prod=True, color_space='yiq'):
     r"""Compute Multiscale structural similarity for a batch of images.
     Args:
         x: An input tensor. Shape :math:`(N, C, H, W)`.
@@ -137,21 +130,21 @@ def ms_ssim(X,
     if not X.shape == Y.shape:
         raise ValueError('Input images must have the same dimensions.')
 
-    weights = torch.FloatTensor([0.0448, 0.2856, 0.3001, 0.2363,
-                                 0.1333]).to(X)
+    weights = torch.FloatTensor([0.0448, 0.2856, 0.3001, 0.2363, 0.1333]).to(X)
 
     levels = weights.shape[0]
     mcs = []
 
     for _ in range(levels):
-        ssim_val, cs = ssim(X,
-                            Y,
-                            win=win,
-                            get_cs=True,
-                            downsample=downsample,
-                            data_range=data_range,
-                            test_y_channel=test_y_channel,
-                            color_space=color_space)
+        ssim_val, cs = ssim(
+            X,
+            Y,
+            win=win,
+            get_cs=True,
+            downsample=downsample,
+            data_range=data_range,
+            test_y_channel=test_y_channel,
+            color_space=color_space)
         mcs.append(cs)
         padding = (X.shape[2] % 2, X.shape[3] % 2)
         X = F.avg_pool2d(X, kernel_size=2, padding=padding)
@@ -160,12 +153,10 @@ def ms_ssim(X,
     mcs = torch.stack(mcs, dim=0)
 
     if is_prod:
-        msssim_val = torch.prod((mcs[:-1]**weights[:-1].unsqueeze(1)),
-                                dim=0) * (ssim_val**weights[-1])
+        msssim_val = torch.prod((mcs[:-1]**weights[:-1].unsqueeze(1)), dim=0) * (ssim_val**weights[-1])
     else:
         weights = weights / torch.sum(weights)
-        msssim_val = torch.sum((mcs[:-1] * weights[:-1].unsqueeze(1)),
-                               dim=0) + (ssim_val * weights[-1])
+        msssim_val = torch.sum((mcs[:-1] * weights[:-1].unsqueeze(1)), dim=0) + (ssim_val * weights[-1])
 
     return msssim_val
 
@@ -175,22 +166,17 @@ class MS_SSIM(torch.nn.Module):
     r"""Multiscale structure similarity
 
     References:
-        Wang, Zhou, Eero P. Simoncelli, and Alan C. Bovik. "Multiscale structural similarity for image 
-        quality assessment." In The Thrity-Seventh Asilomar Conference on Signals, Systems & Computers, 
+        Wang, Zhou, Eero P. Simoncelli, and Alan C. Bovik. "Multiscale structural similarity for image
+        quality assessment." In The Thrity-Seventh Asilomar Conference on Signals, Systems & Computers,
         2003, vol. 2, pp. 1398-1402. Ieee, 2003.
-    
+
     Args:
         channel: Number of channel.
         downsample: Boolean, whether to downsample which mimics official SSIM matlab code.
         test_y_channel: Boolean, whether to use y channel on ycbcr which mimics official matlab code.
     """
 
-    def __init__(self,
-                 channels=3,
-                 downsample=False,
-                 test_y_channel=True,
-                 is_prod=True,
-                 color_space='yiq'):
+    def __init__(self, channels=3, downsample=False, test_y_channel=True, is_prod=True, color_space='yiq'):
         super(MS_SSIM, self).__init__()
         self.win = fspecial_gauss(11, 1.5, channels)
         self.downsample = downsample
@@ -206,43 +192,38 @@ class MS_SSIM(torch.nn.Module):
         Returns:
             Value of MS-SSIM metric in [0, 1] range.
         """
-        assert X.shape == Y.shape, f"Input and reference images should have the same shape, but got {X.shape} and {Y.shape}"
-        score = ms_ssim(X,
-                        Y,
-                        win=self.win,
-                        downsample=self.downsample,
-                        test_y_channel=self.test_y_channel,
-                        is_prod=self.is_prod,
-                        color_space=self.color_space)
+        assert X.shape == Y.shape, 'Input and reference images should have the same shape, but got'
+        f'{X.shape} and {Y.shape}'
+        score = ms_ssim(
+            X,
+            Y,
+            win=self.win,
+            downsample=self.downsample,
+            test_y_channel=self.test_y_channel,
+            is_prod=self.is_prod,
+            color_space=self.color_space)
         return score
 
 
 @ARCH_REGISTRY.register()
 class CW_SSIM(torch.nn.Module):
-    r'''Complex-Wavelet Structural SIMilarity (CW-SSIM) index. 
+    r'''Complex-Wavelet Structural SIMilarity (CW-SSIM) index.
 
     References:
-        M. P. Sampat, Z. Wang, S. Gupta, A. C. Bovik, M. K. Markey. 
-        "Complex Wavelet Structural Similarity: A New Image Similarity Index", 
+        M. P. Sampat, Z. Wang, S. Gupta, A. C. Bovik, M. K. Markey.
+        "Complex Wavelet Structural Similarity: A New Image Similarity Index",
         IEEE Transactions on Image Processing, 18(11), 2385-401, 2009.
-        
+
     Args:
         channel: Number of channel.
         test_y_channel: Boolean, whether to use y channel on ycbcr.
-        level: The number of levels to used in the complex steerable pyramid decomposition   
-        ori: The number of orientations to be used in the complex steerable pyramid decomposition     
-        guardb: How much is discarded from the four image boundaries. 
+        level: The number of levels to used in the complex steerable pyramid decomposition
+        ori: The number of orientations to be used in the complex steerable pyramid decomposition
+        guardb: How much is discarded from the four image boundaries.
         K: the constant in the CWSSIM index formula (see the above reference) default value: K=0
     '''
 
-    def __init__(self,
-                 channels=1,
-                 level=4,
-                 ori=8,
-                 guardb=0,
-                 K=0,
-                 test_y_channel=True,
-                 color_space='yiq'):
+    def __init__(self, channels=1, level=4, ori=8, guardb=0, K=0, test_y_channel=True, color_space='yiq'):
 
         super(CW_SSIM, self).__init__()
         self.channels = channels
@@ -280,10 +261,7 @@ class CW_SSIM(torch.nn.Module):
             x = to_y_channel(x, 255, self.color_space)
             y = to_y_channel(y, 255, self.color_space)
 
-        pyr = SCFpyr_PyTorch(height=self.level,
-                             nbands=self.ori,
-                             scale_factor=2,
-                             device=x.device)
+        pyr = SCFpyr_PyTorch(height=self.level, nbands=self.ori, scale_factor=2, device=x.device)
         cw_x = pyr.build(x)
         cw_y = pyr.build(y)
 
@@ -303,20 +281,11 @@ class CW_SSIM(torch.nn.Module):
             band2 = band2[:, gb:s[0] - gb, gb:s[1] - gb, :]
 
             corr = self.conj(band1, band2)
-            corr_band = self.conv2d_complex(corr,
-                                            self.win7,
-                                            groups=self.channels)
+            corr_band = self.conv2d_complex(corr, self.win7, groups=self.channels)
             varr = ((math_util.abs(band1))**2 + (math_util.abs(band2))**2).unsqueeze(1)
-            varr_band = F.conv2d(varr,
-                                 self.win7,
-                                 stride=1,
-                                 padding=0,
-                                 groups=self.channels)
-            cssim_map = (2 * math_util.abs(corr_band) + self.K) / (varr_band +
-                                                              self.K)
-            band_cssim.append(
-                (cssim_map * w.repeat(cssim_map.shape[0], 1, 1, 1)).sum(
-                    [2, 3]).mean(1))
+            varr_band = F.conv2d(varr, self.win7, stride=1, padding=0, groups=self.channels)
+            cssim_map = (2 * math_util.abs(corr_band) + self.K) / (varr_band + self.K)
+            band_cssim.append((cssim_map * w.repeat(cssim_map.shape[0], 1, 1, 1)).sum([2, 3]).mean(1))
 
         return torch.stack(band_cssim, dim=1).mean(1)
 
@@ -328,6 +297,6 @@ class CW_SSIM(torch.nn.Module):
         Returns:
             Value of CW-SSIM metric in [0, 1] range.
         """
-        assert X.shape == Y.shape, f"Input {X.shape} and reference images should have the same shape"
+        assert X.shape == Y.shape, f'Input {X.shape} and reference images should have the same shape'
         score = self.cw_ssim(X, Y, self.test_y_channel)
         return score

@@ -5,10 +5,10 @@ from pyiqa.archs.arch_util import ExactPadding2d
 
 
 def fspecial_gauss(size, sigma, channels=1):
-    r""" Function same as 'fspecial gaussian' in MATLAB 
+    r""" Function same as 'fspecial gaussian' in MATLAB
     Args:
         size (int or tuple): size of window
-        sigma (float): sigma of gaussian 
+        sigma (float): sigma of gaussian
         channels (int): channels of output
     """
     if type(size) is int:
@@ -16,18 +16,18 @@ def fspecial_gauss(size, sigma, channels=1):
     else:
         shape = size
     m, n = [(ss - 1.) / 2. for ss in shape]
-    y, x = np.ogrid[-m : m + 1, -n : n + 1]
-    h = np.exp(-(x * x + y * y) / (2. * sigma * sigma) )
+    y, x = np.ogrid[-m:m + 1, -n:n + 1]
+    h = np.exp(-(x * x + y * y) / (2. * sigma * sigma))
     h[h < np.finfo(h.dtype).eps * h.max()] = 0
     sumh = h.sum()
     if sumh != 0:
         h /= sumh
     h = torch.from_numpy(h).float().repeat(channels, 1, 1, 1)
-    return h 
+    return h
 
 
 def conv2d(input, weight, bias=None, stride=1, padding='same', dilation=1, groups=1):
-    """Matlab like conv2, weights needs to be flipped. 
+    """Matlab like conv2, weights needs to be flipped.
     Args:
         input (tensor): (b, c, h, w)
         weight (tensor): (out_ch, in_ch, kh, kw), conv weight
@@ -38,9 +38,8 @@ def conv2d(input, weight, bias=None, stride=1, padding='same', dilation=1, group
     """
     kernel_size = weight.shape[2:]
     pad_func = ExactPadding2d(kernel_size, stride, dilation, mode=padding)
-    weight = torch.flip(weight, dims=(-1, -2)) 
-    return F.conv2d(
-        pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
+    weight = torch.flip(weight, dims=(-1, -2))
+    return F.conv2d(pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
 
 
 def imfilter(input, weight, bias=None, stride=1, padding='same', dilation=1, groups=1):
@@ -54,9 +53,8 @@ def imfilter(input, weight, bias=None, stride=1, padding='same', dilation=1, gro
     """
     kernel_size = weight.shape[2:]
     pad_func = ExactPadding2d(kernel_size, stride, dilation, mode=padding)
-        
-    return F.conv2d(
-        pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
+
+    return F.conv2d(pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
 
 
 def dct(x, norm=None):
@@ -78,7 +76,7 @@ def dct(x, norm=None):
 
     Vc = torch.view_as_real(torch.fft.fft(v, dim=-1))
 
-    k = - torch.arange(N, dtype=x.dtype, device=x.device)[None, :] * np.pi / (2 * N)
+    k = -torch.arange(N, dtype=x.dtype, device=x.device)[None, :] * np.pi / (2 * N)
     W_r = torch.cos(k)
     W_i = torch.sin(k)
 
@@ -126,12 +124,12 @@ def fitweibull(x, iters=50, eps=1e-2):
 
     for t in range(iters):
         # Partial derivative df/dk
-        x_k = x ** k.repeat(1, x.shape[1])
+        x_k = x**k.repeat(1, x.shape[1])
         x_k_ln_x = x_k * ln_x
         ff = torch.sum(x_k_ln_x, dim=-1, keepdim=True)
         fg = torch.sum(x_k, dim=-1, keepdim=True)
         f1 = torch.mean(ln_x, dim=-1, keepdim=True)
-        f = ff/fg - f1 - (1.0 / k)
+        f = ff / fg - f1 - (1.0 / k)
 
         ff_prime = torch.sum(x_k_ln_x * ln_x, dim=-1, keepdim=True)
         fg_prime = ff
@@ -145,7 +143,6 @@ def fitweibull(x, iters=50, eps=1e-2):
         k_t_1 = k
 
     # Lambda (scale) can be calculated directly
-    lam = torch.mean(x ** k.repeat(1, x.shape[1]), dim=-1, keepdim=True) ** (1.0 / k)
+    lam = torch.mean(x**k.repeat(1, x.shape[1]), dim=-1, keepdim=True)**(1.0 / k)
 
     return torch.cat((k, lam), dim=1)  # Shape (SC), Scale (FE)
-

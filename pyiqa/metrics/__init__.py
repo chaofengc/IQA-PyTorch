@@ -4,8 +4,10 @@ from pyiqa.utils.registry import METRIC_REGISTRY
 from .correlation_coefficient import calculate_srcc, calculate_plcc, calculate_krcc
 
 __all__ = [
-    'calculate_srcc', 'calculate_plcc', 'calculate_krcc',
-    ]
+    'calculate_srcc',
+    'calculate_plcc',
+    'calculate_krcc',
+]
 
 
 def calculate_metric(data, opt):

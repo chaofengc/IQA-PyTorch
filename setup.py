@@ -7,15 +7,17 @@ import os
 import subprocess
 import time
 
-
 version_file = 'pyiqa/version.py'
+
 
 def readme():
     with open('README.md', encoding='utf-8') as f:
         content = f.read()
     return content
 
+
 def get_git_hash():
+
     def _minimal_ext_cmd(cmd):
         # construct minimal environment
         env = {}
@@ -29,6 +31,7 @@ def get_git_hash():
         env['LC_ALL'] = 'C'
         out = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env).communicate()[0]
         return out
+
     try:
         out = _minimal_ext_cmd(['git', 'rev-parse', 'HEAD'])
         sha = out.strip().decode('ascii')
@@ -90,14 +93,14 @@ if __name__ == '__main__':
         keywords='image quality assessment, pytorch',
         url='https://github.com/chaofengc/IQA-PyTorch',
         include_package_data=True,
-        packages=find_packages(exclude=('options', 'datasets', 'experiments', 
-                                        'results', 'tb_logger', 'wandb', 
-                                        'tests', 'ResultsCalibra', 'scripts')),
+        packages=find_packages(
+            exclude=('options', 'datasets', 'experiments', 'results', 'tb_logger', 'wandb', 'tests', 'ResultsCalibra',
+                     'scripts')),
         classifiers=[
-             # How mature is this project? Common values are
-             #   3 - Alpha
-             #   4 - Beta
-             #   5 - Production/Stable
+            # How mature is this project? Common values are
+            #   3 - Alpha
+            #   4 - Beta
+            #   5 - Production/Stable
             'Development Status :: 3 - Alpha',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: Apache Software License',

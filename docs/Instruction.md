@@ -1,6 +1,6 @@
 ## Contribution Instructions
 
-To manage our codebase, it is necessary to learn some tools. This may take some time for beginners, but will benefit the rest life. **All the following instructions assume that the reader is familiar and comfortable with linux command line.** 
+To manage our codebase, it is necessary to learn some tools. This may take some time for beginners, but will benefit the rest life. **All the following instructions assume that the reader is familiar and comfortable with linux command line.**
 
 ### Workflow
 
@@ -8,7 +8,7 @@ Steps to contribute your codes to this repository:
 1. `git clone` and `git pull` the latest codes
 1. Create your own branch `git checkout -b`. Write codes and test.
 1. `git commit` your changes with clean commit message
-1. Push your branch to github with `git push origin your_branch`. 
+1. Push your branch to github with `git push origin your_branch`.
 1. Open a pull request to merge your branch
 1. Get your PR reviewed and approved
 
@@ -26,7 +26,7 @@ Steps to contribute your codes to this repository:
 - remote ssh: link to remote server
 - debug python codes by simply adding breakpoints with mouse click
 - autoformat your code to pep8 standard
-- nested jupyter notebook 
+- nested jupyter notebook
 - markdown editing and preview
 - and so on...
 
@@ -34,10 +34,10 @@ Steps to contribute your codes to this repository:
 
 Please always use git to track your codes. Refer to the [Pro Git book](https://git-scm.com/book/en/v2) for comprehensive understanding of git. You may also get a quick start with the [git cheatsheet](https://jan-krueger.net/wordpress/wp-content/uploads/2007/09/git-cheat-sheet.pdf). Also, the chinese [Git教程](https://www.liaoxuefeng.com/wiki/896043488029600) is also available. Some suggestions:
 - Write clean commit message when you push to this repository.
-- If conflict happens when you push your code, you can pull down the repository first with `git pull origin main` and fix the merge. 
+- If conflict happens when you push your code, you can pull down the repository first with `git pull origin main` and fix the merge.
 
 
 
 #### Anaconda
 
-Please manage your local coding dependencies with [anaconda](https://www.anaconda.com/). 
+Please manage your local coding dependencies with [anaconda](https://www.anaconda.com/).

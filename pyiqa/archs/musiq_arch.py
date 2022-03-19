@@ -15,13 +15,17 @@ from .arch_util import ExactPadding2d, excact_padding_2d
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.data.multiscale_trans_util import get_multiscale_patches
 
-
 default_model_urls = {
-    'ava': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_ava_ckpt-e8d3f067.pth',
-    'koniq10k': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_koniq_ckpt-e95806b9.pth',
-    'spaq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_spaq_ckpt-358bb6af.pth',
-    'paq2piq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_paq2piq_ckpt-364c0c84.pth',
-    'imagenet_pretrain': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_imagenet_pretrain-51d9b0a5.pth',
+    'ava':
+    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_ava_ckpt-e8d3f067.pth',
+    'koniq10k':
+    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_koniq_ckpt-e95806b9.pth',
+    'spaq':
+    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_spaq_ckpt-358bb6af.pth',
+    'paq2piq':
+    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_paq2piq_ckpt-364c0c84.pth',
+    'imagenet_pretrain':
+    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_imagenet_pretrain-51d9b0a5.pth',
 }
 
 
@@ -29,6 +33,7 @@ class StdConv(nn.Conv2d):
     """
     Reference: https://github.com/joe-siyuan-qiao/WeightStandardization
     """
+
     def forward(self, x):
         # implement same padding
         x = excact_padding_2d(x, self.kernel_size, self.stride, mode='same')
@@ -39,6 +44,7 @@ class StdConv(nn.Conv2d):
 
 
 class Bottleneck(nn.Module):
+
     def __init__(self, inplanes, outplanes, stride=1):
         super().__init__()
 
@@ -63,9 +69,9 @@ class Bottleneck(nn.Module):
         if self.needs_projection:
             identity = self.gn_proj(self.conv_proj(identity))
 
-        x = self.relu(self.gn1(self.conv1(x)))        
-        x = self.relu(self.gn2(self.conv2(x)))        
-        x = self.gn3(self.conv3(x))        
+        x = self.relu(self.gn1(self.conv1(x)))
+        x = self.relu(self.gn2(self.conv2(x)))
+        x = self.gn3(self.conv3(x))
         out = self.relu(x + identity)
 
         return out
@@ -75,7 +81,7 @@ def drop_path(x, drop_prob: float = 0., training: bool = False):
     if drop_prob == 0. or not training:
         return x
     keep_prob = 1 - drop_prob
-    shape = (x.shape[0],) + (1,) * (x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
+    shape = (x.shape[0], ) + (1, ) * (x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
     random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
     random_tensor.floor_()  # binarize
     output = x.div(keep_prob) * random_tensor
@@ -85,6 +91,7 @@ def drop_path(x, drop_prob: float = 0., training: bool = False):
 class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks).
     """
+
     def __init__(self, drop_prob=None):
         super(DropPath, self).__init__()
         self.drop_prob = drop_prob
@@ -94,6 +101,7 @@ class DropPath(nn.Module):
 
 
 class Mlp(nn.Module):
+
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
         out_features = out_features or in_features
@@ -112,14 +120,14 @@ class Mlp(nn.Module):
         return x
 
 
-
 class MultiHeadAttention(nn.Module):
+
     def __init__(self, dim, num_heads=6, bias=False, attn_drop=0., out_drop=0.):
         super().__init__()
         assert dim % num_heads == 0, 'dim should be divisible by num_heads'
         self.num_heads = num_heads
         head_dim = dim // num_heads
-        self.scale = head_dim ** -0.5
+        self.scale = head_dim**-0.5
 
         self.query = nn.Linear(dim, dim, bias=bias)
         self.key = nn.Linear(dim, dim, bias=bias)
@@ -128,7 +136,7 @@ class MultiHeadAttention(nn.Module):
         self.attn_drop = nn.Dropout(attn_drop)
         self.out = nn.Linear(dim, dim)
         self.out_drop = nn.Dropout(out_drop)
-    
+
     def forward(self, x, mask=None):
         B, N, C = x.shape
         q = self.query(x)
@@ -143,12 +151,12 @@ class MultiHeadAttention(nn.Module):
         if mask is not None:
             mask_h = mask.reshape(B, 1, N, 1)
             mask_w = mask.reshape(B, 1, 1, N)
-            mask2d = mask_h * mask_w 
+            mask2d = mask_h * mask_w
             attn = attn.masked_fill(mask2d == 0, -1e3)
 
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
-        
+
         x = (attn @ v).transpose(1, 2).reshape(B, N, C)
         x = self.out(x)
         x = self.out_drop(x)
@@ -156,8 +164,16 @@ class MultiHeadAttention(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    def __init__(self, dim, mlp_dim, num_heads, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+
+    def __init__(self,
+                 dim,
+                 mlp_dim,
+                 num_heads,
+                 drop=0.,
+                 attn_drop=0.,
+                 drop_path=0.,
+                 act_layer=nn.GELU,
+                 norm_layer=nn.LayerNorm):
         super().__init__()
         self.norm1 = norm_layer(dim, eps=1e-6)
         self.attention = MultiHeadAttention(dim, num_heads, bias=True, attn_drop=attn_drop)
@@ -175,10 +191,10 @@ class TransformerBlock(nn.Module):
 
 class AddHashSpatialPositionEmbs(nn.Module):
     """Adds learnable hash-based spatial embeddings to the inputs."""
+
     def __init__(self, spatial_pos_grid_size, dim):
         super().__init__()
-        self.position_emb = nn.parameter.Parameter(torch.randn(1, 
-                    spatial_pos_grid_size * spatial_pos_grid_size, dim))
+        self.position_emb = nn.parameter.Parameter(torch.randn(1, spatial_pos_grid_size * spatial_pos_grid_size, dim))
         nn.init.normal_(self.position_emb, std=0.02)
 
     def forward(self, inputs, inputs_positions):
@@ -187,10 +203,10 @@ class AddHashSpatialPositionEmbs(nn.Module):
 
 class AddScaleEmbs(nn.Module):
     """Adds learnable scale embeddings to the inputs."""
+
     def __init__(self, num_scales, dim):
         super().__init__()
-        self.scale_emb = nn.parameter.Parameter(torch.randn( 
-                    num_scales, dim))
+        self.scale_emb = nn.parameter.Parameter(torch.randn(num_scales, dim))
         nn.init.normal_(self.scale_emb, std=0.02)
 
     def forward(self, inputs, inputs_scale_positions):
@@ -198,18 +214,20 @@ class AddScaleEmbs(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
-    def __init__(self,
-                 input_dim,
-                 mlp_dim=1152,
-                 attention_dropout_rate=0.,
-                 dropout_rate=0,
-                 num_heads=6,
-                 num_layers=14,
-                 num_scales=3,
-                 spatial_pos_grid_size=10,
-                 use_scale_emb=True,
-                 use_sinusoid_pos_emb=False,
-                ):
+
+    def __init__(
+        self,
+        input_dim,
+        mlp_dim=1152,
+        attention_dropout_rate=0.,
+        dropout_rate=0,
+        num_heads=6,
+        num_layers=14,
+        num_scales=3,
+        spatial_pos_grid_size=10,
+        use_scale_emb=True,
+        use_sinusoid_pos_emb=False,
+    ):
         super().__init__()
         self.use_scale_emb = use_scale_emb
         self.posembed_input = AddHashSpatialPositionEmbs(spatial_pos_grid_size, input_dim)
@@ -220,8 +238,9 @@ class TransformerEncoder(nn.Module):
         self.encoder_norm = nn.LayerNorm(input_dim, eps=1e-6)
 
         self.transformer = nn.ModuleDict()
-        for i in range(num_layers): 
-            self.transformer[f'encoderblock_{i}'] = TransformerBlock(input_dim, mlp_dim, num_heads, dropout_rate, attention_dropout_rate)
+        for i in range(num_layers):
+            self.transformer[f'encoderblock_{i}'] = TransformerBlock(input_dim, mlp_dim, num_heads, dropout_rate,
+                                                                     attention_dropout_rate)
 
     def forward(self, x, inputs_spatial_positions, inputs_scale_positions, inputs_masks):
         n, _, c = x.shape
@@ -236,10 +255,10 @@ class TransformerEncoder(nn.Module):
         cls_mask = torch.ones((n, 1)).to(inputs_masks)
         inputs_mask = torch.cat([cls_mask, inputs_masks], dim=1)
         x = self.dropout(x)
-        
+
         for k, m in self.transformer.items():
             x = m(x, inputs_mask)
-        x = self.encoder_norm(x) 
+        x = self.encoder_norm(x)
 
         return x
 
@@ -247,37 +266,39 @@ class TransformerEncoder(nn.Module):
 @ARCH_REGISTRY.register()
 class MUSIQ(nn.Module):
     r"""
-    
+
     Evaluation:
         - n_crops: currently only test with 1 crop evaluation
-        
+
     Reference:
-        Ke, Junjie, Qifei Wang, Yilin Wang, Peyman Milanfar, and Feng Yang. 
-        "Musiq: Multi-scale image quality transformer." In Proceedings of the 
+        Ke, Junjie, Qifei Wang, Yilin Wang, Peyman Milanfar, and Feng Yang.
+        "Musiq: Multi-scale image quality transformer." In Proceedings of the
         IEEE/CVF International Conference on Computer Vision (ICCV), pp. 5148-5157. 2021.
     """
-    def __init__(self, 
-                 patch_size=32,
-                 num_class=1,
-                 hidden_size=384,
-                 mlp_dim=1152,
-                 attention_dropout_rate=0.,
-                 dropout_rate=0,
-                 num_heads=6,
-                 num_layers=14,
-                 num_scales=3,
-                 spatial_pos_grid_size=10,
-                 use_scale_emb=True,
-                 use_sinusoid_pos_emb=False,
-                 pretrained=True,
-                 pretrained_model_path=None, 
-                 # data opts
-                 longer_side_lengths=[224, 384],
-                 max_seq_len_from_original_res=-1,
-                 ):
+
+    def __init__(
+        self,
+        patch_size=32,
+        num_class=1,
+        hidden_size=384,
+        mlp_dim=1152,
+        attention_dropout_rate=0.,
+        dropout_rate=0,
+        num_heads=6,
+        num_layers=14,
+        num_scales=3,
+        spatial_pos_grid_size=10,
+        use_scale_emb=True,
+        use_sinusoid_pos_emb=False,
+        pretrained=True,
+        pretrained_model_path=None,
+        # data opts
+        longer_side_lengths=[224, 384],
+        max_seq_len_from_original_res=-1,
+    ):
         super(MUSIQ, self).__init__()
 
-        resnet_token_dim = 64 
+        resnet_token_dim = 64
         self.patch_size = patch_size
 
         self.data_preprocess_opts = {
@@ -291,7 +312,7 @@ class MUSIQ(nn.Module):
         # set num_class to 10 if pretrained model used AVA dataset
         # if not specified pretrained dataset, use AVA for default
         if pretrained_model_path is None and pretrained:
-            url_key = 'ava' if isinstance(pretrained, bool) else pretrained 
+            url_key = 'ava' if isinstance(pretrained, bool) else pretrained
             num_class = 10 if url_key == 'ava' else num_class
             pretrained_model_path = default_model_urls[url_key]
 
@@ -304,12 +325,12 @@ class MUSIQ(nn.Module):
         )
 
         token_patch_size = patch_size // 4
-        self.block1 = Bottleneck(resnet_token_dim, resnet_token_dim*4) 
+        self.block1 = Bottleneck(resnet_token_dim, resnet_token_dim * 4)
 
-        self.embedding = nn.Linear(resnet_token_dim * 4 * token_patch_size ** 2, hidden_size)
-        self.transformer_encoder = TransformerEncoder(hidden_size, mlp_dim,
-                                    attention_dropout_rate, dropout_rate, num_heads, num_layers, 
-                                    num_scales, spatial_pos_grid_size, use_scale_emb, use_sinusoid_pos_emb)
+        self.embedding = nn.Linear(resnet_token_dim * 4 * token_patch_size**2, hidden_size)
+        self.transformer_encoder = TransformerEncoder(hidden_size, mlp_dim, attention_dropout_rate, dropout_rate,
+                                                      num_heads, num_layers, num_scales, spatial_pos_grid_size,
+                                                      use_scale_emb, use_sinusoid_pos_emb)
 
         if num_class > 1:
             self.head = nn.Sequential(
@@ -321,7 +342,7 @@ class MUSIQ(nn.Module):
 
         if pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, True)
-    
+
     def forward(self, x, return_mos=True, return_dist=False):
         if not self.training:
             # normalize inputs to [-1, 1] as the official code
@@ -345,7 +366,7 @@ class MUSIQ(nn.Module):
         x = self.conv_root(x)
         x = self.gn_root(x)
         x = self.root_pool(x)
-        x = self.block1(x) 
+        x = self.block1(x)
         # to match tensorflow channel order
         x = x.permute(0, 2, 3, 1)
         x = x.reshape(b, seq_len, -1)
@@ -354,7 +375,7 @@ class MUSIQ(nn.Module):
         q = self.head(x[:, 0])
 
         q = q.reshape(b, num_crops, -1)
-        q = q.mean(dim=1) # for multiple crops evaluation
+        q = q.mean(dim=1)  # for multiple crops evaluation
         mos = dist_to_mos(q)
 
         return_list = []

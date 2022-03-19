@@ -23,7 +23,7 @@ version.py
 *.jpg
 *.gif
 *.pth
-*.zip 
+*.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

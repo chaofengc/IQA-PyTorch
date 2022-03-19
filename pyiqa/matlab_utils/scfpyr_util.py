@@ -42,24 +42,21 @@ class SCFpyr_PyTorch(object):
 
         # Cache constants
         self.lutsize = 1024
-        self.Xcosn = np.pi * np.array(
-            range(-(2 * self.lutsize + 1), (self.lutsize + 2))) / self.lutsize
+        self.Xcosn = np.pi * np.array(range(-(2 * self.lutsize + 1), (self.lutsize + 2))) / self.lutsize
         self.alpha = (self.Xcosn + np.pi) % (2 * np.pi) - np.pi
-        self.complex_fact_construct = np.power(np.complex(0, -1),
-                                               self.nbands - 1)
-        self.complex_fact_reconstruct = np.power(np.complex(0, 1),
-                                                 self.nbands - 1)
+        self.complex_fact_construct = np.power(np.complex(0, -1), self.nbands - 1)
+        self.complex_fact_reconstruct = np.power(np.complex(0, 1), self.nbands - 1)
 
     ################################################################################
     # Construction of Steerable Pyramid
 
     def build(self, im_batch):
-        ''' Decomposes a batch of images into a complex steerable pyramid. 
-        The pyramid typically has ~4 levels and 4-8 orientations. 
-        
+        ''' Decomposes a batch of images into a complex steerable pyramid.
+        The pyramid typically has ~4 levels and 4-8 orientations.
+
         Args:
             im_batch (torch.Tensor): Batch of images of shape [N,C,H,W]
-        
+
         Returns:
             pyramid: list containing torch.Tensor objects storing the pyramid
         '''
@@ -68,16 +65,14 @@ class SCFpyr_PyTorch(object):
             self.device, im_batch.device)
         assert im_batch.dtype == torch.float32, 'Image batch must be torch.float32'
         assert im_batch.dim() == 4, 'Image batch must be of shape [N,C,H,W]'
-        assert im_batch.shape[
-            1] == 1, 'Second dimension must be 1 encoding grayscale image'
+        assert im_batch.shape[1] == 1, 'Second dimension must be 1 encoding grayscale image'
 
         im_batch = im_batch.squeeze(1)  # flatten channels dim
         height, width = im_batch.shape[1], im_batch.shape[2]
 
         # Check whether image size is sufficient for number of levels
         if self.height > int(np.floor(np.log2(min(width, height))) - 2):
-            raise RuntimeError(
-                'Cannot build {} levels, image too small.'.format(self.height))
+            raise RuntimeError('Cannot build {} levels, image too small.'.format(self.height))
 
         # Prepare a grid
         log_rad, angle = math_util.prepare_grid(height, width)
@@ -92,10 +87,8 @@ class SCFpyr_PyTorch(object):
         hi0mask = pointOp(log_rad, Yrcos, Xrcos)
 
         # Note that we expand dims to support broadcasting later
-        lo0mask = torch.from_numpy(lo0mask).float()[None, :, :,
-                                                    None].to(self.device)
-        hi0mask = torch.from_numpy(hi0mask).float()[None, :, :,
-                                                    None].to(self.device)
+        lo0mask = torch.from_numpy(lo0mask).float()[None, :, :, None].to(self.device)
+        hi0mask = torch.from_numpy(hi0mask).float()[None, :, :, None].to(self.device)
 
         # Fourier transform (2D) and shifting
         batch_dft = torch.fft.fft2(im_batch)
@@ -105,8 +98,7 @@ class SCFpyr_PyTorch(object):
         lo0dft = batch_dft * lo0mask
 
         # Start recursively building the pyramids
-        coeff = self._build_levels(lo0dft, log_rad, angle, Xrcos, Yrcos,
-                                   self.height)
+        coeff = self._build_levels(lo0dft, log_rad, angle, Xrcos, Yrcos, self.height)
 
         # High-pass
         hi0dft = batch_dft * hi0mask
@@ -135,21 +127,17 @@ class SCFpyr_PyTorch(object):
             ####################################################################
 
             himask = pointOp(log_rad, Yrcos, Xrcos)
-            himask = torch.from_numpy(himask[None, :, :,
-                                             None]).float().to(self.device)
+            himask = torch.from_numpy(himask[None, :, :, None]).float().to(self.device)
 
             order = self.nbands - 1
-            const = np.power(2, 2 * order) * np.square(
-                factorial(order)) / (self.nbands * factorial(2 * order))
-            Ycosn = 2 * np.sqrt(const) * np.power(np.cos(
-                self.Xcosn), order) * (np.abs(self.alpha) < np.pi / 2)  # [n,]
+            const = np.power(2, 2 * order) * np.square(factorial(order)) / (self.nbands * factorial(2 * order))
+            Ycosn = 2 * np.sqrt(const) * np.power(np.cos(self.Xcosn), order) * (np.abs(self.alpha) < np.pi / 2)  # [n,]
 
             # Loop through all orientation bands
             orientations = []
             for b in range(self.nbands):
 
-                anglemask = pointOp(angle, Ycosn,
-                                    self.Xcosn + np.pi * b / self.nbands)
+                anglemask = pointOp(angle, Ycosn, self.Xcosn + np.pi * b / self.nbands)
                 anglemask = anglemask[None, :, :, None]  # for broadcasting
                 anglemask = torch.from_numpy(anglemask).float().to(self.device)
 
@@ -177,20 +165,15 @@ class SCFpyr_PyTorch(object):
             dims = np.array(lodft.shape[1:3])
 
             # Both are tuples of size 2
-            low_ind_start = (np.ceil((dims + 0.5) / 2) - np.ceil((np.ceil(
-                (dims - 0.5) / 2) + 0.5) / 2)).astype(int)
-            low_ind_end = (low_ind_start + np.ceil(
-                (dims - 0.5) / 2)).astype(int)
+            low_ind_start = (np.ceil((dims + 0.5) / 2) - np.ceil((np.ceil((dims - 0.5) / 2) + 0.5) / 2)).astype(int)
+            low_ind_end = (low_ind_start + np.ceil((dims - 0.5) / 2)).astype(int)
 
             # Subsampling indices
-            log_rad = log_rad[low_ind_start[0]:low_ind_end[0],
-                              low_ind_start[1]:low_ind_end[1]]
-            angle = angle[low_ind_start[0]:low_ind_end[0],
-                          low_ind_start[1]:low_ind_end[1]]
+            log_rad = log_rad[low_ind_start[0]:low_ind_end[0], low_ind_start[1]:low_ind_end[1]]
+            angle = angle[low_ind_start[0]:low_ind_end[0], low_ind_start[1]:low_ind_end[1]]
 
             # Actual subsampling
-            lodft = lodft[:, low_ind_start[0]:low_ind_end[0],
-                          low_ind_start[1]:low_ind_end[1], :]
+            lodft = lodft[:, low_ind_start[0]:low_ind_end[0], low_ind_start[1]:low_ind_end[1], :]
 
             # Filtering
             YIrcos = np.abs(np.sqrt(1 - Yrcos**2))
@@ -205,8 +188,7 @@ class SCFpyr_PyTorch(object):
             ####################### Recursion next level #######################
             ####################################################################
 
-            coeff = self._build_levels(lodft, log_rad, angle, Xrcos, Yrcos,
-                                       height - 1)
+            coeff = self._build_levels(lodft, log_rad, angle, Xrcos, Yrcos, height - 1)
             coeff.insert(0, orientations)
 
         return coeff

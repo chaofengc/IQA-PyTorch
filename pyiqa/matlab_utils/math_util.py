@@ -14,15 +14,12 @@ import torch
 
 
 def abs(x):
-        return torch.sqrt(x[..., 0]**2 + x[..., 1]**2 + 1e-12)
+    return torch.sqrt(x[..., 0]**2 + x[..., 1]**2 + 1e-12)
+
 
 def roll_n(X, axis, n):
-    f_idx = tuple(
-        slice(None, None, None) if i != axis else slice(0, n, None)
-        for i in range(X.dim()))
-    b_idx = tuple(
-        slice(None, None, None) if i != axis else slice(n, None, None)
-        for i in range(X.dim()))
+    f_idx = tuple(slice(None, None, None) if i != axis else slice(0, n, None) for i in range(X.dim()))
+    b_idx = tuple(slice(None, None, None) if i != axis else slice(n, None, None) for i in range(X.dim()))
     front = X[f_idx]
     back = X[b_idx]
     return torch.cat([back, front], axis)
@@ -57,12 +54,8 @@ def batch_ifftshift2d(x):
 
 
 def prepare_grid(m, n):
-    x = np.linspace(-(m // 2) / (m / 2),
-                    (m // 2) / (m / 2) - (1 - m % 2) * 2 / m,
-                    num=m)
-    y = np.linspace(-(n // 2) / (n / 2),
-                    (n // 2) / (n / 2) - (1 - n % 2) * 2 / n,
-                    num=n)
+    x = np.linspace(-(m // 2) / (m / 2), (m // 2) / (m / 2) - (1 - m % 2) * 2 / m, num=m)
+    y = np.linspace(-(n // 2) / (n / 2), (n // 2) / (n / 2) - (1 - n % 2) * 2 / n, num=n)
     xv, yv = np.meshgrid(y, x)
     angle = np.arctan2(yv, xv)
     rad = np.sqrt(xv**2 + yv**2)

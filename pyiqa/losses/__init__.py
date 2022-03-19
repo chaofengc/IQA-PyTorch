@@ -2,15 +2,11 @@ from copy import deepcopy
 
 from pyiqa.utils import get_root_logger
 from pyiqa.utils.registry import LOSS_REGISTRY
-from .losses import CharbonnierLoss, L1Loss, MSELoss, WeightedTVLoss 
-                     
+from .losses import CharbonnierLoss, L1Loss, MSELoss, WeightedTVLoss
 
 from .iqa_losses import EMDLoss, PLCCLoss, NiNLoss
 
-__all__ = [
-    'L1Loss', 'MSELoss', 'CharbonnierLoss', 'WeightedTVLoss',
-    'EMDLoss', 'PLCCLoss', 'NiNLoss'
-]
+__all__ = ['L1Loss', 'MSELoss', 'CharbonnierLoss', 'WeightedTVLoss', 'EMDLoss', 'PLCCLoss', 'NiNLoss']
 
 
 def build_loss(opt):

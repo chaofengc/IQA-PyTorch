@@ -6,7 +6,6 @@ import pickle
 import csv
 import pandas as pd
 from tqdm import tqdm
-
 """
     The FLIVE dataset introduced by:
 
@@ -20,13 +19,14 @@ from tqdm import tqdm
 
     Image/patch labels are in [1], please copy the following prepare script from [2] to [1]
     because there are bugs in the script of [1]
-        
+
         https://github.com/baidut/PaQ-2-PiQ/blob/master/database_prep.ipynb
 
     Besides, the patch labels in [1] are not complete. 9 patches from EE371R are in
 
         https://github.com/baidut/PaQ-2-PiQ/tree/master/database/patches
 """
+
 
 def get_meta_info():
     patch_label_file = '../../PaQ-2-PiQ/database/labels_patch.csv'
@@ -45,7 +45,7 @@ def get_meta_info():
     test_img_list = test_label['name_image'].tolist()
 
     for i in tqdm(range(train_label.shape[0])):
-        name = train_label.loc[i]['name_image'] 
+        name = train_label.loc[i]['name_image']
         is_valid = train_label.loc[i]['is_valid']
         if is_valid:
             val_img_list.append(name)
@@ -55,8 +55,12 @@ def get_meta_info():
 
     save_meta_path = './datasets/meta_info/meta_info_FLIVEDataset.csv'
     split_info = {
-            1: {'train': [], 'val': [], 'test': []},
-            }
+        1: {
+            'train': [],
+            'val': [],
+            'test': []
+        },
+    }
 
     with open(save_meta_path, 'w') as sf:
         csvwriter = csv.writer(sf)

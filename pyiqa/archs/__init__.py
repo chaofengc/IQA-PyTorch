@@ -20,7 +20,7 @@ _arch_modules = [importlib.import_module(f'pyiqa.archs.{file_name}') for file_na
 
 
 def create_metric(metric_name, eval=True, **opt):
-    net_opts = OrderedDict() 
+    net_opts = OrderedDict()
     if metric_name in DEFAULT_CONFIGS.keys():
         # load default setting first
         default_opt = DEFAULT_CONFIGS[metric_name]['metric_opts']
@@ -29,7 +29,7 @@ def create_metric(metric_name, eval=True, **opt):
     net_opts.update(opt)
     network_type = net_opts.pop('type')
     net = ARCH_REGISTRY.get(network_type)(**net_opts)
-    net.lower_better = DEFAULT_CONFIGS[metric_name].get('lower_better', False) 
+    net.lower_better = DEFAULT_CONFIGS[metric_name].get('lower_better', False)
     if eval:
         net.eval()
     logger = get_root_logger()

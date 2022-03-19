@@ -21,19 +21,19 @@ class NIMAModel(GeneralIQAModel):
         optim_opt = train_opt['optim']
         optim_params = [
             {
-                'params': self.get_bare_model(self.net).base_model.parameters(), 
-                'lr': optim_opt.pop('lr_basemodel'), 
+                'params': self.get_bare_model(self.net).base_model.parameters(),
+                'lr': optim_opt.pop('lr_basemodel'),
             },
             {
                 'params': self.get_bare_model(self.net).classifier.parameters(),
-                'lr': optim_opt.pop('lr_classifier'), 
+                'lr': optim_opt.pop('lr_classifier'),
             },
         ]
-        
+
         optim_type = optim_opt.pop('type')
         self.optimizer = self.get_optimizer(optim_type, optim_params, **optim_opt)
         self.optimizers.append(self.optimizer)
-    
+
     def test(self):
         self.net.eval()
         with torch.no_grad():
@@ -50,7 +50,7 @@ class NIMAModel(GeneralIQAModel):
             l_mos = self.cri_mos(self.output_dist, self.gt_mos_dist)
             l_total += l_mos
             loss_dict['l_mos'] = l_mos
-        
+
         l_total.backward()
         self.optimizer.step()
 

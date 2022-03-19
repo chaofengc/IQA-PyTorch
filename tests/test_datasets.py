@@ -1,4 +1,4 @@
-from pyiqa.data import build_dataset, build_dataloader 
+from pyiqa.data import build_dataset, build_dataloader
 import torch
 from tqdm import tqdm
 
@@ -87,12 +87,13 @@ options = {
 common_opt = {
     'name': 'test',
     'augment': {
-            'resize': [224, 224]
-        },
+        'resize': [224, 224]
+    },
     'batch_size_per_gpu': 32,
     'num_worker_per_gpu': 8,
     'phase': 'train',
 }
+
 
 def test(test_dataset_name):
     print(f'========>>> Test dataset reader: {test_dataset_name}')
@@ -105,16 +106,21 @@ def test(test_dataset_name):
     for data in tqdm(dataloader):
         if 'img' in data.keys():
             img_tensor = data['img']
-            assert img_tensor.shape[1:] == torch.Size([3, 224, 224]), f'input image shape should be [3, 224, 224], but got {img_tensor.shape[1:]}'
+            assert img_tensor.shape[1:] == torch.Size(
+                [3, 224, 224]), f'input image shape should be [3, 224, 224], but got {img_tensor.shape[1:]}'
         elif 'ref_img' in data.keys():
             ref_tensor = data['ref_img']
-            assert ref_tensor.shape[1:] == torch.Size([3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
+            assert ref_tensor.shape[1:] == torch.Size(
+                [3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
         elif 'distA' in data.keys():
             ref_tensor = data['distA_img']
-            assert ref_tensor.shape[1:] == torch.Size([3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
+            assert ref_tensor.shape[1:] == torch.Size(
+                [3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
         elif 'distB' in data.keys():
             ref_tensor = data['distB_img']
-            assert ref_tensor.shape[1:] == torch.Size([3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
+            assert ref_tensor.shape[1:] == torch.Size(
+                [3, 224, 224]), f'reference image shape should be [3, 224, 224], but got {ref_tensor.shape[1:]}'
+
 
 if __name__ == '__main__':
     test('CSIQ')

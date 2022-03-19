@@ -63,13 +63,12 @@ def cubic_contribution(x: torch.Tensor, a: float = -0.5) -> torch.Tensor:
 def gaussian_contribution(x: torch.Tensor, sigma: float = 2.0) -> torch.Tensor:
     range_3sigma = (x.abs() <= 3 * sigma + 1)
     # Normalization will be done after
-    cont = torch.exp(-x.pow(2) / (2 * sigma ** 2))
+    cont = torch.exp(-x.pow(2) / (2 * sigma**2))
     cont = cont * range_3sigma.to(dtype=x.dtype)
     return cont
 
 
-def discrete_kernel(
-        kernel: str, scale: float, antialiasing: bool = True) -> torch.Tensor:
+def discrete_kernel(kernel: str, scale: float, antialiasing: bool = True) -> torch.Tensor:
     '''
     For downsampling with integer scale only.
     '''
@@ -99,11 +98,7 @@ def discrete_kernel(
     return k
 
 
-def reflect_padding(
-        x: torch.Tensor,
-        dim: int,
-        pad_pre: int,
-        pad_post: int) -> torch.Tensor:
+def reflect_padding(x: torch.Tensor, dim: int, pad_pre: int, pad_post: int) -> torch.Tensor:
     '''
     Apply reflect padding to the given Tensor.
     Note that it is slightly different from the PyTorch functional.pad,
@@ -133,12 +128,11 @@ def reflect_padding(
     return padding_buffer
 
 
-def padding(
-        x: torch.Tensor,
-        dim: int,
-        pad_pre: int,
-        pad_post: int,
-        padding_type: typing.Optional[str] = 'reflect') -> torch.Tensor:
+def padding(x: torch.Tensor,
+            dim: int,
+            pad_pre: int,
+            pad_post: int,
+            padding_type: typing.Optional[str] = 'reflect') -> torch.Tensor:
     if padding_type is None:
         return x
     elif padding_type == 'reflect':
@@ -149,10 +143,7 @@ def padding(
     return x_pad
 
 
-def get_padding(
-        base: torch.Tensor,
-        kernel_size: int,
-        x_size: int) -> typing.Tuple[int, int, torch.Tensor]:
+def get_padding(base: torch.Tensor, kernel_size: int, x_size: int) -> typing.Tuple[int, int, torch.Tensor]:
     base = base.long()
     r_min = base.min()
     r_max = base.max() + kernel_size - 1
@@ -173,12 +164,11 @@ def get_padding(
     return pad_pre, pad_post, base
 
 
-def get_weight(
-        dist: torch.Tensor,
-        kernel_size: int,
-        kernel: str = 'cubic',
-        sigma: float = 2.0,
-        antialiasing_factor: float = 1) -> torch.Tensor:
+def get_weight(dist: torch.Tensor,
+               kernel_size: int,
+               kernel: str = 'cubic',
+               sigma: float = 2.0,
+               antialiasing_factor: float = 1) -> torch.Tensor:
     buffer_pos = dist.new_zeros(kernel_size, len(dist))
     for idx, buffer_sub in enumerate(buffer_pos):
         buffer_sub.copy_(dist - idx)
@@ -267,15 +257,14 @@ def cast_output(x: torch.Tensor, dtype: _D) -> torch.Tensor:
     return x
 
 
-def resize_1d(
-        x: torch.Tensor,
-        dim: int,
-        size: int,
-        scale: float,
-        kernel: str = 'cubic',
-        sigma: float = 2.0,
-        padding_type: str = 'reflect',
-        antialiasing: bool = True) -> torch.Tensor:
+def resize_1d(x: torch.Tensor,
+              dim: int,
+              size: int,
+              scale: float,
+              kernel: str = 'cubic',
+              sigma: float = 2.0,
+              padding_type: str = 'reflect',
+              antialiasing: bool = True) -> torch.Tensor:
     '''
     Args:
         x (torch.Tensor): A torch.Tensor of dimension (B x C, 1, H, W).
@@ -307,7 +296,11 @@ def resize_1d(
     # so we do not calculate gradients here.
     with torch.no_grad():
         pos = torch.linspace(
-            0, size - 1, steps=size, dtype=x.dtype, device=x.device,
+            0,
+            size - 1,
+            steps=size,
+            dtype=x.dtype,
+            device=x.device,
         )
         pos = (pos + 0.5) / scale - 0.5
         base = pos.floor() - (kernel_size // 2) + 1
@@ -338,11 +331,7 @@ def resize_1d(
     return x
 
 
-def downsampling_2d(
-        x: torch.Tensor,
-        k: torch.Tensor,
-        scale: int,
-        padding_type: str = 'reflect') -> torch.Tensor:
+def downsampling_2d(x: torch.Tensor, k: torch.Tensor, scale: int, padding_type: str = 'reflect') -> torch.Tensor:
     c = x.size(1)
     k_h = k.size(-2)
     k_w = k.size(-1)
@@ -362,15 +351,14 @@ def downsampling_2d(
     return y
 
 
-def imresize(
-        x: torch.Tensor,
-        scale: typing.Optional[float] = None,
-        sizes: typing.Optional[typing.Tuple[int, int]] = None,
-        kernel: typing.Union[str, torch.Tensor] = 'cubic',
-        sigma: float = 2,
-        rotation_degree: float = 0,
-        padding_type: str = 'reflect',
-        antialiasing: bool = True) -> torch.Tensor:
+def imresize(x: torch.Tensor,
+             scale: typing.Optional[float] = None,
+             sizes: typing.Optional[typing.Tuple[int, int]] = None,
+             kernel: typing.Union[str, torch.Tensor] = 'cubic',
+             sigma: float = 2,
+             rotation_degree: float = 0,
+             padding_type: str = 'reflect',
+             antialiasing: bool = True) -> torch.Tensor:
     """
     Args:
         x (torch.Tensor):
@@ -414,10 +402,24 @@ def imresize(
 
     if isinstance(kernel, str) and sizes is not None:
         # Core resizing module
-        x = resize_1d(x, -2, size=sizes[0], scale=scales[0], kernel=kernel, sigma=sigma, padding_type=padding_type,
-                      antialiasing=antialiasing)
-        x = resize_1d(x, -1, size=sizes[1], scale=scales[1], kernel=kernel, sigma=sigma, padding_type=padding_type,
-                      antialiasing=antialiasing)
+        x = resize_1d(
+            x,
+            -2,
+            size=sizes[0],
+            scale=scales[0],
+            kernel=kernel,
+            sigma=sigma,
+            padding_type=padding_type,
+            antialiasing=antialiasing)
+        x = resize_1d(
+            x,
+            -1,
+            size=sizes[1],
+            scale=scales[1],
+            kernel=kernel,
+            sigma=sigma,
+            padding_type=padding_type,
+            antialiasing=antialiasing)
     elif isinstance(kernel, torch.Tensor) and scale is not None:
         x = downsampling_2d(x, kernel, scale=int(1 / scale))
 

@@ -142,5 +142,3 @@ class WeightedTVLoss(L1Loss):
         loss = x_diff + y_diff
 
         return loss
-
-

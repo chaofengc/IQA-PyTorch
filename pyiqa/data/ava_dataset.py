@@ -12,18 +12,19 @@ from pyiqa.data.transforms import transform_mapping
 from pyiqa.utils.registry import DATASET_REGISTRY
 import pandas as pd
 
-# avoid possible image read error in AVA dataset 
+# avoid possible image read error in AVA dataset
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 
 @DATASET_REGISTRY.register()
 class AVADataset(data.Dataset):
     """AVA dataset, proposed by
 
-    Murray, Naila, Luca Marchesotti, and Florent Perronnin. 
-    "AVA: A large-scale database for aesthetic visual analysis." 
+    Murray, Naila, Luca Marchesotti, and Florent Perronnin.
+    "AVA: A large-scale database for aesthetic visual analysis."
     In 2012 IEEE conference on computer vision and pattern recognition (CVPR), pp. 2408-2415. IEEE, 2012.
-    
+
     Args:
         opt (dict): Config for train datasets with the following keys:
             phase (str): 'train' or 'val'.
@@ -44,7 +45,7 @@ class AVADataset(data.Dataset):
             with open(opt['split_file'], 'rb') as f:
                 split_dict = pickle.load(f)
                 splits = split_dict[split_index][opt['phase']]
-            self.paths_mos = [self.paths_mos[i] for i in splits] 
+            self.paths_mos = [self.paths_mos[i] for i in splits]
 
         transform_list = []
         augment_dict = opt.get('augment', None)
@@ -54,9 +55,9 @@ class AVADataset(data.Dataset):
 
         img_range = opt.get('img_range', 1.0)
         transform_list += [
-                tf.ToTensor(),
-                tf.Lambda(lambda x: x * img_range),
-                ]
+            tf.ToTensor(),
+            tf.Lambda(lambda x: x * img_range),
+        ]
         self.trans = tf.Compose(transform_list)
 
     def __getitem__(self, index):
@@ -69,7 +70,7 @@ class AVADataset(data.Dataset):
         img_tensor = self.trans(img_pil)
         mos_label_tensor = torch.Tensor([mos_label])
         mos_dist_tensor = torch.Tensor(mos_dist) / sum(mos_dist)
-        
+
         return {'img': img_tensor, 'mos_label': mos_label_tensor, 'mos_dist': mos_dist_tensor, 'img_path': img_path}
 
     def __len__(self):

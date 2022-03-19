@@ -1,15 +1,15 @@
 # general settings
-# name: debug_DBCNN_LIVEC 
+# name: debug_DBCNN_LIVEC
 name: debug001_HyperNet_KonIQ10k
 name: 004_HyperNet_KonIQ10k
-model_type: HyperNetModel 
+model_type: HyperNetModel
 num_gpu: 1  # set num_gpu: 0 for cpu mode
-manual_seed: 123 
+manual_seed: 123
 
 # dataset and data loader settings
 datasets:
   train:
-    name: koniq10k 
+    name: koniq10k
     type: GeneralNRDataset
     dataroot_target: ./datasets/koniq10k/512x384
     meta_info_file: ./datasets/meta_info/meta_info_KonIQ10kDataset.csv
@@ -17,29 +17,29 @@ datasets:
 
     augment:
       hflip: true
-      random_crop: 224 
+      random_crop: 224
     img_range: 1
-    
+
     # data loader
     use_shuffle: true
     num_worker_per_gpu: 4
-    batch_size_per_gpu: 96 
-    dataset_enlarge_ratio: 1 
+    batch_size_per_gpu: 96
+    dataset_enlarge_ratio: 1
     prefetch_mode: ~
 
   val:
-    name: koniq10k 
+    name: koniq10k
     type: GeneralNRDataset
     dataroot_target: ./datasets/koniq10k/512x384
     meta_info_file: ./datasets/meta_info/meta_info_KonIQ10kDataset.csv
     split_file: ./datasets/meta_info/koniq10k_official.pkl
 
     num_worker_per_gpu: 4
-    batch_size_per_gpu: 8 
-    
+    batch_size_per_gpu: 8
+
 # network structures
 network:
-  type: HyperNet 
+  type: HyperNet
 
 # path
 path:
@@ -50,40 +50,40 @@ path:
 # training settings
 train:
   optim:
-    type: Adam 
+    type: Adam
     lr_basemodel: !!float 2e-5
     lr_hypermodule: !!float 2e-4
-    lr: !!float 2e-4 
-    weight_decay: !!float 5e-4 
+    lr: !!float 2e-4
+    weight_decay: !!float 5e-4
 
   scheduler:
     type: MultiStepLR
     milestones: [400, 800]
-    gamma: 0.1 
+    gamma: 0.1
 
   total_iter: 4000 # 883 iter/epoch, train/finetune for about 30 epochs
   warmup_iter: -1  # no warm up
-  
+
   # losses
   mos_loss_opt:
-    type: PLCCLoss 
+    type: PLCCLoss
     loss_weight: !!float 1.0
 
 # validation settings
 val:
-  val_freq: !!float 100 
+  val_freq: !!float 100
   save_img: false
   pbar: true
 
-  key_metric: srcc # if this metric improve, update all metrics. If not specified, each best metric results will be updated separately 
+  key_metric: srcc # if this metric improve, update all metrics. If not specified, each best metric results will be updated separately
   metrics:
-    srcc: 
+    srcc:
       type: calculate_srcc
 
-    plcc: 
+    plcc:
       type: calculate_plcc
 
-    krcc: 
+    krcc:
       type: calculate_krcc
 
 # logging settings

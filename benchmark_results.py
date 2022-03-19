@@ -10,8 +10,9 @@ from pyiqa.metrics import calculate_plcc, calculate_srcc, calculate_krcc
 from tqdm import tqdm
 import torch
 
+
 def main():
-    """benchmark test demo for pyiqa. 
+    """benchmark test demo for pyiqa.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', type=str, nargs='+', default=None, help='metric name list.')
@@ -19,7 +20,7 @@ def main():
     parser.add_argument('--metric_opt', type=str, default=None, help='Path to custom metric option YAML file.')
     parser.add_argument('--data_opt', type=str, default=None, help='Path to custom data option YAML file.')
     parser.add_argument('--save_result_path', type=str, default=None, help='file to save results.')
-    parser.add_argument('--use_gpu', action="store_true", default=False, help='use gpu or not')
+    parser.add_argument('--use_gpu', action='store_true', default=False, help='use gpu or not')
     args = parser.parse_args()
 
     metrics_to_test = []
@@ -28,14 +29,14 @@ def main():
         metrics_to_test += args.m
     if args.d is not None:
         datasets_to_test += args.d
-    
+
     if args.use_gpu:
         num_gpu = 1
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     else:
         num_gpu = 0
         device = torch.device('cpu')
-    
+
     # ========== get metric and dataset options ===========
     # load default options first
     all_metric_opts = DEFAULT_CONFIGS
@@ -43,31 +44,31 @@ def main():
         all_data_opts = yaml.load(f, Loader=ordered_yaml()[0])
 
     # load custom options to test
-    if args.metric_opt is not None: 
+    if args.metric_opt is not None:
         with open(args.metric_opt, mode='r') as f:
             custom_metric_opt = yaml.load(f, Loader=ordered_yaml()[0])
         all_metric_opts.update(custom_metric_opt)
-        metrics_to_test += list(custom_metric_opt.keys()) 
-    
-    if args.data_opt is not None: 
+        metrics_to_test += list(custom_metric_opt.keys())
+
+    if args.data_opt is not None:
         with open(args.data_opt, mode='r') as f:
             custom_data_opt = yaml.load(f, Loader=ordered_yaml()[0])
         all_data_opts.update(custom_data_opt)
         datasets_to_test += list(custom_data_opt.keys())
 
     # =====================================================
-    
-    save_result_path = args.save_result_path 
+
+    save_result_path = args.save_result_path
 
     if save_result_path is not None:
         csv_file = open(save_result_path, 'w')
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['Metric name'] + [name +'(PLCC/SRCC/KRCC)' for name in datasets_to_test]) 
+        csv_writer.writerow(['Metric name'] + [name + '(PLCC/SRCC/KRCC)' for name in datasets_to_test])
 
     for metric_name in metrics_to_test:
-        # if metric_name exist in default config, load default config first  
+        # if metric_name exist in default config, load default config first
         metric_opts = all_metric_opts[metric_name]['metric_opts']
-        metric_mode = all_metric_opts[metric_name]['metric_mode'] 
+        metric_mode = all_metric_opts[metric_name]['metric_mode']
         lower_better = all_metric_opts[metric_name].get('lower_better', False)
         iqa_model = InferenceModel(metric_name, metric_mode, **metric_opts)
         iqa_model.net.to(device)
@@ -76,12 +77,12 @@ def main():
         for dataset_name in datasets_to_test:
             data_opts = all_data_opts[dataset_name]
             data_opts.update({
-                    'num_worker_per_gpu': 8,
-                    'prefetch_mode': 'cpu',
-                    'num_prefetch_queue': 8,
+                'num_worker_per_gpu': 8,
+                'prefetch_mode': 'cpu',
+                'num_prefetch_queue': 8,
             })
             if 'phase' not in data_opts:
-                data_opts['phase'] = 'test' 
+                data_opts['phase'] = 'test'
             dataset = build_dataset(data_opts)
             dataloader = build_dataloader(dataset, data_opts, num_gpu=num_gpu)
             gt_labels = []
@@ -95,7 +96,7 @@ def main():
                     ref_img = data['ref_img'].to(device)
                     iqa_score = iqa_model.test(tar_img, ref_img)
                 else:
-                    tar_img = data['img'].to(device) 
+                    tar_img = data['img'].to(device)
                     iqa_score = iqa_model.test(tar_img)
                 result_scores.append(iqa_score)
                 pbar.update(1)
@@ -110,12 +111,14 @@ def main():
             srcc_score = round(calculate_srcc(results_scores_for_cc, gt_labels), 4)
             krcc_score = round(calculate_krcc(results_scores_for_cc, gt_labels), 4)
             results_row.append(f'{plcc_score}/{srcc_score}/{krcc_score}')
-            print(f'Results of *{metric_name}* on ({dataset_name}) is [PLCC|SRCC|KRCC]: {plcc_score}, {srcc_score}, {krcc_score}')
+            print(
+                f'Results of *{metric_name}* on ({dataset_name}) is [PLCC|SRCC|KRCC]: {plcc_score}, {srcc_score}, {krcc_score}'
+            )
         if save_result_path is not None:
             csv_writer.writerow(results_row)
     if save_result_path is not None:
         csv_file.close()
-        
+
+
 if __name__ == '__main__':
     main()
-

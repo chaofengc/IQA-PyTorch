@@ -7,6 +7,7 @@ import csv
 import pandas as pd
 from tqdm import tqdm
 
+
 def get_meta_info():
 
     root_path = '../datasets/PieAPP_dataset_CVPR_2018/'
@@ -20,12 +21,19 @@ def get_meta_info():
 
     save_meta_path = './datasets/meta_info/meta_info_PieAPPDataset.csv'
     split_info = {
-            1: {'train': [], 'val': [], 'test': []},
-            }
+        1: {
+            'train': [],
+            'val': [],
+            'test': []
+        },
+    }
 
     with open(save_meta_path, 'w') as sf:
         csvwriter = csv.writer(sf)
-        head = ['ref_img_path', 'dist_imgA_path', 'dist_imgB_path', 'raw preference for A', 'processed preference for A', 'per_img score for dist_imgB', 'split']
+        head = [
+            'ref_img_path', 'dist_imgA_path', 'dist_imgB_path', 'raw preference for A', 'processed preference for A',
+            'per_img score for dist_imgB', 'split'
+        ]
         csvwriter.writerow(head)
 
         count = 0
@@ -39,11 +47,11 @@ def get_meta_info():
         for sp_str, sp_ls, sp_flag in zip(splits_str, split_lists, split_flags):
             for ref_name in sp_ls:
                 ref_raw_name = ref_name.split('.')[0]
-                label_path = os.path.join(root_path, 'labels', sp_str, f'{ref_raw_name}_pairwise_labels.csv') 
+                label_path = os.path.join(root_path, 'labels', sp_str, f'{ref_raw_name}_pairwise_labels.csv')
                 name_label = pd.read_csv(label_path)
 
                 if sp_str == 'test':
-                    test_file_label = os.path.join(root_path, 'labels', sp_str, f'{ref_raw_name}_per_image_score.csv') 
+                    test_file_label = os.path.join(root_path, 'labels', sp_str, f'{ref_raw_name}_per_image_score.csv')
                     test_label = pd.read_csv(test_file_label)
 
                 for i in range(name_label.shape[0]):
@@ -68,12 +76,11 @@ def get_meta_info():
                     csvwriter.writerow(new_row)
                     split_info[1][sp_str].append(count)
                     count += 1
-    
+
     save_split_path = './datasets/meta_info/pieapp_official.pkl'
     with open(save_split_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 
+
 if __name__ == '__main__':
     get_meta_info()
-
-

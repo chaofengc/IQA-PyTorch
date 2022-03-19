@@ -8,11 +8,21 @@ import pandas as pd
 from tqdm import tqdm
 from glob import glob
 
-
 IMG_EXTENSIONS = [
-    '.jpg', '.JPG', '.jpeg', '.JPEG',
-    '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP',
-    '.tif', '.TIF', '.tiff', '.TIFF',
+    '.jpg',
+    '.JPG',
+    '.jpeg',
+    '.JPEG',
+    '.png',
+    '.PNG',
+    '.ppm',
+    '.PPM',
+    '.bmp',
+    '.BMP',
+    '.tif',
+    '.TIF',
+    '.tiff',
+    '.TIFF',
 ]
 
 
@@ -20,7 +30,7 @@ def is_image_file(filename):
     return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
 
 
-def make_dataset(dir, max_dataset_size=float("inf")):
+def make_dataset(dir, max_dataset_size=float('inf')):
     images = []
     assert os.path.isdir(dir), '%s is not a valid directory' % dir
 
@@ -56,8 +66,12 @@ def get_meta_info():
 
     save_meta_path = './datasets/meta_info/meta_info_BAPPSDataset.csv'
     split_info = {
-            1: {'train': [], 'val': [], 'test': []},
-            }
+        1: {
+            'train': [],
+            'val': [],
+            'test': []
+        },
+    }
 
     with open(save_meta_path, 'w') as sf:
         csvwriter = csv.writer(sf)
@@ -65,7 +79,8 @@ def get_meta_info():
         csvwriter.writerow(head)
 
         count = 0
-        for ref_path, p0_path, p1_path, jd_path in tqdm(zip(ref_path_list, p0_path_list, p1_path_list, judge_path_list), total=len(ref_path_list)):
+        for ref_path, p0_path, p1_path, jd_path in tqdm(
+                zip(ref_path_list, p0_path_list, p1_path_list, judge_path_list), total=len(ref_path_list)):
             ref_path = ref_path.split('dataset/')[-1]
             p0_path = p0_path.split('dataset/')[-1]
             p1_path = p1_path.split('dataset/')[-1]
@@ -78,12 +93,13 @@ def get_meta_info():
             elif 'val' in ref_path:
                 split = 1
                 split_info[1]['val'].append(count)
-            
+
             row = [ref_path, p0_path, p1_path, jd_label, split]
             csvwriter.writerow(row)
             count += 1
 
-        for p0_path, p1_path, jd_path in tqdm(zip(jnd_p0_path_list, jnd_p1_path_list, jnd_judge_path_list), total=len(p0_path)):
+        for p0_path, p1_path, jd_path in tqdm(
+                zip(jnd_p0_path_list, jnd_p1_path_list, jnd_judge_path_list), total=len(p0_path)):
             p0_path = p0_path.split('dataset/')[-1]
             p1_path = p1_path.split('dataset/')[-1]
 
@@ -99,12 +115,11 @@ def get_meta_info():
             row = ['jnd', p0_path, p1_path, jd_label, split]
             csvwriter.writerow(row)
             count += 1
-            
+
     save_split_path = './datasets/meta_info/bapps_official.pkl'
     with open(save_split_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 
+
 if __name__ == '__main__':
     get_meta_info()
-
-

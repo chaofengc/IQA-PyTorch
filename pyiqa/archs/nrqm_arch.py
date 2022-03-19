@@ -1,8 +1,8 @@
-r"""NRQM Metric, proposed in 
+r"""NRQM Metric, proposed in
 
-Chao Ma, Chih-Yuan Yang, Xiaokang Yang, Ming-Hsuan Yang 
+Chao Ma, Chih-Yuan Yang, Xiaokang Yang, Ming-Hsuan Yang
 "Learning a No-Reference Quality Metric for Single-Image Super-Resolution"
-Computer Vision and Image Understanding (CVIU), 2017 
+Computer Vision and Image Understanding (CVIU), 2017
 
 Matlab reference: https://github.com/chaoma99/sr-metric
 This PyTorch implementation by: Chaofeng Chen (https://github.com/chaofengc)
@@ -20,13 +20,10 @@ from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.matlab_utils import imresize, fspecial_gauss, SCFpyr_PyTorch, dct2d
 from pyiqa.archs.func_util import extract_2d_patches
 from pyiqa.archs.ssim_arch import SSIM
-from pyiqa.archs.arch_util import ExactPadding2d 
+from pyiqa.archs.arch_util import ExactPadding2d
 from pyiqa.archs.niqe_arch import NIQE
 
-
-default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NRQM_model.mat'
-}
+default_model_urls = {'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NRQM_model.mat'}
 
 
 def im2col(x, kernel):
@@ -34,7 +31,7 @@ def im2col(x, kernel):
 
     Args:
         x (Tensor): shape (b, c, h, w)
-        kernel (int): square kernel size 
+        kernel (int): square kernel size
     Return:
         flatten patch (Tensor): (b, h * w / kernel **2, kernel * kernel)
     """
@@ -53,8 +50,7 @@ def im2col(x, kernel):
     return patches
 
 
-def get_guass_pyramid(x: Tensor,
-                      scale: int = 2):
+def get_guass_pyramid(x: Tensor, scale: int = 2):
     r"""Get gaussian pyramid images with gaussian kernel.
     """
     pyr = [x]
@@ -84,13 +80,12 @@ def gamma_gen_gauss(x: Tensor):
     x = x.reshape(-1, x.shape[-1])
     eps = 1e-7
     gamma = torch.arange(0.03, 10 + 0.001, 0.001).to(x)
-    r_table = (torch.lgamma(1. / gamma) + torch.lgamma(3. / gamma) -
-               2 * torch.lgamma(2. / gamma)).exp()
+    r_table = (torch.lgamma(1. / gamma) + torch.lgamma(3. / gamma) - 2 * torch.lgamma(2. / gamma)).exp()
     r_table = r_table.unsqueeze(0)
 
     mean = x.mean(dim=-1, keepdim=True)
     var = x.var(dim=-1, keepdim=True, unbiased=True)
-    mean_abs = (x - mean).abs().mean(dim=-1, keepdim=True) ** 2
+    mean_abs = (x - mean).abs().mean(dim=-1, keepdim=True)**2
 
     rho = var / (mean_abs + eps)
 
@@ -130,7 +125,8 @@ def oriented_dct_rho(dct_img_block: torch.Tensor):
         dct_img_block[..., 1, 2:],
         dct_img_block[..., 2, 4:],
         dct_img_block[..., 3, 5:],
-    ], dim=-1).squeeze(-2)
+    ],
+                      dim=-1).squeeze(-2)
     g1 = get_var_gen_gauss(feat1, eps)
 
     # oriented 2
@@ -141,7 +137,8 @@ def oriented_dct_rho(dct_img_block: torch.Tensor):
         dct_img_block[..., 4, 3:],
         dct_img_block[..., 5, 4:],
         dct_img_block[..., 6, 4:],
-    ], dim=-1).squeeze(-2)
+    ],
+                      dim=-1).squeeze(-2)
     g2 = get_var_gen_gauss(feat2, eps)
 
     # oriented 3
@@ -150,7 +147,8 @@ def oriented_dct_rho(dct_img_block: torch.Tensor):
         dct_img_block[..., 2:, 1],
         dct_img_block[..., 4:, 2],
         dct_img_block[..., 5:, 3],
-    ], dim=-1).squeeze(-2)
+    ],
+                      dim=-1).squeeze(-2)
     g3 = get_var_gen_gauss(feat3, eps)
 
     rho = torch.stack([g1, g2, g3], dim=-1).var(dim=-1)
@@ -167,7 +165,7 @@ def block_dct(img: Tensor):
     features = []
     # general gaussian distribution features
     gamma_L1 = gamma_dct(dct_img_blocks)
-    p10_gamma_L1 = gamma_L1[:, :math.ceil(0.1 * gamma_L1.shape[-1])+1].mean(dim=-1)
+    p10_gamma_L1 = gamma_L1[:, :math.ceil(0.1 * gamma_L1.shape[-1]) + 1].mean(dim=-1)
     p100_gamma_L1 = gamma_L1.mean(dim=-1)
     features += [p10_gamma_L1, p100_gamma_L1]
 
@@ -198,7 +196,7 @@ def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=3):
             idx = si * num_bands + bi
             current_band = pyr[idx]
 
-            N = blksz ** 2
+            N = blksz**2
 
             # 3x3 window pixels
             tmp = F.unfold(current_band.unsqueeze(1), 3, stride=1)
@@ -302,7 +300,7 @@ def tree_regression(feat, ldau, rdau, threshold_value, pred_value, best_attri):
 
 
 def random_forest_regression(feat, ldau, rdau, threshold_value, pred_value, best_attri):
-    r"""Simple random forest regression. 
+    r"""Simple random forest regression.
 
     Note: currently, this is non-differentiable and only support CPU.
     """
@@ -312,31 +310,29 @@ def random_forest_regression(feat, ldau, rdau, threshold_value, pred_value, best
 
     pred = []
     for i in range(b):
-        tmp_feat = feat[i] 
+        tmp_feat = feat[i]
         tmp_pred = []
         for i in range(tree_num):
-            tmp_result = tree_regression(
-                tmp_feat, ldau[:, i], rdau[:, i], threshold_value[:, i],
-                pred_value[:, i], best_attri[:, i])
+            tmp_result = tree_regression(tmp_feat, ldau[:, i], rdau[:, i], threshold_value[:, i], pred_value[:, i],
+                                         best_attri[:, i])
             tmp_pred.append(tmp_result)
         pred.append(tmp_pred)
     pred = torch.Tensor(pred)
     return pred.mean(dim=1, keepdim=True)
 
 
-def nrqm(img: Tensor,
-         linear_param,
-         rf_param,
-         ) -> Tensor:
+def nrqm(
+    img: Tensor,
+    linear_param,
+    rf_param,
+) -> Tensor:
     """Calculate NRQM
     Args:
         img (Tensor): Input image.
         linear_param (np.array): (4, 1) linear regression params
         rf_param: params of 3 random forest for 3 kinds of features
     """
-    assert img.ndim == 4, (
-        'Input image must be a gray or Y (of YCbCr) image with shape (b, c, h, w).'
-    )
+    assert img.ndim == 4, ('Input image must be a gray or Y (of YCbCr) image with shape (b, c, h, w).')
 
     # crop image
     b, c, h, w = img.shape
@@ -360,7 +356,7 @@ def nrqm(img: Tensor,
     f3 = torch.cat(f3, dim=1)
 
     # Random forest regression. Currently not differentiable and only support CPU
-    preds = torch.ones(b, 1) 
+    preds = torch.ones(b, 1)
     for feat, rf in zip([f1, f2, f3], rf_param):
         tmp_pred = random_forest_regression(feat, *rf)
         preds = torch.cat((preds, tmp_pred), dim=1)
@@ -375,7 +371,7 @@ def calculate_nrqm(img: torch.Tensor,
                    pretrained_model_path: str = None,
                    color_space: str = 'yiq',
                    **kwargs) -> torch.Tensor:
-    """Calculate NRQM 
+    """Calculate NRQM
     Args:
         img (Tensor): Input image whose quality needs to be computed.
         crop_border (int): Cropped pixels in each edge of an image. These
@@ -412,10 +408,10 @@ def calculate_nrqm(img: torch.Tensor,
 
 @ARCH_REGISTRY.register()
 class NRQM(torch.nn.Module):
-    r""" NRQM metric 
+    r""" NRQM metric
 
-    Ma, Chao, Chih-Yuan Yang, Xiaokang Yang, and Ming-Hsuan Yang. 
-    "Learning a no-reference quality metric for single-image super-resolution." 
+    Ma, Chao, Chih-Yuan Yang, Xiaokang Yang, and Ming-Hsuan Yang.
+    "Learning a no-reference quality metric for single-image super-resolution."
     Computer Vision and Image Understanding 158 (2017): 1-16.
 
     Args:
@@ -449,17 +445,16 @@ class NRQM(torch.nn.Module):
         Returns:
             Value of nrqm metric.
         """
-        score = calculate_nrqm(X, self.crop_border, self.test_y_channel,
-                               self.pretrained_model_path, self.color_space)
+        score = calculate_nrqm(X, self.crop_border, self.test_y_channel, self.pretrained_model_path, self.color_space)
         return score
 
 
 @ARCH_REGISTRY.register()
 class PI(torch.nn.Module):
-    r""" Perceptual Index (PI), introduced by 
+    r""" Perceptual Index (PI), introduced by
 
-    Blau, Yochai, Roey Mechrez, Radu Timofte, Tomer Michaeli, and Lihi Zelnik-Manor. 
-    "The 2018 pirm challenge on perceptual image super-resolution." 
+    Blau, Yochai, Roey Mechrez, Radu Timofte, Tomer Michaeli, and Lihi Zelnik-Manor.
+    "The 2018 pirm challenge on perceptual image super-resolution."
     In Proceedings of the European Conference on Computer Vision (ECCV) Workshops, pp. 0-0. 2018.
     Ref url: https://github.com/roimehrez/PIRM2018
 
@@ -474,7 +469,7 @@ class PI(torch.nn.Module):
         super(PI, self).__init__()
         self.nrqm = NRQM(crop_border=crop_border, color_space=color_space)
         self.niqe = NIQE(crop_border=crop_border, color_space=color_space)
-        
+
     def forward(self, X: Tensor) -> Tensor:
         r"""Computation of PI metric.
         Args:

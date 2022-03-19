@@ -52,8 +52,8 @@ def vsi(x: torch.Tensor,
         Index of similarity between two images. Usually in [0, 1] range.
 
     References:
-        L. Zhang, Y. Shen and H. Li, "VSI: A Visual Saliency-Induced Index for Perceptual 
-        Image Quality Assessment," IEEE Transactions on Image Processing, vol. 23, no. 10, 
+        L. Zhang, Y. Shen and H. Li, "VSI: A Visual Saliency-Induced Index for Perceptual
+        Image Quality Assessment," IEEE Transactions on Image Processing, vol. 23, no. 10,
         pp. 4270-4281, Oct. 2014, doi: 10.1109/TIP.2014.2346028
         https://ieeexplore.ieee.org/document/6873260
 
@@ -64,27 +64,16 @@ def vsi(x: torch.Tensor,
     if x.size(1) == 1:
         x = x.repeat(1, 3, 1, 1)
         y = y.repeat(1, 3, 1, 1)
-        warnings.warn(
-            'The original VSI supports only RGB images. The input images were converted to RGB by copying '
-            'the grey channel 3 times.')
+        warnings.warn('The original VSI supports only RGB images. The input images were converted to RGB by copying '
+                      'the grey channel 3 times.')
 
     # Scale to [0, 255] range to match scale of constant
     x = x * 255. / data_range
     y = y * 255. / data_range
 
-    vs_x = sdsp(x,
-                data_range=255,
-                omega_0=omega_0,
-                sigma_f=sigma_f,
-                sigma_d=sigma_d,
-                sigma_c=sigma_c)
-    vs_y = sdsp(y,
-                data_range=255,
-                omega_0=omega_0,
-                sigma_f=sigma_f,
-                sigma_d=sigma_d,
-                sigma_c=sigma_c)
-    
+    vs_x = sdsp(x, data_range=255, omega_0=omega_0, sigma_f=sigma_f, sigma_d=sigma_d, sigma_c=sigma_c)
+    vs_y = sdsp(y, data_range=255, omega_0=omega_0, sigma_f=sigma_f, sigma_d=sigma_d, sigma_c=sigma_c)
+
     # Convert to LMN colour space
     x_lmn = rgb2lmn(x)
     y_lmn = rgb2lmn(y)
@@ -110,8 +99,7 @@ def vsi(x: torch.Tensor,
     y_lmn = avg_pool2d(y_lmn, kernel_size=kernel_size)
 
     # Calculate gradient map
-    kernels = torch.stack([scharr_filter(),
-                           scharr_filter().transpose(1, 2)]).to(x_lmn)
+    kernels = torch.stack([scharr_filter(), scharr_filter().transpose(1, 2)]).to(x_lmn)
     gm_x = gradient_map(x_lmn[:, :1], kernels)
     gm_y = gradient_map(y_lmn[:, :1], kernels)
 
@@ -131,8 +119,7 @@ def vsi(x: torch.Tensor,
 
     eps = torch.finfo(vs_max.dtype).eps
     output = s * vs_max
-    output = ((output.sum(dim=(-1, -2)) + eps) /
-              (vs_max.sum(dim=(-1, -2)) + eps)).squeeze(-1)
+    output = ((output.sum(dim=(-1, -2)) + eps) / (vs_max.sum(dim=(-1, -2)) + eps)).squeeze(-1)
 
     return output
 
@@ -159,15 +146,11 @@ def sdsp(x: torch.Tensor,
     x = x / data_range * 255
     size = x.size()
     size_to_use = (256, 256)
-    x = interpolate(input=x,
-                    size=size_to_use,
-                    mode='bilinear',
-                    align_corners=False)
+    x = interpolate(input=x, size=size_to_use, mode='bilinear', align_corners=False)
 
     x_lab = rgb2lab(x, data_range=255)
 
-    lg = _log_gabor(size_to_use, omega_0,
-                    sigma_f).to(x).view(1, 1, *size_to_use)
+    lg = _log_gabor(size_to_use, omega_0, sigma_f).to(x).view(1, 1, *size_to_use)
 
     # torch version >= '1.8.0'
     x_fft = torch.fft.fft2(x_lab)
@@ -177,14 +160,11 @@ def sdsp(x: torch.Tensor,
 
     coordinates = torch.stack(get_meshgrid(size_to_use), dim=0).to(x)
     coordinates = coordinates * size_to_use[0] + 1
-    s_d = torch.exp(-torch.sum(coordinates**2, dim=0) / sigma_d**2).view(
-        1, 1, *size_to_use)
+    s_d = torch.exp(-torch.sum(coordinates**2, dim=0) / sigma_d**2).view(1, 1, *size_to_use)
 
     eps = torch.finfo(x_lab.dtype).eps
-    min_x = x_lab.min(dim=-1, keepdim=True).values.min(dim=-2,
-                                                       keepdim=True).values
-    max_x = x_lab.max(dim=-1, keepdim=True).values.max(dim=-2,
-                                                       keepdim=True).values
+    min_x = x_lab.min(dim=-1, keepdim=True).values.min(dim=-2, keepdim=True).values
+    max_x = x_lab.max(dim=-1, keepdim=True).values.max(dim=-2, keepdim=True).values
     normalized = (x_lab - min_x) / (max_x - min_x + eps)
 
     norm = normalized[:, 1:].pow(2).sum(dim=1, keepdim=True)
@@ -192,15 +172,12 @@ def sdsp(x: torch.Tensor,
 
     vs_m = s_f * s_d * s_c
     vs_m = interpolate(vs_m, size[-2:], mode='bilinear', align_corners=True)
-    min_vs_m = vs_m.min(dim=-1, keepdim=True).values.min(dim=-2,
-                                                         keepdim=True).values
-    max_vs_m = vs_m.max(dim=-1, keepdim=True).values.max(dim=-2,
-                                                         keepdim=True).values
+    min_vs_m = vs_m.min(dim=-1, keepdim=True).values.min(dim=-2, keepdim=True).values
+    max_vs_m = vs_m.max(dim=-1, keepdim=True).values.max(dim=-2, keepdim=True).values
     return (vs_m - min_vs_m) / (max_vs_m - min_vs_m + eps)
 
 
-def _log_gabor(size: Tuple[int, int], omega_0: float,
-               sigma_f: float) -> torch.Tensor:
+def _log_gabor(size: Tuple[int, int], omega_0: float, sigma_f: float) -> torch.Tensor:
     r"""Creates log Gabor filter
     Args:
         size: size of the requires log Gabor filter
@@ -241,8 +218,8 @@ class VSI(nn.Module):
         sigma_c: coefficient to get SDSP
 
     References:
-        L. Zhang, Y. Shen and H. Li, "VSI: A Visual Saliency-Induced Index for Perceptual 
-        Image Quality Assessment," IEEE Transactions on Image Processing, vol. 23, no. 10, 
+        L. Zhang, Y. Shen and H. Li, "VSI: A Visual Saliency-Induced Index for Perceptual
+        Image Quality Assessment," IEEE Transactions on Image Processing, vol. 23, no. 10,
         pp. 4270-4281, Oct. 2014, doi: 10.1109/TIP.2014.2346028
         https://ieeexplore.ieee.org/document/6873260
     """
@@ -261,17 +238,18 @@ class VSI(nn.Module):
         super().__init__()
         self.data_range = data_range
 
-        self.vsi = functools.partial(vsi,
-                                     c1=c1,
-                                     c2=c2,
-                                     c3=c3,
-                                     alpha=alpha,
-                                     beta=beta,
-                                     omega_0=omega_0,
-                                     sigma_f=sigma_f,
-                                     sigma_d=sigma_d,
-                                     sigma_c=sigma_c,
-                                     data_range=data_range)
+        self.vsi = functools.partial(
+            vsi,
+            c1=c1,
+            c2=c2,
+            c3=c3,
+            alpha=alpha,
+            beta=beta,
+            omega_0=omega_0,
+            sigma_f=sigma_f,
+            sigma_d=sigma_d,
+            sigma_c=sigma_c,
+            data_range=data_range)
 
     def forward(self, x, y):
         r"""Computation of VSI as a loss function.

@@ -14,23 +14,25 @@ from collections import namedtuple
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
 
-
 default_model_urls = {
-    # key "url" is the default 
-    '0.0_alex': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_alex-18720f55.pth',
-    '0.0_vgg': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_vgg-b9e42362.pth',
-    '0.0_squeeze': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_squeeze-c27abd3a.pth',
-    '0.1_alex': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_alex-df73285e.pth',
-    '0.1_vgg': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_vgg-a78928a0.pth', 
-    '0.1_squeeze': 'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_vgg-a78928a0.pth',  
+    # key "url" is the default
+    '0.0_alex':
+    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_alex-18720f55.pth',
+    '0.0_vgg':
+    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_vgg-b9e42362.pth',
+    '0.0_squeeze':
+    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_squeeze-c27abd3a.pth',
+    '0.1_alex':
+    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_alex-df73285e.pth',
+    '0.1_vgg':
+    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_vgg-a78928a0.pth',
+    '0.1_squeeze':
+    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_vgg-a78928a0.pth',
 }
 
 
-def upsample(in_tens,
-             out_HW=(64, 64)):  # assumes scale factor is same for H and W
-    in_H, in_W = in_tens.shape[2], in_tens.shape[3]
-    return nn.Upsample(size=out_HW, mode='bilinear',
-                       align_corners=False)(in_tens)
+def upsample(in_tens, out_HW=(64, 64)):  # assumes scale factor is same for H and W
+    return nn.Upsample(size=out_HW, mode='bilinear', align_corners=False)(in_tens)
 
 
 def spatial_average(in_tens, keepdim=True):
@@ -47,7 +49,7 @@ class LPIPS(nn.Module):
     """ LPIPS model.
     Args:
         lpips (Boolean) : Whether to use linear layers on top of base/trunk network.
-        pretrained (Boolean): Whether means linear layers are calibrated with human 
+        pretrained (Boolean): Whether means linear layers are calibrated with human
             perceptual judgments.
         pnet_rand (Boolean): Whether to randomly initialized trunk.
         net (String): ['alex','vgg','squeeze'] are the base/trunk networks available.
@@ -60,13 +62,14 @@ class LPIPS(nn.Module):
         eval_mode (Boolean): choose the mode; True is for test mode (default).
         pnet_tune (Boolean): Whether to tune the base/trunk network.
         use_dropout (Boolean): Whether to use dropout when training linear layers.
-    
+
     Reference:
-        Zhang, Richard, et al. "The unreasonable effectiveness of deep features as 
-        a perceptual metric." Proceedings of the IEEE conference on computer vision 
+        Zhang, Richard, et al. "The unreasonable effectiveness of deep features as
+        a perceptual metric." Proceedings of the IEEE conference on computer vision
         and pattern recognition. 2018.
 
         """
+
     def __init__(self,
                  pretrained=True,
                  net='alex',
@@ -79,7 +82,6 @@ class LPIPS(nn.Module):
                  pretrained_model_path=None,
                  eval_mode=True,
                  **kwargs):
-        
 
         super(LPIPS, self).__init__()
 
@@ -102,8 +104,7 @@ class LPIPS(nn.Module):
             self.chns = [64, 128, 256, 384, 384, 512, 512]
         self.L = len(self.chns)
 
-        self.net = net_type(pretrained=not self.pnet_rand,
-                            requires_grad=self.pnet_tune)
+        self.net = net_type(pretrained=not self.pnet_rand, requires_grad=self.pnet_tune)
 
         if (lpips):
             self.lin0 = NetLinLayer(self.chns[0], use_dropout=use_dropout)
@@ -131,9 +132,9 @@ class LPIPS(nn.Module):
         Args:
             in1: An input tensor. Shape :math:`(N, C, H, W)`.
             in0: A reference tensor. Shape :math:`(N, C, H, W)`.
-            retPerLayer (Boolean): return result contains ressult of 
+            retPerLayer (Boolean): return result contains ressult of
                 each layer or not. Default: False.
-            normalize (Boolean): Whether to normalize image data range 
+            normalize (Boolean): Whether to normalize image data range
                 in [0,1] to [-1,1]. Default: True.
 
         Returns:
@@ -145,43 +146,29 @@ class LPIPS(nn.Module):
             in1 = 2 * in1 - 1
 
         # v0.0 - original release had a bug, where input was not scaled
-        in0_input, in1_input = (
-            self.scaling_layer(in0),
-            self.scaling_layer(in1)) if self.version == '0.1' else (in0, in1)
+        in0_input, in1_input = (self.scaling_layer(in0), self.scaling_layer(in1)) if self.version == '0.1' else (in0,
+                                                                                                                 in1)
         outs0, outs1 = self.net.forward(in0_input), self.net.forward(in1_input)
         feats0, feats1, diffs = {}, {}, {}
 
         for kk in range(self.L):
-            feats0[kk], feats1[kk] = normalize_tensor(
-                outs0[kk]), normalize_tensor(outs1[kk])
+            feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
             diffs[kk] = (feats0[kk] - feats1[kk])**2
 
         if (self.lpips):
             if (self.spatial):
-                res = [
-                    upsample(self.lins[kk](diffs[kk]), out_HW=in0.shape[2:])
-                    for kk in range(self.L)
-                ]
+                res = [upsample(self.lins[kk](diffs[kk]), out_HW=in0.shape[2:]) for kk in range(self.L)]
             else:
-                res = [
-                    spatial_average(self.lins[kk](diffs[kk]), keepdim=True)
-                    for kk in range(self.L)
-                ]
+                res = [spatial_average(self.lins[kk](diffs[kk]), keepdim=True) for kk in range(self.L)]
         else:
             if (self.spatial):
-                res = [
-                    upsample(diffs[kk].sum(dim=1, keepdim=True),
-                             out_HW=in0.shape[2:]) for kk in range(self.L)
-                ]
+                res = [upsample(diffs[kk].sum(dim=1, keepdim=True), out_HW=in0.shape[2:]) for kk in range(self.L)]
             else:
-                res = [
-                    spatial_average(diffs[kk].sum(dim=1, keepdim=True),
-                                    keepdim=True) for kk in range(self.L)
-                ]
+                res = [spatial_average(diffs[kk].sum(dim=1, keepdim=True), keepdim=True) for kk in range(self.L)]
 
         val = 0
-        for l in range(self.L):
-            val += res[l]
+        for i in range(self.L):
+            val += res[i]
 
         if (retPerLayer):
             return (val, res)
@@ -193,12 +180,8 @@ class ScalingLayer(nn.Module):
 
     def __init__(self):
         super(ScalingLayer, self).__init__()
-        self.register_buffer(
-            'shift',
-            torch.Tensor([-.030, -.088, -.188])[None, :, None, None])
-        self.register_buffer(
-            'scale',
-            torch.Tensor([.458, .448, .450])[None, :, None, None])
+        self.register_buffer('shift', torch.Tensor([-.030, -.088, -.188])[None, :, None, None])
+        self.register_buffer('scale', torch.Tensor([.458, .448, .450])[None, :, None, None])
 
     def forward(self, inp):
         return (inp - self.shift) / self.scale
@@ -226,8 +209,7 @@ class squeezenet(torch.nn.Module):
 
     def __init__(self, requires_grad=False, pretrained=True):
         super(squeezenet, self).__init__()
-        pretrained_features = models.squeezenet1_1(
-            pretrained=pretrained).features
+        pretrained_features = models.squeezenet1_1(pretrained=pretrained).features
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
         self.slice3 = torch.nn.Sequential()
@@ -269,11 +251,8 @@ class squeezenet(torch.nn.Module):
         h_relu6 = h
         h = self.slice7(h)
         h_relu7 = h
-        vgg_outputs = namedtuple(
-            "SqueezeOutputs",
-            ['relu1', 'relu2', 'relu3', 'relu4', 'relu5', 'relu6', 'relu7'])
-        out = vgg_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5, h_relu6,
-                          h_relu7)
+        vgg_outputs = namedtuple('SqueezeOutputs', ['relu1', 'relu2', 'relu3', 'relu4', 'relu5', 'relu6', 'relu7'])
+        out = vgg_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5, h_relu6, h_relu7)
 
         return out
 
@@ -282,8 +261,7 @@ class alexnet(torch.nn.Module):
 
     def __init__(self, requires_grad=False, pretrained=True):
         super(alexnet, self).__init__()
-        alexnet_pretrained_features = models.alexnet(
-            pretrained=pretrained).features
+        alexnet_pretrained_features = models.alexnet(pretrained=pretrained).features
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
         self.slice3 = torch.nn.Sequential()
@@ -315,8 +293,7 @@ class alexnet(torch.nn.Module):
         h_relu4 = h
         h = self.slice5(h)
         h_relu5 = h
-        alexnet_outputs = namedtuple(
-            "AlexnetOutputs", ['relu1', 'relu2', 'relu3', 'relu4', 'relu5'])
+        alexnet_outputs = namedtuple('AlexnetOutputs', ['relu1', 'relu2', 'relu3', 'relu4', 'relu5'])
         out = alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
 
         return out
@@ -358,11 +335,8 @@ class vgg16(torch.nn.Module):
         h_relu4_3 = h
         h = self.slice5(h)
         h_relu5_3 = h
-        vgg_outputs = namedtuple(
-            "VggOutputs",
-            ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3', 'relu5_3'])
-        out = vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3,
-                          h_relu5_3)
+        vgg_outputs = namedtuple('VggOutputs', ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3', 'relu5_3'])
+        out = vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
         return out
 
@@ -407,8 +381,7 @@ class resnet(torch.nn.Module):
         h = self.layer4(h)
         h_conv5 = h
 
-        outputs = namedtuple("Outputs",
-                             ['relu1', 'conv2', 'conv3', 'conv4', 'conv5'])
+        outputs = namedtuple('Outputs', ['relu1', 'conv2', 'conv3', 'conv4', 'conv5'])
         out = outputs(h_relu1, h_conv2, h_conv3, h_conv4, h_conv5)
 
         return out

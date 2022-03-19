@@ -1,4 +1,3 @@
-import numpy as np
 import pickle
 from PIL import Image
 import os
@@ -6,11 +5,8 @@ import os
 import torch
 from torch.utils import data as data
 import torchvision.transforms as tf
-from torchvision.transforms.functional import normalize
 
-from pyiqa.data.data_util import read_meta_info_file 
-from pyiqa.data.transforms import transform_mapping, augment, paired_random_crop
-from pyiqa.utils import FileClient, imfrombytes, img2tensor
+from pyiqa.data.transforms import transform_mapping
 from pyiqa.utils.registry import DATASET_REGISTRY
 
 import pandas as pd
@@ -24,7 +20,7 @@ class PieAPPDataset(data.Dataset):
     PieAPP: Perceptual Image-Error Assessment Through Pairwise Preference
     CVPR2018
     url: http://civc.ucsb.edu/graphics/Papers/CVPR2018_PieAPP/
-    
+
     Args:
         opt (dict): Config for train datasets with the following keys:
             phase (str): 'train' or 'val'.
@@ -37,7 +33,6 @@ class PieAPPDataset(data.Dataset):
 
         target_img_folder = opt['dataroot_target']
         self.dataroot = target_img_folder
-        ref_img_folder = opt.get('dataroot_ref', None)
 
         self.paths_mos = pd.read_csv(opt['meta_info_file']).values.tolist()
 
@@ -48,7 +43,7 @@ class PieAPPDataset(data.Dataset):
             with open(opt['split_file'], 'rb') as f:
                 split_dict = pickle.load(f)
                 splits = split_dict[split_index][opt['phase']]
-            self.paths_mos = [self.paths_mos[i] for i in splits] 
+            self.paths_mos = [self.paths_mos[i] for i in splits]
 
         # TODO: paired transform
         transform_list = []
@@ -59,9 +54,9 @@ class PieAPPDataset(data.Dataset):
 
         img_range = opt.get('img_range', 1.0)
         transform_list += [
-                tf.ToTensor(),
-                tf.Lambda(lambda x: x * img_range),
-                ]
+            tf.ToTensor(),
+            tf.Lambda(lambda x: x * img_range),
+        ]
         self.trans = tf.Compose(transform_list)
 
     def __getitem__(self, index):
@@ -91,10 +86,17 @@ class PieAPPDataset(data.Dataset):
         ref_tensor = self.trans(ref_img_pil)
         distA_tensor = self.trans(distA_pil)
         distB_tensor = self.trans(distB_pil)
-        
-        return {'distB_img': distB_tensor, 'ref_img': ref_tensor, 'distA_img': distA_tensor, 
-                'mos_label': mos_label_tensor, 'distB_per_img_score': distB_score, 
-                'distB_path': distB_path, 'ref_img_path': ref_path, 'distA_path': distA_path}
+
+        return {
+            'distB_img': distB_tensor,
+            'ref_img': ref_tensor,
+            'distA_img': distA_tensor,
+            'mos_label': mos_label_tensor,
+            'distB_per_img_score': distB_score,
+            'distB_path': distB_path,
+            'ref_img_path': ref_path,
+            'distA_path': distA_path
+        }
 
     def __len__(self):
         return len(self.paths_mos)

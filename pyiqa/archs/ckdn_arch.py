@@ -2,11 +2,10 @@
 
 Created by: Chaofeng Chen (https://github.com/chaofengc)
 
-Refer to: 
+Refer to:
     https://github.com/researchmm/CKDN.
 
 """
-
 
 import torch
 import torch.nn as nn
@@ -20,11 +19,9 @@ try:
 except ImportError:
     from torch.utils.model_zoo import load_url as load_state_dict_from_url
 
-
 default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CKDN_model_best-38b27dc6.pth' 
+    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CKDN_model_best-38b27dc6.pth'
 }
-
 
 model_urls = {
     'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
@@ -33,8 +30,15 @@ model_urls = {
 
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
     """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=dilation, groups=groups, bias=False, dilation=dilation)
+    return nn.Conv2d(
+        in_planes,
+        out_planes,
+        kernel_size=3,
+        stride=stride,
+        padding=dilation,
+        groups=groups,
+        bias=False,
+        dilation=dilation)
 
 
 def conv1x1(in_planes, out_planes, stride=1):
@@ -46,15 +50,22 @@ class BasicBlock(nn.Module):
     expansion = 1
     __constants__ = ['downsample']
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, norm_layer=None):
+    def __init__(self,
+                 inplanes,
+                 planes,
+                 stride=1,
+                 downsample=None,
+                 groups=1,
+                 base_width=64,
+                 dilation=1,
+                 norm_layer=None):
         super(BasicBlock, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
             raise ValueError('BasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+            raise NotImplementedError('Dilation > 1 not supported in BasicBlock')
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = norm_layer(planes)
@@ -87,8 +98,15 @@ class Bottleneck(nn.Module):
     expansion = 4
     __constants__ = ['downsample']
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, norm_layer=None):
+    def __init__(self,
+                 inplanes,
+                 planes,
+                 stride=1,
+                 downsample=None,
+                 groups=1,
+                 base_width=64,
+                 dilation=1,
+                 norm_layer=None):
         super(Bottleneck, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -129,8 +147,14 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, layers, num_classes=1000, zero_init_residual=False,
-                 groups=1, width_per_group=64, replace_stride_with_dilation=None,
+    def __init__(self,
+                 block,
+                 layers,
+                 num_classes=1000,
+                 zero_init_residual=False,
+                 groups=1,
+                 width_per_group=64,
+                 replace_stride_with_dilation=None,
                  norm_layer=None):
         super(ResNet, self).__init__()
         if norm_layer is None:
@@ -139,18 +163,18 @@ class ResNet(nn.Module):
 
         self.inplanes = 64
         self.dilation = 1
-        self.k=3
+        self.k = 3
         if replace_stride_with_dilation is None:
             # each element in the tuple indicates if we should replace
             # the 2x2 stride with a dilated convolution instead
             replace_stride_with_dilation = [False, False, False]
         if len(replace_stride_with_dilation) != 3:
-            raise ValueError("replace_stride_with_dilation should be None "
-                             "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
+            raise ValueError('replace_stride_with_dilation should be None '
+                             'or a 3-element tuple, got {}'.format(replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
         self.head = 8
-        self.qse_1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3,bias=False)
+        self.qse_1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False)
         self.qse_2 = self._make_layer(block, 64, layers[0])
         self.csp = self._make_layer(block, 128, layers[1], stride=2, dilate=False)
         self.inplanes = 64
@@ -160,22 +184,23 @@ class ResNet(nn.Module):
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc_ = nn.Sequential(
-                nn.Linear((512) * 1 * 1, 2048),
-                nn.ReLU(True),
-                nn.Dropout(),
-                nn.Linear(2048, 2048),
-                nn.ReLU(True),
-                nn.Dropout(),
-                nn.Linear(2048, 1),)
+            nn.Linear((512) * 1 * 1, 2048),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(2048, 2048),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(2048, 1),
+        )
         self.fc1_ = nn.Sequential(
-                nn.Linear((512) * 1 * 1, 2048),
-                nn.ReLU(True),
-                nn.Dropout(),
-                nn.Linear(2048, 2048),
-                nn.ReLU(True),
-                nn.Dropout(),
-                nn.Linear(2048, 1),)
-
+            nn.Linear((512) * 1 * 1, 2048),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(2048, 2048),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(2048, 1),
+        )
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -208,13 +233,19 @@ class ResNet(nn.Module):
             )
 
         layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample, self.groups,
-                            self.base_width, previous_dilation, norm_layer))
+        layers.append(
+            block(self.inplanes, planes, stride, downsample, self.groups, self.base_width, previous_dilation,
+                  norm_layer))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, groups=self.groups,
-                                base_width=self.base_width, dilation=self.dilation,
-                                norm_layer=norm_layer))
+            layers.append(
+                block(
+                    self.inplanes,
+                    planes,
+                    groups=self.groups,
+                    base_width=self.base_width,
+                    dilation=self.dilation,
+                    norm_layer=norm_layer))
 
         return nn.Sequential(*layers)
 
@@ -237,22 +268,21 @@ class ResNet(nn.Module):
 def _resnet(arch, block, layers, pretrained, progress, **kwargs):
     model = ResNet(block, layers, **kwargs)
     if pretrained:
-        state_dict = load_state_dict_from_url(model_urls[arch],
-                                              progress=progress)
+        state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         keys = state_dict.keys()
         for key in list(keys):
             if 'conv1' in key:
-                state_dict[key.replace('conv1','qse_1')] = state_dict[key]
-                state_dict[key.replace('conv1','dte_1')] = state_dict[key]
+                state_dict[key.replace('conv1', 'qse_1')] = state_dict[key]
+                state_dict[key.replace('conv1', 'dte_1')] = state_dict[key]
             if 'layer1' in key:
-                state_dict[key.replace('layer1','qse_2')] = state_dict[key]
-                state_dict[key.replace('layer1','dte_2')] = state_dict[key]
+                state_dict[key.replace('layer1', 'qse_2')] = state_dict[key]
+                state_dict[key.replace('layer1', 'dte_2')] = state_dict[key]
             if 'layer2' in key:
-                state_dict[key.replace('layer2','csp')] = state_dict[key]
-                state_dict[key.replace('layer2','aux_csp')] = state_dict[key]
+                state_dict[key.replace('layer2', 'csp')] = state_dict[key]
+                state_dict[key.replace('layer2', 'aux_csp')] = state_dict[key]
         model.load_state_dict(state_dict, strict=False)
     return model
- 
+
 
 @ARCH_REGISTRY.register()
 class CKDN(nn.Module):
@@ -263,24 +293,25 @@ class CKDN(nn.Module):
         use_default_preprocess (Boolean): Whether use default preprocess, default: True.
         default_mean (tuple): The mean value.
         default_std (tuple): The std value.
-    
+
     Reference:
-        Zheng, Heliang, Huan Yang, Jianlong Fu, Zheng-Jun Zha, and Jiebo Luo. 
-        "Learning conditional knowledge distillation for degraded-reference image 
-        quality assessment." In Proceedings of the IEEE/CVF International Conference 
+        Zheng, Heliang, Huan Yang, Jianlong Fu, Zheng-Jun Zha, and Jiebo Luo.
+        "Learning conditional knowledge distillation for degraded-reference image
+        quality assessment." In Proceedings of the IEEE/CVF International Conference
         on Computer Vision (ICCV), pp. 10242-10251. 2021.
 
     """
-    def __init__(self, 
+
+    def __init__(self,
                  pretrained=True,
-                 pretrained_model_path=None, 
-                 use_default_preprocess=True, 
-                 default_mean=(0.485, 0.456, 0.406), 
-                 default_std=(0.229, 0.224, 0.225), 
+                 pretrained_model_path=None,
+                 use_default_preprocess=True,
+                 default_mean=(0.485, 0.456, 0.406),
+                 default_std=(0.229, 0.224, 0.225),
                  **kwargs):
         super().__init__()
-        self.net = _resnet('resnet50', Bottleneck, [3, 4, 6, 3], True, True,**kwargs)
-        self.use_default_preprocess = use_default_preprocess 
+        self.net = _resnet('resnet50', Bottleneck, [3, 4, 6, 3], True, True, **kwargs)
+        self.use_default_preprocess = use_default_preprocess
 
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
@@ -289,24 +320,24 @@ class CKDN(nn.Module):
             load_pretrained_network(self, pretrained_model_path)
         elif pretrained:
             load_pretrained_network(self, default_model_urls['url'])
-    
+
     def _default_preprocess(self, x, y):
         """default preprocessing of CKDN: https://github.com/researchmm/CKDN
         Useful when using this metric as losses.
-        Results are slightly different due to different resize behavior of PIL Image and pytorch interpolate function. 
+        Results are slightly different due to different resize behavior of PIL Image and pytorch interpolate function.
 
         Args:
-            x, y:  
-              shape, (N, C, H, W) in RGB format; 
+            x, y:
+              shape, (N, C, H, W) in RGB format;
               value range, 0 ~ 1
-              
+
         """
-        scaled_size = int(math.floor(288/0.875))
+        scaled_size = int(math.floor(288 / 0.875))
         x = tv.transforms.functional.resize(x, scaled_size, tv.transforms.InterpolationMode.BICUBIC)
         y = tv.transforms.functional.resize(y, scaled_size, tv.transforms.InterpolationMode.NEAREST)
 
-        x = tv.transforms.functional.center_crop(x, 288) 
-        y = tv.transforms.functional.center_crop(y, 288) 
+        x = tv.transforms.functional.center_crop(x, 288)
+        y = tv.transforms.functional.center_crop(y, 288)
 
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         y = (y - self.default_mean.to(y)) / self.default_std.to(y)
@@ -321,7 +352,7 @@ class CKDN(nn.Module):
 
         Returns:
             Value of CKDN model.
-            
+
         """
         if self.use_default_preprocess:
             x, y = self._default_preprocess(x, y)

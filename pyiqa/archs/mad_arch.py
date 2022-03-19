@@ -33,36 +33,27 @@ def extract_patches_2d(img: torch.Tensor,
     if (img.size(2) < patch_H):
         num_padded_H_Top = (patch_H - img.size(2)) // 2
         num_padded_H_Bottom = patch_H - img.size(2) - num_padded_H_Top
-        padding_H = nn.ConstantPad2d(
-            (0, 0, num_padded_H_Top, num_padded_H_Bottom), 0)
+        padding_H = nn.ConstantPad2d((0, 0, num_padded_H_Top, num_padded_H_Bottom), 0)
         img = padding_H(img)
 
     if (img.size(3) < patch_W):
         num_padded_W_Left = (patch_W - img.size(3)) // 2
         num_padded_W_Right = patch_W - img.size(3) - num_padded_W_Left
-        padding_W = nn.ConstantPad2d(
-            (num_padded_W_Left, num_padded_W_Right, 0, 0), 0)
+        padding_W = nn.ConstantPad2d((num_padded_W_Left, num_padded_W_Right, 0, 0), 0)
         img = padding_W(img)
 
     step_int = [0, 0]
-    step_int[0] = int(patch_H *
-                      step[0]) if (isinstance(step[0], float)) else step[0]
-    step_int[1] = int(patch_W *
-                      step[1]) if (isinstance(step[1], float)) else step[1]
+    step_int[0] = int(patch_H * step[0]) if (isinstance(step[0], float)) else step[0]
+    step_int[1] = int(patch_W * step[1]) if (isinstance(step[1], float)) else step[1]
     patches_fold_H = img.unfold(2, patch_H, step_int[0])
 
     if ((img.size(2) - patch_H) % step_int[0] != 0) and keep_last_patch:
-        patches_fold_H = torch.cat(
-            (patches_fold_H, img[:, :, -patch_H:, ].permute(0, 1, 3,
-                                                            2).unsqueeze(2)),
-            dim=2)
+        patches_fold_H = torch.cat((patches_fold_H, img[:, :, -patch_H:, ].permute(0, 1, 3, 2).unsqueeze(2)), dim=2)
 
     patches_fold_HW = patches_fold_H.unfold(3, patch_W, step_int[1])
     if ((img.size(3) - patch_W) % step_int[1] != 0) and keep_last_patch:
         patches_fold_HW = torch.cat(
-            (patches_fold_HW, patches_fold_H[:, :, :, -patch_W:, :].permute(
-                0, 1, 2, 4, 3).unsqueeze(3)),
-            dim=3)
+            (patches_fold_HW, patches_fold_H[:, :, :, -patch_W:, :].permute(0, 1, 2, 4, 3).unsqueeze(3)), dim=3)
 
     patches = patches_fold_HW.permute(2, 3, 0, 1, 4, 5)
     patches = patches.reshape(-1, img.size(0), img.size(1), patch_H, patch_W)
@@ -103,8 +94,7 @@ def get_moments(d, sk=False):
         zscores = diffs / std
         skews = torch.mean(torch.pow(zscores, 3.0), dim=[3, 4], keepdim=True)
         kurtoses = torch.mean(
-            torch.pow(zscores, 4.0), dim=[3, 4],
-            keepdim=True) - 3.0  # excess kurtosis, should be 0 for Gaussian
+            torch.pow(zscores, 4.0), dim=[3, 4], keepdim=True) - 3.0  # excess kurtosis, should be 0 for Gaussian
         return mean, std, skews, kurtoses
     else:
         return mean, std
@@ -145,9 +135,7 @@ def hi_index(ref_img, dst_img):
     B, C, H, W = ref.shape
 
     csf = make_csf(H, W, 32)
-    csf = torch.from_numpy(csf.reshape(1, 1, H, W,
-                                       1)).float().repeat(1, C, 1, 1,
-                                                          2).to(ref.device)
+    csf = torch.from_numpy(csf.reshape(1, 1, H, W, 1)).float().repeat(1, C, 1, 1, 2).to(ref.device)
 
     x = torch.fft.fft2(ref)
     x1 = math_util.batch_fftshift2d(x)
@@ -173,8 +161,7 @@ def hi_index(ref_img, dst_img):
 
     Ci_dst = Ci_dst.masked_fill(m1_1 < G, -1000)
 
-    idx1 = (Ci_ref > Ci_thrsh) & (Ci_dst >
-                                  (C_slope * (Ci_ref - Ci_thrsh) + Cd_thrsh))
+    idx1 = (Ci_ref > Ci_thrsh) & (Ci_dst > (C_slope * (Ci_ref - Ci_thrsh) + Cd_thrsh))
     idx2 = (Ci_ref <= Ci_thrsh) & (Ci_dst > Cd_thrsh)
 
     msk = Ci_ref.clone()
@@ -183,8 +170,7 @@ def hi_index(ref_img, dst_img):
     msk[idx1] = Ci_dst[idx1] - (C_slope * (Ci_ref[idx1] - Ci_thrsh) + Cd_thrsh)
     msk[idx2] = Ci_dst[idx2] - Cd_thrsh
 
-    win = torch.ones(
-        (1, 1, BSIZE, BSIZE)).repeat(C, 1, 1, 1).to(ref.device) / BSIZE**2
+    win = torch.ones((1, 1, BSIZE, BSIZE)).repeat(C, 1, 1, 1).to(ref.device) / BSIZE**2
     xx = (ref_img - dst_img)**2
 
     lmse = F.conv2d(xx, win, stride=4, padding=0, groups=C)
@@ -202,8 +188,7 @@ def gaborconvolve(im):
     mult = 3  # Scaling factor between successive filters.
     sigmaOnf = 0.55  # Ratio of the standard deviation of the
     wavelength = [
-        minWaveLength, minWaveLength * mult, minWaveLength * mult**2,
-        minWaveLength * mult**3, minWaveLength * mult**4
+        minWaveLength, minWaveLength * mult, minWaveLength * mult**2, minWaveLength * mult**3, minWaveLength * mult**4
     ]
     # Ratio of angular interval between filter orientations
     dThetaOnSigma = 1.5
@@ -214,8 +199,7 @@ def gaborconvolve(im):
     imagefft = torch.fft.fft2(im)
     # Pre-compute to speed up filter construction
     x = np.ones((rows, 1)) * np.arange(-cols / 2., (cols / 2.)) / (cols / 2.)
-    y = np.dot(np.expand_dims(np.arange(-rows / 2., (rows / 2.)), 1),
-               np.ones((1, cols)) / (rows / 2.))
+    y = np.dot(np.expand_dims(np.arange(-rows / 2., (rows / 2.)), 1), np.ones((1, cols)) / (rows / 2.))
     # Matrix values contain *normalised* radius from centre.
     radius = np.sqrt(x**2 + y**2)
     # Get rid of the 0 radius value in the middle
@@ -245,20 +229,15 @@ def gaborconvolve(im):
         # Calculate filter angle.
         angl = o * math.pi / norient
 
-        ds = sintheta * np.cos(angl) - costheta * np.sin(
-            angl)  # Difference in sine.
-        dc = costheta * np.cos(angl) + sintheta * np.sin(
-            angl)  # Difference in cosine.
+        ds = sintheta * np.cos(angl) - costheta * np.sin(angl)  # Difference in sine.
+        dc = costheta * np.cos(angl) + sintheta * np.sin(angl)  # Difference in cosine.
         dtheta = np.abs(np.arctan2(ds, dc))  # Absolute angular distance.
-        spread = np.exp(
-            (-dtheta**2) /
-            (2 * thetaSigma**2))  # Calculate the angular filter component.
+        spread = np.exp((-dtheta**2) / (2 * thetaSigma**2))  # Calculate the angular filter component.
 
         for s in range(nscale):
 
             filter = fftshift(logGabors[s] * spread)
-            filter = torch.from_numpy(filter).reshape(1, 1, rows,
-                                                      cols).to(im.device)
+            filter = torch.from_numpy(filter).reshape(1, 1, rows, cols).to(im.device)
             e0 = torch.fft.ifft2(imagefft * filter)
             E0[o].append(torch.stack((e0.real, e0.imag), -1))
 
@@ -273,13 +252,10 @@ def lo_index(ref, dst):
     mp = 0
     for gb_i in range(4):
         for gb_j in range(5):
-            stdref, skwref, krtref = ical_stat(
-                math_util.abs(gabRef[gb_i][gb_j]))
-            stddst, skwdst, krtdst = ical_stat(
-                math_util.abs(gabDst[gb_i][gb_j]))
-            mp = mp + s[gb_i] * (torch.abs(stdref - stddst) +
-                                 2 * torch.abs(skwref - skwdst) +
-                                 torch.abs(krtref - krtdst))
+            stdref, skwref, krtref = ical_stat(math_util.abs(gabRef[gb_i][gb_j]))
+            stddst, skwdst, krtdst = ical_stat(math_util.abs(gabDst[gb_i][gb_j]))
+            mp = mp + s[gb_i] * (
+                torch.abs(stdref - stddst) + 2 * torch.abs(skwref - skwdst) + torch.abs(krtref - krtdst))
 
     B, C, rows, cols = mp.shape
     return torch.norm(mp.reshape(B, C, -1), dim=2) / np.sqrt(rows * cols)
@@ -291,10 +267,11 @@ class MAD(torch.nn.Module):
         channel: Number of input channel.
         test_y_channel: bool, whether to use y channel on ycbcr which mimics official matlab code.
     References:
-        Larson, Eric Cooper, and Damon Michael Chandler. "Most apparent distortion: full-reference 
-        image quality assessment and the role of strategy." Journal of electronic imaging 19, no. 1 
+        Larson, Eric Cooper, and Damon Michael Chandler. "Most apparent distortion: full-reference
+        image quality assessment and the role of strategy." Journal of electronic imaging 19, no. 1
         (2010): 011006.
     """
+
     def __init__(self, channels=3, test_y_channel=True):
         super(MAD, self).__init__()
         self.channels = channels
@@ -329,6 +306,6 @@ class MAD(torch.nn.Module):
         Returns:
             Value of MAD metric in [0, 1] range.
         """
-        assert X.shape == Y.shape, f"Input and reference images should have the same shape, but got {X.shape} and {Y.shape}"
+        assert X.shape == Y.shape, f'Input and reference images should have the same shape, but got {X.shape} and {Y.shape}'
         score = self.mad(Y, X)
         return score

@@ -1,24 +1,24 @@
 import torch
 import torchvision as tv
 
-from pyiqa.archs import create_metric 
-from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs import create_metric
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
 
 class InferenceModel():
-    """Common model for quality inference of single image with default setting of each metric.""" 
+    """Common model for quality inference of single image with default setting of each metric."""
 
-    def __init__(self, 
-                 metric_name,
-                 metric_mode,
-                 model_path=None,
-                 img_range=1.0,
-                 input_size=None,
-                 mean=None,
-                 std=None,
-                 **kwargs # Other metric options
-            ):
+    def __init__(
+            self,
+            metric_name,
+            metric_mode,
+            model_path=None,
+            img_range=1.0,
+            input_size=None,
+            mean=None,
+            std=None,
+            **kwargs  # Other metric options
+    ):
         super(InferenceModel, self).__init__()
 
         self.metric_name = metric_name
@@ -46,7 +46,7 @@ class InferenceModel():
         if mean is not None and std is not None:
             tf_list.append(tv.transforms.Normalize(mean, std))
         self.trans = tv.transforms.Compose(tf_list)
-    
+
     def test(self, x, y=None):
         if not torch.is_tensor(x):
             x = self.trans(x)
@@ -61,6 +61,3 @@ class InferenceModel():
             elif self.metric_mode == 'NR':
                 output = self.net(x)
         return output.cpu().item()
-
-
-    

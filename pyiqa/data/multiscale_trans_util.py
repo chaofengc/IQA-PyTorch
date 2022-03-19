@@ -19,13 +19,13 @@ def extract_image_patches(x, kernel, stride=1, dilation=1):
     Ref: https://stackoverflow.com/a/65886666
     """
     # Do TF 'SAME' Padding
-    b,c,h,w = x.shape
+    b, c, h, w = x.shape
     h2 = math.ceil(h / stride)
     w2 = math.ceil(w / stride)
     pad_row = (h2 - 1) * stride + (kernel - 1) * dilation + 1 - h
     pad_col = (w2 - 1) * stride + (kernel - 1) * dilation + 1 - w
-    x = F.pad(x, (pad_col//2, pad_col - pad_col//2, pad_row//2, pad_row - pad_row//2))
-    
+    x = F.pad(x, (pad_col // 2, pad_col - pad_col // 2, pad_row // 2, pad_row - pad_row // 2))
+
     # Extract patches
     patches = F.unfold(x, kernel, dilation, stride=stride)
     return patches
@@ -36,10 +36,7 @@ def _ceil_divide_int(x, y):
     return int(math.ceil(x / y))
 
 
-def resize_preserve_aspect_ratio(
-    image, h, w,
-    longer_side_length
-):
+def resize_preserve_aspect_ratio(image, h, w, longer_side_length):
     """Aspect-ratio-preserving resizing with tf.image.ResizeMethod.GAUSSIAN.
     Args:
       image: The image tensor (n_crops, c, h, w).
@@ -50,7 +47,7 @@ def resize_preserve_aspect_ratio(
       A tuple of [Image after resizing, Resized height, Resized width].
     """
     # Computes the height and width after aspect-ratio-preserving resizing.
-    ratio = longer_side_length / max(h, w) 
+    ratio = longer_side_length / max(h, w)
     rh = round(h * ratio)
     rw = round(w * ratio)
 
@@ -69,15 +66,14 @@ def _pad_or_cut_to_max_seq_len(x, max_seq_len):
     # Shape of x (n_crops, c, num_patches)
     # Padding makes sure that # patches > max_seq_length. Note that it also
     # makes the input mask zero for shorter input.
-    n_crops, c, num_patches = x.shape 
+    n_crops, c, num_patches = x.shape
     paddings = torch.zeros((n_crops, c, max_seq_len)).to(x)
     x = torch.cat([x, paddings], dim=-1)
     x = x[:, :, :max_seq_len]
     return x
 
 
-def get_hashed_spatial_pos_emb_index(grid_size, count_h,
-                                     count_w):
+def get_hashed_spatial_pos_emb_index(grid_size, count_h, count_w):
     """Get hased spatial pos embedding index for each patch.
     The size H x W is hashed to grid_size x grid_size.
     Args:
@@ -98,17 +94,15 @@ def get_hashed_spatial_pos_emb_index(grid_size, count_h,
     pos_emb_hash_h = F.interpolate(pos_emb_hash_h, (count_h), mode='nearest')
     pos_emb_hash_h = pos_emb_hash_h.transpose(1, 2)
     pos_emb_hash_h = pos_emb_hash_h.repeat(1, 1, count_w)
-    
+
     pos_emb_hash = pos_emb_hash_h * grid_size + pos_emb_hash_w
 
     pos_emb_hash = pos_emb_hash.reshape(1, -1)
     return pos_emb_hash
 
 
-def _extract_patches_and_positions_from_image(
-        image, patch_size, patch_stride, hse_grid_size,
-        n_crops, h, w,
-        c, scale_id, max_seq_len):
+def _extract_patches_and_positions_from_image(image, patch_size, patch_stride, hse_grid_size, n_crops, h, w, c,
+                                              scale_id, max_seq_len):
     """Extracts patches and positional embedding lookup indexes for a given image.
     Args:
       image: the input image of shape [n_crops, c, h, w]
@@ -128,8 +122,8 @@ def _extract_patches_and_positions_from_image(
       is (n_crops, num_patches, patch_size * patch_size * c + 3).
     """
     n_crops, c, h, w = image.shape
-    p = extract_image_patches(image, patch_size, patch_stride) 
-    assert p.shape[1] == c * patch_size ** 2
+    p = extract_image_patches(image, patch_size, patch_stride)
+    assert p.shape[1] == c * patch_size**2
 
     count_h = _ceil_divide_int(h, patch_stride)
     count_w = _ceil_divide_int(w, patch_stride)
@@ -150,13 +144,12 @@ def _extract_patches_and_positions_from_image(
     return out
 
 
-def get_multiscale_patches(
-        image,
-        patch_size=32,
-        patch_stride=32,
-        hse_grid_size=10,
-        longer_side_lengths=[224, 384],
-        max_seq_len_from_original_res=None):
+def get_multiscale_patches(image,
+                           patch_size=32,
+                           patch_stride=32,
+                           hse_grid_size=10,
+                           longer_side_lengths=[224, 384],
+                           max_seq_len_from_original_res=None):
     """Extracts image patches from multi-scale representation.
     Args:
       image: input image tensor with shape [n_crops, 3, h, w]
@@ -182,20 +175,16 @@ def get_multiscale_patches(
 
     outputs = []
     for scale_id, longer_size in enumerate(longer_side_lengths):
-        resized_image, rh, rw = resize_preserve_aspect_ratio(
-            image, h, w, longer_size)
+        resized_image, rh, rw = resize_preserve_aspect_ratio(image, h, w, longer_size)
 
         max_seq_len = int(np.ceil(longer_size / patch_stride)**2)
-        out = _extract_patches_and_positions_from_image(resized_image, patch_size,
-                                                        patch_stride, hse_grid_size,
-                                                        n_crops, rh, rw, c,
-                                                        scale_id, max_seq_len)
+        out = _extract_patches_and_positions_from_image(resized_image, patch_size, patch_stride, hse_grid_size, n_crops,
+                                                        rh, rw, c, scale_id, max_seq_len)
         outputs.append(out)
 
     if max_seq_len_from_original_res is not None:
-        out = _extract_patches_and_positions_from_image(
-            image, patch_size, patch_stride, hse_grid_size, n_crops, h, w, c,
-            len(longer_side_lengths), max_seq_len_from_original_res)
+        out = _extract_patches_and_positions_from_image(image, patch_size, patch_stride, hse_grid_size, n_crops, h, w,
+                                                        c, len(longer_side_lengths), max_seq_len_from_original_res)
         outputs.append(out)
 
     outputs = torch.cat(outputs, dim=-1)

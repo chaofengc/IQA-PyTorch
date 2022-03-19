@@ -11,7 +11,7 @@ from pyiqa.data.data_sampler import EnlargedSampler
 from pyiqa.data.prefetch_dataloader import CPUPrefetcher, CUDAPrefetcher
 from pyiqa.models import build_model
 from pyiqa.utils import (AvgTimer, MessageLogger, check_resume, get_env_info, get_root_logger, get_time_str,
-                           init_tb_logger, init_wandb_logger, make_exp_dirs, mkdir_and_rename, scandir)
+                         init_tb_logger, init_wandb_logger, make_exp_dirs, mkdir_and_rename, scandir)
 from pyiqa.utils.options import copy_opt_file, dict2str, parse_options
 
 
@@ -181,7 +181,7 @@ def train_pipeline(root_path):
                 log_vars.update({'time': iter_timer.get_avg_time(), 'data_time': data_timer.get_avg_time()})
                 log_vars.update(model.get_current_log())
                 msg_logger(log_vars)
-   
+
             # save models and training states
             save_ckpt_freq = opt['logger'].get('save_checkpoint_freq', 9e9)
             if current_iter % save_ckpt_freq == 0:
@@ -190,7 +190,7 @@ def train_pipeline(root_path):
 
             if current_iter % opt['logger']['save_latest_freq'] == 0:
                 logger.info('Saving latest models and training states.')
-                model.save(epoch, -1) 
+                model.save(epoch, -1)
 
             # validation
             if opt.get('val') is not None and (current_iter % opt['val']['val_freq'] == 0):

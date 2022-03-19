@@ -11,12 +11,13 @@ from torch.nn.modules.batchnorm import _BatchNorm
 from pyiqa.utils.download_util import load_file_from_url
 
 # --------------------------------------------
-# IQA utils 
+# IQA utils
 # --------------------------------------------
+
 
 def dist_to_mos(dist_score: torch.Tensor) -> torch.Tensor:
     """Convert distribution prediction to mos score.
-    For datasets with detailed score labels, such as AVA  
+    For datasets with detailed score labels, such as AVA
 
     Args:
         dist_score (tensor): (*, C), C is the class number
@@ -27,11 +28,13 @@ def dist_to_mos(dist_score: torch.Tensor) -> torch.Tensor:
     num_classes = dist_score.shape[-1]
     mos_score = dist_score * torch.arange(1, num_classes + 1).to(dist_score)
     mos_score = mos_score.sum(dim=-1, keepdim=True)
-    return mos_score 
+    return mos_score
+
 
 # --------------------------------------------
-# Common utils 
+# Common utils
 # --------------------------------------------
+
 
 def load_pretrained_network(net, model_path, strict=True, weight_keys=None):
     if model_path.startswith('https://') or model_path.startswith('http://'):
@@ -40,7 +43,7 @@ def load_pretrained_network(net, model_path, strict=True, weight_keys=None):
     state_dict = torch.load(model_path, map_location=torch.device('cpu'))
     if weight_keys:
         state_dict = state_dict[weight_keys]
-    net.load_state_dict(state_dict, strict=strict) 
+    net.load_state_dict(state_dict, strict=strict)
 
 
 def _ntuple(n):
@@ -52,6 +55,7 @@ def _ntuple(n):
 
     return parse
 
+
 to_1tuple = _ntuple(1)
 to_2tuple = _ntuple(2)
 to_3tuple = _ntuple(3)
@@ -62,7 +66,7 @@ to_ntuple = _ntuple
 @torch.no_grad()
 def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
     r"""Initialize network weights.
-    
+
     Args:
         module_list (list[nn.Module] | nn.Module): Modules to be initialized.
         scale (float): Scale initialized weights, especially for residual
@@ -101,28 +105,26 @@ def excact_padding_2d(x, kernel, stride=1, dilation=1, mode='same'):
     w2 = math.ceil(w / stride[1])
     pad_row = (h2 - 1) * stride[0] + (kernel[0] - 1) * dilation[0] + 1 - h
     pad_col = (w2 - 1) * stride[1] + (kernel[1] - 1) * dilation[1] + 1 - w
-    pad_l, pad_r, pad_t, pad_b = (pad_col//2, pad_col - pad_col//2, pad_row//2, pad_row - pad_row//2)
+    pad_l, pad_r, pad_t, pad_b = (pad_col // 2, pad_col - pad_col // 2, pad_row // 2, pad_row - pad_row // 2)
 
     mode = mode if mode != 'same' else 'constant'
     if mode != 'symmetric':
         x = F.pad(x, (pad_l, pad_r, pad_t, pad_b), mode=mode)
     elif mode == 'symmetric':
-        sym_h = torch.flip(x, [2]) 
-        sym_w = torch.flip(x, [3]) 
+        sym_h = torch.flip(x, [2])
+        sym_w = torch.flip(x, [3])
         sym_hw = torch.flip(x, [2, 3])
 
-        row1 = torch.cat((sym_hw, sym_h, sym_hw), dim=3) 
-        row2 = torch.cat((sym_w, x, sym_w), dim=3) 
-        row3 = torch.cat((sym_hw, sym_h, sym_hw), dim=3) 
-    
+        row1 = torch.cat((sym_hw, sym_h, sym_hw), dim=3)
+        row2 = torch.cat((sym_w, x, sym_w), dim=3)
+        row3 = torch.cat((sym_hw, sym_h, sym_hw), dim=3)
+
         whole_map = torch.cat((row1, row2, row3), dim=2)
 
-        x = whole_map[:, :, 
-                h - pad_t: 2*h + pad_b,
-                w - pad_l: 2*w + pad_r,
-                ]
+        x = whole_map[:, :, h - pad_t:2 * h + pad_b, w - pad_l:2 * w + pad_r, ]
 
     return x
+
 
 class ExactPadding2d(nn.Module):
     r"""This function calculate exact padding values for 4D tensor inputs,
@@ -135,13 +137,13 @@ class ExactPadding2d(nn.Module):
         mode (srt): padding mode can be ('same', 'symmetric', 'replicate', 'circular')
 
     """
+
     def __init__(self, kernel, stride=1, dilation=1, mode='same'):
         super().__init__()
         self.kernel = to_2tuple(kernel)
         self.stride = to_2tuple(stride)
         self.dilation = to_2tuple(dilation)
         self.mode = mode
-    
+
     def forward(self, x):
         return excact_padding_2d(x, self.kernel, self.stride, self.dilation, self.mode)
-

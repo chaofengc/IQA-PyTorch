@@ -36,15 +36,19 @@ tf_params = np.load(ckpt_path)
 tf_keys = [k for k in tf_params.keys() if 'target' in k]
 th_keys = th_params.keys()
 
+
 class TmpHead(torch.nn.Module):
+
     def __init__(self) -> None:
         super().__init__()
         self.imagenet_head = torch.nn.Linear(384, 1000)
+
 
 if 'imagenet' in ckpt_path:
     th_params.update(TmpHead().state_dict())
 
 total_converted_params = 0
+
 
 def convert_module(tf_same_key_strs, th_same_key_strs=None):
     global total_converted_params
@@ -52,25 +56,26 @@ def convert_module(tf_same_key_strs, th_same_key_strs=None):
     if th_same_key_strs is None:
         th_same_key_strs = tf_same_key_strs
 
-    tf_filter_keys = [] 
+    tf_filter_keys = []
     th_filter_keys = []
     for tfk in tf_keys:
-        keep_flag = True 
+        keep_flag = True
         for sk in tf_same_key_strs:
             if sk.lower() not in tfk.lower():
                 keep_flag = False
         if keep_flag:
-            tf_filter_keys.append(tfk) 
+            tf_filter_keys.append(tfk)
 
     for thk in th_keys:
-        keep_flag = True 
+        keep_flag = True
         for sk in th_same_key_strs:
             if sk.lower() not in thk.lower():
                 keep_flag = False
         if keep_flag:
-            th_filter_keys.append(thk) 
+            th_filter_keys.append(thk)
 
-    assert len(tf_filter_keys) == len(th_filter_keys), f'{tf_filter_keys}, {th_filter_keys}, {len(tf_filter_keys)}, {len(th_filter_keys)}'
+    assert len(tf_filter_keys) == len(
+        th_filter_keys), f'{tf_filter_keys}, {th_filter_keys}, {len(tf_filter_keys)}, {len(th_filter_keys)}'
     for tfk, thk in zip(sorted(tf_filter_keys), sorted(th_filter_keys)):
         print(f'Assign {tfk} to {thk}')
         tfw = tf_params[tfk]
@@ -97,18 +102,19 @@ def convert_module(tf_same_key_strs, th_same_key_strs=None):
         assert tfw.shape == thw.shape, f'shape not match, {tfw.shape}, {thw.shape}'
         th_params[thk].copy_(torch.from_numpy(tfw))
         assert check_same(tfw, th_params[thk]), f'value not match'
-        total_converted_params = total_converted_params + 1        
+        total_converted_params = total_converted_params + 1
+
 
 # first 5 conv layers
-convert_module(['root']) 
-convert_module(['block1']) 
+convert_module(['root'])
+convert_module(['block1'])
 
 # fc layers
-convert_module(['target/embedding'], ['embedding']) 
+convert_module(['target/embedding'], ['embedding'])
 if 'imagenet' in ckpt_path:
-    convert_module(['target/head'], ['imagenet_head']) 
+    convert_module(['target/head'], ['imagenet_head'])
 else:
-    convert_module(['target/head'], ['head']) 
+    convert_module(['target/head'], ['head'])
 
 # transformer layers
 convert_module(['posembed_input'])
@@ -119,6 +125,8 @@ convert_module(['encoderblock_', 'norm'])
 convert_module(['encoderblock_', 'mlp'])
 convert_module(['encoderblock_', 'attention'])
 
-print(f'Model param num: {len(tf_keys)}/tensorflow, {len(tf_keys)}/pytorch. Converted param num: {total_converted_params}')
+print(
+    f'Model param num: {len(tf_keys)}/tensorflow, {len(tf_keys)}/pytorch. Converted param num: {total_converted_params}'
+)
 print(f'Save model to {save_path}')
 torch.save(th_params, save_path)

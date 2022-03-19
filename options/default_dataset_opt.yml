@@ -1,4 +1,4 @@
-csiq: 
+csiq:
   name: CSIQ
   type: GeneralFRDataset
   dataroot_target: ./datasets/CSIQ/dst_imgs
@@ -14,7 +14,7 @@ tid2008:
   meta_info_file: ./datasets/meta_info/meta_info_TID2008Dataset.csv
 
 tid2013:
-  name: TID2013 
+  name: TID2013
   type: GeneralFRDataset
   dataroot_target: ./datasets/tid2013/distorted_images
   dataroot_ref: ./datasets/tid2013/reference_images
@@ -34,17 +34,17 @@ livem:
   meta_info_file: './datasets/meta_info/meta_info_LIVEMDDataset.csv'
 
 livec:
-  name: LIVEC 
+  name: LIVEC
   type: LIVEChallengeDataset
   dataroot_target: ./datasets/LIVEC/
   meta_info_file: ./datasets/meta_info/meta_info_LIVEChallengeDataset.csv
 
 koniq10k:
-  name: KonIQ10k 
+  name: KonIQ10k
   type: GeneralNRDataset
   dataroot_target: './datasets/koniq10k/512x384'
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
-  split_file: './datasets/train_split_info/koniq10k_official.pkl' 
+  split_file: './datasets/train_split_info/koniq10k_official.pkl'
   phase: 'test'
 
 koniq10k++:
@@ -52,11 +52,11 @@ koniq10k++:
   type: GeneralNRDataset
   dataroot_target: './datasets/koniq10k/512x384'
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10k++Dataset.csv'
-  split_file: './datasets/train_split_info/koniq10k_official.pkl' 
+  split_file: './datasets/train_split_info/koniq10k_official.pkl'
   phase: 'test'
 
 kadid10k:
-  name: KADID10k 
+  name: KADID10k
   type: GeneralFRDataset
   dataroot_target: './datasets/kadid10k/images'
   meta_info_file: './datasets/meta_info/meta_info_KADID10kDataset.csv'
@@ -73,30 +73,30 @@ ava:
   dataroot_target: './datasets/AVA_dataset/ava_images/'
   meta_info_file: './datasets/meta_info/meta_info_AVADataset.csv'
   split_file: './datasets/meta_info/ava_official_ilgnet.pkl'
-  split_index: 1 # use official split  
+  split_index: 1 # use official split
 
 pipal:
-  name: PIPAL 
+  name: PIPAL
   type: GeneralFRDataset
   dataroot_target: './datasets/PIPAL/Dist_Imgs'
   dataroot_ref: './datasets/PIPAL/Train_Ref'
   meta_info_file: './datasets/meta_info/meta_info_PIPALDataset.csv'
 
 flive:
-  name: FLIVE 
+  name: FLIVE
   type: GeneralNRDataset
   dataroot_target: './datasets/FLIVE_Database/database'
   meta_info_file: './datasets/meta_info/meta_info_FLIVEDataset.csv'
-  split_file: './datasets/meta_info/flive_official.pkl' 
+  split_file: './datasets/meta_info/flive_official.pkl'
 
 pieapp:
-  name: PieAPPDataset 
+  name: PieAPPDataset
   type: GeneralNRDataset
   dataroot_target: './datasets/PieAPP_dataset_CVPR_2018/'
   meta_info_file: './datasets/meta_info/meta_info_PieAPPDataset.csv'
 
 bapps:
-  name: BAPPS 
+  name: BAPPS
   type: BAPPSDataset
   dataroot_target: './datasets/PerceptualSimilarity/dataset'
   meta_info_file: './datasets/meta_info/meta_info_BAPPSDataset.csv'

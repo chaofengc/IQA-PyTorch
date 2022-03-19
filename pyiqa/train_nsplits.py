@@ -8,7 +8,8 @@ from os import path as osp
 
 from pyiqa.data.prefetch_dataloader import CPUPrefetcher, CUDAPrefetcher
 from pyiqa.models import build_model
-from pyiqa.utils import (AvgTimer, MessageLogger, get_root_logger, get_time_str, get_env_info, make_exp_dirs, mkdir_and_rename)
+from pyiqa.utils import (AvgTimer, MessageLogger, get_root_logger, get_time_str, get_env_info, make_exp_dirs,
+                         mkdir_and_rename)
 from pyiqa.utils.options import copy_opt_file, dict2str, parse_options, make_paths
 from pyiqa.train import init_tb_loggers, create_train_val_dataloader
 
@@ -91,7 +92,7 @@ def train_single_split_pipeline(root_path, opt, args):
                 log_vars.update({'time': iter_timer.get_avg_time(), 'data_time': data_timer.get_avg_time()})
                 log_vars.update(model.get_current_log())
                 msg_logger(log_vars)
-   
+
             # save models and training states
             if current_iter % opt['logger']['save_checkpoint_freq'] == 0:
                 logger.info('Saving models and training states.')
@@ -120,7 +121,7 @@ def train_single_split_pipeline(root_path, opt, args):
     model.save(epoch=-1, current_iter=-1)  # -1 stands for the latest
     if tb_logger:
         tb_logger.close()
-    
+
     return model.best_metric_results
 
 
@@ -139,9 +140,9 @@ def train_nsplits(root_path):
         opt['datasets']['val']['split_index'] = i + 1
         if 'test' in opt['datasets']:
             opt['datasets']['test']['split_index'] = i + 1
-        tmp_results = train_single_split_pipeline(root_path, opt, args)  
+        tmp_results = train_single_split_pipeline(root_path, opt, args)
         all_split_results.append(tmp_results)
-    
+
     with open(save_path, 'w') as sf:
         datasets = list(all_split_results[0].keys())
         metrics = list(all_split_results[0][datasets[0]].keys())
@@ -160,7 +161,7 @@ def train_nsplits(root_path):
                 all_results.append(tmp_metric_results)
             avg_results = np.array(all_results).mean(axis=0)
             sf.write(f'Average results in {ds}: {avg_results}\n')
-                    
+
 
 if __name__ == '__main__':
     root_path = osp.abspath(osp.join(__file__, osp.pardir, osp.pardir))

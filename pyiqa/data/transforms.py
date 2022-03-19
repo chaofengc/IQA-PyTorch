@@ -1,6 +1,6 @@
 import cv2
 import random
-import functools 
+import functools
 from typing import Union
 from PIL import Image
 
@@ -11,7 +11,7 @@ import torchvision.transforms.functional as F
 
 def transform_mapping(key, value):
     if key == 'hflip' and value:
-        return [PairedRandomHorizontalFlip()] 
+        return [PairedRandomHorizontalFlip()]
     elif key == 'random_crop':
         return [PairedRandomCrop(value)]
     elif key == 'center_crop':
@@ -29,11 +29,12 @@ def _check_pair(x):
 
 class PairedRandomCrop(tf.RandomCrop):
     """Pair version of random crop"""
+
     def _pad(self, img):
         if self.padding is not None:
             img = F.pad(img, self.padding, self.fill, self.padding_mode)
 
-        width, height = img.size 
+        width, height = img.size
         # pad the width if needed
         if self.pad_if_needed and width < self.size[1]:
             padding = [self.size[1] - width, 0]
@@ -60,6 +61,7 @@ class PairedRandomCrop(tf.RandomCrop):
 
 class PairedRandomHorizontalFlip(tf.RandomHorizontalFlip):
     """Pair version of random hflip"""
+
     def forward(self, imgs):
         if _check_pair(imgs):
             img1, img2 = imgs
@@ -74,13 +76,14 @@ class PairedRandomHorizontalFlip(tf.RandomHorizontalFlip):
 
 class PairedResize(tf.Resize):
     """Pair version of resize"""
+
     def forward(self, imgs):
         if _check_pair(imgs):
             img1, img2 = imgs
             img1 = super().forward(img1)
             img2 = super().forward(img2)
             return [img1, img2]
-        elif isinstance(imgs, Image.Image): 
+        elif isinstance(imgs, Image.Image):
             img1 = imgs
             return super().forward(img1)
 

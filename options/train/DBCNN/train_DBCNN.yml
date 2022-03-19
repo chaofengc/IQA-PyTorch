@@ -1,17 +1,17 @@
 # general settings
-# name: debug_DBCNN_LIVEC 
-name: 001_DBCNN_LIVEC 
-model_type: DBCNNModel 
+# name: debug_DBCNN_LIVEC
+name: 001_DBCNN_LIVEC
+model_type: DBCNNModel
 num_gpu: 1  # set num_gpu: 0 for cpu mode
-manual_seed: 123 
-split_num: 10 
+manual_seed: 123
+split_num: 10
 save_final_results_path: './experiments/DBCNN_LIVEChallenge_10splits_results.txt'
 
 # dataset and data loader settings
 datasets:
   train:
-    name: livechallenge 
-    type: LIVEChallengeDataset 
+    name: livechallenge
+    type: LIVEChallengeDataset
     dataroot_target: ./datasets/LIVEC/
     meta_info_file: ./datasets/meta_info/meta_info_LIVEChallengeDataset.csv
     split_file: ./datasets/meta_info/livechallenge_seed123.pkl
@@ -21,17 +21,17 @@ datasets:
       hflip: true
       random_crop: 448
     img_range: 1
-    
+
     # data loader
     use_shuffle: true
     num_worker_per_gpu: 4
-    batch_size_per_gpu: 8 
-    dataset_enlarge_ratio: 1 
+    batch_size_per_gpu: 8
+    dataset_enlarge_ratio: 1
     prefetch_mode: ~
 
   val:
-    name: livechallenge 
-    type: LIVEChallengeDataset 
+    name: livechallenge
+    type: LIVEChallengeDataset
     dataroot_target: ./datasets/LIVEC
     meta_info_file: ./datasets/meta_info/meta_info_LIVEChallengeDataset.csv
     split_file: ./datasets/meta_info/livechallenge_seed123.pkl
@@ -39,7 +39,7 @@ datasets:
 
 # network structures
 network:
-  type: DBCNN 
+  type: DBCNN
   pretrained_scnn_path: './experiments/pretrained_models/DBCNN/scnn.pkl'
 
 # path
@@ -51,51 +51,51 @@ path:
 # training settings
 train:
   optim:
-    type: SGD 
-    lr: !!float 1e-3 
+    type: SGD
+    lr: !!float 1e-3
     momentum: 0.9
-    weight_decay: !!float 5e-4 
-    
+    weight_decay: !!float 5e-4
+
   optim_finetune:
-    type: Adam 
-    lr: !!float 1e-5 
-    weight_decay: !!float 5e-4 
+    type: Adam
+    lr: !!float 1e-5
+    weight_decay: !!float 5e-4
 
   scheduler:
     type: MultiStepLR
     milestones: [1000]
-    gamma: 1 
-  
+    gamma: 1
+
   scheduler_finetune:
     type: MultiStepLR
     milestones: [1000]
-    gamma: 1 
+    gamma: 1
 
-  total_iter: 12000 
+  total_iter: 12000
   finetune_start_iter: 6000
   warmup_iter: -1  # no warm up
-  
+
   # losses
   mos_loss_opt:
-    type: MSELoss 
+    type: MSELoss
     loss_weight: !!float 1.0
     reduction: mean
 
 # validation settings
 val:
-  val_freq: !!float 100 
+  val_freq: !!float 100
   save_img: false
   pbar: true
 
-  key_metric: srcc # if this metric improve, update all metrics. If not specified, each best metric results will be updated separately 
+  key_metric: srcc # if this metric improve, update all metrics. If not specified, each best metric results will be updated separately
   metrics:
-    srcc: 
+    srcc:
       type: calculate_srcc
 
-    plcc: 
+    plcc:
       type: calculate_plcc
 
-    krcc: 
+    krcc:
       type: calculate_krcc
 
 # logging settings

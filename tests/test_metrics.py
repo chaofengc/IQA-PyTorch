@@ -17,7 +17,7 @@ def load_test_img_batch():
     img_batch = []
     ref_batch = []
     for img_name, ref_name in zip(img_list, ref_list):
-        img_path = os.path.join(img_dir, img_name) 
+        img_path = os.path.join(img_dir, img_name)
         ref_path = os.path.join(ref_dir, ref_name)
 
         img_tensor = imread2tensor(img_path).unsqueeze(0)
@@ -67,9 +67,9 @@ def run_test(test_metric_names):
         if metric_name in org_results.keys():
             org_score = np.array([float(x) for x in org_results[metric_name]])
             our_score = score.squeeze().data.cpu().numpy()
-            diff = np.abs(np.abs(org_score) - np.abs(our_score)) 
-            diff = diff * (diff > 0.01)                         # remove small difference
-            diff = (diff / (np.abs(org_score) + 1e-8)).mean()   # calculate relative error
+            diff = np.abs(np.abs(org_score) - np.abs(our_score))
+            diff = diff * (diff > 0.01)  # remove small difference
+            diff = (diff / (np.abs(org_score) + 1e-8)).mean()  # calculate relative error
             # assert diff < 0.01, f'Results average difference {diff*100:.2f}% is too big !!!'
             if diff > 0.01:
                 failed_metrics.append(f'Metric {metric_name}, diff {diff}')
@@ -79,7 +79,7 @@ def run_test(test_metric_names):
 
         # Backward check
         if metric_name not in ['nrqm', 'pi']:
-            score.mean().backward()        
+            score.mean().backward()
 
             grad_map = img_batch.grad
             nan_num = torch.isnan(grad_map).sum()
@@ -88,9 +88,10 @@ def run_test(test_metric_names):
             else:
                 failed_metrics.append(f'Metric {metric_name}, gradient wrong with {nan_num}')
                 print(f'============> Wrong gradient of {metric_name} with {nan_num} numbers !')
-        
+
     for fm in failed_metrics:
         print(fm)
+
 
 if __name__ == '__main__':
     test_metric_names = pyiqa.list_models()

@@ -64,8 +64,8 @@ class BaseModel():
         self.key_metric = self.opt['val'].get('key_metric', None)
 
     def _update_metric_result(self, dataset_name, metric, val, current_iter):
-            self.best_metric_results[dataset_name][metric]['val'] = val
-            self.best_metric_results[dataset_name][metric]['iter'] = current_iter
+        self.best_metric_results[dataset_name][metric]['val'] = val
+        self.best_metric_results[dataset_name][metric]['iter'] = current_iter
 
     def _update_best_metric_result(self, dataset_name, metric, val, current_iter):
         if self.best_metric_results[dataset_name][metric]['better'] == 'higher':

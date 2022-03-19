@@ -22,10 +22,9 @@ import torch.nn.functional as F
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter, fitweibull
-from .func_util import estimate_aggd_param, torch_cov, normalize_img_with_guass, nanmean 
+from .func_util import estimate_aggd_param, torch_cov, normalize_img_with_guass, nanmean
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
-
 
 default_model_urls = {
     'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_modelparameters.mat',
@@ -34,9 +33,10 @@ default_model_urls = {
 }
 
 
-def compute_feature(block: torch.Tensor,
-                    ilniqe: bool = False,
-                ) -> torch.Tensor:
+def compute_feature(
+    block: torch.Tensor,
+    ilniqe: bool = False,
+) -> torch.Tensor:
     """Compute features.
     Args:
         block (Tensor): Image block in shape (b, c, h, w).
@@ -57,8 +57,7 @@ def compute_feature(block: torch.Tensor,
         shifted_block = torch.roll(aggd_block, shifts[i], dims=(2, 3))
         alpha, beta_l, beta_r = estimate_aggd_param(aggd_block * shifted_block)
         # Eq. 8
-        mean = (beta_r - beta_l) * (torch.lgamma(2 / alpha) -
-                                    torch.lgamma(1 / alpha)).exp()
+        mean = (beta_r - beta_l) * (torch.lgamma(2 / alpha) - torch.lgamma(1 / alpha)).exp()
         feat.extend((alpha, mean, beta_l, beta_r))
     feat = [x.reshape(bsz, 1) for x in feat]
 
@@ -69,13 +68,13 @@ def compute_feature(block: torch.Tensor,
         scale_shape = shape_scale[:, [1, 0]].reshape(bsz, -1)
         feat.append(scale_shape)
 
-        mu = torch.mean(block[:, 4:7], dim=(2,3))
-        sigmaSquare = torch.var(block[:, 4:7], dim=(2,3))
+        mu = torch.mean(block[:, 4:7], dim=(2, 3))
+        sigmaSquare = torch.var(block[:, 4:7], dim=(2, 3))
         mu_sigma = torch.stack((mu, sigmaSquare), dim=-1).reshape(bsz, -1)
         feat.append(mu_sigma)
 
         channels = 85 - 7
-        tmp_block = block[:, 7:85].reshape(bsz*channels, 1, *block.shape[2:])
+        tmp_block = block[:, 7:85].reshape(bsz * channels, 1, *block.shape[2:])
         alpha_data, beta_l_data, beta_r_data = estimate_aggd_param(tmp_block)
         alpha_data = alpha_data.reshape(bsz, channels)
         beta_l_data = beta_l_data.reshape(bsz, channels)
@@ -88,9 +87,9 @@ def compute_feature(block: torch.Tensor,
         shape_scale = fitweibull(tmp_block.reshape(bsz * channels, -1))
         scale_shape = shape_scale[:, [1, 0]].reshape(bsz, -1)
         feat.append(scale_shape)
-    
+
     feat = torch.cat(feat, dim=-1)
-    return feat 
+    return feat
 
 
 def niqe(img: torch.Tensor,
@@ -111,9 +110,7 @@ def niqe(img: torch.Tensor,
         block_size_w (int): Width of the blocks in to which image is divided.
             Default: 96 (the official recommended value).
     """
-    assert img.ndim == 4, (
-        'Input image must be a gray or Y (of YCbCr) image with shape (b, c, h, w).'
-    )
+    assert img.ndim == 4, ('Input image must be a gray or Y (of YCbCr) image with shape (b, c, h, w).')
     # crop image
     b, c, h, w = img.shape
     num_block_h = math.floor(h / block_size_h)
@@ -128,11 +125,8 @@ def niqe(img: torch.Tensor,
         for idx_w in range(num_block_w):
             for idx_h in range(num_block_h):
                 # process ecah block
-                block = img_normalized[..., idx_h * block_size_h //
-                                      scale:(idx_h + 1) * block_size_h //
-                                      scale, idx_w * block_size_w //
-                                      scale:(idx_w + 1) * block_size_w //
-                                      scale]
+                block = img_normalized[..., idx_h * block_size_h // scale:(idx_h + 1) * block_size_h // scale,
+                                       idx_w * block_size_w // scale:(idx_w + 1) * block_size_w // scale]
                 feat.append(compute_feature(block))
 
         distparam.append(torch.stack(feat).transpose(0, 1))
@@ -144,17 +138,15 @@ def niqe(img: torch.Tensor,
     distparam = torch.cat(distparam, -1)
 
     # fit a MVG (multivariate Gaussian) model to distorted patch features
-    mu_distparam = nanmean(distparam, dim=1) 
+    mu_distparam = nanmean(distparam, dim=1)
 
-    distparam_no_nan = torch.nan_to_num(distparam) 
+    distparam_no_nan = torch.nan_to_num(distparam)
     cov_distparam = torch_cov(distparam_no_nan.transpose(1, 2))
 
     # compute niqe quality, Eq. 10 in the paper
-    invcov_param = torch.linalg.pinv(
-        (cov_pris_param + cov_distparam) / 2)
+    invcov_param = torch.linalg.pinv((cov_pris_param + cov_distparam) / 2)
     diff = (mu_pris_param - mu_distparam).unsqueeze(1)
-    quality = torch.bmm(torch.bmm(diff, invcov_param),
-                        diff.transpose(1, 2)).squeeze()
+    quality = torch.bmm(torch.bmm(diff, invcov_param), diff.transpose(1, 2)).squeeze()
 
     quality = torch.sqrt(quality)
     return quality
@@ -212,7 +204,7 @@ def gauDerivative(sigma, in_ch=1, out_ch=1, device=None):
     dx = dx.repeat(out_ch, in_ch, 1, 1)
     dy = dy.repeat(out_ch, in_ch, 1, 1)
 
-    return dx, dy 
+    return dx, dy
 
 
 def ilniqe(img: torch.Tensor,
@@ -250,7 +242,7 @@ def ilniqe(img: torch.Tensor,
     scaleFactorForLoG = 0.87
     scaleFactorForGaussianDer = 0.28
     sigmaForDownsample = 0.9
-    
+
     EPS = 1e-8
     scales = 3
     orientations = 4
@@ -282,27 +274,24 @@ def ilniqe(img: torch.Tensor,
         dx, dy = gauDerivative(sigmaForGauDerivative / (scale**scaleFactorForGaussianDer), device=img)
 
         Ix = conv2d(O_img, dx.repeat(3, 1, 1, 1), groups=3)
-        Iy = conv2d(O_img, dy.repeat(3, 1, 1, 1), groups=3) 
-        GM = torch.sqrt(Ix ** 2 + Iy ** 2 + EPS)
-        Ixy = torch.stack((Ix, Iy), dim=2).reshape(
-            Ix.shape[0], Ix.shape[1]*2, *Ix.shape[2:]
-        ) # reshape to (IxO1, IxO1, IxO2, IyO2, IxO3, IyO3)
-        
+        Iy = conv2d(O_img, dy.repeat(3, 1, 1, 1), groups=3)
+        GM = torch.sqrt(Ix**2 + Iy**2 + EPS)
+        Ixy = torch.stack((Ix, Iy), dim=2).reshape(Ix.shape[0], Ix.shape[1] * 2,
+                                                   *Ix.shape[2:])  # reshape to (IxO1, IxO1, IxO2, IyO2, IxO3, IyO3)
+
         logRGB = torch.log(img + KforLog)
         logRGBMS = logRGB - logRGB.mean(dim=(2, 3), keepdim=True)
 
         Intensity = logRGBMS.sum(dim=1, keepdim=True) / np.sqrt(3)
         BY = (logRGBMS[:, [0]] + logRGBMS[:, [1]] - 2 * logRGBMS[:, [2]]) / np.sqrt(6)
-        RG = (logRGBMS[:, [0]] - logRGBMS[:, [1]]) / np.sqrt(2) 
+        RG = (logRGBMS[:, [0]] - logRGBMS[:, [1]]) / np.sqrt(2)
 
-        compositeMat = torch.cat(
-            [struct_dis, GM, Intensity, BY, RG, Ixy], dim=1
-        ) 
+        compositeMat = torch.cat([struct_dis, GM, Intensity, BY, RG, Ixy], dim=1)
 
         O3 = O_img[:, [2]]
         # gabor filter in shape (b, ori * scale, h, w)
         LGFilters = _construct_filters(
-            O3, 
+            O3,
             scales=scales,
             orientations=orientations,
             min_length=minWaveLength / (scale**scaleFactorForLoG),
@@ -313,7 +302,7 @@ def ilniqe(img: torch.Tensor,
         # reformat to scale * ori
         b, _, h, w = LGFilters.shape
         LGFilters = LGFilters.reshape(b, orientations, scales, h, w).transpose(1, 2).reshape(b, -1, h, w)
-        # TODO: current filters needs to be transposed to get same results as matlab, find the bug 
+        # TODO: current filters needs to be transposed to get same results as matlab, find the bug
         LGFilters = LGFilters.transpose(-1, -2)
         fftIm = torch.fft.fft2(O3)
 
@@ -365,11 +354,12 @@ def ilniqe(img: torch.Tensor,
         filterResult = imfilter(img, gauForDS.repeat(3, 1, 1, 1), padding='replicate', groups=3)
         img = filterResult[..., ::2, ::2]
 
-    distparam = torch.cat(distparam, dim=-1) # b, block_num, feature_num 
+    distparam = torch.cat(distparam, dim=-1)  # b, block_num, feature_num
     distparam[distparam > infConst] = infConst
 
     # fit a MVG (multivariate Gaussian) model to distorted patch features
-    coefficientsViaPCA = torch.bmm(principleVectors.transpose(1, 2), (distparam - meanOfSampleData.unsqueeze(1)).transpose(1, 2))
+    coefficientsViaPCA = torch.bmm(
+        principleVectors.transpose(1, 2), (distparam - meanOfSampleData.unsqueeze(1)).transpose(1, 2))
     final_features = coefficientsViaPCA.transpose(1, 2)
     b, blk_num, feat_num = final_features.shape
 
@@ -379,8 +369,8 @@ def ilniqe(img: torch.Tensor,
     cov_distparam = torch_cov(final_features_nonan, rowvar=False)
 
     # replace nan in final features with mu
-    mu_final_features = nanmean(final_features, dim=1, keepdim=True) 
-    final_features_withmu = torch.where(torch.isnan(final_features), mu_final_features, final_features) 
+    mu_final_features = nanmean(final_features, dim=1, keepdim=True)
+    final_features_withmu = torch.where(torch.isnan(final_features), mu_final_features, final_features)
 
     # compute ilniqe quality
     invcov_param = torch.linalg.pinv((cov_pris_param + cov_distparam) / 2)
@@ -443,8 +433,8 @@ class NIQE(torch.nn.Module):
             pixels are not involved in the metric calculation.
         pretrained_model_path (str): The pretrained model path.
     References:
-        Mittal, Anish, Rajiv Soundararajan, and Alan C. Bovik. 
-        "Making a “completely blind” image quality analyzer." 
+        Mittal, Anish, Rajiv Soundararajan, and Alan C. Bovik.
+        "Making a “completely blind” image quality analyzer."
         IEEE Signal Processing Letters (SPL) 20.3 (2012): 209-212.
     """
 
@@ -472,8 +462,7 @@ class NIQE(torch.nn.Module):
         Returns:
             Value of niqe metric in [0, 1] range.
         """
-        score = calculate_niqe(X, self.crop_border, self.test_y_channel,
-                               self.pretrained_model_path, self.color_space)
+        score = calculate_niqe(X, self.crop_border, self.test_y_channel, self.pretrained_model_path, self.color_space)
         return score
 
 
@@ -486,8 +475,8 @@ class ILNIQE(torch.nn.Module):
             pixels are not involved in the metric calculation.
         pretrained_model_path (str): The pretrained model path.
     References:
-        Zhang, Lin, Lei Zhang, and Alan C. Bovik. "A feature-enriched 
-        completely blind image quality evaluator." IEEE Transactions 
+        Zhang, Lin, Lei Zhang, and Alan C. Bovik. "A feature-enriched
+        completely blind image quality evaluator." IEEE Transactions
         on Image Processing 24.8 (2015): 2579-2591.
     """
 

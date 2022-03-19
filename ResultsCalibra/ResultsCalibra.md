@@ -52,23 +52,23 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 
 
 #### Notice
-<a name="fn1">[1]</a> CKDN used degraded images as references in the original paper.   
-<a name="fn2">[2]</a> The original SSIM matlab script downsample the image when larger than 256. We remove such constraint. We use rgb2gray function as input of original SSIM matlab script   
-<a name="fn3">[3]</a> We use rgb2gray function as input of original MS-SSIM matlab script.  
-<a name="fn4">[4]</a> The original PSNR code refers to scikit-learn package with RGB 3-channel calculation (from skimage.metrics import peak_signal_noise_ratio).  
-<a name="fn5">[5]</a> We use rgb2gray function as input of original VIF matlab script.  
-<a name="fn6">[6]</a> We use rgb2gray function as input of original GMSD matlab script.  
-<a name="fn7">[7]</a> We use rgb2gray function as input of original NLPD matlab script, and try to mimic 'imfilter' and 'conv2' functions in matlab.  
+<a name="fn1">[1]</a> CKDN used degraded images as references in the original paper.
+<a name="fn2">[2]</a> The original SSIM matlab script downsample the image when larger than 256. We remove such constraint. We use rgb2gray function as input of original SSIM matlab script
+<a name="fn3">[3]</a> We use rgb2gray function as input of original MS-SSIM matlab script.
+<a name="fn4">[4]</a> The original PSNR code refers to scikit-learn package with RGB 3-channel calculation (from skimage.metrics import peak_signal_noise_ratio).
+<a name="fn5">[5]</a> We use rgb2gray function as input of original VIF matlab script.
+<a name="fn6">[6]</a> We use rgb2gray function as input of original GMSD matlab script.
+<a name="fn7">[7]</a> We use rgb2gray function as input of original NLPD matlab script, and try to mimic 'imfilter' and 'conv2' functions in matlab.
 <a name="fn8">[8]</a> Since official matlab code is not available, we use the implement of IQA-Optimization for comparation. The differences are described as follows. After modifying the above implementation, the results are basically the same.
 
-- we use interpolation to transform the image to 256*256 and then back to the image size after calculating VSMap in the SDSP function 
+- we use interpolation to transform the image to 256*256 and then back to the image size after calculating VSMap in the SDSP function
 - rgb2lab's function is slightly different
 - the range of ours is -127 to 128 when constructing SDMap, and the value of optimization is -128 to 127
-- different down-sampling operations  
-  
-<a name="fn9">[9]</a> We use rgb2gray function as input of original CW-SSIM matlab script. The number of level is 4 and orientation is 8.  
-<a name="fn10">[10]</a> We use rgb2yiq function as input, and the original MAD matlab script is not available.  
-<a name="fn11">[11]</a> We use rgb2gray function as input of original NIQE matlab script.  
-<a name="fn12">[12]</a> We use rgb2gray function images as input of original BRISQUE matlab script.  
-<a name="fn13">[13]</a> Results have about ±2% difference with tensorflow codes because of some detailed implementation differences between TensorFlow and PyTorch. For example, PyTorch does not support gaussian interpolation, different default epsilon value, etc.   
+- different down-sampling operations
+
+<a name="fn9">[9]</a> We use rgb2gray function as input of original CW-SSIM matlab script. The number of level is 4 and orientation is 8.
+<a name="fn10">[10]</a> We use rgb2yiq function as input, and the original MAD matlab script is not available.
+<a name="fn11">[11]</a> We use rgb2gray function as input of original NIQE matlab script.
+<a name="fn12">[12]</a> We use rgb2gray function images as input of original BRISQUE matlab script.
+<a name="fn13">[13]</a> Results have about ±2% difference with tensorflow codes because of some detailed implementation differences between TensorFlow and PyTorch. For example, PyTorch does not support gaussian interpolation, different default epsilon value, etc.
 <a name="fn14">[14]</a> Perceptual Index (PI) use YCBCR color space and crop border with size 4.

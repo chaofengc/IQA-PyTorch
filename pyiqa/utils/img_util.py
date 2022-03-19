@@ -12,9 +12,9 @@ import torchvision.transforms.functional as TF
 def imread2tensor(img_path, rgb=False):
     """Read image to tensor.
 
-    Args: 
+    Args:
         img_path (str): path of image
-        rgb: convert input to RGB if true 
+        rgb: convert input to RGB if true
     """
     img = Image.open(img_path)
     if rgb:

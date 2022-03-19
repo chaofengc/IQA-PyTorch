@@ -19,6 +19,7 @@ default_model_urls = {
     'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DISTS_weights-f5e65c96.pth'
 }
 
+
 class L2pooling(nn.Module):
 
     def __init__(self, filter_size=5, stride=2, channels=None, pad_off=0):
@@ -29,16 +30,11 @@ class L2pooling(nn.Module):
         a = np.hanning(filter_size)[1:-1]
         g = torch.Tensor(a[:, None] * a[None, :])
         g = g / torch.sum(g)
-        self.register_buffer(
-            'filter', g[None, None, :, :].repeat((self.channels, 1, 1, 1)))
+        self.register_buffer('filter', g[None, None, :, :].repeat((self.channels, 1, 1, 1)))
 
     def forward(self, input):
         input = input**2
-        out = F.conv2d(input,
-                       self.filter,
-                       stride=self.stride,
-                       padding=self.padding,
-                       groups=input.shape[1])
+        out = F.conv2d(input, self.filter, stride=self.stride, padding=self.padding, groups=input.shape[1])
         return (out + 1e-12).sqrt()
 
 
@@ -47,7 +43,7 @@ class DISTS(torch.nn.Module):
     r'''DISTS model.
     Args:
         pretrained_model_path (String): Pretrained model path.
-        
+
     '''
 
     def __init__(self, pretrained=True, pretrained_model_path=None, **kwargs):
@@ -78,18 +74,12 @@ class DISTS(torch.nn.Module):
         for param in self.parameters():
             param.requires_grad = False
 
-        self.register_buffer(
-            "mean",
-            torch.tensor([0.485, 0.456, 0.406]).view(1, -1, 1, 1))
-        self.register_buffer(
-            "std",
-            torch.tensor([0.229, 0.224, 0.225]).view(1, -1, 1, 1))
+        self.register_buffer('mean', torch.tensor([0.485, 0.456, 0.406]).view(1, -1, 1, 1))
+        self.register_buffer('std', torch.tensor([0.229, 0.224, 0.225]).view(1, -1, 1, 1))
 
         self.chns = [3, 64, 128, 256, 512, 512]
-        self.register_parameter(
-            "alpha", nn.Parameter(torch.randn(1, sum(self.chns), 1, 1)))
-        self.register_parameter(
-            "beta", nn.Parameter(torch.randn(1, sum(self.chns), 1, 1)))
+        self.register_parameter('alpha', nn.Parameter(torch.randn(1, sum(self.chns), 1, 1)))
+        self.register_parameter('beta', nn.Parameter(torch.randn(1, sum(self.chns), 1, 1)))
         self.alpha.data.normal_(0.1, 0.01)
         self.beta.data.normal_(0.1, 0.01)
 
@@ -121,7 +111,7 @@ class DISTS(torch.nn.Module):
 
         Returns:
             Value of DISTS model.
-            
+
         """
         feats0 = self.forward_once(x)
         feats1 = self.forward_once(y)
@@ -141,11 +131,10 @@ class DISTS(torch.nn.Module):
 
             x_var = ((feats0[k] - x_mean)**2).mean([2, 3], keepdim=True)
             y_var = ((feats1[k] - y_mean)**2).mean([2, 3], keepdim=True)
-            xy_cov = (feats0[k] * feats1[k]).mean(
-                [2, 3], keepdim=True) - x_mean * y_mean
+            xy_cov = (feats0[k] * feats1[k]).mean([2, 3], keepdim=True) - x_mean * y_mean
             S2 = (2 * xy_cov + c2) / (x_var + y_var + c2)
             dist2 = dist2 + (beta[k] * S2).sum(1, keepdim=True)
 
         score = 1 - (dist1 + dist2).squeeze()
-        
+
         return score
