@@ -24,6 +24,7 @@ lint:
 clean:
 	rm -rf __pycache__
 	rm -rf pyiqa/__pycache__
+	rm -r pyiqa.egg-info
 	rm -rf build
 	rm -rf dist
 	pip uninstall -y pyiqa || true

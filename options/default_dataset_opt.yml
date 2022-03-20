@@ -72,7 +72,7 @@ ava:
   type: AVADataset
   dataroot_target: './datasets/AVA_dataset/ava_images/'
   meta_info_file: './datasets/meta_info/meta_info_AVADataset.csv'
-  split_file: './datasets/meta_info/ava_official_ilgnet.pkl'
+  split_file: './datasets/train_split_info/ava_official_ilgnet.pkl'
   split_index: 1 # use official split
 
 pipal:
@@ -87,7 +87,7 @@ flive:
   type: GeneralNRDataset
   dataroot_target: './datasets/FLIVE_Database/database'
   meta_info_file: './datasets/meta_info/meta_info_FLIVEDataset.csv'
-  split_file: './datasets/meta_info/flive_official.pkl'
+  split_file: './datasets/train_split_info/flive_official.pkl'
 
 pieapp:
   name: PieAPPDataset
