@@ -123,5 +123,5 @@ class PieAPP(nn.Module):
         per_patch_weight = self.fc2_weight(F.relu(self.fc1_weight(diff_coarse))) + 1e-6
         per_patch_weight = per_patch_weight.view((-1, num_patches))
 
-        score = (per_patch_weight * per_patch_score).sum() / per_patch_weight.sum(dim=-1)
+        score = (per_patch_weight * per_patch_score).sum(dim=-1) / per_patch_weight.sum(dim=-1)
         return score.squeeze()
