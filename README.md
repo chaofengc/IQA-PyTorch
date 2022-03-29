@@ -79,8 +79,7 @@ Below are details of supported methods and datasets in this project.
 </td></tr>
 </table>
 
-<a name="fn1">[1]</a> This method use distorted image as reference. Please refer to the paper for details.  
-
+<a name="fn1">[1]</a> This method use distorted image as reference. Please refer to the paper for details.<br>
 <a name="fn2">[2]</a> Currently, only naive random forest regression is implemented and **does not** support backward.
 
 </details>
