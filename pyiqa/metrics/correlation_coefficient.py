@@ -4,7 +4,7 @@ import numpy as np
 from pyiqa.utils.registry import METRIC_REGISTRY
 
 
-def fit_curve(x, y, curve_type='4params'):
+def fit_curve(x, y, curve_type='logistic_4params'):
     r'''Fit the scale of predict scores to MOS scores using logistic regression suggested by VQEG.
 
     The function with 4 params is more commonly used.
@@ -12,7 +12,8 @@ def fit_curve(x, y, curve_type='4params'):
         - https://github.com/zwx8981/DBCNN/blob/master/dbcnn/tools/verify_performance.m
 
     '''
-    assert curve_type in ['4params', '5params'], f'curve type should be in [4params, 5params], but got {curve_type}.'
+    assert curve_type in [
+        'logistic_4params', 'logistic_5params'], f'curve type should be in [logistic_4params, logistic_5params], but got {curve_type}.'
 
     betas_init_4params = [np.max(y), np.min(y), np.mean(x), np.std(x) / 4.]
 
@@ -27,10 +28,10 @@ def fit_curve(x, y, curve_type='4params'):
         yhat = beta1 * logistic_part + beta4 * x + beta5
         return yhat
 
-    if curve_type == '4params':
+    if curve_type == 'logistic_4params':
         logistic = logistic_4params
         betas_init = betas_init_4params
-    elif curve_type == '5params':
+    elif curve_type == 'logistic_5params':
         logistic = logistic_5params
         betas_init = betas_init_5params
 
@@ -40,16 +41,16 @@ def fit_curve(x, y, curve_type='4params'):
 
 
 @METRIC_REGISTRY.register()
-def calculate_rmse(x, y, fit_scale=False):
-    if fit_scale:
-        x = fit_curve(x, y)
+def calculate_rmse(x, y, fit_scale=None):
+    if fit_scale is not None:
+        x = fit_curve(x, y, fit_scale)
     return np.mean(np.sqrt(np.sum((x - y) ** 2)))
 
 
 @METRIC_REGISTRY.register()
-def calculate_plcc(x, y, fit_scale=False):
-    if fit_scale:
-        x = fit_curve(x, y)
+def calculate_plcc(x, y, fit_scale=None):
+    if fit_scale is not None:
+        x = fit_curve(x, y, fit_scale)
     return stats.pearsonr(x, y)[0]
 
 
