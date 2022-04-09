@@ -167,8 +167,8 @@ def estimate_aggd_param(block: torch.Tensor, return_sigma=False) -> Tuple[torch.
     count_left = mask_left.sum(dim=(-1, -2), dtype=torch.float32)
     count_right = mask_right.sum(dim=(-1, -2), dtype=torch.float32)
 
-    left_std = safe_sqrt((block * mask_left).pow(2).sum(dim=(-1, -2)) / (count_left + EPS))
-    right_std = safe_sqrt((block * mask_right).pow(2).sum(dim=(-1, -2)) / (count_right + EPS))
+    left_std = torch.sqrt((block * mask_left).pow(2).sum(dim=(-1, -2)) / (count_left))
+    right_std = torch.sqrt((block * mask_right).pow(2).sum(dim=(-1, -2)) / (count_right))
 
     gammahat = left_std / right_std
     rhat = block.abs().mean(dim=(-1, -2)).pow(2) / block.pow(2).mean(dim=(-1, -2))

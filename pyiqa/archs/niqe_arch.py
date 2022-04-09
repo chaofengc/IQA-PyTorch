@@ -21,7 +21,7 @@ import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter, fitweibull
+from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter, fitweibull, nancov
 from .func_util import estimate_aggd_param, torch_cov, normalize_img_with_guass, nanmean
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -124,24 +124,29 @@ def niqe(img: torch.Tensor,
         feat = []
         for idx_w in range(num_block_w):
             for idx_h in range(num_block_h):
-                # process ecah block
+                # process each block
                 block = img_normalized[..., idx_h * block_size_h // scale:(idx_h + 1) * block_size_h // scale,
                                        idx_w * block_size_w // scale:(idx_w + 1) * block_size_w // scale]
                 feat.append(compute_feature(block))
 
         distparam.append(torch.stack(feat).transpose(0, 1))
 
+        # print(img.shape, img)
+        # print(distparam[0])
         if scale == 1:
             img = imresize(img / 255., scale=0.5, antialiasing=True)
             img = img * 255.
 
     distparam = torch.cat(distparam, -1)
+    b, block_num, feat_num = distparam.shape
 
     # fit a MVG (multivariate Gaussian) model to distorted patch features
     mu_distparam = nanmean(distparam, dim=1)
+    # nancov same as matlab
+    cov_distparam = nancov(distparam)
 
-    distparam_no_nan = torch.nan_to_num(distparam)
-    cov_distparam = torch_cov(distparam_no_nan.transpose(1, 2))
+    # distparam_no_nan = torch.nan_to_num(distparam)
+    # cov_distparam = torch_cov(distparam_no_nan.transpose(1, 2))
 
     # compute niqe quality, Eq. 10 in the paper
     invcov_param = torch.linalg.pinv((cov_pris_param + cov_distparam) / 2)
@@ -180,6 +185,9 @@ def calculate_niqe(img: torch.Tensor,
 
     if test_y_channel and img.shape[1] == 3:
         img = to_y_channel(img, 255, color_space)
+
+    img = img.round()
+    img = img.to(torch.float64)
 
     if crop_border != 0:
         img = img[..., crop_border:-crop_border, crop_border:-crop_border]
@@ -364,9 +372,7 @@ def ilniqe(img: torch.Tensor,
     b, blk_num, feat_num = final_features.shape
 
     # remove block features with nan and compute nonan cov
-    nan_mask = torch.isnan(final_features).any(dim=2, keepdim=True)
-    final_features_nonan = final_features.masked_select(~nan_mask).reshape(b, -1, feat_num)
-    cov_distparam = torch_cov(final_features_nonan, rowvar=False)
+    cov_distparam = nancov(final_features)
 
     # replace nan in final features with mu
     mu_final_features = nanmean(final_features, dim=1, keepdim=True)

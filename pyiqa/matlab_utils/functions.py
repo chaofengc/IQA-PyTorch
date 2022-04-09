@@ -146,3 +146,31 @@ def fitweibull(x, iters=50, eps=1e-2):
     lam = torch.mean(x**k.repeat(1, x.shape[1]), dim=-1, keepdim=True)**(1.0 / k)
 
     return torch.cat((k, lam), dim=1)  # Shape (SC), Scale (FE)
+
+
+def cov(tensor, rowvar=True, bias=False):
+    r"""Estimate a covariance matrix (np.cov)
+    Ref: https://gist.github.com/ModarTensai/5ab449acba9df1a26c12060240773110
+    """
+    tensor = tensor if rowvar else tensor.transpose(-1, -2)
+    tensor = tensor - tensor.mean(dim=-1, keepdim=True)
+    factor = 1 / (tensor.shape[-1] - int(not bool(bias)))
+    return factor * tensor @ tensor.transpose(-1, -2)
+
+
+def nancov(x):
+    r"""Calculate nancov for batched tensor, rows that contains nan value 
+    will be removed.
+
+    Args:
+        x (tensor): (B, row_num, feat_dim)  
+    
+    Return:
+        cov (tensor): (B, feat_dim, feat_dim)
+    """
+    assert len(x.shape) == 3, f'Shape of input should be (batch_size, row_num, feat_dim), but got {x.shape}'
+    b, rownum, feat_dim = x.shape
+    nan_mask = torch.isnan(x).any(dim=2, keepdim=True)
+    x_no_nan = x.masked_select(~nan_mask).reshape(b, -1, feat_dim)
+    cov_x = cov(x_no_nan, rowvar=False)
+    return cov_x
