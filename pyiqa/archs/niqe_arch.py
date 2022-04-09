@@ -21,8 +21,8 @@ import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter, fitweibull, nancov
-from .func_util import estimate_aggd_param, torch_cov, normalize_img_with_guass, nanmean
+from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter, fitweibull, nancov, nanmean
+from .func_util import estimate_aggd_param, normalize_img_with_guass
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -131,22 +131,15 @@ def niqe(img: torch.Tensor,
 
         distparam.append(torch.stack(feat).transpose(0, 1))
 
-        # print(img.shape, img)
-        # print(distparam[0])
         if scale == 1:
             img = imresize(img / 255., scale=0.5, antialiasing=True)
             img = img * 255.
 
     distparam = torch.cat(distparam, -1)
-    b, block_num, feat_num = distparam.shape
 
     # fit a MVG (multivariate Gaussian) model to distorted patch features
     mu_distparam = nanmean(distparam, dim=1)
-    # nancov same as matlab
     cov_distparam = nancov(distparam)
-
-    # distparam_no_nan = torch.nan_to_num(distparam)
-    # cov_distparam = torch_cov(distparam_no_nan.transpose(1, 2))
 
     # compute niqe quality, Eq. 10 in the paper
     invcov_param = torch.linalg.pinv((cov_pris_param + cov_distparam) / 2)

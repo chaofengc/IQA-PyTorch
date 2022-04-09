@@ -6,7 +6,7 @@ and return batched results.
 
 """
 from .resize import imresize
-from .functions import fspecial_gauss, imfilter, dct2d, conv2d, fitweibull, nancov
+from .functions import *
 from .scfpyr_util import SCFpyr_PyTorch
 
 __all__ = [
@@ -18,4 +18,5 @@ __all__ = [
     'conv2d',
     'fitweibull',
     'nancov',
+    'nanmean',
 ]

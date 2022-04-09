@@ -174,3 +174,13 @@ def nancov(x):
     x_no_nan = x.masked_select(~nan_mask).reshape(b, -1, feat_dim)
     cov_x = cov(x_no_nan, rowvar=False)
     return cov_x
+
+
+def nanmean(v, *args, inplace=False, **kwargs):
+    r"""nanmean same as matlab function: calculate mean values by removing all nan.
+    """
+    if not inplace:
+        v = v.clone()
+    is_nan = torch.isnan(v)
+    v[is_nan] = 0
+    return v.sum(*args, **kwargs) / (~is_nan).float().sum(*args, **kwargs)

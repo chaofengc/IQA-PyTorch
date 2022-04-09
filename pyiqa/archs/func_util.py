@@ -23,14 +23,6 @@ def extract_2d_patches(x, kernel, stride=1, dilation=1, padding='same'):
     return patches
 
 
-def nanmean(v, *args, inplace=False, **kwargs):
-    if not inplace:
-        v = v.clone()
-    is_nan = torch.isnan(v)
-    v[is_nan] = 0
-    return v.sum(*args, **kwargs) / (~is_nan).float().sum(*args, **kwargs)
-
-
 def torch_cov(tensor, rowvar=True, bias=False):
     r"""Estimate a covariance matrix (np.cov)
     Ref: https://gist.github.com/ModarTensai/5ab449acba9df1a26c12060240773110
