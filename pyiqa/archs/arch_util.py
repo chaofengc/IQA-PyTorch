@@ -1,6 +1,10 @@
+from builtins import ValueError
+from collections import OrderedDict
 import math
 import collections.abc
 from itertools import repeat
+import numpy as np
+from typing import Tuple
 
 import torch
 from torch import nn as nn
@@ -95,6 +99,32 @@ def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
                     m.bias.data.fill_(bias_fill)
 
 
+def symm_pad(im: torch.Tensor, padding: Tuple[int, int, int, int]):
+    """Symmetric padding same as tensorflow.
+    Ref: https://discuss.pytorch.org/t/symmetric-padding/19866/3
+    """
+    h, w = im.shape[-2:]
+    left, right, top, bottom = padding
+ 
+    x_idx = np.arange(-left, w+right)
+    y_idx = np.arange(-top, h+bottom)
+ 
+    def reflect(x, minx, maxx):
+        """ Reflects an array around two points making a triangular waveform that ramps up
+        and down,  allowing for pad lengths greater than the input length """
+        rng = maxx - minx
+        double_rng = 2*rng
+        mod = np.fmod(x - minx, double_rng)
+        normed_mod = np.where(mod < 0, mod+double_rng, mod)
+        out = np.where(normed_mod >= rng, double_rng - normed_mod, normed_mod) + minx
+        return np.array(out, dtype=x.dtype)
+
+    x_pad = reflect(x_idx, -0.5, w-0.5)
+    y_pad = reflect(y_idx, -0.5, h-0.5)
+    xx, yy = np.meshgrid(x_pad, y_pad)
+    return im[..., yy, xx]
+
+
 def excact_padding_2d(x, kernel, stride=1, dilation=1, mode='same'):
     assert len(x.shape) == 4, f'Only support 4D tensor input, but got {x.shape}'
     kernel = to_2tuple(kernel)
@@ -111,17 +141,7 @@ def excact_padding_2d(x, kernel, stride=1, dilation=1, mode='same'):
     if mode != 'symmetric':
         x = F.pad(x, (pad_l, pad_r, pad_t, pad_b), mode=mode)
     elif mode == 'symmetric':
-        sym_h = torch.flip(x, [2])
-        sym_w = torch.flip(x, [3])
-        sym_hw = torch.flip(x, [2, 3])
-
-        row1 = torch.cat((sym_hw, sym_h, sym_hw), dim=3)
-        row2 = torch.cat((sym_w, x, sym_w), dim=3)
-        row3 = torch.cat((sym_hw, sym_h, sym_hw), dim=3)
-
-        whole_map = torch.cat((row1, row2, row3), dim=2)
-
-        x = whole_map[:, :, h - pad_t:2 * h + pad_b, w - pad_l:2 * w + pad_r, ]
+        x = symm_pad(x, (pad_l, pad_r, pad_t, pad_b)) 
 
     return x
 
