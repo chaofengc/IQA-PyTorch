@@ -351,7 +351,7 @@ def nrqm(
     f3 = []
     for im in img_pyr:
         col = im2col(im, 5)
-        _, s, _ = torch.linalg.svd(col, compute_uv=False)
+        _, s, _ = torch.linalg.svd(col)
         f3.append(s)
     f3 = torch.cat(f3, dim=1)
 
