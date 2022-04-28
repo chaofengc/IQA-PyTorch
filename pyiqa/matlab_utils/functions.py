@@ -1,7 +1,8 @@
+import math
 import numpy as np
 import torch
 import torch.nn.functional as F
-from pyiqa.archs.arch_util import ExactPadding2d
+from pyiqa.archs.arch_util import ExactPadding2d, to_2tuple, symm_pad
 
 
 def fspecial_gauss(size, sigma, channels=1):
@@ -11,10 +12,7 @@ def fspecial_gauss(size, sigma, channels=1):
         sigma (float): sigma of gaussian
         channels (int): channels of output
     """
-    if type(size) is int:
-        shape = (size, size)
-    else:
-        shape = size
+    shape = to_2tuple(size)
     m, n = [(ss - 1.) / 2. for ss in shape]
     y, x = np.ogrid[-m:m + 1, -n:n + 1]
     h = np.exp(-(x * x + y * y) / (2. * sigma * sigma))
@@ -164,7 +162,7 @@ def nancov(x):
 
     Args:
         x (tensor): (B, row_num, feat_dim)  
-    
+
     Return:
         cov (tensor): (B, feat_dim, feat_dim)
     """
@@ -184,3 +182,91 @@ def nanmean(v, *args, inplace=False, **kwargs):
     is_nan = torch.isnan(v)
     v[is_nan] = 0
     return v.sum(*args, **kwargs) / (~is_nan).float().sum(*args, **kwargs)
+
+
+def im2col(x, kernel, mode='sliding'):
+    r"""simple im2col as matlab
+
+    Args:
+        x (Tensor): shape (b, c, h, w)
+        kernel (int): kernel size
+        mode (string): 
+            - sliding (default): rearranges sliding image neighborhoods of kernel size into columns with no zero-padding
+            - distinct: rearranges discrete image blocks of kernel size into columns, zero pad right and bottom if necessary
+    Return:
+        flatten patch (Tensor): (b, h * w / kernel **2, kernel * kernel)
+    """
+    b, c, h, w = x.shape
+    kernel = to_2tuple(kernel)
+
+    if mode == 'sliding':
+        stride = 1
+    elif mode == 'distinct':
+        stride = kernel
+        h2 = math.ceil(h / stride[0])
+        w2 = math.ceil(w / stride[1])
+        pad_row = (h2 - 1) * stride[0] + kernel[0] - h
+        pad_col = (w2 - 1) * stride[1] + kernel[1] - w
+        x = F.pad(x, (0, pad_col, 0, pad_row))
+    else:
+        raise NotImplementedError(f'Type {mode} is not implemented yet.')
+
+    patches = F.unfold(x, kernel, dilation=1, stride=stride)
+    b, _, pnum = patches.shape
+    patches = patches.transpose(1, 2).reshape(b, pnum, -1)
+    return patches
+
+
+def blockproc(x, kernel, fun, border_size=None, pad_partial=False, pad_method='zero', **func_args):
+    r"""blockproc function like matlab
+
+    Difference:
+        - Partial blocks is discarded (if exist) for fast GPU process.
+
+    Args:
+        x (tensor): shape (b, c, h, w)
+        kernel (int or tuple): block size
+        func (function): function to process each block
+        border_size (int or tuple): border pixels to each block
+        pad_partial: pad partial blocks to make them full-sized, default False
+        pad_method: [zero, replicate, symmetric] how to pad partial block when pad_partial is set True
+
+    Return:
+        results (tensor): concatenated results of each block
+    """
+    assert len(x.shape) == 4, f'Shape of input has to be (b, c, h, w) but got {x.shape}'
+    kernel = to_2tuple(kernel)
+    if pad_partial:
+        b, c, h, w = x.shape
+        stride = kernel
+        h2 = math.ceil(h / stride[0])
+        w2 = math.ceil(w / stride[1])
+        pad_row = (h2 - 1) * stride[0] + kernel[0] - h
+        pad_col = (w2 - 1) * stride[1] + kernel[1] - w
+        padding = (0, pad_col, 0, pad_row)
+        if pad_method == 'zero':
+            x = F.pad(x, padding, mode='constant')
+        elif pad_method == 'symmetric':
+            x = symm_pad(x, padding)
+        else:
+            x = F.pad(x, padding, mode=pad_method)
+
+    if border_size is not None:
+        raise NotImplementedError('Blockproc with border is not implemented yet')
+    else:
+        b, c, h, w = x.shape
+        block_size_h, block_size_w = kernel
+        num_block_h = math.floor(h / block_size_h)
+        num_block_w = math.floor(w / block_size_w)
+        blocks = []
+        # extract blocks in column -> row manner
+        for idx_w in range(num_block_w):
+            for idx_h in range(num_block_h):
+                block = x[..., idx_h * block_size_h: (idx_h + 1) * block_size_h,
+                          idx_w * block_size_w:(idx_w + 1) * block_size_w]
+                blocks.append(block)
+
+        blocks = torch.cat(blocks, dim=0)
+        results = fun(blocks, func_args)
+        results = results.reshape(num_block_h * num_block_w, b, *results.shape[1:]).transpose(0, 1)
+        return results

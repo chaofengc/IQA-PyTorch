@@ -17,37 +17,13 @@ import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.matlab_utils import imresize, fspecial_gauss, SCFpyr_PyTorch, dct2d
+from pyiqa.matlab_utils import imresize, fspecial_gauss, SCFpyr_PyTorch, dct2d, im2col
 from pyiqa.archs.func_util import extract_2d_patches
 from pyiqa.archs.ssim_arch import SSIM
 from pyiqa.archs.arch_util import ExactPadding2d
 from pyiqa.archs.niqe_arch import NIQE
 
 default_model_urls = {'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NRQM_model.mat'}
-
-
-def im2col(x, kernel):
-    r"""im2col (distinct) as matlab, zero pad right and bottom only.
-
-    Args:
-        x (Tensor): shape (b, c, h, w)
-        kernel (int): square kernel size
-    Return:
-        flatten patch (Tensor): (b, h * w / kernel **2, kernel * kernel)
-    """
-    b, c, h, w = x.shape
-    stride = kernel
-    dilation = 1
-    h2 = math.ceil(h / stride)
-    w2 = math.ceil(w / stride)
-    pad_row = (h2 - 1) * stride + (kernel - 1) * dilation + 1 - h
-    pad_col = (w2 - 1) * stride + (kernel - 1) * dilation + 1 - w
-    x = F.pad(x, (0, pad_col, 0, pad_row))
-
-    patches = F.unfold(x, kernel, dilation, stride=stride)
-    b, _, pnum = patches.shape
-    patches = patches.transpose(1, 2).reshape(b, pnum, -1)
-    return patches
 
 
 def get_guass_pyramid(x: Tensor, scale: int = 2):
@@ -126,7 +102,7 @@ def oriented_dct_rho(dct_img_block: torch.Tensor):
         dct_img_block[..., 2, 4:],
         dct_img_block[..., 3, 5:],
     ],
-                      dim=-1).squeeze(-2)
+        dim=-1).squeeze(-2)
     g1 = get_var_gen_gauss(feat1, eps)
 
     # oriented 2
@@ -138,7 +114,7 @@ def oriented_dct_rho(dct_img_block: torch.Tensor):
         dct_img_block[..., 5, 4:],
         dct_img_block[..., 6, 4:],
     ],
-                      dim=-1).squeeze(-2)
+        dim=-1).squeeze(-2)
     g2 = get_var_gen_gauss(feat2, eps)
 
     # oriented 3
@@ -148,7 +124,7 @@ def oriented_dct_rho(dct_img_block: torch.Tensor):
         dct_img_block[..., 4:, 2],
         dct_img_block[..., 5:, 3],
     ],
-                      dim=-1).squeeze(-2)
+        dim=-1).squeeze(-2)
     g3 = get_var_gen_gauss(feat3, eps)
 
     rho = torch.stack([g1, g2, g3], dim=-1).var(dim=-1)
@@ -350,7 +326,7 @@ def nrqm(
     # svd features
     f3 = []
     for im in img_pyr:
-        col = im2col(im, 5)
+        col = im2col(im, 5, 'distinct')
         _, s, _ = torch.linalg.svd(col)
         f3.append(s)
     f3 = torch.cat(f3, dim=1)

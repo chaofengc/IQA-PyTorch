@@ -152,7 +152,7 @@ def estimate_aggd_param(block: torch.Tensor, return_sigma=False) -> Tuple[torch.
     """
     gam = torch.arange(0.2, 10 + 0.001, 0.001).to(block)
     r_gam = (2 * torch.lgamma(2. / gam) - (torch.lgamma(1. / gam) + torch.lgamma(3. / gam))).exp()
-    r_gam = r_gam.repeat(block.size(0), 1)
+    r_gam = r_gam.repeat(block.shape[0], 1)
 
     mask_left = block < 0
     mask_right = block > 0

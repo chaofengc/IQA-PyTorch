@@ -43,8 +43,8 @@ def load_org_results():
     return results
 
 
-def run_test(test_metric_names):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+def run_test(test_metric_names, use_cpu):
+    device = torch.device('cuda' if torch.cuda.is_available() and not use_cpu else 'cpu')
     print(f'============> Testing on {device}')
 
     img_batch, ref_batch = load_test_img_batch()
@@ -96,10 +96,11 @@ def run_test(test_metric_names):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--metric_names', type=str, nargs='+', default=None, help='metric name list.')
+    parser.add_argument('--use_cpu', action='store_true', help='use cpu for test')
     args = parser.parse_args()
 
     if args.metric_names is not None:
         test_metric_names = args.metric_names
     else:
         test_metric_names = pyiqa.list_models()
-    run_test(test_metric_names)
+    run_test(test_metric_names, args.use_cpu)

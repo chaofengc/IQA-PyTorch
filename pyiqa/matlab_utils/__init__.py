@@ -19,4 +19,6 @@ __all__ = [
     'fitweibull',
     'nancov',
     'nanmean',
+    'im2col',
+    'blockproc',
 ]

@@ -17,11 +17,10 @@ import numpy as np
 import scipy
 import scipy.io
 import torch
-import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter, fitweibull, nancov, nanmean
+from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter, fitweibull, nancov, nanmean, blockproc
 from .func_util import estimate_aggd_param, normalize_img_with_guass
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -121,15 +120,7 @@ def niqe(img: torch.Tensor,
     for scale in (1, 2):  # perform on two scales (1, 2)
         img_normalized = normalize_img_with_guass(img, padding='replicate')
 
-        feat = []
-        for idx_w in range(num_block_w):
-            for idx_h in range(num_block_h):
-                # process each block
-                block = img_normalized[..., idx_h * block_size_h // scale:(idx_h + 1) * block_size_h // scale,
-                                       idx_w * block_size_w // scale:(idx_w + 1) * block_size_w // scale]
-                feat.append(compute_feature(block))
-
-        distparam.append(torch.stack(feat).transpose(0, 1))
+        distparam.append(blockproc(img_normalized, [block_size_h // scale, block_size_w // scale], fun=compute_feature))
 
         if scale == 1:
             img = imresize(img / 255., scale=0.5, antialiasing=True)
@@ -337,17 +328,8 @@ def ilniqe(img: torch.Tensor,
         GM = torch.cat(GM, dim=1)
         compositeMat = torch.cat((compositeMat, logResponse, partialDer, GM), dim=1)
 
-        feat = []
-        for idx_w in range(num_block_w):
-            for idx_h in range(num_block_h):
-                block_pos = [
-                    idx_h * block_size_h // scale, (idx_h + 1) * block_size_h // scale, idx_w * block_size_w // scale,
-                    (idx_w + 1) * block_size_w // scale
-                ]
-                block = compositeMat[..., block_pos[0]:block_pos[1], block_pos[2]:block_pos[3]]
-                feat.append(compute_feature(block, ilniqe=True))
-
-        distparam.append(torch.stack(feat, dim=1))
+        distparam.append(blockproc(compositeMat, [block_size_h // scale,
+                         block_size_w // scale], fun=compute_feature, ilniqe=True))
 
         gauForDS = fspecial_gauss(math.ceil(6 * sigmaForDownsample), sigmaForDownsample).to(img)
         filterResult = imfilter(O_img, gauForDS.repeat(3, 1, 1, 1), padding='replicate', groups=3)
