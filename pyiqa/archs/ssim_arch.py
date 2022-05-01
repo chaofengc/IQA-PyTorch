@@ -22,7 +22,7 @@ import torch
 import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
-from pyiqa.matlab_utils import fspecial_gauss, SCFpyr_PyTorch, math_util
+from pyiqa.matlab_utils import fspecial, SCFpyr_PyTorch, math_util
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 
@@ -98,7 +98,7 @@ class SSIM(torch.nn.Module):
     def __init__(self, channels=3, downsample=False, test_y_channel=True, color_space='yiq'):
 
         super(SSIM, self).__init__()
-        self.win = fspecial_gauss(11, 1.5, channels)
+        self.win = fspecial(11, 1.5, channels)
         self.downsample = downsample
         self.test_y_channel = test_y_channel
         self.color_space = color_space
@@ -178,7 +178,7 @@ class MS_SSIM(torch.nn.Module):
 
     def __init__(self, channels=3, downsample=False, test_y_channel=True, is_prod=True, color_space='yiq'):
         super(MS_SSIM, self).__init__()
-        self.win = fspecial_gauss(11, 1.5, channels)
+        self.win = fspecial(11, 1.5, channels)
         self.downsample = downsample
         self.test_y_channel = test_y_channel
         self.color_space = color_space
@@ -269,7 +269,7 @@ class CW_SSIM(torch.nn.Module):
         band_cssim = []
 
         s = np.array(cw_x[bandind][0].size()[1:3])
-        w = fspecial_gauss(s - 7 + 1, s[0] / 4, 1).to(x.device)
+        w = fspecial(s - 7 + 1, s[0] / 4, 1).to(x.device)
         gb = int(self.guardb / (2**(self.level - 1)))
 
         for i in range(self.ori):

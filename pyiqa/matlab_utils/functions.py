@@ -5,23 +5,26 @@ import torch.nn.functional as F
 from pyiqa.archs.arch_util import ExactPadding2d, to_2tuple, symm_pad
 
 
-def fspecial_gauss(size, sigma, channels=1):
-    r""" Function same as 'fspecial gaussian' in MATLAB
+def fspecial(size=None, sigma=None, channels=1, filter_type='gaussian'):
+    r""" Function same as 'fspecial' in MATLAB, only support gaussian now.
     Args:
         size (int or tuple): size of window
         sigma (float): sigma of gaussian
         channels (int): channels of output
     """
-    shape = to_2tuple(size)
-    m, n = [(ss - 1.) / 2. for ss in shape]
-    y, x = np.ogrid[-m:m + 1, -n:n + 1]
-    h = np.exp(-(x * x + y * y) / (2. * sigma * sigma))
-    h[h < np.finfo(h.dtype).eps * h.max()] = 0
-    sumh = h.sum()
-    if sumh != 0:
-        h /= sumh
-    h = torch.from_numpy(h).float().repeat(channels, 1, 1, 1)
-    return h
+    if filter_type == 'gaussian':
+        shape = to_2tuple(size)
+        m, n = [(ss - 1.) / 2. for ss in shape]
+        y, x = np.ogrid[-m:m + 1, -n:n + 1]
+        h = np.exp(-(x * x + y * y) / (2. * sigma * sigma))
+        h[h < np.finfo(h.dtype).eps * h.max()] = 0
+        sumh = h.sum()
+        if sumh != 0:
+            h /= sumh
+        h = torch.from_numpy(h).float().repeat(channels, 1, 1, 1)
+        return h
+    else:
+        raise NotImplementedError(f'Only support gaussian filter now, got {filter_type}')
 
 
 def conv2d(input, weight, bias=None, stride=1, padding='same', dilation=1, groups=1):

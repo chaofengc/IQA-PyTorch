@@ -20,7 +20,7 @@ import torch
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.matlab_utils import imresize, fspecial_gauss, conv2d, imfilter, fitweibull, nancov, nanmean, blockproc
+from pyiqa.matlab_utils import imresize, fspecial, conv2d, imfilter, fitweibull, nancov, nanmean, blockproc
 from .func_util import estimate_aggd_param, normalize_img_with_guass
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -331,7 +331,7 @@ def ilniqe(img: torch.Tensor,
         distparam.append(blockproc(compositeMat, [block_size_h // scale,
                          block_size_w // scale], fun=compute_feature, ilniqe=True))
 
-        gauForDS = fspecial_gauss(math.ceil(6 * sigmaForDownsample), sigmaForDownsample).to(img)
+        gauForDS = fspecial(math.ceil(6 * sigmaForDownsample), sigmaForDownsample).to(img)
         filterResult = imfilter(O_img, gauForDS.repeat(3, 1, 1, 1), padding='replicate', groups=3)
         O_img = filterResult[..., ::2, ::2]
         filterResult = imfilter(img, gauForDS.repeat(3, 1, 1, 1), padding='replicate', groups=3)

@@ -2,7 +2,7 @@ from typing import Tuple
 import torch
 import torch.nn.functional as F
 
-from pyiqa.matlab_utils import fspecial_gauss, imfilter
+from pyiqa.matlab_utils import fspecial, imfilter
 from .arch_util import excact_padding_2d
 
 EPS = torch.finfo(torch.float32).eps
@@ -49,7 +49,7 @@ def normalize_img_with_guass(img: torch.Tensor,
                              C: int = 1,
                              padding: str = 'same'):
 
-    kernel = fspecial_gauss(kernel_size, sigma, 1).to(img)
+    kernel = fspecial(kernel_size, sigma, 1).to(img)
     mu = imfilter(img, kernel, padding=padding)
     std = imfilter(img**2, kernel, padding=padding)
     sigma = safe_sqrt((std - mu**2).abs())

@@ -11,7 +11,7 @@ from .scfpyr_util import SCFpyr_PyTorch
 
 __all__ = [
     'imresize',
-    'fspecial_gauss',
+    'fspecial',
     'SCFpyr_PyTorch',
     'imfilter',
     'dct2d',
