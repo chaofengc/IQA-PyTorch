@@ -258,15 +258,12 @@ def blockproc(x, kernel, fun, border_size=None, pad_partial=False, pad_method='z
         block_size_h, block_size_w = kernel
         num_block_h = math.floor(h / block_size_h)
         num_block_w = math.floor(w / block_size_w)
-        blocks = []
-        # extract blocks in column -> row manner
-        for idx_w in range(num_block_w):
-            for idx_h in range(num_block_h):
-                block = x[..., idx_h * block_size_h: (idx_h + 1) * block_size_h,
-                          idx_w * block_size_w:(idx_w + 1) * block_size_w]
-                blocks.append(block)
 
-        blocks = torch.cat(blocks, dim=0)
+        # extract blocks in (row, column) manner, i.e., stored with column first
+        blocks = F.unfold(x, kernel, stride=kernel)
+        blocks = blocks.reshape(b, c, *kernel, num_block_h, num_block_w)
+        blocks = blocks.permute(5, 4, 0, 1, 2, 3).reshape(num_block_h * num_block_w * b, c, *kernel)
+
         results = fun(blocks, func_args)
         results = results.reshape(num_block_h * num_block_w, b, *results.shape[1:]).transpose(0, 1)
         return results
