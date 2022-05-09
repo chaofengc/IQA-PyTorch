@@ -48,7 +48,9 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | PI<sup>[14](#fn14)</sup>                            | 11.9235  | 3.0720  | 2.6180  | 2.8074  | 6.7713   |
 | PI (ours imported )                                 | 11.9185  | 3.3382  | 2.6490  | 2.8111  | 6.9541   |
 | Paq2piq                                             | 44.1340  | 73.6015 | 74.3297 | 76.8748 | 70.9153  |
-| Paq2piq (ours imported )                            | 44.1340  | 73.6015 | 74.3297 | 76.8748 | 70.9153  |
+| Paq2piq (ours imported)                             | 44.1340  | 73.6015 | 74.3297 | 76.8748 | 70.9153  |
+| PieAPP                                              | 4.2976   | 3.9088  | 2.2620  | 1.4274  | 3.4188   |
+| PieAPP (ours imported)                              | 4.2976   | 3.9088  | 2.2620  | 1.4274  | 3.4188   |
 
 
 #### Notice
