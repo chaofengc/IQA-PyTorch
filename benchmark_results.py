@@ -1,5 +1,4 @@
 import argparse
-from email.policy import default
 import yaml
 import csv
 from pyiqa.models.inference_model import InferenceModel
@@ -70,6 +69,8 @@ def main():
         metric_opts = all_metric_opts[metric_name]['metric_opts']
         metric_mode = all_metric_opts[metric_name]['metric_mode']
         lower_better = all_metric_opts[metric_name].get('lower_better', False)
+        if metric_name == 'pieapp':
+            lower_better = False    # ground truth score is also lower better for pieapp test set
         iqa_model = InferenceModel(metric_name, metric_mode, **metric_opts)
         iqa_model.net.to(device)
 

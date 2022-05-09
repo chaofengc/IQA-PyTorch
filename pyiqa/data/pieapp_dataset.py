@@ -45,6 +45,11 @@ class PieAPPDataset(data.Dataset):
                 splits = split_dict[split_index][opt['phase']]
             self.paths_mos = [self.paths_mos[i] for i in splits]
 
+            # Only use MOS in test stage by default
+            test_target = opt.get('test_target', 'mos')
+            if opt['phase'] == 'test' and test_target == 'mos':
+                self.paths_mos = [item for item in self.paths_mos if item[0] == item[1]]
+
         # TODO: paired transform
         transform_list = []
         augment_dict = opt.get('augment', None)
@@ -71,16 +76,19 @@ class PieAPPDataset(data.Dataset):
 
         if self.phase == 'train':
             score = self.paths_mos[index][4]
+            # this is preference probability, not true mos. Use the same name for consistent training interface
             mos_label_tensor = torch.Tensor([score])
             distB_score = torch.Tensor([-1])
         elif self.phase == 'val':
             score = self.paths_mos[index][3]
+            # this is preference probability, not true mos. Use the same name for consistent training interface
             mos_label_tensor = torch.Tensor([score])
             distB_score = torch.Tensor([-1])
         elif self.phase == 'test':
             score = self.paths_mos[index][3]
             per_img_score = self.paths_mos[index][5]
-            mos_label_tensor = torch.Tensor([score])
+            # this is true mos score, calculated with paired preference
+            mos_label_tensor = torch.Tensor([per_img_score])
             distB_score = torch.Tensor([per_img_score])
 
         ref_tensor = self.trans(ref_img_pil)
@@ -89,6 +97,7 @@ class PieAPPDataset(data.Dataset):
 
         return {
             'distB_img': distB_tensor,
+            'img': distB_tensor,  # for test phase
             'ref_img': ref_tensor,
             'distA_img': distA_tensor,
             'mos_label': mos_label_tensor,

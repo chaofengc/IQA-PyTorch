@@ -91,9 +91,10 @@ flive:
 
 pieapp:
   name: PieAPPDataset
-  type: GeneralNRDataset
+  type: PieAPPDataset 
   dataroot_target: './datasets/PieAPP_dataset_CVPR_2018/'
   meta_info_file: './datasets/meta_info/meta_info_PieAPPDataset.csv'
+  split_file: './datasets/train_split_info/pieapp_official.pkl'
 
 bapps:
   name: BAPPS
