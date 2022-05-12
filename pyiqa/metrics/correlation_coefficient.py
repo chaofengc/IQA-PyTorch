@@ -41,10 +41,10 @@ def fit_curve(x, y, curve_type='logistic_4params'):
 
 
 @METRIC_REGISTRY.register()
-def calculate_rmse(x, y, fit_scale=None):
+def calculate_rmse(x, y, fit_scale=None, eps=1e-8):
     if fit_scale is not None:
         x = fit_curve(x, y, fit_scale)
-    return np.mean(np.sqrt(np.sum((x - y) ** 2)))
+    return np.sqrt(np.mean((x - y) ** 2) + eps)
 
 
 @METRIC_REGISTRY.register()
