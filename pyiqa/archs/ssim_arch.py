@@ -55,8 +55,6 @@ def ssim(X,
 
     win = win.to(X.device)
 
-    # mu1 = gaussian_filter(X, win)
-    # mu2 = gaussian_filter(Y, win)
     mu1 = filter2(X, win, 'valid')
     mu2 = filter2(Y, win, 'valid')
     mu1_sq = mu1.pow(2)
