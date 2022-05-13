@@ -16,6 +16,7 @@ __all__ = [
     'imfilter',
     'dct2d',
     'conv2d',
+    'filter2',
     'fitweibull',
     'nancov',
     'nanmean',

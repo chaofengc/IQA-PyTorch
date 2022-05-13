@@ -58,6 +58,15 @@ def imfilter(input, weight, bias=None, stride=1, padding='same', dilation=1, gro
     return F.conv2d(pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
 
 
+def filter2(input, weight, shape='same'):
+    if shape == 'same':
+        return imfilter(input, weight, groups=input.shape[1])
+    elif shape == 'valid':
+        return F.conv2d(input, weight, stride=1, padding=0, groups=input.shape[1])
+    else:
+        raise NotImplementedError(f'Shape type {shape} is not implemented.')
+
+
 def dct(x, norm=None):
     """
     Discrete Cosine Transform, Type II (a.k.a. the DCT)

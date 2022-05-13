@@ -22,13 +22,8 @@ import torch
 import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
-from pyiqa.matlab_utils import fspecial, SCFpyr_PyTorch, math_util
+from pyiqa.matlab_utils import fspecial, SCFpyr_PyTorch, math_util, filter2
 from pyiqa.utils.registry import ARCH_REGISTRY
-
-
-def gaussian_filter(input, win):
-    out = F.conv2d(input, win, stride=1, padding=0, groups=input.shape[1])
-    return out
 
 
 def ssim(X,
@@ -60,14 +55,16 @@ def ssim(X,
 
     win = win.to(X.device)
 
-    mu1 = gaussian_filter(X, win)
-    mu2 = gaussian_filter(Y, win)
+    # mu1 = gaussian_filter(X, win)
+    # mu2 = gaussian_filter(Y, win)
+    mu1 = filter2(X, win, 'valid')
+    mu2 = filter2(Y, win, 'valid')
     mu1_sq = mu1.pow(2)
     mu2_sq = mu2.pow(2)
     mu1_mu2 = mu1 * mu2
-    sigma1_sq = gaussian_filter(X * X, win) - mu1_sq
-    sigma2_sq = gaussian_filter(Y * Y, win) - mu2_sq
-    sigma12 = gaussian_filter(X * Y, win) - mu1_mu2
+    sigma1_sq = filter2(X * X, win, 'valid') - mu1_sq
+    sigma2_sq = filter2(Y * Y, win, 'valid') - mu2_sq
+    sigma12 = filter2(X * Y, win, 'valid') - mu1_mu2
 
     cs_map = (2 * sigma12 + C2) / (sigma1_sq + sigma2_sq + C2)
     cs_map = F.relu(cs_map)  # force the ssim response to be nonnegative to avoid negative results.
