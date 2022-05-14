@@ -52,10 +52,11 @@ Below are details of supported methods and datasets in this project.
 | CNNIQA                       | :white_check_mark:       |
 | NRQM(Ma)<sup>[2](#fn2)</sup> | :heavy_multiplication_x: |
 | PI(Perceptual Index)         | :heavy_multiplication_x: |
-| HOSA                         | :hourglass_flowing_sand: |
 | BRISQUE                      | :white_check_mark:       |
 | ILNIQE                       | :white_check_mark:       |
 | NIQE                         | :white_check_mark:       |
+
+<!-- | HOSA                         | :hourglass_flowing_sand: | -->
 
 </td><td>
 

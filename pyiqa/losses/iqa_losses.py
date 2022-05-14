@@ -1,13 +1,16 @@
+from cv2 import reduce
 import torch
 import numpy as np
 from torch import nn as nn
 from torch.nn import functional as F
 
 from pyiqa.utils.registry import LOSS_REGISTRY
+from .loss_util import weighted_loss
 
 _reduction_modes = ['none', 'mean', 'sum']
 
 
+@weighted_loss
 def emd_loss(pred, target, r=2):
     """
     Args:
@@ -17,7 +20,7 @@ def emd_loss(pred, target, r=2):
     """
     loss = torch.abs(torch.cumsum(pred, dim=-1) - torch.cumsum(target, dim=-1))**r
     loss = loss.mean(dim=-1)**(1. / r)
-    return loss.mean()
+    return loss
 
 
 @LOSS_REGISTRY.register()
@@ -26,13 +29,16 @@ class EMDLoss(nn.Module):
 
     """
 
-    def __init__(self, loss_weight=1.0, r=2):
+    def __init__(self, loss_weight=1.0, r=2, reduction='mean'):
         super(EMDLoss, self).__init__()
+        if reduction not in ['none', 'mean', 'sum']:
+            raise ValueError(f'Unsupported reduction mode: {reduction}. Supported ones are: {_reduction_modes}')
         self.loss_weight = loss_weight
         self.r = r
+        self.reduction = reduction
 
-    def forward(self, pred, target):
-        return self.loss_weight * emd_loss(pred, target, self.r)
+    def forward(self, pred, target, weight=None, **kwargs):
+        return self.loss_weight * emd_loss(pred, target, r=self.r, weight=weight, reduction=self.reduction)
 
 
 def plcc_loss(pred, target):
