@@ -3,6 +3,7 @@ import glob
 import os
 from PIL import Image
 from pyiqa.models.inference_model import InferenceModel
+from tqdm import tqdm
 
 
 def main():
@@ -51,6 +52,7 @@ def main():
 
     avg_score = 0
     test_img_num = len(input_paths)
+    pbar = tqdm(total=test_img_num, unit='image')
     for idx, img_path in enumerate(input_paths):
         img_name = os.path.basename(img_path)
         tar_img = Image.open(img_path)
@@ -61,9 +63,11 @@ def main():
             ref_img = None
         score = iqa_model.test(tar_img, ref_img)
         avg_score += score
-        print(f'{metric_name} score of {img_name} is: {score}')
+        pbar.update(1)
+        pbar.set_description(f'{metric_name} of {img_name}: {score}')
         if args.save_file:
             sf.write(f'{img_name}\t{score}\n')
+    pbar.close()
     avg_score /= test_img_num
     if test_img_num > 1:
         print(f'Average {metric_name} score of {args.input} with {test_img_num} images is: {avg_score}')

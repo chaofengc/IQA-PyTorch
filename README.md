@@ -155,8 +155,10 @@ print(iqa_metric.lower_better)
 
 # example for iqa score inference
 # img_tensor_x/y: (N, 3, H, W), RGB, 0 ~ 1
-score_fr = iqa_metric(img_tensor_x, img_tensor_y)
-score_nr = iqa_metric(img_tensor_x)
+# Note that gradient propagation is enabled by default. You need to manually disable it when perform test.
+with torch.no_grad():
+    score_fr = iqa_metric(img_tensor_x, img_tensor_y)
+    score_nr = iqa_metric(img_tensor_x)
 ```
 
 Metrics which support backward can be used for optimization, such as image enhancement.
