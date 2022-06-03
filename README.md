@@ -166,6 +166,7 @@ score_nr = iqa_metric(img_tensor_x)
 score_fr = iqa_metric('./ResultsCalibra/dist_dir/I03.bmp', './ResultsCalibra/ref_dir/I03.bmp')
 
 # For FID metric, use directory or precomputed statistics as inputs
+# refer to clean-fid for more details: https://github.com/GaParmar/clean-fid
 fid_metric = pyiqa.create_metric('fid')
 score = fid_metric('./ResultsCalibra/dist_dir/', './ResultsCalibra/ref_dir')
 score = fid_metric('./ResultsCalibra/dist_dir/', dataset_name="FFHQ", dataset_res=1024, dataset_split="trainval70k")
@@ -262,22 +263,9 @@ TODO -->
 
 ## :heart: Acknowledgement
 
-The code architecture is borrowed from [BasicSR](https://github.com/xinntao/BasicSR). Several implementations are taken from
+The code architecture is borrowed from [BasicSR](https://github.com/xinntao/BasicSR). Several implementations are taken from: [IQA-optimization](https://github.com/dingkeyan93/IQA-optimization), [Image-Quality-Assessment-Toolbox](https://github.com/RyanXingQL/Image-Quality-Assessment-Toolbox), [piq](https://github.com/photosynthesis-team/piq), [piqa](https://github.com/francois-rozet/piqa), [clean-fid](https://github.com/GaParmar/clean-fid)
 
-- [IQA-optimization](https://github.com/dingkeyan93/IQA-optimization)
-- [Image-Quality-Assessment-Toolbox](https://github.com/RyanXingQL/Image-Quality-Assessment-Toolbox)
-- [piq](https://github.com/photosynthesis-team/piq)
-- [piqa](https://github.com/francois-rozet/piqa)
-
-We also thanks the following public repositories:
-- [MUSIQ](https://github.com/google-research/google-research/tree/master/musiq)
-- [DBCNN](https://github.com/zwx8981/DBCNN-PyTorch)
-- [NIMA](https://github.com/kentsyx/Neural-IMage-Assessment)
-- [HyperIQA](https://github.com/SSL92/hyperIQA)
-- [CNNIQA](https://github.com/lidq92/CNNIQA)
-- [WaDIQaM](https://github.com/lidq92/WaDIQaM)
-- [PieAPP](https://github.com/prashnani/PerceptualImageError)
-- [paq2piq](https://github.com/baidut/paq2piq)
+We also thanks the following public repositories: [MUSIQ](https://github.com/google-research/google-research/tree/master/musiq), [DBCNN](https://github.com/zwx8981/DBCNN-PyTorch), [NIMA](https://github.com/kentsyx/Neural-IMage-Assessment), [HyperIQA](https://github.com/SSL92/hyperIQA), [CNNIQA](https://github.com/lidq92/CNNIQA), [WaDIQaM](https://github.com/lidq92/WaDIQaM), [PieAPP](https://github.com/prashnani/PerceptualImageError), [paq2piq](https://github.com/baidut/paq2piq) 
 
 ## :e-mail: Contact
 
