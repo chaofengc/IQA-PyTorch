@@ -2,7 +2,7 @@ import argparse
 import glob
 import os
 from PIL import Image
-from pyiqa.models.inference_model import InferenceModel
+from pyiqa import create_metric
 from tqdm import tqdm
 
 
@@ -13,20 +13,11 @@ def main():
     parser.add_argument('-i', '--input', type=str, default=None, help='input image/folder path.')
     parser.add_argument('-r', '--ref', type=str, default=None, help='reference image/folder path if needed.')
     parser.add_argument(
-        '-m',
         '--metric_mode',
         type=str,
         default='FR',
         help='metric mode Full Reference or No Reference. options: FR|NR.')
-    parser.add_argument('-n', '--metric_name', type=str, default='PSNR', help='IQA metric name, case sensitive.')
-    parser.add_argument('--model_path', type=str, default=None, help='Weight path for CNN based models.')
-    parser.add_argument('--img_range', type=float, default=1.0, help='Max value of image tensor.')
-    parser.add_argument(
-        '--input_size', type=int, nargs='+', default=None, help='size of input image. (H, W) for tuple input.')
-    parser.add_argument(
-        '--mean', type=float, nargs='+', default=None, metavar='MEAN', help='Override mean pixel value of dataset')
-    parser.add_argument(
-        '--std', type=float, nargs='+', default=None, metavar='STD', help='Override std deviation of of dataset')
+    parser.add_argument('-m', '--metric_name', type=str, default='PSNR', help='IQA metric name, case sensitive.')
     parser.add_argument('--save_file', type=str, default=None, help='path to save results.')
 
     args = parser.parse_args()
@@ -34,8 +25,7 @@ def main():
     metric_name = args.metric_name.lower()
 
     # set up IQA model
-    iqa_model = InferenceModel(metric_name, args.metric_mode, args.model_path, args.img_range, args.input_size,
-                               args.mean, args.std)
+    iqa_model = create_metric(metric_name, metric_mode=args.metric_mode)
     metric_mode = iqa_model.metric_mode
 
     if os.path.isfile(args.input):
@@ -55,13 +45,12 @@ def main():
     pbar = tqdm(total=test_img_num, unit='image')
     for idx, img_path in enumerate(input_paths):
         img_name = os.path.basename(img_path)
-        tar_img = Image.open(img_path)
         if metric_mode == 'FR':
             ref_img_path = ref_paths[idx]
-            ref_img = Image.open(ref_img_path)
         else:
-            ref_img = None
-        score = iqa_model.test(tar_img, ref_img)
+            ref_img_path = None
+
+        score = iqa_model(img_path, ref_img_path).cpu().item()
         avg_score += score
         pbar.update(1)
         pbar.set_description(f'{metric_name} of {img_name}: {score}')

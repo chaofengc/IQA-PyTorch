@@ -1,63 +1,77 @@
 import torch
 import torchvision as tv
 
-from pyiqa.archs import create_metric
+from collections import OrderedDict
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
+from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.utils.img_util import imread2tensor
 
 
 class InferenceModel():
-    """Common model for quality inference of single image with default setting of each metric."""
+    """Common interface for quality inference of images with default setting of each metric."""
 
     def __init__(
             self,
             metric_name,
-            metric_mode,
-            model_path=None,
-            img_range=1.0,
-            input_size=None,
-            mean=None,
-            std=None,
+            as_loss=False,
+            device=None,
             **kwargs  # Other metric options
     ):
         super(InferenceModel, self).__init__()
 
         self.metric_name = metric_name
-        metric_default_cfg = DEFAULT_CONFIGS[metric_name]
-        if metric_name in DEFAULT_CONFIGS.keys():
-            self.metric_mode = metric_default_cfg['metric_mode']
+
+        # ============ set metric properties ===========
+        self.lower_better = DEFAULT_CONFIGS[metric_name].get('lower_better', False)
+        self.metric_mode = DEFAULT_CONFIGS[metric_name].get('metric_mode', None)
+        if self.metric_mode is None:
+            self.metric_mode = kwargs.pop('metric_mode')
+        elif 'metric_mode' in kwargs:
+            kwargs.pop('metric_mode')
+
+        if device is None:
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         else:
-            self.metric_mode = metric_mode
+            self.device = device
+        self.as_loss = as_loss
 
-        # load pretrained models
-        if model_path is not None:
-            kwargs['pretrained_model_path'] = model_path
-
-        # define network
-        self.net = create_metric(metric_name, **kwargs)
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # =========== define metric model ===============
+        net_opts = OrderedDict()
+        # load default setting first
+        if metric_name in DEFAULT_CONFIGS.keys():
+            default_opt = DEFAULT_CONFIGS[metric_name]['metric_opts']
+            net_opts.update(default_opt)
+        # then update with custom setting
+        net_opts.update(kwargs)
+        network_type = net_opts.pop('type')
+        self.net = ARCH_REGISTRY.get(network_type)(**net_opts)
         self.net = self.net.to(self.device)
         self.net.eval()
 
-        tf_list = []
-        if input_size is not None:
-            tf_list.append(tv.transforms.Resize(input_size))
-        tf_list.append(tv.transforms.ToTensor())
-        tf_list.append(tv.transforms.Lambda(lambda x: x * img_range))
-        if mean is not None and std is not None:
-            tf_list.append(tv.transforms.Normalize(mean, std))
-        self.trans = tv.transforms.Compose(tf_list)
+    def set_device(self, device):
+        if isinstance(device, str):
+            device = torch.device(device)
+        self.net.to(device)
+        self.device = device
 
-    def test(self, x, y=None):
-        if not torch.is_tensor(x):
-            x = self.trans(x)
-            x = x.unsqueeze(0).to(self.device)
+    def __call__(self, target, ref=None, **kwargs):
+
+        torch.set_grad_enabled(self.as_loss)
+
+        if 'fid' in self.metric_name:
+            output = self.net(target, ref, device=self.device, **kwargs)
+        else:
+            if not torch.is_tensor(target):
+                target = imread2tensor(target)
+                target = target.unsqueeze(0)
+                if self.metric_mode == 'FR':
+                    assert ref is not None, 'Please specify reference image for Full Reference metric'
+                    ref = self.trans(ref)
+                    ref = ref.unsqueeze(0)
+
             if self.metric_mode == 'FR':
-                assert y is not None, 'Please specify reference image for Full Reference metric'
-                y = self.trans(y)
-                y = y.unsqueeze(0).to(self.device)
-        with torch.no_grad():
-            if self.metric_mode == 'FR':
-                output = self.net(x, y)
+                output = self.net(target.to(self.device), ref.to(self.device))
             elif self.metric_mode == 'NR':
-                output = self.net(x)
-        return output.cpu().item()
+                output = self.net(target.to(self.device))
+
+        return output

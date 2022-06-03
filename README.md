@@ -15,7 +15,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 
 Below are details of supported methods and datasets in this project.
 
-<details open>
+<details close>
 <summary>Supported methods and datasets:</summary>
 
 <table>
@@ -43,6 +43,7 @@ Below are details of supported methods and datasets in this project.
 
 | NR Method                    | Backward                 |
 | ---------------------------- | ------------------------ |
+| FID                          | :heavy_multiplication_x: |
 | MUSIQ                        | :white_check_mark:       |
 | DBCNN                        | :white_check_mark:       |
 | PaQ-2-PiQ                    | :white_check_mark:       |
@@ -131,21 +132,24 @@ python setup.py develop
 Example test script with input directory and reference directory. Single image is also supported for `-i` and `-r` options.
 ```
 # example for FR metric with dirs
-python inference_iqa.py -n LPIPS[or lpips] -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir
+python inference_iqa.py -m LPIPS[or lpips] -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir
 
 # example for NR metric with single image
-python inference_iqa.py -n brisque -i ./ResultsCalibra/dist_dir/I03.bmp
+python inference_iqa.py -m brisque -i ./ResultsCalibra/dist_dir/I03.bmp
 ```
 
 #### Used as functions in your project
 ```
 import pyiqa
+import torch
 
 # list all available metrics
 print(pyiqa.list_models())
 
 # create metric with default setting
-iqa_metric = pyiqa.create_metric('lpips').to(device)
+iqa_metric = pyiqa.create_metric('lpips', device=torch.device('cuda'))
+# Note that gradient propagation is disabled by default. set as_loss=True to enable it as a loss function.
+iqa_loss = pyiqa.create_metric('lpips', device=torch.device('cuda'), as_loss=True)
 
 # create metric with custom setting
 iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True).to(device)
@@ -154,11 +158,17 @@ iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True).to(device)
 print(iqa_metric.lower_better)
 
 # example for iqa score inference
-# img_tensor_x/y: (N, 3, H, W), RGB, 0 ~ 1
-# Note that gradient propagation is enabled by default. You need to manually disable it when perform test.
-with torch.no_grad():
-    score_fr = iqa_metric(img_tensor_x, img_tensor_y)
-    score_nr = iqa_metric(img_tensor_x)
+# Tensor inputs, img_tensor_x/y: (N, 3, H, W), RGB, 0 ~ 1
+score_fr = iqa_metric(img_tensor_x, img_tensor_y)
+score_nr = iqa_metric(img_tensor_x)
+
+# img path as inputs.
+score_fr = iqa_metric('./ResultsCalibra/dist_dir/I03.bmp', './ResultsCalibra/ref_dir/I03.bmp')
+
+# For FID metric, use directory or precomputed statistics as inputs
+fid_metric = pyiqa.create_metric('fid')
+score = fid_metric('./ResultsCalibra/dist_dir/', './ResultsCalibra/ref_dir')
+score = fid_metric('./ResultsCalibra/dist_dir/', dataset_name="FFHQ", dataset_res=1024, dataset_split="trainval70k")
 ```
 
 Metrics which support backward can be used for optimization, such as image enhancement.

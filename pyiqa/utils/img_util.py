@@ -9,6 +9,17 @@ from PIL import Image
 import torchvision.transforms.functional as TF
 
 
+IMG_EXTENSIONS = [
+    '.jpg', '.JPG', '.jpeg', '.JPEG',
+    '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP',
+    '.tif', '.TIF', '.tiff', '.TIFF',
+]
+
+
+def is_image_file(filename):
+    return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
+
+
 def imread2tensor(img_path, rgb=False):
     """Read image to tensor.
 
@@ -16,6 +27,7 @@ def imread2tensor(img_path, rgb=False):
         img_path (str): path of image
         rgb: convert input to RGB if true
     """
+    assert is_image_file(img_path), f'{img_path} is not a valid image file.'
     img = Image.open(img_path)
     if rgb:
         img = img.convert('RGB')

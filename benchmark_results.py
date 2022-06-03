@@ -1,13 +1,13 @@
 import argparse
 import yaml
 import csv
-from pyiqa.models.inference_model import InferenceModel
 from pyiqa.data import build_dataset, build_dataloader
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 from pyiqa.utils.options import ordered_yaml
 from pyiqa.metrics import calculate_plcc, calculate_srcc, calculate_krcc
 from tqdm import tqdm
 import torch
+from pyiqa import create_metric
 
 
 def main():
@@ -71,8 +71,7 @@ def main():
         lower_better = all_metric_opts[metric_name].get('lower_better', False)
         if metric_name == 'pieapp':
             lower_better = False    # ground truth score is also lower better for pieapp test set
-        iqa_model = InferenceModel(metric_name, metric_mode, **metric_opts)
-        iqa_model.net.to(device)
+        iqa_model = create_metric(metric_name, device=device, metric_mode=metric_mode, **metric_opts)
 
         results_row = [metric_name]
         for dataset_name in datasets_to_test:
@@ -93,12 +92,9 @@ def main():
             for data in dataloader:
                 gt_labels.append(data['mos_label'].cpu().item())
                 if metric_mode == 'FR':
-                    tar_img = data['img'].to(device)
-                    ref_img = data['ref_img'].to(device)
-                    iqa_score = iqa_model.test(tar_img, ref_img)
+                    iqa_score = iqa_model(data['img'], data['ref_img']).cpu().item()
                 else:
-                    tar_img = data['img'].to(device)
-                    iqa_score = iqa_model.test(tar_img)
+                    iqa_score = iqa_model(data['img']).cpu().item()
                 result_scores.append(iqa_score)
                 pbar.update(1)
             pbar.close()
