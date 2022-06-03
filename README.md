@@ -90,16 +90,14 @@ Below are details of supported methods and datasets in this project.
 
 ### :triangular_flag_on_post: Updates/Changelog
 
+- **June 3, 2022**. Add FID metric. See [clean-fid](https://github.com/GaParmar/clean-fid) for more details.
 - **March 11, 2022**. Add pretrained DBCNN, NIMA, and official model of PieAPP, paq2piq.
-- **March 5, 2022**. Add NRQM, PI, ILNIQE metrics.
-- **Feb 2, 2022**. Add MUSIQ inference code, and the converted official weights. See [Official codes](https://github.com/google-research/google-research/tree/master/musiq).
 - [**More**](docs/history_changelog.md)
 
 ---
 
 ### :hourglass_flowing_sand: TODO List
 
-- :white_check_mark: Benchmark with retrained models of DBCNN, NIMA, etc.
 - :white_large_square: Add pretrained models on different datasets.
 
 ---
