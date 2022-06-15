@@ -66,7 +66,7 @@ class InferenceModel():
                 target = target.unsqueeze(0)
                 if self.metric_mode == 'FR':
                     assert ref is not None, 'Please specify reference image for Full Reference metric'
-                    ref = self.trans(ref)
+                    ref = imread2tensor(ref)
                     ref = ref.unsqueeze(0)
 
             if self.metric_mode == 'FR':
