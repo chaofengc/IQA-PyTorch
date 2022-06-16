@@ -53,7 +53,7 @@ def run_test(test_metric_names, use_cpu):
     failed_metrics = []
     for metric_name in test_metric_names:
         print(f'============> Testing {metric_name} ... ')
-        iqa_metric = pyiqa.create_metric(metric_name).to(device)
+        iqa_metric = pyiqa.create_metric(metric_name, as_loss=True, device=device)
         img_batch = img_batch.to(device)
         ref_batch = ref_batch.to(device)
         img_batch.requires_grad_()
@@ -103,4 +103,5 @@ if __name__ == '__main__':
         test_metric_names = args.metric_names
     else:
         test_metric_names = pyiqa.list_models()
+        test_metric_names.remove('fid')  # do not test fid here
     run_test(test_metric_names, args.use_cpu)

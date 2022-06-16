@@ -1,4 +1,5 @@
 import fnmatch
+import re
 from .default_model_configs import DEFAULT_CONFIGS
 
 from .utils import get_root_logger
