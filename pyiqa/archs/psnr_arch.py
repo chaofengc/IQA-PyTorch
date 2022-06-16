@@ -37,8 +37,6 @@ def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8, color_space='yiq'
         x = to_y_channel(x, data_range, color_space)
         y = to_y_channel(y, data_range, color_space)
 
-        y = y[..., crop_border:-crop_border, crop_border:-crop_border]
-
     mse = torch.mean((x - y)**2, dim=[1, 2, 3])
     score = 10 * torch.log10(data_range**2 / (mse + eps))
 
