@@ -90,16 +90,23 @@ class SSIM(torch.nn.Module):
         test_y_channel: boolean, whether to use y channel on ycbcr same as official matlab code.
     """
 
-    def __init__(self, channels=3, downsample=False, test_y_channel=True, color_space='yiq'):
+    def __init__(self, channels=3, downsample=False, test_y_channel=True, color_space='yiq', crop_border=0.):
 
         super(SSIM, self).__init__()
         self.win = fspecial(11, 1.5, channels)
         self.downsample = downsample
         self.test_y_channel = test_y_channel
         self.color_space = color_space
+        self.crop_border = crop_border
 
     def forward(self, X, Y):
         assert X.shape == Y.shape, f'Input {X.shape} and reference images should have the same shape'
+
+        if self.crop_border != 0:
+            crop_border = self.crop_border
+            X = X[..., crop_border:-crop_border, crop_border:-crop_border]
+            Y = Y[..., crop_border:-crop_border, crop_border:-crop_border]
+
         score = ssim(
             X,
             Y,

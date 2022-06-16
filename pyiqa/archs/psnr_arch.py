@@ -12,6 +12,7 @@ Refer to:
 
 import torch
 import torch.nn as nn
+from pyiqa.utils.img_util import crop_border
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import to_y_channel
@@ -36,6 +37,8 @@ def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8, color_space='yiq'
         x = to_y_channel(x, data_range, color_space)
         y = to_y_channel(y, data_range, color_space)
 
+        y = y[..., crop_border:-crop_border, crop_border:-crop_border]
+
     mse = torch.mean((x - y)**2, dim=[1, 2, 3])
     score = 10 * torch.log10(data_range**2 / (mse + eps))
 
@@ -56,12 +59,19 @@ class PSNR(nn.Module):
         score (torch.Tensor): (B, 1)
     """
 
-    def __init__(self, test_y_channel=False, **kwargs):
+    def __init__(self, test_y_channel=False, crop_border=0, **kwargs):
         super().__init__()
         self.test_y_channel = test_y_channel
         self.kwargs = kwargs
+        self.crop_border = crop_border
 
     def forward(self, X, Y):
         assert X.shape == Y.shape, f'Input and reference images should have the same shape, but got {X.shape} and {Y.shape}'
+
+        if self.crop_border != 0:
+            crop_border = self.crop_border
+            X = X[..., crop_border:-crop_border, crop_border:-crop_border]
+            Y = Y[..., crop_border:-crop_border, crop_border:-crop_border]
+
         score = psnr(X, Y, self.test_y_channel, **self.kwargs)
         return score
