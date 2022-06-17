@@ -115,7 +115,7 @@ def get_meshgrid(size: Tuple[int, int]) -> torch.Tensor:
     else:
         # Even
         y = torch.arange(-size[1] / 2, size[1] / 2) / size[1]
-    return torch.meshgrid(x, y)
+    return torch.meshgrid(x, y, indexing='ij')
 
 
 def estimate_ggd_param(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:

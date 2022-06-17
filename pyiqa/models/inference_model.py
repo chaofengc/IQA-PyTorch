@@ -7,7 +7,7 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.img_util import imread2tensor
 
 
-class InferenceModel():
+class InferenceModel(torch.nn.Module):
     """Common interface for quality inference of images with default setting of each metric."""
 
     def __init__(
@@ -48,13 +48,7 @@ class InferenceModel():
         self.net = self.net.to(self.device)
         self.net.eval()
 
-    def set_device(self, device):
-        if isinstance(device, str):
-            device = torch.device(device)
-        self.net.to(device)
-        self.device = device
-
-    def __call__(self, target, ref=None, **kwargs):
+    def forward(self, target, ref=None, **kwargs):
 
         torch.set_grad_enabled(self.as_loss)
 
