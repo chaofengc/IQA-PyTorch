@@ -11,7 +11,6 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 - :sparkles: **Fast.** With GPU acceleration, most of our implementation is much faster than Matlab.
 - :sparkles: **Flexible.** Support training new DNN models with several public IQA datasets
 - :sparkles: **Differentiable.** Most methods support pytorch backward
-- :sparkles: **Convenient.** Quick inference and benchmark script
 
 Below are details of supported methods and datasets in this project.
 
@@ -124,20 +123,8 @@ pip install -r requirements.txt
 python setup.py develop
 ```
 
-### Quick Inference
+### Basic Usage 
 
-#### Test script
-
-Example test script with input directory and reference directory. Single image is also supported for `-i` and `-r` options.
-```
-# example for FR metric with dirs
-python inference_iqa.py -m LPIPS[or lpips] -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir
-
-# example for NR metric with single image
-python inference_iqa.py -m brisque -i ./ResultsCalibra/dist_dir/I03.bmp
-```
-
-#### Used as functions in your project
 ```
 import pyiqa
 import torch
@@ -151,7 +138,7 @@ iqa_metric = pyiqa.create_metric('lpips', device=torch.device('cuda'))
 iqa_loss = pyiqa.create_metric('lpips', device=torch.device('cuda'), as_loss=True)
 
 # create metric with custom setting
-iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True).to(device)
+iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True, color_space='ycbcr').to(device)
 
 # check if lower better or higher better
 print(iqa_metric.lower_better)
@@ -171,7 +158,18 @@ score = fid_metric('./ResultsCalibra/dist_dir/', './ResultsCalibra/ref_dir')
 score = fid_metric('./ResultsCalibra/dist_dir/', dataset_name="FFHQ", dataset_res=1024, dataset_split="trainval70k")
 ```
 
-Metrics which support backward can be used for optimization, such as image enhancement.
+
+#### Example Test Script
+
+Example test script with input directory and reference directory. Single image is also supported for `-i` and `-r` options.
+```
+# example for FR metric with dirs
+python inference_iqa.py -m LPIPS[or lpips] -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir
+
+# example for NR metric with single image
+python inference_iqa.py -m brisque -i ./ResultsCalibra/dist_dir/I03.bmp
+```
+
 
 ## :hammer_and_wrench: Train
 

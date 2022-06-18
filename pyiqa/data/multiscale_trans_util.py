@@ -51,7 +51,7 @@ def resize_preserve_aspect_ratio(image, h, w, longer_side_length):
     rh = round(h * ratio)
     rw = round(w * ratio)
 
-    resized = F.interpolate(image, (rh, rw), mode='bicubic')
+    resized = F.interpolate(image, (rh, rw), mode='bicubic', align_corners=False)
     return resized, rh, rw
 
 
