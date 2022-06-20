@@ -12,7 +12,6 @@ Refer to:
 
 import torch
 import torch.nn as nn
-from pyiqa.utils.img_util import crop_border
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import to_y_channel

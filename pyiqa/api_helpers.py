@@ -17,7 +17,7 @@ def _natural_key(string_):
     return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_.lower())]
 
 
-def list_models(filter='', exclude_filters=''):
+def list_models(metric_mode=None, filter='', exclude_filters=''):
     """ Return list of available model names, sorted alphabetically
     Args:
         filter (str) - Wildcard filter string that works with fnmatch
@@ -25,7 +25,12 @@ def list_models(filter='', exclude_filters=''):
     Example:
         model_list('*ssim*') -- returns all models including 'ssim'
     """
-    all_models = DEFAULT_CONFIGS.keys()
+    if metric_mode is None:
+        all_models = DEFAULT_CONFIGS.keys()
+    else:
+        assert metric_mode in ['FR', 'NR'], f'Metric mode only support [FR, NR], but got {metric_mode}'
+        all_models = [key for key in DEFAULT_CONFIGS.keys() if DEFAULT_CONFIGS[key]['metric_mode'] == metric_mode]
+
     if filter:
         models = []
         include_filters = filter if isinstance(filter, (tuple, list)) else [filter]

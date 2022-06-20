@@ -159,12 +159,12 @@ score = fid_metric('./ResultsCalibra/dist_dir/', dataset_name="FFHQ", dataset_re
 ```
 
 
-#### Example Test Script
+#### Example Test script
 
-Example test script with input directory and reference directory. Single image is also supported for `-i` and `-r` options.
+Example test script with input directory/images and reference directory/images. 
 ```
 # example for FR metric with dirs
-python inference_iqa.py -m LPIPS[or lpips] -i ./ResultsCalibra/dist_dir -r ./ResultsCalibra/ref_dir
+python inference_iqa.py -m LPIPS[or lpips] -i ./ResultsCalibra/dist_dir[dist_img] -r ./ResultsCalibra/ref_dir[ref_img]
 
 # example for NR metric with single image
 python inference_iqa.py -m brisque -i ./ResultsCalibra/dist_dir/I03.bmp
