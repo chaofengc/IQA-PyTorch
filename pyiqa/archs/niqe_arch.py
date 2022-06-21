@@ -21,7 +21,7 @@ import torch
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.matlab_utils import imresize, fspecial, conv2d, imfilter, fitweibull, nancov, nanmean, blockproc
-from .func_util import estimate_aggd_param, normalize_img_with_guass
+from .func_util import estimate_aggd_param, normalize_img_with_guass, diff_round
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -170,7 +170,7 @@ def calculate_niqe(img: torch.Tensor,
     if test_y_channel and img.shape[1] == 3:
         img = to_y_channel(img, 255, color_space)
 
-    img = img.round()
+    img = diff_round(img)
     img = img.to(torch.float64)
 
     if crop_border != 0:
@@ -378,7 +378,7 @@ def calculate_ilniqe(img: torch.Tensor,
 
     params = scipy.io.loadmat(pretrained_model_path)
     img = img * 255.
-    img = img.round()
+    img = diff_round(img)
     # float64 precision is critical to be consistent with matlab codes
     img = img.to(torch.float64)
 

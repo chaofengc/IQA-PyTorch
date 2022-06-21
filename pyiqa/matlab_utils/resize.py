@@ -247,7 +247,7 @@ def cast_input(x: torch.Tensor) -> typing.Tuple[torch.Tensor, _D]:
 def cast_output(x: torch.Tensor, dtype: _D) -> torch.Tensor:
     if dtype is not None:
         if not dtype.is_floating_point:
-            x = x.round()
+            x = x - x.detach() + x.round()
         # To prevent over/underflow when converting types
         if dtype is torch.uint8:
             x = x.clamp(0, 255)

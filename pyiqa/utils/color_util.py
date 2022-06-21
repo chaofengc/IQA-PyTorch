@@ -31,7 +31,8 @@ def to_y_channel(img: torch.Tensor, out_data_range: float = 1., color_space: str
         img = rgb2lhm(img)
     out_img = img[:, [0], :, :] * out_data_range
     if out_data_range >= 255:
-        out_img = out_img.round()
+        # differentiable round with pytorch
+        out_img = out_img - out_img.detach() + out_img.round()
     return out_img
 
 

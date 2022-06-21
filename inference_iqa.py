@@ -1,7 +1,6 @@
 import argparse
 import glob
 import os
-from PIL import Image
 from pyiqa import create_metric
 from tqdm import tqdm
 
