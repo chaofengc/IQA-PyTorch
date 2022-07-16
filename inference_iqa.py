@@ -53,6 +53,7 @@ def main():
         avg_score += score
         pbar.update(1)
         pbar.set_description(f'{metric_name} of {img_name}: {score}')
+        pbar.write(f'{metric_name} of {img_name}: {score}')
         if args.save_file:
             sf.write(f'{img_name}\t{score}\n')
     pbar.close()

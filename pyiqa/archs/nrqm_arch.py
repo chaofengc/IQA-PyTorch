@@ -49,8 +49,11 @@ def get_var_gen_gauss(x, eps=1e-7):
     return rho
 
 
-def gamma_gen_gauss(x: Tensor):
+def gamma_gen_gauss(x: Tensor, block_seg=1e4):
     r"""General gaussian distribution estimation.
+
+    Args:
+        block_seg: maximum number of blocks in parallel to avoid OOM
     """
     pshape = x.shape[:-1]
     x = x.reshape(-1, x.shape[-1])
@@ -65,7 +68,16 @@ def gamma_gen_gauss(x: Tensor):
 
     rho = var / (mean_abs + eps)
 
-    indexes = (rho - r_table).abs().argmin(dim=-1)
+    if rho.shape[0] > block_seg:
+        rho_seg = rho.chunk(int(rho.shape[0] // block_seg))
+        indexes = []
+        for r in rho_seg:
+            tmp_idx = (r - r_table).abs().argmin(dim=-1)
+            indexes.append(tmp_idx)
+        indexes = torch.cat(indexes)
+    else:
+        indexes = (rho - r_table).abs().argmin(dim=-1)
+
     solution = gamma[indexes].reshape(*pshape)
     return solution
 
@@ -327,7 +339,7 @@ def nrqm(
     f3 = []
     for im in img_pyr:
         col = im2col(im, 5, 'distinct')
-        _, s, _ = torch.linalg.svd(col)
+        _, s, _ = torch.linalg.svd(col, full_matrices=False)
         f3.append(s)
     f3 = torch.cat(f3, dim=1)
 
