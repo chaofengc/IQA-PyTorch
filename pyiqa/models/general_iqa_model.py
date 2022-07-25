@@ -74,11 +74,7 @@ class GeneralIQAModel(BaseModel):
         if 'mos_label' in data:
             self.gt_mos = data['mos_label'].to(self.device)
 
-        if 'ref_img' in data:
-            self.use_ref = True
-            self.ref_input = data['ref_img'].to(self.device)
-        else:
-            self.use_ref = False
+        self.use_ref = self.opt['train'].get('use_ref', False)
 
     def net_forward(self, net):
         if self.use_ref:

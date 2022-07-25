@@ -1,0 +1,115 @@
+# general settings
+# name: debug_DBCNN_LIVEC
+name: 001_DBCNN_TID2008
+model_type: DBCNNModel
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 123
+split_num: 10
+save_final_results_path: './experiments/DBCNN_TID2008_10splits_results.txt'
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: TID2008
+    type: GeneralFRDataset
+    dataroot_target: ./datasets/tid2008/distorted_images
+    dataroot_ref: ./datasets/tid2008/reference_images
+    meta_info_file: ./datasets/meta_info/meta_info_TID2008Dataset.csv
+    split_file: ./datasets/train_split_info/tid2008_seed123.pkl
+
+    augment:
+      hflip: true
+      random_crop: 384 
+    img_range: 1
+
+    # data loader
+    use_shuffle: true
+    num_worker_per_gpu: 4
+    batch_size_per_gpu: 8
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+  val:
+    name: TID2008
+    type: GeneralFRDataset
+    dataroot_target: ./datasets/tid2008/distorted_images
+    dataroot_ref: ./datasets/tid2008/reference_images
+    meta_info_file: ./datasets/meta_info/meta_info_TID2008Dataset.csv
+    split_file: ./datasets/train_split_info/tid2008_seed123.pkl
+    
+# network structures
+network:
+  type: DBCNN
+  pretrained_scnn_path: './experiments/pretrained_models/DBCNN/scnn.pkl'
+
+# path
+path:
+  pretrain_network_g: ~
+  strict_load_g: true
+  resume_state: ~
+
+# training settings
+train:
+  use_ref: false 
+  optim:
+    type: SGD
+    lr: !!float 1e-3
+    momentum: 0.9
+    weight_decay: !!float 5e-4
+
+  optim_finetune:
+    type: Adam
+    lr: !!float 1e-5
+    weight_decay: !!float 5e-4
+
+  scheduler:
+    type: MultiStepLR
+    milestones: [1000]
+    gamma: 1
+
+  scheduler_finetune:
+    type: MultiStepLR
+    milestones: [1000]
+    gamma: 1
+
+  total_iter: 12000
+  finetune_start_iter: 6000
+  warmup_iter: -1  # no warm up
+
+  # losses
+  mos_loss_opt:
+    type: MSELoss
+    loss_weight: !!float 1.0
+    reduction: mean
+
+# validation settings
+val:
+  val_freq: !!float 100
+  save_img: false
+  pbar: true
+
+  key_metric: srcc # if this metric improve, update all metrics. If not specified, each best metric results will be updated separately
+  metrics:
+    srcc:
+      type: calculate_srcc
+
+    plcc:
+      type: calculate_plcc
+
+    krcc:
+      type: calculate_krcc
+
+# logging settings
+logger:
+  print_freq: 10
+  save_checkpoint_freq: !!float 5e9
+  save_latest_freq: !!float 5e2
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500
