@@ -52,15 +52,20 @@ class NIMA(nn.Module):
 
         if pretrained_model_path is None and pretrained:
             url_key = 'ava' if isinstance(pretrained, bool) else pretrained
-            num_class = 10 if url_key == 'ava' else num_class
+            num_classes = 10 if url_key == 'ava' else num_classes
             pretrained_model_path = default_model_urls[url_key]
 
         self.global_pool = nn.AdaptiveAvgPool2d(1)
         in_ch = self.base_model.feature_info.channels()[-1]
         self.num_classes = num_classes
 
-        self.classifier = nn.Sequential(nn.Flatten(), nn.Dropout(p=dropout_rate),
-                                        nn.Linear(in_features=in_ch, out_features=num_classes), nn.Softmax(dim=1))
+        self.classifier = [nn.Flatten(),
+                           nn.Dropout(p=dropout_rate),
+                           nn.Linear(in_features=in_ch, out_features=num_classes),
+                           ]
+        if num_classes > 1:
+            self.classifier.append(nn.Softmax(dim=-1))
+        self.classifier = nn.Sequential(*self.classifier)
 
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)

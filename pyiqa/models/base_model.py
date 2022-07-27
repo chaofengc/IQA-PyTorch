@@ -133,7 +133,10 @@ class BaseModel():
             for optimizer in self.optimizers:
                 self.schedulers.append(lr_scheduler.CosineAnnealingRestartLR(optimizer, **train_opt[scheduler_name]))
         else:
-            raise NotImplementedError(f'Scheduler {scheduler_type} is not implemented yet.')
+            scheduler = getattr(torch.optim.lr_scheduler, scheduler_type)
+            for optimizer in self.optimizers:
+                self.schedulers.append(scheduler(optimizer, **train_opt[scheduler_name]))
+            # raise NotImplementedError(f'Scheduler {scheduler_type} is not implemented yet.')
 
     def get_bare_model(self, net):
         """Get bare model, especially under wrapping with

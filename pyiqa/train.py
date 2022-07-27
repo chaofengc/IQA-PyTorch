@@ -164,8 +164,6 @@ def train_pipeline(root_path):
             current_iter += 1
             if current_iter > total_iters:
                 break
-            # update learning rate
-            model.update_learning_rate(current_iter, warmup_iter=opt['train'].get('warmup_iter', -1))
             # training
             model.feed_data(train_data)
             model.optimize_parameters(current_iter)
@@ -203,7 +201,8 @@ def train_pipeline(root_path):
             iter_timer.start()
             train_data = prefetcher.next()
         # end of iter
-
+        # update learning rate
+        model.update_learning_rate(current_iter, warmup_iter=opt['train'].get('warmup_iter', -1))
     # end of epoch
 
     consumed_time = str(datetime.timedelta(seconds=int(time.time() - start_time)))
