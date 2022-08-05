@@ -5,7 +5,7 @@ import os
 import torch
 from torch.utils import data as data
 import torchvision.transforms as tf
-from torchvision.transforms.functional import normalize
+from pyiqa.data.data_util import read_meta_info_file
 
 from pyiqa.data.transforms import transform_mapping
 from pyiqa.utils.registry import DATASET_REGISTRY
