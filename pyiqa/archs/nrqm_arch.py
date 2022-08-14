@@ -22,6 +22,7 @@ from pyiqa.archs.func_util import extract_2d_patches
 from pyiqa.archs.ssim_arch import SSIM
 from pyiqa.archs.arch_util import ExactPadding2d
 from pyiqa.archs.niqe_arch import NIQE
+from warnings import warn
 
 default_model_urls = {'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NRQM_model.mat'}
 
@@ -173,7 +174,7 @@ def block_dct(img: Tensor):
     return dct_feat
 
 
-def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=3):
+def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=3, eps=1e-12):
     r"""Normalize pyramid with local spatial neighbor and band neighbor
     """
     border = blksz // 2
@@ -218,7 +219,13 @@ def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=3):
             o_c = o_c.reshape(b, hw)
             o_c = o_c - o_c.mean(dim=1, keepdim=True)
 
-            tmp_y = (tmp @ torch.linalg.pinv(C_x)) * tmp / N
+            if hasattr(torch.linalg, 'lstsq'):
+                tmp_y = torch.linalg.lstsq(C_x.transpose(1, 2), tmp.transpose(1, 2)).solution.transpose(1, 2) * tmp / N
+            else:
+                warn(
+                    "For numerical stability, we use torch.linal.lstsq to calculate matrix inverse for PyTorch > 1.9.0. The results might be slightly different if you use older version of PyTorch.")
+                tmp_y = (tmp @ torch.linalg.pinv(C_x)) * tmp / N
+
             z = tmp_y.sum(dim=2).sqrt()
             mask = z != 0
             g_c = o_c.masked_select(mask) / z.masked_select(mask)
