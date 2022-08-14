@@ -228,7 +228,7 @@ def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=3, eps=1e-12):
 
             z = tmp_y.sum(dim=2).sqrt()
             mask = z != 0
-            g_c = o_c.masked_select(mask) / z.masked_select(mask)
+            g_c = o_c * mask / (z * mask + eps)
             g_c = g_c.reshape(b, h, w)
 
             gb = int(guardband / (2**(si)))
