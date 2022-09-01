@@ -14,7 +14,7 @@ from pyiqa.utils.registry import DATASET_REGISTRY
 
 
 @DATASET_REGISTRY.register()
-class GeneralFRDataset(data.Dataset):
+class PIPALDataset(data.Dataset):
     """General Full Reference dataset with meta info file.
     
     Args:
@@ -23,13 +23,13 @@ class GeneralFRDataset(data.Dataset):
     """
 
     def __init__(self, opt):
-        super(GeneralFRDataset, self).__init__()
+        super(PIPALDataset, self).__init__()
         self.opt = opt
 
         if opt.get('override_phase', None) is None:
-            self.phase = opt['phase']
+            self.phase = opt['phase'] 
         else:
-            self.phase = opt['override_phase']
+            self.phase = opt['override_phase'] 
 
         target_img_folder = opt['dataroot_target']
         ref_img_folder = opt.get('dataroot_ref', None)
@@ -42,6 +42,7 @@ class GeneralFRDataset(data.Dataset):
             with open(opt['split_file'], 'rb') as f:
                 split_dict = pickle.load(f)
                 splits = split_dict[split_index][self.phase]
+            
             self.paths_mos = [self.paths_mos[i] for i in splits] 
         
         dmos_max = opt.get('dmos_max', 0.)
@@ -50,8 +51,6 @@ class GeneralFRDataset(data.Dataset):
             self.dmos_max = opt.get('dmos_max') 
         else:
             self.use_dmos = False
-        
-        self.mos_max = opt.get('mos_max', 1.)
 
         # do paired transform first and then do common transform
         paired_transform_list = []
@@ -74,17 +73,16 @@ class GeneralFRDataset(data.Dataset):
         ref_path = self.paths_mos[index][0]
         img_path = self.paths_mos[index][1]
         mos_label = self.paths_mos[index][2]
+
         img_pil = Image.open(img_path).convert('RGB')
         ref_pil = Image.open(ref_path).convert('RGB')
-        
+
         img_pil, ref_pil = self.paired_trans([img_pil, ref_pil])
 
         img_tensor = self.common_trans(img_pil) * self.img_range
         ref_tensor = self.common_trans(ref_pil) * self.img_range
         if self.use_dmos:
-            mos_label = (self.dmos_max - mos_label) / self.dmos_max
-        else:
-            mos_label /= self.mos_max
+            mos_label = self.dmos_max - mos_label 
         mos_label_tensor = torch.Tensor([mos_label])
         
         return {'img': img_tensor, 'ref_img': ref_tensor, 'mos_label': mos_label_tensor, 'img_path': img_path, 'ref_img_path': ref_path}

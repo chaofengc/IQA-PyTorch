@@ -73,19 +73,26 @@ class PLCCLoss(nn.Module):
 
 
 @LOSS_REGISTRY.register()
-class SRCCLoss(nn.Module):
-    """Ranked PLCC loss, induced from Spearman correlation coefficient
+class RankLoss(nn.Module):
+    """Monotonicity regularization loss, will be zero when rankings of pred and target are the same.
+
+    Reference:
+        - https://github.com/lidq92/LinearityIQA/blob/master/IQAloss.py
 
     """
 
-    def __init__(self, loss_weight=1.0):
-        super(SRCCLoss, self).__init__()
+    def __init__(self, detach=False, loss_weight=1.0):
+        super(RankLoss, self).__init__()
         self.loss_weight = loss_weight
 
     def forward(self, pred, target):
-        pred = torch.sort(pred, dim=-1)
-        target = torch.sort(target, dim=-1)
-        return self.loss_weight * plcc_loss(pred, target)
+        if pred.size(0) > 1:  #
+            ranking_loss = F.relu((pred - pred.t()) * torch.sign((target.t() - target)))
+            scale = 1 + torch.max(ranking_loss.detach())
+            loss = ranking_loss.mean() / scale
+        else:
+            loss = F.l1_loss(pred, target.detach())  # 0 for batch with single sample.
+        return self.loss_weight * loss
 
 
 def norm_loss_with_normalization(pred, target, p, q):

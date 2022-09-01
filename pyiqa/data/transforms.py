@@ -1,40 +1,105 @@
 import cv2
 import random
-import functools
+import functools 
 from typing import Union
 from PIL import Image
+from collections.abc import Sequence
+from imgaug import augmenters as iaa
+import numpy as np
 
 import torch
 import torchvision.transforms as tf
 import torchvision.transforms.functional as F
+from pyiqa.archs.arch_util import to_2tuple
 
 
-def transform_mapping(key, value):
-    if key == 'hflip' and value:
-        return [PairedRandomHorizontalFlip()]
+def transform_mapping(key, args):
+    if key == 'hflip' and args:
+        return [PairedRandomHorizontalFlip()] 
+    if key == 'vflip' and args:
+        return [PairedRandomHorizontalFlip()] 
     elif key == 'random_crop':
-        return [PairedRandomCrop(value)]
+        return [PairedRandomCrop(args)]
     elif key == 'center_crop':
-        return [tf.CenterCrop(value)]
+        return [PairedCenterCrop(args)]
     elif key == 'resize':
-        return [PairedResize(value)]
+        return [PairedResize(args)]
+    elif key == 'adaptive_resize':
+        return [PairedAdaptiveResize(args)]
+    elif key == 'random_square_resize':
+        return [PairedRandomSquareResize(args)]
+    elif key == 'random_arp_resize':
+        return [PairedRandomARPResize(args)]
+    elif key == 'ada_pad':
+        return [PairedAdaptivePadding(args)]
+    elif key == 'rot90' and args:
+        return [PairedRandomRot90(args)]
+    elif key == 'randomerase':
+        return [PairedRandomErasing(**args)]
+    elif key == 'changecolor':
+        return [ChangeColorSpace(args)]
+    elif key == 'totensor' and args:
+        return [PairedToTensor()]
     else:
         return []
 
 
 def _check_pair(x):
-    if isinstance(x, (tuple, list)) and len(x) == 2:
+    if isinstance(x, (tuple, list)) and len(x) >= 2:
         return True
+
+
+class PairedToTensor(tf.ToTensor):
+    """Pair version of center crop"""
+    def to_tensor(self, x):
+        if isinstance(x, torch.Tensor):
+            return x
+        else:
+            return F.to_tensor(x)
+
+    def __call__(self, imgs):
+        if _check_pair(imgs):
+            for i in range(len(imgs)):
+                imgs[i] = self.to_tensor(imgs[i])
+            return imgs 
+        else:
+            return self.to_tensor(imgs) 
+
+
+class ChangeColorSpace:
+    """Pair version of center crop"""
+    def __init__(self, to_colorspace):
+        self.aug_op = iaa.color.ChangeColorspace(to_colorspace)
+
+    def __call__(self, imgs):
+        if _check_pair(imgs):
+            for i in range(len(imgs)):
+                tmpimg = self.aug_op.augment_image(np.array(imgs[i]))
+                imgs[i] = Image.fromarray(tmpimg)
+            return imgs 
+        else:
+            imgs = self.aug_op.augment_image(np.array(imgs))
+            return Image.fromarray(imgs)
+
+
+class PairedCenterCrop(tf.CenterCrop):
+    """Pair version of center crop"""
+    def forward(self, imgs):
+        if _check_pair(imgs):
+            for i in range(len(imgs)):
+                imgs[i] = super().forward(imgs[i])
+            return imgs
+        elif isinstance(imgs, Image.Image):
+            return super().forward(imgs)
 
 
 class PairedRandomCrop(tf.RandomCrop):
     """Pair version of random crop"""
-
     def _pad(self, img):
         if self.padding is not None:
             img = F.pad(img, self.padding, self.fill, self.padding_mode)
 
-        width, height = img.size
+        width, height = img.size 
         # pad the width if needed
         if self.pad_if_needed and width < self.size[1]:
             padding = [self.size[1] - width, 0]
@@ -47,45 +112,189 @@ class PairedRandomCrop(tf.RandomCrop):
 
     def forward(self, imgs):
         if _check_pair(imgs):
-            img1, img2 = imgs
-            img1 = self._pad(img1)
-            img2 = self._pad(img2)
-            i, j, h, w = self.get_params(img1, self.size)
-            img1 = F.crop(img1, i, j, h, w)
-            img2 = F.crop(img2, i, j, h, w)
-            return [img1, img2]
+            i, j, h, w = self.get_params(imgs[0], self.size)
+            for i in range(len(imgs)):
+                img = self._pad(imgs[i]) 
+                img = F.crop(img, i, j, h, w)
+                imgs[i] = img
+            return imgs
         elif isinstance(imgs, Image.Image):
-            img1 = imgs
-            return super().forward(img1)
+            return super().forward(imgs)
+
+
+class PairedRandomErasing(tf.RandomErasing):
+    """Pair version of random erasing"""
+
+    def forward(self, imgs):
+        if _check_pair(imgs):
+            if torch.rand(1) < self.p:
+                # cast self.value to script acceptable type
+                if isinstance(self.value, (int, float)):
+                    value = [self.value]
+                elif isinstance(self.value, str):
+                    value = None
+                elif isinstance(self.value, tuple):
+                    value = list(self.value)
+                else:
+                    value = self.value
+
+                if value is not None and not (len(value) in (1, imgs[0].shape[-3])):
+                    raise ValueError(
+                        "If value is a sequence, it should have either a single value or "
+                        f"{imgs[0].shape[-3]} (number of input channels)"
+                    )
+
+                x, y, h, w, v = self.get_params(imgs[0], scale=self.scale, ratio=self.ratio, value=value)
+                for i in range(len(imgs)):
+                    imgs[i] = F.erase(imgs[i], x, y, h, w, v, self.inplace)
+            return imgs 
+        elif isinstance(imgs, Image.Image):
+            return super().forward(imgs)
 
 
 class PairedRandomHorizontalFlip(tf.RandomHorizontalFlip):
     """Pair version of random hflip"""
+    def forward(self, imgs):
+        if _check_pair(imgs):
+            if torch.rand(1) < self.p:
+                for i in range(len(imgs)):
+                    imgs[i] = F.hflip(imgs[i])
+            return imgs
+        elif isinstance(imgs, Image.Image):
+            return super().forward(imgs)
+
+
+class PairedRandomVerticalFlip(tf.RandomVerticalFlip):
+    """Pair version of random hflip"""
+    def forward(self, imgs):
+        if _check_pair(imgs):
+            if torch.rand(1) < self.p:
+                for i in range(len(imgs)):
+                    imgs[i] = F.vflip(imgs[i])
+            return imgs
+        elif isinstance(imgs, Image.Image):
+            return super().forward(imgs)
+
+
+
+class PairedRandomRot90(torch.nn.Module):
+    """Pair version of random hflip"""
+    def __init__(self, p=0.5):
+        super().__init__()
+        self.p = p
 
     def forward(self, imgs):
         if _check_pair(imgs):
-            img1, img2 = imgs
             if torch.rand(1) < self.p:
-                img1 = F.hflip(img1)
-                img2 = F.hflip(img2)
-            return [img1, img2]
+                for i in range(len(imgs)):
+                    imgs[i] = F.rotate(imgs[i], 90)
+            return imgs
         elif isinstance(imgs, Image.Image):
-            img1 = imgs
-            return super().forward(img1)
+            if torch.rand(1) < self.p:
+                imgs = F.rotate(imgs, 90)
+            return imgs
 
 
 class PairedResize(tf.Resize):
     """Pair version of resize"""
+    def forward(self, imgs):
+        if _check_pair(imgs):
+            for i in range(len(imgs)):
+                imgs[i] = super().forward(imgs[i])
+            return imgs
+        elif isinstance(imgs, Image.Image): 
+            return super().forward(imgs)
+
+
+class PairedAdaptiveResize(tf.Resize):
+    """ARP preserved resize when necessary"""
+    def forward(self, imgs):
+        if _check_pair(imgs):
+            for i in range(len(imgs)):
+                tmpimg = imgs[i]
+                min_size = min(tmpimg.size)
+                if min_size < self.size:
+                    tmpimg = super().forward(tmpimg)
+                imgs[i] = tmpimg
+            return imgs
+        elif isinstance(imgs, Image.Image): 
+            tmpimg = imgs
+            min_size = min(tmpimg.size)
+            if min_size < self.size:
+                tmpimg = super().forward(tmpimg)
+            return tmpimg
+
+
+class PairedRandomARPResize(torch.nn.Module):
+    """Pair version of resize"""
+    def __init__(self, size_range, interpolation=tf.InterpolationMode.BILINEAR, antialias=None):
+        super().__init__()
+        self.interpolation = interpolation
+        self.antialias = antialias
+        self.size_range = size_range
+        if not (isinstance(size_range, Sequence) and len(size_range) == 2):
+            raise TypeError(f"size_range should be sequence with 2 int. Got {size_range} with {type(size_range)}")
+
+    def forward(self, imgs):
+        min_size, max_size = sorted(self.size_range)
+        target_size = random.randint(min_size, max_size)
+        if _check_pair(imgs):
+            for i in range(len(imgs)):
+                imgs[i] = F.resize(imgs[i], target_size, self.interpolation)
+            return imgs
+        elif isinstance(imgs, Image.Image): 
+            return F.resize(imgs, target_size, self.interpolation)
+
+
+class PairedRandomSquareResize(torch.nn.Module):
+    """Pair version of resize"""
+    def __init__(self, size_range, interpolation=tf.InterpolationMode.BILINEAR, antialias=None):
+        super().__init__()
+        self.interpolation = interpolation
+        self.antialias = antialias
+        self.size_range = size_range
+        if not (isinstance(size_range, Sequence) and len(size_range) == 2):
+            raise TypeError(f"size_range should be sequence with 2 int. Got {size_range} with {type(size_range)}")
+
+    def forward(self, imgs):
+        min_size, max_size = sorted(self.size_range)
+        target_size = random.randint(min_size, max_size)
+        target_size = (target_size, target_size)
+        if _check_pair(imgs):
+            for i in range(len(imgs)):
+                imgs[i] = F.resize(imgs[i], target_size, self.interpolation)
+            return imgs
+        elif isinstance(imgs, Image.Image): 
+            return F.resize(imgs, target_size, self.interpolation)
+
+
+class PairedAdaptivePadding(torch.nn.Module):
+    """Pair version of resize"""
+    def __init__(self, target_size, fill=0, padding_mode='constant'):
+        super().__init__()
+        self.target_size = to_2tuple(target_size)
+        self.fill = fill
+        self.padding_mode = padding_mode
+    
+    def get_padding(self, x):
+        w, h = x.size
+        th, tw = self.target_size
+        assert th >= h and tw >= w, f'Target size {self.target_size} should be larger than image size ({h}, {w})'
+        pad_row = th - h 
+        pad_col = tw - w
+        pad_l, pad_r, pad_t, pad_b = (pad_col//2, pad_col - pad_col//2, pad_row//2, pad_row - pad_row//2)
+        return (pad_l, pad_t, pad_r, pad_b)
 
     def forward(self, imgs):
         if _check_pair(imgs):
-            img1, img2 = imgs
-            img1 = super().forward(img1)
-            img2 = super().forward(img2)
-            return [img1, img2]
-        elif isinstance(imgs, Image.Image):
-            img1 = imgs
-            return super().forward(img1)
+            for i in range(len(imgs)):
+                padding = self.get_padding(imgs[i])
+                imgs[i] = F.pad(imgs[i], padding, self.fill, self.padding_mode)
+            return imgs
+        elif isinstance(imgs, Image.Image): 
+            padding = self.get_padding(imgs)
+            imgs = F.pad(imgs, padding, self.fill, self.padding_mode)
+            return imgs
 
 
 def mod_crop(img, scale):
@@ -107,73 +316,6 @@ def mod_crop(img, scale):
         raise ValueError(f'Wrong img ndim: {img.ndim}.')
     return img
 
-
-def paired_random_crop(img_gts, img_lqs, gt_patch_size, scale, gt_path=None):
-    """Paired random crop. Support Numpy array and Tensor inputs.
-
-    It crops lists of lq and gt images with corresponding locations.
-
-    Args:
-        img_gts (list[ndarray] | ndarray | list[Tensor] | Tensor): GT images. Note that all images
-            should have the same shape. If the input is an ndarray, it will
-            be transformed to a list containing itself.
-        img_lqs (list[ndarray] | ndarray): LQ images. Note that all images
-            should have the same shape. If the input is an ndarray, it will
-            be transformed to a list containing itself.
-        gt_patch_size (int): GT patch size.
-        scale (int): Scale factor.
-        gt_path (str): Path to ground-truth. Default: None.
-
-    Returns:
-        list[ndarray] | ndarray: GT images and LQ images. If returned results
-            only have one element, just return ndarray.
-    """
-
-    if not isinstance(img_gts, list):
-        img_gts = [img_gts]
-    if not isinstance(img_lqs, list):
-        img_lqs = [img_lqs]
-
-    # determine input type: Numpy array or Tensor
-    input_type = 'Tensor' if torch.is_tensor(img_gts[0]) else 'Numpy'
-
-    if input_type == 'Tensor':
-        h_lq, w_lq = img_lqs[0].size()[-2:]
-        h_gt, w_gt = img_gts[0].size()[-2:]
-    else:
-        h_lq, w_lq = img_lqs[0].shape[0:2]
-        h_gt, w_gt = img_gts[0].shape[0:2]
-    lq_patch_size = gt_patch_size // scale
-
-    if h_gt != h_lq * scale or w_gt != w_lq * scale:
-        raise ValueError(f'Scale mismatches. GT ({h_gt}, {w_gt}) is not {scale}x ',
-                         f'multiplication of LQ ({h_lq}, {w_lq}).')
-    if h_lq < lq_patch_size or w_lq < lq_patch_size:
-        raise ValueError(f'LQ ({h_lq}, {w_lq}) is smaller than patch size '
-                         f'({lq_patch_size}, {lq_patch_size}). '
-                         f'Please remove {gt_path}.')
-
-    # randomly choose top and left coordinates for lq patch
-    top = random.randint(0, h_lq - lq_patch_size)
-    left = random.randint(0, w_lq - lq_patch_size)
-
-    # crop lq patch
-    if input_type == 'Tensor':
-        img_lqs = [v[:, :, top:top + lq_patch_size, left:left + lq_patch_size] for v in img_lqs]
-    else:
-        img_lqs = [v[top:top + lq_patch_size, left:left + lq_patch_size, ...] for v in img_lqs]
-
-    # crop corresponding gt patch
-    top_gt, left_gt = int(top * scale), int(left * scale)
-    if input_type == 'Tensor':
-        img_gts = [v[:, :, top_gt:top_gt + gt_patch_size, left_gt:left_gt + gt_patch_size] for v in img_gts]
-    else:
-        img_gts = [v[top_gt:top_gt + gt_patch_size, left_gt:left_gt + gt_patch_size, ...] for v in img_gts]
-    if len(img_gts) == 1:
-        img_gts = img_gts[0]
-    if len(img_lqs) == 1:
-        img_lqs = img_lqs[0]
-    return img_gts, img_lqs
 
 
 def augment(imgs, hflip=True, rotation=True, flows=None, return_status=False):

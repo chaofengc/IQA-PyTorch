@@ -14,13 +14,18 @@ import torch.nn.functional as F
 import timm
 
 from timm.models.vision_transformer import Block
-from timm.data import IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
+from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
 from .maniqa_swin import SwinTransformer
 from torch import nn
 from einops import rearrange
 
 from pyiqa.utils.registry import ARCH_REGISTRY
+from .func_util import extract_2d_patches
 from pyiqa.archs.arch_util import load_pretrained_network
+
+default_model_urls = {
+    'pipal': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/MANIQA_PIPAL-ae6d356b.pth'
+}
 
 
 def random_crop(x, sample_size=224, sample_num=8):
@@ -75,9 +80,11 @@ class SaveOutput:
 class MANIQA(nn.Module):
     def __init__(self, embed_dim=768, num_outputs=1, patch_size=8, drop=0.1,
                  depths=[2, 2], window_size=4, dim_mlp=768, num_heads=[4, 4],
-                 img_size=224, num_tab=2, scale=0.80, test_sample=20,
+                 img_size=224, num_tab=2, scale=0.13, test_sample=20,
                  pretrained=True,
                  pretrained_model_path=None,
+                 default_mean=None,
+                 default_std=None,
                  **kwargs):
         super().__init__()
         self.img_size = img_size
@@ -146,6 +153,9 @@ class MANIQA(nn.Module):
 
         if pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
+            # load_pretrained_network(self, pretrained_model_path, True, )
+        elif pretrained:
+            load_pretrained_network(self, default_model_urls['pipal'], True)
 
     def extract_feature(self, save_output):
         x6 = save_output.outputs[6][:, 1:]

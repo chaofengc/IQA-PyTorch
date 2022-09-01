@@ -6,6 +6,12 @@ IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 
 DEFAULT_CONFIGS = OrderedDict({
+    'ahiq': {
+        'metric_opts': {
+            'type': 'AHIQ',
+        },
+        'metric_mode': 'FR',
+    },
     'ckdn': {
         'metric_opts': {
             'type': 'CKDN',
@@ -115,6 +121,7 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'FR',
         'lower_better': True,
     },
+    # =============================================================
     'niqe': {
         'metric_opts': {
             'type': 'NIQE',
@@ -218,5 +225,12 @@ DEFAULT_CONFIGS = OrderedDict({
             'type': 'FID',
         },
         'metric_mode': 'NR'
-    }
+    },
+    'maniqa': {
+        'metric_opts': {
+            'type': 'MANIQA',
+        },
+        'metric_mode': 'NR',
+    },
+
 })
