@@ -22,6 +22,7 @@ Below are details of supported methods and datasets in this project.
 
 | FR Method                | Backward           |
 | ------------------------ | ------------------ |
+| AHIQ                     | :white_check_mark: |
 | PieAPP                   | :white_check_mark: |
 | LPIPS                    | :white_check_mark: |
 | DISTS                    | :white_check_mark: |
@@ -90,6 +91,7 @@ Below are details of supported methods and datasets in this project.
 
 ### :triangular_flag_on_post: Updates/Changelog
 
+- **Sep 1, 2022**. 1) Add pretrained models for MANIQA and AHIQ. 2) Add dataset interface for pieapp and PIPAL.
 - **June 3, 2022**. Add FID metric. See [clean-fid](https://github.com/GaParmar/clean-fid) for more details.
 - **March 11, 2022**. Add pretrained DBCNN, NIMA, and official model of PieAPP, paq2piq.
 - [**More**](docs/history_changelog.md)
