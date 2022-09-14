@@ -40,13 +40,23 @@ def dist_to_mos(dist_score: torch.Tensor) -> torch.Tensor:
 # --------------------------------------------
 
 
+def clean_state_dict(state_dict):
+    # 'clean' checkpoint by removing .module prefix from state dict if it exists from parallel training
+    cleaned_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        name = k[7:] if k.startswith('module.') else k
+        cleaned_state_dict[name] = v
+    return cleaned_state_dict
+
+
 def load_pretrained_network(net, model_path, strict=True, weight_keys=None):
     if model_path.startswith('https://') or model_path.startswith('http://'):
         model_path = load_file_from_url(model_path)
     print(f'Loading pretrained model {net.__class__.__name__} from {model_path}')
     state_dict = torch.load(model_path, map_location=torch.device('cpu'))
-    if weight_keys:
+    if weight_keys is not None:
         state_dict = state_dict[weight_keys]
+    state_dict = clean_state_dict(state_dict)
     net.load_state_dict(state_dict, strict=strict)
 
 
@@ -105,22 +115,22 @@ def symm_pad(im: torch.Tensor, padding: Tuple[int, int, int, int]):
     """
     h, w = im.shape[-2:]
     left, right, top, bottom = padding
- 
-    x_idx = np.arange(-left, w+right)
-    y_idx = np.arange(-top, h+bottom)
- 
+
+    x_idx = np.arange(-left, w + right)
+    y_idx = np.arange(-top, h + bottom)
+
     def reflect(x, minx, maxx):
         """ Reflects an array around two points making a triangular waveform that ramps up
         and down,  allowing for pad lengths greater than the input length """
         rng = maxx - minx
-        double_rng = 2*rng
+        double_rng = 2 * rng
         mod = np.fmod(x - minx, double_rng)
-        normed_mod = np.where(mod < 0, mod+double_rng, mod)
+        normed_mod = np.where(mod < 0, mod + double_rng, mod)
         out = np.where(normed_mod >= rng, double_rng - normed_mod, normed_mod) + minx
         return np.array(out, dtype=x.dtype)
 
-    x_pad = reflect(x_idx, -0.5, w-0.5)
-    y_pad = reflect(y_idx, -0.5, h-0.5)
+    x_pad = reflect(x_idx, -0.5, w - 0.5)
+    y_pad = reflect(y_idx, -0.5, h - 0.5)
     xx, yy = np.meshgrid(x_pad, y_pad)
     return im[..., yy, xx]
 
@@ -141,7 +151,7 @@ def excact_padding_2d(x, kernel, stride=1, dilation=1, mode='same'):
     if mode != 'symmetric':
         x = F.pad(x, (pad_l, pad_r, pad_t, pad_b), mode=mode)
     elif mode == 'symmetric':
-        x = symm_pad(x, (pad_l, pad_r, pad_t, pad_b)) 
+        x = symm_pad(x, (pad_l, pad_r, pad_t, pad_b))
 
     return x
 

@@ -99,7 +99,7 @@ class DBCNN(nn.Module):
         a deep bilinear convolutional neural network." IEEE Transactions
         on Circuits and Systems for Video Technology 30.1 (2018): 36-47.
 
-	"""
+        """
 
     def __init__(
         self,
@@ -118,11 +118,7 @@ class DBCNN(nn.Module):
         self.features1 = nn.Sequential(*list(self.features1.children())[:-1])
         scnn = SCNN(use_bn=use_bn)
         if pretrained_scnn_path is not None:
-            old_dict = torch.load(pretrained_scnn_path)
-            new_dict = {}
-            for k, v in old_dict.items():
-                new_dict[k.replace('module.', '')] = v
-            scnn.load_state_dict(new_dict)
+            load_pretrained_network(scnn, pretrained_scnn_path)
 
         self.features2 = scnn.features
 
