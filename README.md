@@ -2,7 +2,9 @@
 
 An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive survey of IQA methods, as well as download links for IQA datasets.
 
-<a href="https://colab.research.google.com/drive/14J3KoyrjJ6R531DsdOy5Bza5xfeMODi6?usp=sharing"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> ![visitors](https://visitor-badge.glitch.me/badge?page_id=chaofengc/IQA-PyTorch) 
+<a href="https://colab.research.google.com/drive/14J3KoyrjJ6R531DsdOy5Bza5xfeMODi6?usp=sharing"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
+[![PyPI](https://img.shields.io/pypi/v/pyiqa)](https://pypi.org/project/pyiqa/)
+![visitors](https://visitor-badge.glitch.me/badge?page_id=chaofengc/IQA-PyTorch) 
 [![LICENSE](https://img.shields.io/badge/LICENSE-CC%20BY--NC--SA%204.0-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE)
 [![LICENSE](https://img.shields.io/badge/LICENSE-NTU%20S--Lab-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE_NTU-S-Lab)
 
