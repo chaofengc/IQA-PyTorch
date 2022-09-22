@@ -25,6 +25,8 @@ version.py
 *.pth
 *.zip
 
+!demo.gif
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

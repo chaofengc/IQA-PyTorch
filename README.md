@@ -2,19 +2,13 @@
 
 An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive survey of IQA methods, as well as download links for IQA datasets.
 
+![demo](demo.gif)
+
 ## :open_book: Introduction
 
-This is a image quality assessment toolbox with **pure python and pytorch**. We provide the following features:
+This is a image quality assessment toolbox with **pure python and pytorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Below are details of supported methods and datasets in this project.
 
-- :sparkles: **Comprehensive.** Support many mainstream full reference (FR) and no reference (NR) metrics
-- :sparkles: **Accurate.** Results calibration of our implementation with official matlab scripts (if exist).
-- :sparkles: **Fast.** With GPU acceleration, most of our implementation is much faster than Matlab.
-- :sparkles: **Flexible.** Support training new DNN models with several public IQA datasets
-- :sparkles: **Differentiable.** Most methods support pytorch backward
-
-Below are details of supported methods and datasets in this project.
-
-<details close>
+<details open>
 <summary>Supported methods and datasets:</summary>
 
 <table>
