@@ -6,7 +6,7 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 [![PyPI](https://img.shields.io/pypi/v/pyiqa)](https://pypi.org/project/pyiqa/)
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=chaofengc/IQA-PyTorch) 
 [![LICENSE](https://img.shields.io/badge/LICENSE-CC%20BY--NC--SA%204.0-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE)
-[![LICENSE](https://img.shields.io/badge/LICENSE-NTU%20S--Lab-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE_NTU-S-Lab)
+[![LICENSE](https://img.shields.io/badge/LICENSE-NTU%20S--Lab%201.0-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE_NTU-S-Lab)
 
 ![demo](demo.gif)
 
