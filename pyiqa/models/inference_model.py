@@ -48,6 +48,17 @@ class InferenceModel(torch.nn.Module):
         self.net = self.net.to(self.device)
         self.net.eval()
 
+    def cuda(self, device=None):
+        if device is None:
+            self.device = torch.device('cuda')
+        else:
+            self.device = torch.device(device)
+        return super(InferenceModel, self).cuda(device)
+
+    def to(self, *args, **kwargs):
+        self.device = torch._C._nn._parse_to(*args, **kwargs)[0]
+        return super(InferenceModel, self).to(*args, **kwargs)
+
     def forward(self, target, ref=None, **kwargs):
 
         torch.set_grad_enabled(self.as_loss)
