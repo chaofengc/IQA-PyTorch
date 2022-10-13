@@ -27,7 +27,7 @@ default_model_urls = {
     '0.1_vgg':
     'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_vgg-a78928a0.pth',
     '0.1_squeeze':
-    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_vgg-a78928a0.pth',
+    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/LPIPS_v0.1_squeeze-4a5350f2.pth'
 }
 
 
