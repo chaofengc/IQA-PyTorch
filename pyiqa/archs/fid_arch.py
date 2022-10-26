@@ -229,6 +229,9 @@ class FID(nn.Module):
                 device=torch.device('cuda'),
                 verbose=True,
                 ):
+        
+        assert mode in ['clean', 'legacy_pytorch', 'legacy_tensorflow'], 'Invalid calculation mode, should be in [clean, legacy_pytorch, legacy_tensorflow]' 
+
         # if both dirs are specified, compute FID between folders
         if fdir1 is not None and fdir2 is not None:
             if not verbose:
