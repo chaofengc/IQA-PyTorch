@@ -74,7 +74,7 @@ def get_reference_statistics(name, res, mode="clean", split="test", metric="FID"
     r"""
         Load precomputed reference statistics for commonly used datasets
     """
-    base_url = "https://www.cs.cmu.edu/~clean-fid/stats/"
+    base_url = "https://www.cs.cmu.edu/~clean-fid/stats"
     if split == "custom":
         res = "na"
     if metric == "FID":
@@ -194,8 +194,8 @@ def get_folder_features(fdir, model=None, num_workers=12,
     with torch.no_grad():
         for batch in pbar:
             feat = model(batch.to(device), resize_input, normalize_input)
-            feat = feat[0].squeeze(-1).squeeze(-1)
-        l_feats.append(feat.detach().cpu().numpy())
+            feat = feat[0].squeeze(-1).squeeze(-1).detach().cpu().numpy()
+            l_feats.append(feat)
     np_feats = np.concatenate(l_feats)
     return np_feats
 
