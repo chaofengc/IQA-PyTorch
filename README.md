@@ -117,6 +117,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 pip install pyiqa
 
 # Install latest github version
+pip uninstall pyiqa # if have older version installed already 
 pip install git+https://github.com/chaofengc/IQA-PyTorch.git
 
 # Install with git clone
