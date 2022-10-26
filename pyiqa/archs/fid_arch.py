@@ -250,8 +250,8 @@ class FID(nn.Module):
 
         # compute fid of a folder
         elif fdir1 is not None and fdir2 is None:
-            if not verbose:
-                print(f"compute FID of a folder with {dataset_name} statistics")
+            if verbose:
+                print(f"compute FID of a folder with {dataset_name}-{dataset_res}-{dataset_split} statistics")
             fbname1 = os.path.basename(fdir1)
             np_feats1 = get_folder_features(fdir1, self.model, num_workers=num_workers, batch_size=batch_size,
                                             device=device, mode=mode, description=f"FID {fbname1}: ", verbose=verbose)
