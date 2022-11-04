@@ -197,8 +197,8 @@ def train_pipeline(root_path, opt=None, args=None):
                 visual_imgs = model.get_current_visuals()
                 if tb_logger and visual_imgs is not None:
                     for k, v in visual_imgs.items(): 
-                        tb_logger.add_images(f'ckpt_imgs/{k}', v.clamp(0, 1), current_iter)
-   
+                        tb_logger.add_images(f'ckpt_imgs/{k}', v.clamp(0, 1), current_iter) 
+
             # save models and training states
             save_ckpt_freq = opt['logger'].get('save_checkpoint_freq', 9e9)
             if current_iter % save_ckpt_freq == 0:
