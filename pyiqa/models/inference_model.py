@@ -49,15 +49,17 @@ class InferenceModel(torch.nn.Module):
         self.net.eval()
 
     def forward(self, target, ref=None, **kwargs):
-
+        ''' Compute metric value for target image'''
         torch.set_grad_enabled(self.as_loss)
-
+        # =========== prepare input data ===============
         if 'fid' in self.metric_name:
             output = self.net(target, ref, device=self.device, **kwargs)
         else:
+            # convert to tensor
             if not torch.is_tensor(target):
                 target = imread2tensor(target)
                 target = target.unsqueeze(0)
+
                 if self.metric_mode == 'FR':
                     assert ref is not None, 'Please specify reference image for Full Reference metric'
                     ref = imread2tensor(ref)

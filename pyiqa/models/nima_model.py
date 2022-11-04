@@ -9,7 +9,6 @@ from .general_iqa_model import GeneralIQAModel
 @MODEL_REGISTRY.register()
 class NIMAModel(GeneralIQAModel):
     """General module to train an IQA network."""
-
     def feed_data(self, data):
         self.img_input = data['img'].to(self.device)
         self.gt_mos = data['mos_label'].to(self.device)

@@ -232,5 +232,10 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
     },
-
+    'ddpm':{
+        'metric_opts': {
+            'type': 'DDPM',
+        },
+        'metric_mode': 'NR',
+    }
 })

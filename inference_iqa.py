@@ -7,7 +7,9 @@ from tqdm import tqdm
 
 def main():
     """Inference demo for pyiqa.
+    inference is just an interface to calculate the metric scores of a given
     """
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', type=str, default=None, help='input image/folder path.')
     parser.add_argument('-r', '--ref', type=str, default=None, help='reference image/folder path if needed.')

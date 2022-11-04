@@ -6,9 +6,11 @@ from setuptools import find_packages, setup
 import os
 import subprocess
 import time
+import pyiqa
 
 version_file = 'pyiqa/version.py'
 
+# fid_metric = pyiqa.create_metric('fid')
 
 def readme():
     with open('README.md', encoding='utf-8') as f:

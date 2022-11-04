@@ -77,6 +77,7 @@ class GeneralIQAModel(BaseModel):
         self.use_ref = self.opt['train'].get('use_ref', False)
 
     def net_forward(self, net):
+        '''Forward function for the network.'''
         if self.use_ref:
             return net(self.img_input, self.ref_input)
         else:
@@ -111,16 +112,20 @@ class GeneralIQAModel(BaseModel):
             self.log_dict[f'train_metrics/{name}'] = calculate_metric([pred_score, gt_mos], opt_)
 
     def test(self):
+        '''Test the model.'''
         self.net.eval()
         with torch.no_grad():
             self.output_score = self.net_forward(self.net)
         self.net.train()
 
     def dist_validation(self, dataloader, current_iter, tb_logger, save_img):
+        '''Validation in distributed mode.'''
         if self.opt['rank'] == 0:
             self.nondist_validation(dataloader, current_iter, tb_logger, save_img)
 
     def nondist_validation(self, dataloader, current_iter, tb_logger, save_img):
+        '''Validation without distributed training.'''
+        # set up logger
         dataset_name = dataloader.dataset.opt['name']
         with_metrics = self.opt['val'].get('metrics') is not None
         use_pbar = self.opt['val'].get('pbar', False)
@@ -184,6 +189,8 @@ class GeneralIQAModel(BaseModel):
             self._log_validation_metric_values(current_iter, dataset_name, tb_logger)
 
     def _log_validation_metric_values(self, current_iter, dataset_name, tb_logger):
+        '''Log the metric values to tensorboard.'''
+        # log metrics in validation
         log_str = f'Validation {dataset_name}\n'
         for metric, value in self.metric_results.items():
             log_str += f'\t # {metric}: {value:.4f}'
@@ -199,5 +206,6 @@ class GeneralIQAModel(BaseModel):
                 tb_logger.add_scalar(f'val_metrics/{dataset_name}/{metric}', value, current_iter)
 
     def save(self, epoch, current_iter, save_net_label='net'):
+        '''Save the model to the disk.'''
         self.save_network(self.net, save_net_label, current_iter)
         self.save_training_state(epoch, current_iter)

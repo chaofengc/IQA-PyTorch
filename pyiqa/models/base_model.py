@@ -48,7 +48,9 @@ class BaseModel():
             self.nondist_validation(dataloader, current_iter, tb_logger, save_img)
 
     def _initialize_best_metric_results(self, dataset_name):
-        """Initialize the best metric results dict for recording the best metric value and iteration."""
+        """Initialize the best metric results dict for recording the best metric value and iteration.
+        if has best metric then initialize it, else initialize it with None.
+        """
         if hasattr(self, 'best_metric_results') and dataset_name in self.best_metric_results:
             return
         elif not hasattr(self, 'best_metric_results'):
@@ -64,10 +66,12 @@ class BaseModel():
         self.key_metric = self.opt['val'].get('key_metric', None)
 
     def _update_metric_result(self, dataset_name, metric, val, current_iter):
+        """Update the metric result dict."""
         self.best_metric_results[dataset_name][metric]['val'] = val
         self.best_metric_results[dataset_name][metric]['iter'] = current_iter
 
     def _update_best_metric_result(self, dataset_name, metric, val, current_iter):
+        
         if self.best_metric_results[dataset_name][metric]['better'] == 'higher':
             if val >= self.best_metric_results[dataset_name][metric]['val']:
                 self.best_metric_results[dataset_name][metric]['val'] = val
