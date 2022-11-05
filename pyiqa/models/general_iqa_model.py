@@ -9,7 +9,12 @@ from pyiqa.metrics import calculate_metric
 from pyiqa.utils import get_root_logger, imwrite, tensor2img
 from pyiqa.utils.registry import MODEL_REGISTRY
 from .base_model import BaseModel
-
+from Guassian_diffusion import Gaussian_diffusion as diffusion
+try:
+    from apex import amp
+    APEX_AVAILABLE = True
+except:
+    APEX_AVAILABLE = False
 
 @MODEL_REGISTRY.register()
 class GeneralIQAModel(BaseModel):
@@ -22,7 +27,11 @@ class GeneralIQAModel(BaseModel):
         self.net = build_network(opt['network'])
         self.net = self.model_to_device(self.net)
         self.print_network(self.net)
-
+        self.gradient_accumulate_every=2
+        self.train_num_steps=1000
+        self.step=0
+        self.model=diffusion
+        
         # load pretrained models
         load_path = self.opt['path'].get('pretrain_network', None)
         if load_path is not None:
@@ -40,7 +49,8 @@ class GeneralIQAModel(BaseModel):
 
         # define losses
         if train_opt.get('mos_loss_opt'):
-            self.cri_mos = build_loss(train_opt['mos_loss_opt']).to(self.device)
+            
+            # self.cri_mos = build_loss(train_opt['mos_loss_opt']).to(self.device)
         else:
             self.cri_mos = None
 
@@ -71,7 +81,7 @@ class GeneralIQAModel(BaseModel):
     def feed_data(self, data):
         self.img_input = data['img'].to(self.device)
 
-        if 'mos_label' in data:
+        if 'mos_label' in data: #mean opinion score
             self.gt_mos = data['mos_label'].to(self.device)
 
         self.use_ref = self.opt['train'].get('use_ref', False)
@@ -83,11 +93,16 @@ class GeneralIQAModel(BaseModel):
         else:
             return net(self.img_input)
 
+    def loss_backwards(fp16, loss, optimizer, **kwargs):
+        if fp16:
+            with amp.scale_loss(loss, optimizer) as scaled_loss:
+                scaled_loss.backward(**kwargs)
+        else:
+            loss.backward(**kwargs)
+            
     def optimize_parameters(self, current_iter):
-        self.optimizer.zero_grad()
-        self.output_score = self.net_forward(self.net)
 
-        l_total = 0
+        l_total = 0  
         loss_dict = OrderedDict()
         # pixel loss
         if self.cri_mos:
@@ -99,17 +114,34 @@ class GeneralIQAModel(BaseModel):
             l_metric = self.cri_metric(self.output_score, self.gt_mos)
             l_total += l_metric
             loss_dict['l_metric'] = l_metric
+            
+        while self.step < self.train_num_steps:
+            u_loss = 0
+            for i in range(self.gradient_accumulate_every):
+                data_1 = next(self.dl)
+                data_2 = torch.randn_like(data_1)
+
+                data_1, data_2 = data_1.cuda(), data_2.cuda()
+                loss  = torch.mean(self.model(data_1, data_2))
+                if self.step % 100 == 0:
+                    print(f'{self.step}: {loss.item()}')
+                u_loss += loss.item()
+                backwards(loss / self.gradient_accumulate_every, self.opt)
+            
+        self.optimizer.zero_grad()
+        self.output_score = self.net_forward(self.net)
 
         l_total.backward()
-        self.optimizer.step()
+        # self.optimizer.step()
 
-        self.log_dict = self.reduce_loss_dict(loss_dict)
+        self.log_dict = self.reduce_loss_dict(loss_dict) #average loss between GPUs
 
         # log metrics in training batch
         pred_score = self.output_score.squeeze(1).cpu().detach().numpy()
         gt_mos = self.gt_mos.squeeze(1).cpu().detach().numpy()
         for name, opt_ in self.opt['val']['metrics'].items():
             self.log_dict[f'train_metrics/{name}'] = calculate_metric([pred_score, gt_mos], opt_)
+        
 
     def test(self):
         '''Test the model.'''
