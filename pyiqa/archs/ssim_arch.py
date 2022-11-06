@@ -42,6 +42,11 @@ def ssim(X,
     if test_y_channel and X.shape[1] == 3:
         X = to_y_channel(X, data_range, color_space)
         Y = to_y_channel(Y, data_range, color_space)
+    else:
+        X = X * data_range
+        X = X - X.detach() + X.round()
+        Y = Y * data_range
+        Y = Y - Y.detach() + Y.round()
 
     C1 = (0.01 * data_range)**2
     C2 = (0.03 * data_range)**2
