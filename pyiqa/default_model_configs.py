@@ -69,7 +69,7 @@ DEFAULT_CONFIGS = OrderedDict({
     'psnry': {
         'metric_opts': {
             'type': 'PSNR',
-            'test_y_channel': False,
+            'test_y_channel': True,
         },
         'metric_mode': 'FR',
     },
