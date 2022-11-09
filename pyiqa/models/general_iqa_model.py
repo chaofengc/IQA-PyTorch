@@ -31,6 +31,7 @@ class GeneralIQAModel(BaseModel):
         self.train_num_steps=1000
         self.step=0
         self.model=diffusion
+        self.fp16=True #default is true
         
         # load pretrained models
         load_path = self.opt['path'].get('pretrain_network', None)
@@ -50,7 +51,7 @@ class GeneralIQAModel(BaseModel):
         # define losses
         if train_opt.get('mos_loss_opt'):
             
-            # self.cri_mos = build_loss(train_opt['mos_loss_opt']).to(self.device)
+            self.cri_mos = build_loss(train_opt['mos_loss_opt']).to(self.device)
         else:
             self.cri_mos = None
 
@@ -101,7 +102,10 @@ class GeneralIQAModel(BaseModel):
             loss.backward(**kwargs)
             
     def optimize_parameters(self, current_iter):
-
+        
+        backwards = partial(loss_backwards, self.fp16)
+        
+        
         l_total = 0  
         loss_dict = OrderedDict()
         # pixel loss
@@ -126,13 +130,16 @@ class GeneralIQAModel(BaseModel):
                 if self.step % 100 == 0:
                     print(f'{self.step}: {loss.item()}')
                 u_loss += loss.item()
-                backwards(loss / self.gradient_accumulate_every, self.opt)
+                #咱就是说，你要注意每一个input和output对不对得上
+                backwards(loss / self.gradient_accumulate_every, self.optimizer)
             
-        self.optimizer.zero_grad()
+            acc_loss = acc_loss + (u_loss/self.gradient_accumulate_every)
+        # self.optimizer.zero_grad()
         self.output_score = self.net_forward(self.net)
 
-        l_total.backward()
-        # self.optimizer.step()
+        # l_total.backward()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
 
         self.log_dict = self.reduce_loss_dict(loss_dict) #average loss between GPUs
 

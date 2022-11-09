@@ -217,7 +217,7 @@ class SRModel(BaseModel):
 
     def get_current_visuals(self):
         out_dict = OrderedDict()
-        out_dict['lq'] = self.lq.detach().cpu()
+        out_dict['lq'] = self.lq.detach().cpu() #learning q
         out_dict['result'] = self.output.detach().cpu()
         if hasattr(self, 'gt'):
             out_dict['gt'] = self.gt.detach().cpu()

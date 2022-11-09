@@ -5,7 +5,7 @@ import time
 import torch
 import os
 from os import path as osp
-
+from functools import partial
 from pyiqa.data import build_dataloader, build_dataset
 from pyiqa.data.data_sampler import EnlargedSampler
 from pyiqa.data.prefetch_dataloader import CPUPrefetcher, CUDAPrefetcher
