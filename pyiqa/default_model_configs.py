@@ -47,15 +47,15 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_opts': {
             'type': 'SSIM',
             'downsample': False,
-            'test_y_channel': False,
+            'test_y_channel': True,
         },
         'metric_mode': 'FR',
     },
-    'ssimy': {
+    'ssimc': {
         'metric_opts': {
             'type': 'SSIM',
             'downsample': False,
-            'test_y_channel': True,
+            'test_y_channel': False,
         },
         'metric_mode': 'FR',
     },
