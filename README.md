@@ -6,8 +6,7 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 [![PyPI](https://img.shields.io/pypi/v/pyiqa)](https://pypi.org/project/pyiqa/)
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=chaofengc/IQA-PyTorch) 
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/chaofengc/Awesome-Image-Quality-Assessment)
-[![LICENSE](https://img.shields.io/badge/LICENSE-CC%20BY--NC--SA%204.0-lightgrey)](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE)
-[![LICENSE](https://img.shields.io/badge/LICENSE-NTU%20S--Lab%201.0-lightgrey)](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE_NTU-S-Lab)
+[![Citation](https://img.shields.io/badge/Citation-bibtex-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/README.md#bookmark_tabs-citation)
 
 ![demo](demo.gif)
 
@@ -252,7 +251,7 @@ Any contributions to this repository are greatly appreciated. Please follow the 
 
 ## :scroll: License
 
-This work is licensed under a NTU S-Lab License and <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+This work is licensed under a [NTU S-Lab License](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE_NTU-S-Lab) and <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a>
 
