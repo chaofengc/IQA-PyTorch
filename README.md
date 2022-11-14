@@ -256,11 +256,18 @@ This work is licensed under a NTU S-Lab License and <a rel="license" href="http:
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a>
 
-<!-- ## :bookmark_tabs: Citation
+## :bookmark_tabs: Citation
+
+If you find our codes helpful to your research, please consider to use the following citation:
 
 ```
-TODO -->
-<!-- ``` -->
+@misc{pyiqa,
+  title={{IQA-PyTorch}: PyTorch Toolbox for Image Quality Assessment},
+  url={https://github.com/chaofengc/IQA-PyTorch},
+  author={Chaofeng Chen and Jiadi Mo},
+  year={2022}
+}
+```
 
 ## :heart: Acknowledgement
 
