@@ -262,9 +262,9 @@ If you find our codes helpful to your research, please consider to use the follo
 ```
 @misc{pyiqa,
   title={{IQA-PyTorch}: PyTorch Toolbox for Image Quality Assessment},
-  url={https://github.com/chaofengc/IQA-PyTorch},
   author={Chaofeng Chen and Jiadi Mo},
-  year={2022}
+  year={2022},
+  howpublished = "[Online]. Available: \url{https://github.com/chaofengc/IQA-PyTorch}"
 }
 ```
 
