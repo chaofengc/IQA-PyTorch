@@ -213,7 +213,26 @@ python pyiqa/train_nsplits.py -opt options/train/DBCNN/train_DBCNN.yml
 
 Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to verify the correctness of the python implementations compared with official scripts in matlab or python.
 
-### Performances of classical metrics
+### Performance Evaluation Protocol
+
+Since there are too many different IQA datasets, and some methods does not provide offical pretrained weights, we use the following settings to train and evaluate different models for simplicity and consistency:
+
+| Metric Type | Train | Test | Results | 
+| --- | --- | --- | --- |
+| FR | KADID-10k | CSIQ, LIVE, TID2008, TID2013 | [FR benchmark results](tests/FR_benchmark_results.csv) |
+| NR | KonIQ-10k | LIVEC, KonIQ-10k (official split)| [NR benchmark results](tests/NR_benchmark_results.csv) |
+| Aesthetic IQA | AVA | AVA (official split)| [IAA benchmark results](tests/NR_benchmark_results.csv) |
+
+Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
+
+| Metric Type | Model Names |
+| --- | --- | 
+| FR |  |
+| NR | `dbcnn` |
+| Aesthetic IQA | `nima-vgg16-ava` |
+
+
+### Benchmark Performance with Provided Script
 
 Here is an example script to get performance benchmark on different datasets:
 ```
@@ -228,22 +247,6 @@ python benchmark_results.py --metric_opt options/example_benchmark_metric_opts.y
 
 python benchmark_results.py --metric_opt options/example_benchmark_metric_opts.yml --data_opt options/example_benchmark_data_opts.yml
 ```
-Please refer to [FR benchmark results](tests/FR_benchmark_results.csv) and [NR benchmark results](tests/NR_benchmark_results.csv) for benchmark performances of some metrics.
-
-### Performances of deep learning models
-
-We report PLCC/SRCC here.
-
-#### Small datasets, validation of split 1
-
-| Methods | CSIQ          | TID2008       | TID2013       | LIVE          | LIVEM         | LIVEC         |
-| ------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-| DBCNN   | 0.8965/0.9086 | 0.8322/0.8463 | 0.7985/0.8320 | 0.9418/0.9308 | 0.9461/0.9371 | 0.8375/0.8530 |
-
-#### Large dataset performance
-
-| Methods | Dataset | Kon10k | LIVEC | SPAQ | AVA | Link(pth) |
-| ------- | ------- | ------ | ----- | ---- | --- | --------- |
 
 ## :beers: Contribution
 

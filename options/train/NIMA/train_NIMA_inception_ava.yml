@@ -1,0 +1,111 @@
+# general settings
+# name: debug001_NIMA
+name: 001_NIMA_inception
+model_type: NIMAModel
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 123
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: ava
+    type: AVADataset
+    dataroot_target: ./datasets/AVA_dataset/ava_images/
+    meta_info_file: ./datasets/meta_info/meta_info_AVADataset.csv
+    split_file: ./datasets/train_split_info/ava_official_ilgnet.pkl
+    split_index: 1 # use official split
+
+    augment:
+      resize: [330, 330]
+      random_crop: 299 
+      hflip: true
+    img_range: 1
+
+    # data loader
+    use_shuffle: true
+    num_worker_per_gpu: 12
+    batch_size_per_gpu: 64
+    dataset_enlarge_ratio: 1
+    prefetch_mode: cpu
+    num_prefetch_queue: 8
+
+  val:
+    name: ava
+    type: AVADataset
+    dataroot_target: ./datasets/AVA_dataset/ava_images/
+    meta_info_file: ./datasets/meta_info/meta_info_AVADataset.csv
+    split_file: ./datasets/train_split_info/ava_official_ilgnet.pkl
+    split_index: 1 # use official split
+
+    augment:
+      resize: [299, 299]
+
+    num_worker_per_gpu: 8
+    batch_size_per_gpu: 64
+    prefetch_mode: cpu
+    num_prefetch_queue: 8
+
+# network structures
+network:
+  type: NIMA
+  base_model_name: inception_resnet_v2 
+  pretrained: false
+
+# path
+path:
+  pretrain_network_g: ~
+  strict_load_g: true
+  resume_state: ~
+
+# training settings
+train:
+  optim:
+    type: Adam
+    lr_basemodel: !!float 5e-5
+    lr_classifier: !!float 5e-4
+    lr: !!float 1e-4
+
+  scheduler:
+    type: MultiStepLR
+    milestones: [40000]
+    gamma: 0.1
+
+  total_iter: 100000
+  warmup_iter: -1  # no warm up
+
+  # losses
+  mos_loss_opt:
+    type: EMDLoss
+    loss_weight: !!float 1.0
+
+# validation settings
+val:
+  val_freq: !!float 3e3
+  save_img: false
+  pbar: true
+
+  key_metric: srcc # if this metric improve, update all metrics. If not specified, each best metric results will be updated separately
+  metrics:
+    srcc:
+      type: calculate_srcc
+
+    plcc:
+      type: calculate_plcc
+
+    krcc:
+      type: calculate_krcc
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 5e9
+  save_latest_freq: !!float 1e3
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500

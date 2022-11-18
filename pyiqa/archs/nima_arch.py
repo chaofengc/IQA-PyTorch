@@ -12,6 +12,7 @@ Modified by: Chaofeng Chen (https://github.com/chaofengc)
 import torch
 import torch.nn as nn
 import timm
+from timm.data import IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network
 
@@ -66,6 +67,10 @@ class NIMA(nn.Module):
         if num_classes > 1:
             self.classifier.append(nn.Softmax(dim=-1))
         self.classifier = nn.Sequential(*self.classifier)
+
+        if 'inception' in base_model_name:
+            default_mean = IMAGENET_INCEPTION_MEAN
+            default_std = IMAGENET_INCEPTION_STD
 
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
