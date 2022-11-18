@@ -211,7 +211,15 @@ DEFAULT_CONFIGS = OrderedDict({
     'nima': {
         'metric_opts': {
             'type': 'NIMA',
-            'pretrained': 'ava'
+            'pretrained': 'ava',
+        },
+        'metric_mode': 'NR',
+    },
+    'nima-vgg16-ava': {
+        'metric_opts': {
+            'type': 'NIMA',
+            'pretrained': 'ava',
+            'base_model_name': 'vgg16',
         },
         'metric_mode': 'NR',
     },
