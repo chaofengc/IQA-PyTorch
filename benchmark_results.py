@@ -127,18 +127,20 @@ def main():
             else:
                 results_scores_for_cc = result_scores
 
-            plcc_score = round(calculate_plcc(results_scores_for_cc, gt_labels), 4)
-            srcc_score = round(calculate_srcc(results_scores_for_cc, gt_labels), 4)
-            krcc_score = round(calculate_krcc(results_scores_for_cc, gt_labels), 4)
+            plcc_score = abs(round(calculate_plcc(results_scores_for_cc, gt_labels), 4))
+            srcc_score = abs(round(calculate_srcc(results_scores_for_cc, gt_labels), 4))
+            krcc_score = abs(round(calculate_krcc(results_scores_for_cc, gt_labels), 4))
             results_row.append(f'{plcc_score}/{srcc_score}/{krcc_score}')
             print(
                 f'Results of *{metric_name}* on ({dataset_name}) is [PLCC|SRCC|KRCC]: {plcc_score}, {srcc_score}, {krcc_score}'
             )
+            if update_benchmark_file is not None:
+                benchmark.loc[metric_name, f'{dataset_name}(PLCC/SRCC/KRCC)'] = f'{plcc_score}/{srcc_score}/{krcc_score}'
+
         if save_result_path is not None:
             csv_writer.writerow(results_row)
         
-        if update_benchmark_file is not None:
-            benchmark.loc[metric_name, f'{dataset_name}(PLCC/SRCC/KRCC)'] = f'{plcc_score}/{srcc_score}/{krcc_score}'
+        
 
     if save_result_path is not None:
         csv_file.close()
