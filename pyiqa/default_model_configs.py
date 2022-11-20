@@ -212,6 +212,7 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_opts': {
             'type': 'NIMA',
             'pretrained': 'ava',
+            'base_model_name': 'inception_resnet_v2',
         },
         'metric_mode': 'NR',
     },

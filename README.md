@@ -109,8 +109,8 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 ### Dependencies and Installation
 - Ubuntu >= 18.04
 - Python >= 3.8
-- Pytorch >= 1.8.1
-- CUDA >= 10.1 (if use GPU)
+- Pytorch >= 1.10
+- CUDA >= 10.2 (if use GPU)
 ```
 # Install with pip
 pip install pyiqa
@@ -220,8 +220,8 @@ Since there are too many different IQA datasets, and some methods does not provi
 | Metric Type | Train | Test | Results | 
 | --- | --- | --- | --- |
 | FR | KADID-10k | CSIQ, LIVE, TID2008, TID2013 | [FR benchmark results](tests/FR_benchmark_results.csv) |
-| NR | KonIQ-10k | LIVEC, KonIQ-10k (official split)| [NR benchmark results](tests/NR_benchmark_results.csv) |
-| Aesthetic IQA | AVA | AVA (official split)| [IAA benchmark results](tests/NR_benchmark_results.csv) |
+| NR | KonIQ-10k | LIVEC, KonIQ-10k (official split), TID2013 | [NR benchmark results](tests/NR_benchmark_results.csv) |
+| Aesthetic IQA | AVA | AVA (official split)| [IAA benchmark results](tests/IAA_benchmark_results.csv) |
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
 
@@ -229,8 +229,13 @@ Basically, we use the largest existing datasets for training, and cross dataset 
 | --- | --- | 
 | FR |  |
 | NR | `dbcnn` |
-| Aesthetic IQA | `nima-vgg16-ava` |
+| Aesthetic IQA | `nima`, `nima-vgg16-ava` |
 
+Notes:
+- Due to optimized training process, performance of some retrained approaches may be higher than original paper.
+- Results of KonIQ-10k, AVA are both tested with official split.
+- NIMA is only applicable to AVA dataset now. We use `inception_resnet_v2` for default `nima`.
+- MUSIQ is not included in the IAA benchmark because we do not have train/split information of the official model.
 
 ### Benchmark Performance with Provided Script
 

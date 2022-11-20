@@ -7,6 +7,7 @@ from .models.inference_model import InferenceModel
 
 
 def create_metric(metric_name, as_loss=False, device=None, **kwargs):
+    assert metric_name in DEFAULT_CONFIGS.keys(), f'Metric {metric_name} not implemented yet.' 
     metric = InferenceModel(metric_name, as_loss, device, **kwargs)
     logger = get_root_logger()
     logger.info(f'Metric [{metric.net.__class__.__name__}] is created.')

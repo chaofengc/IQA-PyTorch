@@ -1,14 +1,26 @@
 import argparse
 import yaml
 import csv
+import pandas as pd
+from itertools import chain
+
 from pyiqa.data import build_dataset, build_dataloader
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 from pyiqa.utils.options import ordered_yaml
 from pyiqa.metrics import calculate_plcc, calculate_srcc, calculate_krcc
+
 from tqdm import tqdm
 import torch
 from pyiqa import create_metric
 
+
+def flatten_list(list_of_list):
+    if isinstance(list_of_list[0], list):
+        return list(chain.from_iterable(list_of_list))
+    elif isinstance(list_of_list, list):
+        return list_of_list
+    else:
+        return [list_of_list]
 
 def main():
     """benchmark test demo for pyiqa.
@@ -18,7 +30,9 @@ def main():
     parser.add_argument('-d', type=str, nargs='+', default=None, help='dataset name list.')
     parser.add_argument('--metric_opt', type=str, default=None, help='Path to custom metric option YAML file.')
     parser.add_argument('--data_opt', type=str, default=None, help='Path to custom data option YAML file.')
+    parser.add_argument('--batch_size', type=int, default=None, help='batch size for benchmark.')
     parser.add_argument('--save_result_path', type=str, default=None, help='file to save results.')
+    parser.add_argument('--update_benchmark', type=str, default=None, help='update benchmark results.')
     parser.add_argument('--use_gpu', action='store_true', default=False, help='use gpu or not')
     args = parser.parse_args()
 
@@ -63,6 +77,10 @@ def main():
         csv_file = open(save_result_path, 'w')
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(['Metric name'] + [name + '(PLCC/SRCC/KRCC)' for name in datasets_to_test])
+    
+    update_benchmark_file = args.update_benchmark
+    if update_benchmark_file is not None:
+        benchmark = pd.read_csv(update_benchmark_file, index_col='Metric name') 
 
     for metric_name in metrics_to_test:
         # if metric_name exist in default config, load default config first
@@ -81,6 +99,10 @@ def main():
                 'prefetch_mode': 'cpu',
                 'num_prefetch_queue': 8,
             })
+            if args.batch_size is not None:
+                data_opts.update({
+                    'batch_size_per_gpu': args.batch_size,
+                })
             if 'phase' not in data_opts:
                 data_opts['phase'] = 'test'
             dataset = build_dataset(data_opts)
@@ -90,12 +112,12 @@ def main():
             pbar = tqdm(total=len(dataloader), unit='image')
             pbar.set_description(f'Testing *{metric_name}* on ({dataset_name})')
             for data in dataloader:
-                gt_labels.append(data['mos_label'].cpu().item())
+                gt_labels += flatten_list(data['mos_label'].cpu().tolist())
                 if metric_mode == 'FR':
-                    iqa_score = iqa_model(data['img'], data['ref_img']).cpu().item()
+                    iqa_score = iqa_model(data['img'], data['ref_img']).cpu().tolist()
                 else:
-                    iqa_score = iqa_model(data['img']).cpu().item()
-                result_scores.append(iqa_score)
+                    iqa_score = iqa_model(data['img']).cpu().tolist()
+                result_scores += flatten_list(iqa_score)
                 pbar.update(1)
             pbar.close()
 
@@ -113,8 +135,15 @@ def main():
             )
         if save_result_path is not None:
             csv_writer.writerow(results_row)
+        
+        if update_benchmark_file is not None:
+            benchmark.loc[metric_name, f'{dataset_name}(PLCC/SRCC/KRCC)'] = f'{plcc_score}/{srcc_score}/{krcc_score}'
+
     if save_result_path is not None:
         csv_file.close()
+
+    if update_benchmark_file is not None:
+        benchmark.to_csv(update_benchmark_file)
 
 
 if __name__ == '__main__':
