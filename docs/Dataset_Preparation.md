@@ -1,9 +1,13 @@
 # Dataset Preparation
 
-- [Dataset Preparation](#dataset-preparation)
-  - [Interface of Dataloader](#interface-of-dataloader)
-  - [Specific Datasets and Dataloader](#specific-datasets-and-dataloader)
-  - [Test Dataloader](#test-dataloader)
+- [Interface of Dataloader](#interface-of-dataloader)
+- [Specific Datasets and Dataloader](#specific-datasets-and-dataloader)
+- [Test Dataloader](#test-dataloader)
+
+## Resources
+
+Here are some other resources to download the dataset:
+- [**Waterloo Bayesian IQA project**](http://ivc.uwaterloo.ca/research/bayesianIQA/). [ [IQA-Dataset](https://github.com/icbcbicc/IQA-Dataset) | [download links](http://ivc.uwaterloo.ca/database/IQADataset) ]
 
 ## Interface of Dataloader
 

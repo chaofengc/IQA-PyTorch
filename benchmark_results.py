@@ -15,10 +15,11 @@ from pyiqa import create_metric
 
 
 def flatten_list(list_of_list):
-    if isinstance(list_of_list[0], list):
-        return list(chain.from_iterable(list_of_list))
-    elif isinstance(list_of_list, list):
-        return list_of_list
+    if isinstance(list_of_list, list):
+        if isinstance(list_of_list[0], list):
+            return list(chain.from_iterable(list_of_list))
+        else:
+            return list_of_list
     else:
         return [list_of_list]
 

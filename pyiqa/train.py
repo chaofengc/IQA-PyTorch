@@ -98,7 +98,7 @@ def load_resume_state(opt):
 
 
 def train_pipeline(root_path, opt=None, args=None):
-    # parse options, set distributed setting, set ramdom seed
+    # parse options, set distributed setting, set random seed
     if opt is None and args is None:
         opt, args = parse_options(root_path, is_train=True)
     opt['root_path'] = root_path

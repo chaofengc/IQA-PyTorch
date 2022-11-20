@@ -10,6 +10,18 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 
 ![demo](demo.gif)
 
+- [:open_book: Introduction](#open_book-introduction)
+- [:zap: Quick Start](#zap-quick-start)
+  - [Dependencies and Installation](#dependencies-and-installation)
+  - [Basic Usage](#basic-usage)
+- [:hammer_and_wrench: Train](#hammer_and_wrench-train)
+  - [Dataset Preparation](#dataset-preparation)
+  - [Example Train Script](#example-train-script)
+- [:1st_place_medal: Benchmark Performances and Model Zoo](#1st_place_medal-benchmark-performances-and-model-zoo)
+  - [Results Calibration](#results-calibration)
+  - [Performance Evaluation Protocol](#performance-evaluation-protocol)
+  - [Benchmark Performance with Provided Script](#benchmark-performance-with-provided-script)
+ 
 ## :open_book: Introduction
 
 This is a image quality assessment toolbox with **pure python and pytorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Below are details of supported methods and datasets in this project.
@@ -215,7 +227,7 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 
 ### Performance Evaluation Protocol
 
-Since there are too many different IQA datasets, and some methods does not provide offical pretrained weights, we use the following settings to train and evaluate different models for simplicity and consistency:
+**We use official models for evaluation if available.** Otherwise, we use the following settings to train and evaluate different models for simplicity and consistency:
 
 | Metric Type | Train | Test | Results | 
 | --- | --- | --- | --- |
