@@ -173,6 +173,13 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'NR',
         'lower_better': True,
     },
+    'cnniqa': {
+        'metric_opts': {
+            'type': 'CNNIQA',
+            'pretrained': 'koniq10k'
+        },
+        'metric_mode': 'NR',
+    },
     'musiq': {
         'metric_opts': {
             'type': 'MUSIQ',

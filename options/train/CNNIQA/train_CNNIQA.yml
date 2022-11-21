@@ -12,7 +12,7 @@ datasets:
     type: GeneralNRDataset
     dataroot_target: ./datasets/koniq10k/512x384
     meta_info_file: ./datasets/meta_info/meta_info_KonIQ10kDataset.csv
-    split_file: ./datasets/meta_info/koniq10k_official.pkl
+    split_file: ./datasets/train_split_info/koniq10k_official.pkl
 
     augment:
       hflip: true
@@ -31,7 +31,7 @@ datasets:
     type: GeneralNRDataset
     dataroot_target: ./datasets/koniq10k/512x384
     meta_info_file: ./datasets/meta_info/meta_info_KonIQ10kDataset.csv
-    split_file: ./datasets/meta_info/koniq10k_official.pkl
+    split_file: ./datasets/train_split_info/koniq10k_official.pkl
 
     num_worker_per_gpu: 4
     batch_size_per_gpu: 8
@@ -49,15 +49,15 @@ path:
 # training settings
 train:
   optim:
-    type: Adam
+    type: AdamW
     lr: !!float 1e-3
 
   scheduler:
     type: MultiStepLR
-    milestones: [400, 800, 1200]
-    gamma: 0.1
+    milestones: [10, 20, 30, 40]
+    gamma: 0.5
 
-  total_iter: 4000 # 883 iter/epoch, train/finetune for about 30 epochs
+  total_epoch: 50 
   warmup_iter: -1  # no warm up
 
   # losses

@@ -13,6 +13,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.arch_util import load_pretrained_network
+
+
+default_model_urls = {
+    'koniq10k': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CNNIQA_koniq10k-fd89516f.pth'
+}
 
 
 @ARCH_REGISTRY.register()
@@ -39,6 +45,7 @@ class CNNIQA(nn.Module):
         n_kers=50,
         n1_nodes=800,
         n2_nodes=800,
+        pretrained='koniq10k',
         pretrained_model_path=None,
     ):
         super(CNNIQA, self).__init__()
@@ -49,13 +56,11 @@ class CNNIQA(nn.Module):
         self.fc3 = nn.Linear(n2_nodes, 1)
         self.dropout = nn.Dropout()
 
-        if pretrained_model_path is not None:
-            self.load_pretrained_network(pretrained_model_path)
+        if pretrained_model_path is None and pretrained is not None:
+            pretrained_model_path = default_model_urls[pretrained]
 
-    def load_pretrained_network(self, model_path):
-        print(f'Loading pretrained model from {model_path}')
-        state_dict = torch.load(model_path, map_location=torch.device('cpu'))['state_dict']
-        self.net.load_state_dict(state_dict, strict=True)
+        if pretrained_model_path is not None:
+            load_pretrained_network(self, pretrained_model_path, True, 'params')
 
     def forward(self, x):
         r"""Compute IQA using CNNIQA model.
