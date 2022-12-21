@@ -41,8 +41,7 @@ class PromptLearner(nn.Module):
     def __init__(self, clip_model, n_ctx=16) -> None:
         super().__init__()
 
-        # For the following segments, we follow the original codes to get the same results
-        # We have no idea about the
+        # For the following codes about prompts, we follow the official codes to get the same results
         prompt_prefix = " ".join(["X"] * n_ctx) + ' '
         init_prompts = [prompt_prefix + 'Good photo..', prompt_prefix + 'Bad photo..']
         with torch.no_grad():
@@ -54,7 +53,7 @@ class PromptLearner(nn.Module):
         self.n_ctx = n_ctx
 
         self.n_cls = len(init_prompts)
-        self.name_lens = [3, 3]
+        self.name_lens = [3, 3]  # hard coded length, which does not include the extra "." at the end
 
         self.register_buffer("token_prefix", init_embedding[:, :1, :])  # SOS
         self.register_buffer("token_suffix", init_embedding[:, 1 + n_ctx:, :])  # CLS, EOS
