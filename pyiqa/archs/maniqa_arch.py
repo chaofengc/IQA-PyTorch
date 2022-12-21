@@ -14,7 +14,7 @@ import torch.nn.functional as F
 import timm
 
 from timm.models.vision_transformer import Block
-from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
+from .constants import IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
 from .maniqa_swin import SwinTransformer
 from torch import nn
 from einops import rearrange

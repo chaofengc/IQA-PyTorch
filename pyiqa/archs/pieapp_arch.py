@@ -4,7 +4,7 @@ Prashnani, Ekta, Hong Cai, Yasamin Mostofi, and Pradeep Sen.
 "Pieapp: Perceptual image-error assessment through pairwise preference."
 In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pp. 1808-1817. 2018.
 
-Ref url: https://github.com/prashnani/PerceptualImageError/blob/master/model/PieAPPv0pt1_PT.py
+Ref url: https://github.com/prashnani/PerceptualImageError
 Modified by: Chaofeng Chen (https://github.com/chaofengc)
 
 !!! Important Note: to keep simple test process and fair comparison with other methods,

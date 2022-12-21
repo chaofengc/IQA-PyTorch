@@ -56,6 +56,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 | NR Method                    | Backward                 |
 | ---------------------------- | ------------------------ |
 | FID                          | :heavy_multiplication_x: |
+| CLIPIQA(+)                   | :white_check_mark:       |
 | MANIQA                       | :white_check_mark:       |
 | MUSIQ                        | :white_check_mark:       |
 | DBCNN                        | :white_check_mark:       |
@@ -229,18 +230,18 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 
 **We use official models for evaluation if available.** Otherwise, we use the following settings to train and evaluate different models for simplicity and consistency:
 
-| Metric Type | Train | Test | Results | 
-| --- | --- | --- | --- |
-| FR | KADID-10k | CSIQ, LIVE, TID2008, TID2013 | [FR benchmark results](tests/FR_benchmark_results.csv) |
-| NR | KonIQ-10k | LIVEC, KonIQ-10k (official split), TID2013 | [NR benchmark results](tests/NR_benchmark_results.csv) |
-| Aesthetic IQA | AVA | AVA (official split)| [IAA benchmark results](tests/IAA_benchmark_results.csv) |
+| Metric Type   | Train     | Test                                       | Results                                                  |
+| ------------- | --------- | ------------------------------------------ | -------------------------------------------------------- |
+| FR            | KADID-10k | CSIQ, LIVE, TID2008, TID2013               | [FR benchmark results](tests/FR_benchmark_results.csv)   |
+| NR            | KonIQ-10k | LIVEC, KonIQ-10k (official split), TID2013 | [NR benchmark results](tests/NR_benchmark_results.csv)   |
+| Aesthetic IQA | AVA       | AVA (official split)                       | [IAA benchmark results](tests/IAA_benchmark_results.csv) |
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
 
-| Metric Type | Model Names |
-| --- | --- | 
-| FR |  |
-| NR | `dbcnn` |
+| Metric Type   | Model Names              |
+| ------------- | ------------------------ |
+| FR            |                          |
+| NR            | `cnniqa`, `dbcnn`        |
 | Aesthetic IQA | `nima`, `nima-vgg16-ava` |
 
 Notes:
