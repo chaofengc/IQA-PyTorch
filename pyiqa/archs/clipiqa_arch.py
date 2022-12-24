@@ -113,8 +113,13 @@ class CLIPIQA(nn.Module):
 
         self.clip_model = load(backbone, device='cpu')
         # Different from original paper, we assemble multiple prompts to improve performance
-        self.prompt_pairs = clip.tokenize(
-            ['Good photo.', 'Bad photo.', 'High quality.', 'Low quality.', 'Sharp photo.', 'Blurry photo.'])
+        self.prompt_pairs = clip.tokenize([
+            'Good image', 'bad image',
+            'Sharp image', 'blurry image',
+            'sharp edges', 'blurry edges',
+            'High resolution image', 'low resolution image',
+            'Noise-free image', 'noisy image',
+        ])
 
         self.model_type = model_type
         if model_type == 'clipiqa+':
