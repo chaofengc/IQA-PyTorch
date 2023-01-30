@@ -76,13 +76,7 @@ def get_version():
 def get_requirements(filename='requirements.txt'):
     here = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(here, filename), 'r') as f:
-        requires = []
-        for line in f.readlines():
-            line = line.replace('\n', '')
-            if 'http' in line and 'CLIP' in line:
-                requires.append(f'clip @ {line}')
-            else:
-                requires.append(line)
+        requires = [line.replace('\n', '') for line in f.readlines()]
     return requires
 
 

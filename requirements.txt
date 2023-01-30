@@ -17,4 +17,4 @@ tqdm
 yapf
 einops
 imgaug
-git+https://github.com/openai/CLIP.git
+clip @ git+https://github.com/openai/CLIP.git
