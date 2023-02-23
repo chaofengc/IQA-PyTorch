@@ -9,7 +9,7 @@ import torchvision.transforms as tf
 from torchvision.transforms.functional import normalize
 
 from pyiqa.data.data_util import read_meta_info_file
-from pyiqa.data.transforms import transform_mapping 
+from pyiqa.data.transforms import transform_mapping
 from pyiqa.utils import FileClient, imfrombytes, img2tensor
 from pyiqa.utils.registry import DATASET_REGISTRY
 
@@ -41,12 +41,7 @@ class FLIVEDataset(data.Dataset):
                 else:
                     splits = split_dict[split_index][opt['override_phase']]
 
-            if opt['phase'] == 'train':
-                self.paths_mos = [self.paths_mos[i] for i in splits]
-            else:
-                # remove patches during validation and test
-                self.paths_mos = [self.paths_mos[i] for i in splits]
-                self.paths_mos = [[p, m] for p, m in self.paths_mos if not 'patches/' in p]
+            self.paths_mos = [self.paths_mos[i] for i in splits]
 
         dmos_max = opt.get('dmos_max', 0.)
         if dmos_max:

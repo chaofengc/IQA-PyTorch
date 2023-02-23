@@ -79,14 +79,14 @@ ava:
 
 pipal:
   name: PIPAL
-  type: GeneralFRDataset
+  type: PIPALDataset 
   dataroot_target: './datasets/PIPAL/Dist_Imgs'
   dataroot_ref: './datasets/PIPAL/Train_Ref'
   meta_info_file: './datasets/meta_info/meta_info_PIPALDataset.csv'
 
 flive:
   name: FLIVE
-  type: GeneralNRDataset
+  type: FLIVEDataset 
   dataroot_target: './datasets/FLIVE_Database/database'
   meta_info_file: './datasets/meta_info/meta_info_FLIVEDataset.csv'
   split_file: './datasets/train_split_info/flive_official.pkl'
