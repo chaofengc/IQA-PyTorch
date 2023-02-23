@@ -66,6 +66,8 @@ spaq:
   type: GeneralNRDataset
   dataroot_target: './datasets/SPAQ/TestImage'
   meta_info_file: './datasets/meta_info/meta_info_SPAQDataset.csv'
+  augment:
+    resize: 448
 
 ava:
   name: AVA
@@ -88,6 +90,7 @@ flive:
   dataroot_target: './datasets/FLIVE_Database/database'
   meta_info_file: './datasets/meta_info/meta_info_FLIVEDataset.csv'
   split_file: './datasets/train_split_info/flive_official.pkl'
+  phase: test
 
 pieapp:
   name: PieAPPDataset

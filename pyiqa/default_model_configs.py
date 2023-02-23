@@ -276,5 +276,25 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
     },
-
+    'tres': {
+        'metric_opts': {
+            'type': 'TReS',
+            'train_dataset': 'koniq',
+        },
+        'metric_mode': 'NR',
+    },
+    'tres-koniq': {
+        'metric_opts': {
+            'type': 'TReS',
+            'train_dataset': 'koniq',
+        },
+        'metric_mode': 'NR',
+    },
+    'tres-flive': {
+        'metric_opts': {
+            'type': 'TReS',
+            'train_dataset': 'flive',
+        },
+        'metric_mode': 'NR',
+    }
 })
