@@ -163,9 +163,8 @@ def cov(tensor, rowvar=True, bias=False):
     Ref: https://gist.github.com/ModarTensai/5ab449acba9df1a26c12060240773110
     """
     tensor = tensor if rowvar else tensor.transpose(-1, -2)
-    tensor = tensor - tensor.mean(dim=-1, keepdim=True)
-    factor = 1 / (tensor.shape[-1] - int(not bool(bias)))
-    return factor * tensor @ tensor.transpose(-1, -2)
+    correction = int(not bias) if tensor.shape[-1] > 1 else 0
+    return torch.cov(tensor, correction=correction)
 
 
 def nancov(x):
