@@ -54,6 +54,11 @@ class InferenceModel(torch.nn.Module):
         self.net = self.net.to(self.device)
         self.net.eval()
 
+    def to(self, device):
+        self.net.to(device)
+        self.device = torch.device(device)
+        return self
+
     def forward(self, target, ref=None, **kwargs):
 
         torch.set_grad_enabled(self.as_loss)
