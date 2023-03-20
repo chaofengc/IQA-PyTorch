@@ -219,12 +219,16 @@ def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=3, eps=1e-12):
             o_c = o_c.reshape(b, hw)
             o_c = o_c - o_c.mean(dim=1, keepdim=True)
 
+            if tmp.shape[1] >= 2e5: # To avoid out of GPU memory
+                C_x = C_x.cpu()
+                tmp = tmp.cpu()
             if hasattr(torch.linalg, 'lstsq'):
                 tmp_y = torch.linalg.lstsq(C_x.transpose(1, 2), tmp.transpose(1, 2)).solution.transpose(1, 2) * tmp / N
             else:
                 warn(
                     "For numerical stability, we use torch.linal.lstsq to calculate matrix inverse for PyTorch > 1.9.0. The results might be slightly different if you use older version of PyTorch.")
                 tmp_y = (tmp @ torch.linalg.pinv(C_x)) * tmp / N
+            tmp_y = tmp_y.to(o_c)
 
             z = tmp_y.sum(dim=2).sqrt()
             mask = z != 0
