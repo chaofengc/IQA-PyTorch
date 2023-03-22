@@ -19,6 +19,7 @@ from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_file_from_url
 from .func_util import extract_2d_patches
+from pyiqa.archs.arch_util import load_pretrained_network
 
 import clip
 from .clip_model import load
@@ -49,7 +50,9 @@ class PromptLearner(nn.Module):
             self.tokenized_prompts = txt_token
             init_embedding = clip_model.token_embedding(txt_token)
 
-        self.ctx = nn.Parameter(torch.load(load_file_from_url(default_url['clipiqa+'])))
+        init_ctx = init_embedding[:, 1: 1 + n_ctx]
+        self.ctx = nn.Parameter(init_ctx)
+
         self.n_ctx = n_ctx
 
         self.n_cls = len(init_prompts)
@@ -108,10 +111,11 @@ class CLIPIQA(nn.Module):
     def __init__(self,
                  model_type='clipiqa',
                  backbone='RN50',
+                 pretrained=True,
                  ) -> None:
         super().__init__()
 
-        self.clip_model = load(backbone, device='cpu')
+        self.clip_model = [load(backbone, 'cpu')]  # avoid saving clip weights
         # Different from original paper, we assemble multiple prompts to improve performance
         self.prompt_pairs = clip.tokenize([
             'Good image', 'bad image',
@@ -122,22 +126,32 @@ class CLIPIQA(nn.Module):
         ])
 
         self.model_type = model_type
-        if model_type == 'clipiqa+':
-            self.prompt_learner = PromptLearner(self.clip_model)
+        if 'clipiqa+' in model_type:
+            self.prompt_learner = PromptLearner(self.clip_model[0])
 
         self.default_mean = torch.Tensor(OPENAI_CLIP_MEAN).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(OPENAI_CLIP_STD).view(1, 3, 1, 1)
 
+        for p in self.clip_model[0].parameters():
+            p.requires_grad = False
+        
+        if pretrained:
+            if model_type == 'clipiqa+':
+                self.prompt_learner.ctx.data = torch.load(load_file_from_url(default_url['clipiqa+']))
+            else:
+                load_pretrained_network(self, default_model_urls[model_type], True)
+    
     def forward(self, x):
         # preprocess image
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
+        clip_model = self.clip_model[0].to(x)
 
         if self.model_type == 'clipiqa':
             prompts = self.prompt_pairs.to(x.device)
-            logits_per_image, logits_per_text = self.clip_model(x, prompts, pos_embedding=False)
+            logits_per_image, logits_per_text = clip_model(x, prompts, pos_embedding=False)
         elif self.model_type == 'clipiqa+':
-            learned_prompt_feature = self.prompt_learner(self.clip_model)
-            logits_per_image, logits_per_text = self.clip_model(
+            learned_prompt_feature = self.prompt_learner(clip_model)
+            logits_per_image, logits_per_text = clip_model(
                 x, None, text_features=learned_prompt_feature, pos_embedding=False)
 
         probs = logits_per_image.reshape(logits_per_image.shape[0], -1, 2).softmax(dim=-1)

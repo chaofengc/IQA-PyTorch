@@ -47,6 +47,14 @@ koniq10k:
   split_file: './datasets/train_split_info/koniq10k_official.pkl'
   phase: 'test'
 
+koniq10k-1024:
+  name: KonIQ10k
+  type: GeneralNRDataset
+  dataroot_target: './datasets/koniq10k/1024x768'
+  meta_info_file: './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
+  split_file: './datasets/train_split_info/koniq10k_official.pkl'
+  phase: 'test'
+
 koniq10k++:
   name: KonIQ10k++
   type: GeneralNRDataset
