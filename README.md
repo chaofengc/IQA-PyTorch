@@ -148,10 +148,12 @@ import torch
 # list all available metrics
 print(pyiqa.list_models())
 
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
 # create metric with default setting
-iqa_metric = pyiqa.create_metric('lpips', device=torch.device('cuda'))
+iqa_metric = pyiqa.create_metric('lpips', device=device)
 # Note that gradient propagation is disabled by default. set as_loss=True to enable it as a loss function.
-iqa_loss = pyiqa.create_metric('lpips', device=torch.device('cuda'), as_loss=True)
+iqa_loss = pyiqa.create_metric('lpips', device=device, as_loss=True)
 
 # create metric with custom setting
 iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True, color_space='ycbcr').to(device)
