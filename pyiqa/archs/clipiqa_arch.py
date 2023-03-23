@@ -25,8 +25,10 @@ import clip
 from .clip_model import load
 
 
-default_url = {
+default_model_urls = {
     'clipiqa+': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CLIP-IQA+_learned_prompts-603f3273.pth',
+    'clipiqa+_rn50_512': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CLIPIQA+_RN50_512-89f5d940.pth',
+    'clipiqa+_vitL14_512': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CLIPIQA+_ViTL14_512-e66488f2.pth',
 }
 
 
@@ -112,6 +114,7 @@ class CLIPIQA(nn.Module):
                  model_type='clipiqa',
                  backbone='RN50',
                  pretrained=True,
+                 pos_embedding=False,
                  ) -> None:
         super().__init__()
 
@@ -126,6 +129,7 @@ class CLIPIQA(nn.Module):
         ])
 
         self.model_type = model_type
+        self.pos_embedding = pos_embedding
         if 'clipiqa+' in model_type:
             self.prompt_learner = PromptLearner(self.clip_model[0])
 
@@ -136,10 +140,10 @@ class CLIPIQA(nn.Module):
             p.requires_grad = False
         
         if pretrained:
-            if model_type == 'clipiqa+':
-                self.prompt_learner.ctx.data = torch.load(load_file_from_url(default_url['clipiqa+']))
+            if model_type == 'clipiqa+' and backbone == 'RN50':
+                self.prompt_learner.ctx.data = torch.load(load_file_from_url(default_model_urls['clipiqa+']))
             else:
-                load_pretrained_network(self, default_model_urls[model_type], True)
+                load_pretrained_network(self, default_model_urls[model_type], True, 'params')
     
     def forward(self, x):
         # preprocess image
@@ -148,11 +152,11 @@ class CLIPIQA(nn.Module):
 
         if self.model_type == 'clipiqa':
             prompts = self.prompt_pairs.to(x.device)
-            logits_per_image, logits_per_text = clip_model(x, prompts, pos_embedding=False)
-        elif self.model_type == 'clipiqa+':
+            logits_per_image, logits_per_text = clip_model(x, prompts, pos_embedding=self.pos_embedding)
+        elif 'clipiqa+' in self.model_type:
             learned_prompt_feature = self.prompt_learner(clip_model)
             logits_per_image, logits_per_text = clip_model(
-                x, None, text_features=learned_prompt_feature, pos_embedding=False)
+                x, None, text_features=learned_prompt_feature, pos_embedding=self.pos_embedding)
 
         probs = logits_per_image.reshape(logits_per_image.shape[0], -1, 2).softmax(dim=-1)
 

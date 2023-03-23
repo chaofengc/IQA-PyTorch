@@ -1,6 +1,12 @@
 # general settings
 # name: debug_DBCNN_LIVEC
-name: 001_CLIPIQA_ViT-L14_KonIQ10k
+name: 002_CLIPIQA_ViT-L14_KonIQ10k
+name: 003_CLIPIQA_RN50_KonIQ10k
+# name: debug_CLIPIQA
+model_type: GeneralIQAModel
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 123
+
 # name: debug_CLIPIQA
 model_type: GeneralIQAModel
 num_gpu: 1  # set num_gpu: 0 for cpu mode
@@ -18,7 +24,7 @@ datasets:
 
     augment:
       hflip: true
-      random_crop: 384
+      random_crop: 384 
     img_range: 1
 
     # data loader
@@ -36,15 +42,20 @@ datasets:
     split_file: ./datasets/train_split_info/koniq10k_official.pkl
     mos_max: 100
 
-    augment:
-      center_crop: 384
+    num_worker_per_gpu: 4
+    batch_size_per_gpu: 8
+
+    # augment:
+    #   center_crop: 384
 
 # network structures
 network:
   type: CLIPIQA 
   model_type: clipiqa+
-  backbone: ViT-L/14
+  # backbone: ViT-L/14
+  backbone: RN50
   pretrained: false
+  pos_embedding: true
 
 # path
 path:
@@ -55,7 +66,7 @@ path:
 # training settings
 train:
   optim:
-    type: Adam
+    type: Adam 
     lr: !!float 2e-3
   
   scheduler:

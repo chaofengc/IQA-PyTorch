@@ -276,6 +276,24 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
     },
+    'clipiqa+_vitL14_512': {
+        'metric_opts': {
+            'type': 'CLIPIQA',
+            'model_type': 'clipiqa+_vitL14_512',
+            'backbone': 'ViT-L/14',
+            'pos_embedding': True,
+        },
+        'metric_mode': 'NR',
+    },
+    'clipiqa+_rn50_512': {
+        'metric_opts': {
+            'type': 'CLIPIQA',
+            'model_type': 'clipiqa+_rn50_512',
+            'backbone': 'RN50',
+            'pos_embedding': True,
+        },
+        'metric_mode': 'NR',
+    },
     'tres': {
         'metric_opts': {
             'type': 'TReS',
