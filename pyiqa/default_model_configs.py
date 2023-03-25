@@ -1,6 +1,4 @@
 from collections import OrderedDict
-import fnmatch
-import re
 
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
@@ -314,5 +312,12 @@ DEFAULT_CONFIGS = OrderedDict({
             'train_dataset': 'flive',
         },
         'metric_mode': 'NR',
-    }
+    },
+    'hyperiqa': {
+        'metric_opts': {
+            'type': 'HyperNet',
+        },
+        'metric_mode': 'NR',
+    },
+
 })

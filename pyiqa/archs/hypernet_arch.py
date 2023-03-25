@@ -10,6 +10,12 @@ import torch
 import torch.nn as nn
 import timm
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network
+
+
+default_model_urls = {
+    'resnet50-koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/HyperIQA-resnet50-koniq10k-48579ec9.pth', 
+}
 
 
 @ARCH_REGISTRY.register()
@@ -34,6 +40,7 @@ class HyperNet(nn.Module):
     def __init__(
         self,
         base_model_name='resnet50',
+        pretrained=True,
         pretrained_model_path=None,
         default_mean=[0.485, 0.456, 0.406],
         default_std=[0.229, 0.224, 0.225],
@@ -105,6 +112,11 @@ class HyperNet(nn.Module):
 
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
+
+        if pretrained and pretrained_model_path is None:
+            load_pretrained_network(self, default_model_urls['resnet50-koniq'], True, weight_keys='params')
+        elif pretrained_model_path is not None:
+            load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
 
     def load_pretrained_network(self, model_path):
         print(f'Loading pretrained model from {model_path}')
