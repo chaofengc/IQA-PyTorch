@@ -118,11 +118,6 @@ class HyperNet(nn.Module):
         elif pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
 
-    def load_pretrained_network(self, model_path):
-        print(f'Loading pretrained model from {model_path}')
-        state_dict = torch.load(model_path, map_location=torch.device('cpu'))['state_dict']
-        self.net.load_state_dict(state_dict, strict=True)
-
     def preprocess(self, x):
         # input must have shape of (224, 224) because of network design
         if x.shape[2:] != torch.Size([224, 224]):

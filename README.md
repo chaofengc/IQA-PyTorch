@@ -104,6 +104,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 
 ### :triangular_flag_on_post: Updates/Changelog
 
+- **March 25, 2023**. Add TreS, HyperIQA, CNNIQA, CLIPIQA.
 - **Sep 1, 2022**. 1) Add pretrained models for MANIQA and AHIQ. 2) Add dataset interface for pieapp and PIPAL.
 - **June 3, 2022**. Add FID metric. See [clean-fid](https://github.com/GaParmar/clean-fid) for more details.
 - **March 11, 2022**. Add pretrained DBCNN, NIMA, and official model of PieAPP, paq2piq.
@@ -240,11 +241,11 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
 
-| Metric Type   | Model Names              |
-| ------------- | ------------------------ |
-| FR            |                          |
-| NR            | `cnniqa`, `dbcnn`        |
-| Aesthetic IQA | `nima`, `nima-vgg16-ava` |
+| Metric Type   | Model Names                   |
+| ------------- | ----------------------------- |
+| FR            |                               |
+| NR            | `cnniqa`, `dbcnn`, `hyperiqa` |
+| Aesthetic IQA | `nima`, `nima-vgg16-ava`      |
 
 Notes:
 - Due to optimized training process, performance of some retrained approaches may be higher than original paper.
