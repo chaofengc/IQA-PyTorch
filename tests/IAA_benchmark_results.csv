@@ -1,3 +1,4 @@
 Metric name,ava(PLCC/SRCC/KRCC)
 nima-vgg16-ava,0.6624/0.657/0.4719
 nima,0.7172/0.7126/0.5213
+clipiqa,0.3576/0.3383/0.2301

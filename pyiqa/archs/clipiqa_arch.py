@@ -139,11 +139,13 @@ class CLIPIQA(nn.Module):
         for p in self.clip_model[0].parameters():
             p.requires_grad = False
         
-        if pretrained:
+        if pretrained and 'clipiqa+' in model_type:
             if model_type == 'clipiqa+' and backbone == 'RN50':
                 self.prompt_learner.ctx.data = torch.load(load_file_from_url(default_model_urls['clipiqa+']))
-            else:
+            elif model_type in default_model_urls.keys():
                 load_pretrained_network(self, default_model_urls[model_type], True, 'params')
+            else:
+                raise(f'No pretrained model for {model_type}')
     
     def forward(self, x):
         # preprocess image
