@@ -24,30 +24,21 @@ import torch.nn.functional as F
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.matlab_utils import fspecial, SCFpyr_PyTorch, math_util, filter2
 from pyiqa.utils.registry import ARCH_REGISTRY
+from .func_util import preprocess_rgb
 
 
 def ssim(X,
          Y,
-         win,
+         win=None,
          get_ssim_map=False,
          get_cs=False,
          get_weight=False,
          downsample=False,
          data_range=1.,
-         test_y_channel=True,
-         color_space='yiq'):
-
-    data_range = 255
-    # Whether calculate on y channel of ycbcr
-    if test_y_channel and X.shape[1] == 3:
-        X = to_y_channel(X, data_range, color_space)
-        Y = to_y_channel(Y, data_range, color_space)
-    else:
-        X = X * data_range
-        X = X - X.detach() + X.round()
-        Y = Y * data_range
-        Y = Y - Y.detach() + Y.round()
-
+         ):
+    if win is None:
+        win = fspecial(11, 1.5, X.shape[1]).to(X)
+    
     C1 = (0.01 * data_range)**2
     C2 = (0.03 * data_range)**2
 
@@ -57,8 +48,6 @@ def ssim(X,
     if (f > 1) and downsample:
         X = F.avg_pool2d(X, kernel_size=f)
         Y = F.avg_pool2d(Y, kernel_size=f)
-
-    win = win.to(X.device)
 
     mu1 = filter2(X, win, 'valid')
     mu2 = filter2(Y, win, 'valid')
@@ -98,11 +87,11 @@ class SSIM(torch.nn.Module):
     def __init__(self, channels=3, downsample=False, test_y_channel=True, color_space='yiq', crop_border=0.):
 
         super(SSIM, self).__init__()
-        self.win = fspecial(11, 1.5, channels)
         self.downsample = downsample
         self.test_y_channel = test_y_channel
         self.color_space = color_space
         self.crop_border = crop_border
+        self.data_range = 255
 
     def forward(self, X, Y):
         assert X.shape == Y.shape, f'Input {X.shape} and reference images should have the same shape'
@@ -111,14 +100,11 @@ class SSIM(torch.nn.Module):
             crop_border = self.crop_border
             X = X[..., crop_border:-crop_border, crop_border:-crop_border]
             Y = Y[..., crop_border:-crop_border, crop_border:-crop_border]
+        
+        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space)
+        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space) 
 
-        score = ssim(
-            X,
-            Y,
-            win=self.win,
-            downsample=self.downsample,
-            test_y_channel=self.test_y_channel,
-            color_space=self.color_space)
+        score = ssim(X, Y, data_range=self.data_range, downsample=self.downsample)
         return score
 
 
@@ -185,11 +171,11 @@ class MS_SSIM(torch.nn.Module):
 
     def __init__(self, channels=3, downsample=False, test_y_channel=True, is_prod=True, color_space='yiq'):
         super(MS_SSIM, self).__init__()
-        self.win = fspecial(11, 1.5, channels)
         self.downsample = downsample
         self.test_y_channel = test_y_channel
         self.color_space = color_space
         self.is_prod = is_prod
+        self.data_range = 255
 
     def forward(self, X, Y):
         """Computation of MS-SSIM metric.
@@ -201,14 +187,16 @@ class MS_SSIM(torch.nn.Module):
         """
         assert X.shape == Y.shape, 'Input and reference images should have the same shape, but got'
         f'{X.shape} and {Y.shape}'
+
+        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space)
+        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space) 
+
         score = ms_ssim(
-            X,
-            Y,
-            win=self.win,
+            X, Y,
+            data_range=self.data_range,
             downsample=self.downsample,
-            test_y_channel=self.test_y_channel,
-            is_prod=self.is_prod,
-            color_space=self.color_space)
+            is_prod=self.is_prod
+            )
         return score
 
 

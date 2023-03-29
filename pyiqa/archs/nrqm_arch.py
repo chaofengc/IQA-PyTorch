@@ -19,7 +19,7 @@ from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.matlab_utils import imresize, fspecial, SCFpyr_PyTorch, dct2d, im2col
 from pyiqa.archs.func_util import extract_2d_patches
-from pyiqa.archs.ssim_arch import SSIM
+from pyiqa.archs.ssim_arch import ssim as ssim_func
 from pyiqa.archs.arch_util import ExactPadding2d
 from pyiqa.archs.niqe_arch import NIQE
 from warnings import warn
@@ -211,7 +211,7 @@ def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=3, eps=1e-12):
             L, Q = torch.linalg.eigh(C_x)
             L_pos = L * (L > 0)
             L_pos_sum = L_pos.sum(dim=1, keepdim=True)
-            L = L_pos * L.sum(dim=1, keepdim=True) / (L_pos_sum + (L_pos_sum == 0).float())
+            L = L_pos * L.sum(dim=1, keepdim=True) / (L_pos_sum + (L_pos_sum == 0).to(L.dtype))
             C_x = Q @ torch.diag_embed(L) @ Q.transpose(1, 2)
 
             o_c = current_band[:, border:-border, border:-border]
@@ -267,16 +267,16 @@ def global_gsm(img: Tensor):
 
     # structure correlation between scales
     hp_band = pyr[0]
-    ssim_func = SSIM(channels=1, test_y_channel=False)
-    for sb in subbands:
-        sb_tmp = imresize(sb, sizes=hp_band.shape[1:]).unsqueeze(1)
-        tmp_ssim = ssim_func(sb_tmp, hp_band.unsqueeze(1))
-        feat.append(tmp_ssim)
+    for sb in lp_bands:
+        curr_band = imresize(sb, sizes=hp_band.shape[1:]).unsqueeze(1)
+        _, tmpscore = ssim_func(curr_band, hp_band.unsqueeze(1), get_cs=True, data_range=255)
+        feat.append(tmpscore)
 
     # structure correlation between orientations
     for i in range(num_bands):
         for j in range(i + 1, num_bands):
-            feat.append(ssim_func(subbands[i].unsqueeze(1), subbands[j].unsqueeze(1)))
+            _, tmpscore = ssim_func(subbands[i].unsqueeze(1), subbands[j].unsqueeze(1), get_cs=True, data_range=255)
+            feat.append(tmpscore)
 
     feat = torch.stack(feat, dim=1)
     return feat
@@ -316,7 +316,7 @@ def random_forest_regression(feat, ldau, rdau, threshold_value, pred_value, best
                                          best_attri[:, i])
             tmp_pred.append(tmp_result)
         pred.append(tmp_pred)
-    pred = torch.Tensor(pred)
+    pred = torch.tensor(pred)
     return pred.mean(dim=1, keepdim=True)
 
 
@@ -335,7 +335,8 @@ def nrqm(
 
     # crop image
     b, c, h, w = img.shape
-    img_pyr = get_guass_pyramid(img.float() / 255.)
+    img = img.double()
+    img_pyr = get_guass_pyramid(img / 255.)
 
     # DCT features
     f1 = []
@@ -359,7 +360,7 @@ def nrqm(
     for feat, rf in zip([f1, f2, f3], rf_param):
         tmp_pred = random_forest_regression(feat, *rf)
         preds = torch.cat((preds, tmp_pred), dim=1)
-    quality = preds @ torch.Tensor(linear_param)
+    quality = preds @ torch.tensor(linear_param)
 
     return quality.squeeze()
 
@@ -396,7 +397,7 @@ def calculate_nrqm(img: torch.Tensor,
 
     if test_y_channel and img.shape[1] == 3:
         img = to_y_channel(img, 255, color_space)
-
+    
     if crop_border != 0:
         img = img[..., crop_border:-crop_border, crop_border:-crop_border]
 

@@ -63,7 +63,7 @@ class SCFpyr_PyTorch(object):
 
         assert im_batch.device == self.device, 'Devices invalid (pyr = {}, batch = {})'.format(
             self.device, im_batch.device)
-        assert im_batch.dtype == torch.float32, 'Image batch must be torch.float32'
+        # assert im_batch.dtype == torch.float32, 'Image batch must be torch.float32'
         assert im_batch.dim() == 4, 'Image batch must be of shape [N,C,H,W]'
         assert im_batch.shape[1] == 1, 'Second dimension must be 1 encoding grayscale image'
 
