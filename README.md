@@ -10,111 +10,33 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 
 ![demo](demo.gif)
 
-- [:open_book: Introduction](#open_book-introduction)
+- [:open\_book: Introduction](#open_book-introduction)
 - [:zap: Quick Start](#zap-quick-start)
   - [Dependencies and Installation](#dependencies-and-installation)
   - [Basic Usage](#basic-usage)
-- [:hammer_and_wrench: Train](#hammer_and_wrench-train)
-  - [Dataset Preparation](#dataset-preparation)
-  - [Example Train Script](#example-train-script)
-- [:1st_place_medal: Benchmark Performances and Model Zoo](#1st_place_medal-benchmark-performances-and-model-zoo)
+- [:1st\_place\_medal: Benchmark Performances and Model Zoo](#1st_place_medal-benchmark-performances-and-model-zoo)
   - [Results Calibration](#results-calibration)
   - [Performance Evaluation Protocol](#performance-evaluation-protocol)
   - [Benchmark Performance with Provided Script](#benchmark-performance-with-provided-script)
+- [:hammer\_and\_wrench: Train](#hammer_and_wrench-train)
+  - [Dataset Preparation](#dataset-preparation)
+  - [Example Train Script](#example-trai-script)
  
 ## :open_book: Introduction
 
-This is a image quality assessment toolbox with **pure python and pytorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Below are details of supported methods and datasets in this project.
-
-<details open>
-<summary>Supported methods and datasets:</summary>
-
-<table>
-<tr><td>
-
-| FR Method                | Backward           |
-| ------------------------ | ------------------ |
-| AHIQ                     | :white_check_mark: |
-| PieAPP                   | :white_check_mark: |
-| LPIPS                    | :white_check_mark: |
-| DISTS                    | :white_check_mark: |
-| WaDIQaM                  | :white_check_mark: |
-| CKDN<sup>[1](#fn1)</sup> | :white_check_mark: |
-| FSIM                     | :white_check_mark: |
-| SSIM                     | :white_check_mark: |
-| MS-SSIM                  | :white_check_mark: |
-| CW-SSIM                  | :white_check_mark: |
-| PSNR                     | :white_check_mark: |
-| VIF                      | :white_check_mark: |
-| GMSD                     | :white_check_mark: |
-| NLPD                     | :white_check_mark: |
-| VSI                      | :white_check_mark: |
-| MAD                      | :white_check_mark: |
-
-</td><td>
-
-| NR Method                    | Backward                 |
-| ---------------------------- | ------------------------ |
-| FID                          | :heavy_multiplication_x: |
-| CLIPIQA(+)                   | :white_check_mark:       |
-| MANIQA                       | :white_check_mark:       |
-| MUSIQ                        | :white_check_mark:       |
-| DBCNN                        | :white_check_mark:       |
-| PaQ-2-PiQ                    | :white_check_mark:       |
-| HyperIQA                     | :white_check_mark:       |
-| NIMA                         | :white_check_mark:       |
-| WaDIQaM                      | :white_check_mark:       |
-| CNNIQA                       | :white_check_mark:       |
-| NRQM(Ma)<sup>[2](#fn2)</sup> | :heavy_multiplication_x: |
-| PI(Perceptual Index)         | :heavy_multiplication_x: |
-| BRISQUE                      | :white_check_mark:       |
-| ILNIQE                       | :white_check_mark:       |
-| NIQE                         | :white_check_mark:       |
-
-<!-- | HOSA                         | :hourglass_flowing_sand: | -->
-
-</td><td>
-
-| Dataset          | Type         |
-| ---------------- | ------------ |
-| FLIVE(PaQ-2-PiQ) | NR           |
-| SPAQ             | NR/mobile    |
-| AVA              | NR/Aesthetic |
-| PIPAL            | FR           |
-| BAPPS            | FR           |
-| PieAPP           | FR           |
-| KADID-10k        | FR           |
-| KonIQ-10k(++)    | NR           |
-| LIVEChallenge    | NR           |
-| LIVEM            | FR           |
-| LIVE             | FR           |
-| TID2013          | FR           |
-| TID2008          | FR           |
-| CSIQ             | FR           |
-
-</td></tr>
-</table>
-
-<a name="fn1">[1]</a> This method use distorted image as reference. Please refer to the paper for details.<br>
-<a name="fn2">[2]</a> Currently, only naive random forest regression is implemented and **does not** support backward.
-
-</details>
+This is a image quality assessment toolbox with **pure python and pytorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Please refer to the [Model Cards](docs/ModelCard.md) and [Dataset Cards](docs/Dataset_Preparation.md) for all supported methods and datasets.
 
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
 
+- **March 30, 2023**. Add [URanker](https://github.com/RQ-Wu/UnderwaterRanker) for IQA of under water images. 
+- **March 29, 2023**. :rotating_light: Hot fix of NRQM & PI. 
 - **March 25, 2023**. Add TreS, HyperIQA, CNNIQA, CLIPIQA.
 - **Sep 1, 2022**. 1) Add pretrained models for MANIQA and AHIQ. 2) Add dataset interface for pieapp and PIPAL.
 - **June 3, 2022**. Add FID metric. See [clean-fid](https://github.com/GaParmar/clean-fid) for more details.
 - **March 11, 2022**. Add pretrained DBCNN, NIMA, and official model of PieAPP, paq2piq.
 - [**More**](docs/history_changelog.md)
-
----
-
-### :hourglass_flowing_sand: TODO List
-
-- :white_large_square: Add pretrained models on different datasets.
 
 ---
 
@@ -177,7 +99,6 @@ score = fid_metric('./ResultsCalibra/dist_dir/', './ResultsCalibra/ref_dir')
 score = fid_metric('./ResultsCalibra/dist_dir/', dataset_name="FFHQ", dataset_res=1024, dataset_split="trainval70k")
 ```
 
-
 #### Example Test script
 
 Example test script with input directory/images and reference directory/images. 
@@ -187,40 +108,6 @@ python inference_iqa.py -m LPIPS[or lpips] -i ./ResultsCalibra/dist_dir[dist_img
 
 # example for NR metric with single image
 python inference_iqa.py -m brisque -i ./ResultsCalibra/dist_dir/I03.bmp
-```
-
-
-## :hammer_and_wrench: Train
-
-### Dataset Preparation
-
-- You only need to unzip downloaded datasets from official website without any extra operation. And then make soft links of these dataset folder under `datasets/` folder. Download links are provided in [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment).
-- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [download_link](https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz) and extract them to `datasets/` folder.
-
-You may also use the following commands:
-
-```
-mkdir datasets && cd datasets
-
-# make soft links of your dataset
-ln -sf your/dataset/path datasetname
-
-# download meta info files and train split files
-wget https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz
-tar -xvf data_info_files.tgz
-```
-
-Examples to specific dataset options can be found in `./options/default_dataset_opt.yml`. Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md)
-
-### Example Train Script
-
-Example to train DBCNN on LIVEChallenge dataset
-```
-# train for single experiment
-python pyiqa/train.py -opt options/train/DBCNN/train_DBCNN.yml
-
-# train N splits for small datasets
-python pyiqa/train_nsplits.py -opt options/train/DBCNN/train_DBCNN.yml
 ```
 
 ## :1st_place_medal: Benchmark Performances and Model Zoo
@@ -268,6 +155,40 @@ python benchmark_results.py --metric_opt options/example_benchmark_metric_opts.y
 
 python benchmark_results.py --metric_opt options/example_benchmark_metric_opts.yml --data_opt options/example_benchmark_data_opts.yml
 ```
+
+## :hammer_and_wrench: Train
+
+### Dataset Preparation
+
+- You only need to unzip downloaded datasets from official website without any extra operation. And then make soft links of these dataset folder under `datasets/` folder. Download links are provided in [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment).
+- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [download_link](https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz) and extract them to `datasets/` folder.
+
+You may also use the following commands:
+
+```
+mkdir datasets && cd datasets
+
+# make soft links of your dataset
+ln -sf your/dataset/path datasetname
+
+# download meta info files and train split files
+wget https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz
+tar -xvf data_info_files.tgz
+```
+
+Examples to specific dataset options can be found in `./options/default_dataset_opt.yml`. Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md)
+
+### Example Train Script
+
+Example to train DBCNN on LIVEChallenge dataset
+```
+# train for single experiment
+python pyiqa/train.py -opt options/train/DBCNN/train_DBCNN.yml
+
+# train N splits for small datasets
+python pyiqa/train_nsplits.py -opt options/train/DBCNN/train_DBCNN.yml
+```
+
 
 ## :beers: Contribution
 

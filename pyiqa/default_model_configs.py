@@ -319,5 +319,10 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
     },
-
+    'uranker': {
+        'metric_opts': {
+            'type': 'URanker',
+        },
+        'metric_mode': 'NR',
+    }
 })
