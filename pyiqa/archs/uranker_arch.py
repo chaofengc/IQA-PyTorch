@@ -26,7 +26,7 @@ from pyiqa.archs.arch_util import load_pretrained_network
 
 
 default_model_urls = {
-    'uranker': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/Uranker_ckpt-cd222f7d.pth',
+    'uranker': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/URanker_ckpt-450eb36d.pth',
 }
 
 
@@ -541,7 +541,7 @@ class URanker(nn.Module):
         self.apply(self._init_weights)
     
         if pretrained and pretrained_model_path is None:
-            load_pretrained_network(self, default_model_urls['uranker'], weight_keys='net')
+            load_pretrained_network(self, default_model_urls['uranker'])
         elif pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
         
