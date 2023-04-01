@@ -1,18 +1,14 @@
-from pyexpat import model
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.ops.deform_conv import DeformConv2d
 import numpy as np
-from einops import rearrange, repeat
-from einops.layers.torch import Rearrange
+from einops import repeat
 
 import timm
-from timm.models.vision_transformer import Block
-from timm.models.resnet import BasicBlock,Bottleneck
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network, default_init_weights, to_2tuple, ExactPadding2d
+from pyiqa.archs.arch_util import load_pretrained_network, to_2tuple
 
 
 class IQARegression(nn.Module):

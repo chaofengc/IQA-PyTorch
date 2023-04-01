@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import timm
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network
+from pyiqa.archs.arch_util import load_pretrained_network
 
 
 default_model_urls = {

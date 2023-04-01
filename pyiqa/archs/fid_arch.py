@@ -12,7 +12,6 @@ Ref:
     CVPR, 2022
 """
 
-from email.policy import default
 import os
 from tqdm import tqdm
 from glob import glob

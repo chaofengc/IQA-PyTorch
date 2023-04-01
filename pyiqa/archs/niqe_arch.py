@@ -239,7 +239,7 @@ def ilniqe(img: torch.Tensor,
     scales = 3
     orientations = 4
     infConst = 10000
-    nanConst = 2000
+    # nanConst = 2000
 
     if resize:
         img = imresize(img, sizes=(normalizedWidth, normalizedWidth))

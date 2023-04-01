@@ -9,16 +9,13 @@ Re-implmented by: Chaofeng Chen (https://github.com/chaofengc) with the followin
     - We assemble multiple prompts to improve the results of clipiqa model.
 
 """
-import os
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_file_from_url
-from .func_util import extract_2d_patches
 from pyiqa.archs.arch_util import load_pretrained_network
 
 import clip
