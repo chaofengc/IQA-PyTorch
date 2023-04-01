@@ -250,7 +250,7 @@ class FID(nn.Module):
 
         # if both dirs are specified, compute FID between folders
         if fdir1 is not None and fdir2 is not None:
-            if not verbose:
+            if verbose:
                 print("compute FID between two folders")
             fbname1 = os.path.basename(fdir1)
             np_feats1 = get_folder_features(fdir1, self.model, num_workers=num_workers, batch_size=batch_size,
