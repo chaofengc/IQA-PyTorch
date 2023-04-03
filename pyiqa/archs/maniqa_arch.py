@@ -10,7 +10,6 @@ Reference:
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import timm
 
 from timm.models.vision_transformer import Block
@@ -20,11 +19,12 @@ from torch import nn
 from einops import rearrange
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from .func_util import extract_2d_patches
 from pyiqa.archs.arch_util import load_pretrained_network
 
 default_model_urls = {
-    'pipal': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/MANIQA_PIPAL-ae6d356b.pth'
+    'pipal': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/MANIQA_PIPAL-ae6d356b.pth',
+    'koniq': 'https://github.com/IIGROUP/MANIQA/releases/download/Koniq10k/ckpt_koniq10k.pt',
+    'kadid': 'https://github.com/IIGROUP/MANIQA/releases/download/Kadid10k/ckpt_kadid10k.pt',
 }
 
 
@@ -83,6 +83,7 @@ class MANIQA(nn.Module):
                  img_size=224, num_tab=2, scale=0.13, test_sample=20,
                  pretrained=True,
                  pretrained_model_path=None,
+                 train_dataset='pipal',
                  default_mean=None,
                  default_std=None,
                  **kwargs):
@@ -155,7 +156,7 @@ class MANIQA(nn.Module):
             load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
             # load_pretrained_network(self, pretrained_model_path, True, )
         elif pretrained:
-            load_pretrained_network(self, default_model_urls['pipal'], True)
+            load_pretrained_network(self, default_model_urls[train_dataset], True)
 
     def extract_feature(self, save_output):
         x6 = save_output.outputs[6][:, 1:]

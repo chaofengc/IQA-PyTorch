@@ -261,6 +261,20 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
     },
+    'maniqa-koniq': {
+        'metric_opts': {
+            'type': 'MANIQA',
+            'train_dataset': 'koniq',
+        },
+        'metric_mode': 'NR',
+    },
+    'maniqa-kadid': {
+        'metric_opts': {
+            'type': 'MANIQA',
+            'train_dataset': 'kadid',
+        },
+        'metric_mode': 'NR',
+    },
     'clipiqa': {
         'metric_opts': {
             'type': 'CLIPIQA',
