@@ -172,7 +172,6 @@ class AHIQ(nn.Module):
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x
 
-    @torch.no_grad()
     def get_vit_feature(self, x):
         self.vit(x)
         feat = torch.cat(
@@ -188,7 +187,6 @@ class AHIQ(nn.Module):
         self.save_output.clear(x.device)
         return feat
 
-    @torch.no_grad()
     def get_resnet_feature(self, x):
         self.resnet50(x)
         feat = torch.cat(
