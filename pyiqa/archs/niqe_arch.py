@@ -167,8 +167,11 @@ def calculate_niqe(img: torch.Tensor,
     mu_pris_param = mu_pris_param.repeat(img.size(0), 1)
     cov_pris_param = cov_pris_param.repeat(img.size(0), 1, 1)
 
-    if test_y_channel and img.shape[1] == 3:
+    # NIQE only support gray image 
+    if img.shape[1] == 3:
         img = to_y_channel(img, 255, color_space)
+    elif img.shape[1] == 1:
+        img = img * 255
 
     img = diff_round(img)
     img = img.to(torch.float64)
@@ -478,5 +481,6 @@ class ILNIQE(torch.nn.Module):
         Returns:
             Value of niqe metric in [0, 1] range.
         """
+        assert X.shape[1] == 3, 'ILNIQE only support input image with 3 channels'
         score = calculate_ilniqe(X, self.crop_border, self.pretrained_model_path)
         return score
