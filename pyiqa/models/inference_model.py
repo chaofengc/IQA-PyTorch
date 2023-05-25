@@ -80,6 +80,8 @@ class InferenceModel(torch.nn.Module):
                     output = self.net(target.to(self.device), **kwargs)
 
         if self.as_loss:
+            if isinstance(output, tuple):
+                output = output[0]
             return weight_reduce_loss(output, self.loss_weight, self.loss_reduction)
         else:
             return output

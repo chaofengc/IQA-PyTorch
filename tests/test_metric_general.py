@@ -87,3 +87,32 @@ def test_cpu_gpu_consistency(metric_name):
 
     assert torch.allclose(score_cpu, score_gpu.cpu(), atol=ATOL, rtol=RTOL), \
         f"Metric {metric_name} results mismatch between CPU and GPU."
+
+
+@pytest.mark.parametrize(
+    ("metric_name"),
+    [(k) for k in pyiqa.list_models() if k not in ['pi', 'nrqm', 'fid', 'mad', 'vsi']]
+)
+def test_gradient_backward(metric_name, device):
+    """Test if the metric can be used in a gradient descent process.
+    pi, nrqm and fid are not tested because they are not differentiable.
+    mad and vsi give NaN with random input.
+    """
+    x = torch.randn(2, 3, 224, 224).to(device)
+    y = torch.randn(2, 3, 224, 224).to(device)
+    x.requires_grad_()
+
+    metric = pyiqa.create_metric(metric_name, as_loss=True, device=device)
+    metric.train()
+
+    score = metric(x, y)
+    if isinstance(score, tuple):
+        score = score[0]
+    score.sum().backward()
+
+    assert torch.isnan(x.grad).sum() == 0, f"Metric {metric_name} cannot be used in a gradient descent process."
+
+    if torch.cuda.is_available():
+        del x
+        del y
+        torch.cuda.empty_cache()

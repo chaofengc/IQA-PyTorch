@@ -344,10 +344,9 @@ class MUSIQ(nn.Module):
             load_pretrained_network(self, pretrained_model_path, True)
 
     def forward(self, x, return_mos=True, return_dist=False):
-        if not self.training:
-            # normalize inputs to [-1, 1] as the official code
-            x = (x - 0.5) * 2
-            x = get_multiscale_patches(x, **self.data_preprocess_opts)
+        # normalize inputs to [-1, 1] as the official code
+        x = (x - 0.5) * 2
+        x = get_multiscale_patches(x, **self.data_preprocess_opts)
 
         assert len(x.shape) in [3, 4]
         if len(x.shape) == 4:
