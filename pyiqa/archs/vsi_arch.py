@@ -60,7 +60,7 @@ def vsi(x: torch.Tensor,
     Note:
         The original method supports only RGB image.
     """
-
+    x, y = x.double(), y.double()
     if x.size(1) == 1:
         x = x.repeat(1, 3, 1, 1)
         y = y.repeat(1, 3, 1, 1)

@@ -108,7 +108,7 @@ class SSIM(torch.nn.Module):
         return score
 
 
-def ms_ssim(X, Y, win, data_range=1., downsample=False, test_y_channel=True, is_prod=True, color_space='yiq'):
+def ms_ssim(X, Y, win=None, data_range=1., downsample=False, test_y_channel=True, is_prod=True, color_space='yiq'):
     r"""Compute Multiscale structural similarity for a batch of images.
     Args:
         x: An input tensor. Shape :math:`(N, C, H, W)`.
@@ -136,8 +136,7 @@ def ms_ssim(X, Y, win, data_range=1., downsample=False, test_y_channel=True, is_
             get_cs=True,
             downsample=downsample,
             data_range=data_range,
-            test_y_channel=test_y_channel,
-            color_space=color_space)
+            )
         mcs.append(cs)
         padding = (X.shape[2] % 2, X.shape[3] % 2)
         X = F.avg_pool2d(X, kernel_size=2, padding=padding)
