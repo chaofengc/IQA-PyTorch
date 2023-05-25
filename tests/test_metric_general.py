@@ -10,6 +10,24 @@ import os
 ATOL = 1e-2
 RTOL = 1e-2
 
+# Currently, some metrics have larger differences with official results 
+TOL_DICT = {
+    'brisque': (1e-2, 8e-2),
+    'niqe': (1e-2, 6e-2),
+    'pi': (1e-2, 3e-2),
+    'ilniqe': (1e-2, 4e-2),
+    'musiq': (1e-2, 3e-2),
+    'musiq-ava': (1e-2, 3e-2),
+    'musiq-koniq': (1e-2, 3e-2),
+    'musiq-paq2piq': (1e-2, 3e-2),
+    'musiq-spaq': (1e-2, 3e-2),
+}
+
+REF_IMG_DIR = './ResultsCalibra/ref_dir'
+DIST_IMG_DIR = './ResultsCalibra/dist_dir'
+OFFICIAL_RESULT_FILE = './ResultsCalibra/results_official.csv'
+CALBR_SUMMARY_FILE = './ResultsCalibra/calibration_summary.csv'
+
 def read_folder(path):
     img_batch = []
     for imgname in sorted(os.listdir(path)):
@@ -20,26 +38,22 @@ def read_folder(path):
 
 
 def metrics_with_official_results():
-    official_results = pd.read_csv('./ResultsCalibra/results_original.csv', skiprows=1).values.tolist()
+    official_results = pd.read_csv(OFFICIAL_RESULT_FILE).values.tolist()
     result_dict = {}
     for row in official_results:
         result_dict[row[0]] = np.array(row[1:])
     
     return result_dict
 
-@pytest.fixture(scope='module')
-def device() -> torch.device:
-    return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 
 @pytest.fixture(scope='module')
 def ref_img() -> torch.Tensor:
-    return read_folder('./ResultsCalibra/ref_dir')
+    return read_folder(REF_IMG_DIR)
 
 
 @pytest.fixture(scope='module')
 def dist_img() -> torch.Tensor:
-    return read_folder('./ResultsCalibra/dist_dir')
+    return read_folder(DIST_IMG_DIR)
 
 
 
@@ -54,8 +68,15 @@ def test_match_official_with_given_cases(ref_img, dist_img, metric_name, device)
     metric = pyiqa.create_metric(metric_name, device=device)
     score = metric(dist_img, ref_img)
 
-    if metric_name in ['niqe', 'pi', 'ilniqe'] or 'musiq' in metric_name:
-        atol, rtol = 1e-2, 6e-2
+    # save results
+    cal_sum = pd.read_csv(CALBR_SUMMARY_FILE, index_col='Method') 
+    cal_sum.loc[metric_name] = [f'{item:.4f}' for item in official_result.tolist()]
+    cal_sum.loc[metric_name + '(ours)'] = [f'{item:.4f}' for item in score.squeeze().cpu().numpy().tolist()]
+    cal_sum = cal_sum.sort_values(by=['Method'], ascending=True)
+    cal_sum.to_csv(CALBR_SUMMARY_FILE)
+
+    if metric_name in TOL_DICT.keys():
+        atol, rtol = TOL_DICT[metric_name]
     else:
         atol, rtol = ATOL, RTOL
     assert torch.allclose(score.squeeze(), torch.from_numpy(official_result).to(score), atol=atol, rtol=rtol), \

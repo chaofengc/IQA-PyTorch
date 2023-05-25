@@ -44,8 +44,8 @@ class SCFpyr_PyTorch(object):
         self.lutsize = 1024
         self.Xcosn = np.pi * np.array(range(-(2 * self.lutsize + 1), (self.lutsize + 2))) / self.lutsize
         self.alpha = (self.Xcosn + np.pi) % (2 * np.pi) - np.pi
-        self.complex_fact_construct = np.power(np.complex(0, -1), self.nbands - 1)
-        self.complex_fact_reconstruct = np.power(np.complex(0, 1), self.nbands - 1)
+        self.complex_fact_construct = np.power(complex(0, -1), self.nbands - 1)
+        self.complex_fact_reconstruct = np.power(complex(0, 1), self.nbands - 1)
 
     ################################################################################
     # Construction of Steerable Pyramid
