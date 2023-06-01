@@ -439,14 +439,14 @@ class NIQE(torch.nn.Module):
         else:
             self.pretrained_model_path = load_file_from_url(default_model_urls['url'])
 
-    def forward(self, X: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""Computation of NIQE metric.
-        Args:
-            X: An input tensor. Shape :math:`(N, C, H, W)`.
-        Returns:
-            Value of niqe metric in [0, 1] range.
+        Input:
+            x: An input tensor. Shape :math:`(N, C, H, W)`.
+        Output:
+            score (tensor): results of ilniqe metric, should be a positive real number. Shape :math:`(N, 1)`.
         """
-        score = calculate_niqe(X, self.crop_border, self.test_y_channel, self.pretrained_model_path, self.color_space)
+        score = calculate_niqe(x, self.crop_border, self.test_y_channel, self.pretrained_model_path, self.color_space)
         return score
 
 
@@ -474,13 +474,13 @@ class ILNIQE(torch.nn.Module):
         else:
             self.pretrained_model_path = load_file_from_url(default_model_urls['ilniqe'])
 
-    def forward(self, X: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""Computation of NIQE metric.
-        Args:
-            X: An input tensor. Shape :math:`(N, C, H, W)`.
-        Returns:
-            Value of niqe metric in [0, 1] range.
+        Input:
+            x: An input tensor. Shape :math:`(N, C, H, W)`.
+        Output:
+            score (tensor): results of ilniqe metric, should be a positive real number. Shape :math:`(N, 1)`.
         """
-        assert X.shape[1] == 3, 'ILNIQE only support input image with 3 channels'
-        score = calculate_ilniqe(X, self.crop_border, self.pretrained_model_path)
+        assert x.shape[1] == 3, 'ILNIQE only support input image with 3 channels'
+        score = calculate_ilniqe(x, self.crop_border, self.pretrained_model_path)
         return score
