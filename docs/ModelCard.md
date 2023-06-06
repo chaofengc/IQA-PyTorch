@@ -56,6 +56,7 @@
 | Underwater IQA | URanker | A ranking-based underwater image quality assessment (UIQA) method, AAAI2023, [Arxiv](https://arxiv.org/abs/2208.06857), [Github](https://github.com/RQ-Wu/UnderwaterRanker) |
 
 ## Outputs of Different Metrics 
+**Note: `~` means that the corresponding numeric bound is typical value and not mathematically guaranteed**
 
 | model    | lower better ? | min | max     | DATE | Link                                                                                                                                                      |
 | -------- | -------------- | --- | ------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -64,6 +65,9 @@
 | hyperiqa | False          | 0   | 1       | 2020 | [pdf](https://openaccess.thecvf.com/content_CVPR_2020/papers/Su_Blindly_Assess_Image_Quality_in_the_Wild_Guided_by_a_CVPR_2020_paper.pdf)                 |
 | cnniqa   | False          |   |       | 2014 | [pdf](https://openaccess.thecvf.com/content_cvpr_2014/papers/Kang_Convolutional_Neural_Networks_2014_CVPR_paper.pdf)                                      |
 | tres     | False          |    | | 2022 | https://github.com/isalirezag/TReS                                                                                                                        |
+| musiq    | False          |  ~0 | ~100 | 2021 | https://arxiv.org/abs/2108.05997                                                                                                                          |
+| musiq-ava    | False          |  ~0  | ~10 | 2021 | https://arxiv.org/abs/2108.05997                                                                                                                          |
+| musiq-koniq    | False          | ~0 | ~100 | 2021 | https://arxiv.org/abs/2108.05997                                                                                                                          |
 | musiq    | False          |    | | 2021 | https://arxiv.org/abs/2108.05997                                                                                                                          |
 | paq2piq  | False          |    | | 2020 | [pdf](https://openaccess.thecvf.com/content_CVPR_2020/papers/Ying_From_Patches_to_Pictures_PaQ-2-PiQ_Mapping_the_Perceptual_Space_of_CVPR_2020_paper.pdf) |
 | dbcnn    | False          |    | | 2019 | https://arxiv.org/bas/1907.02665                                                                                                                          |
