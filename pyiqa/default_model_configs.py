@@ -338,5 +338,11 @@ DEFAULT_CONFIGS = OrderedDict({
             'type': 'URanker',
         },
         'metric_mode': 'NR',
+    },
+    'clipscore': {
+        'metric_opts': {
+            'type': 'CLIPScore',
+        },
+        'metric_mode': 'NR', # Caption image similarity
     }
 })
