@@ -344,5 +344,11 @@ DEFAULT_CONFIGS = OrderedDict({
             'type': 'CLIPScore',
         },
         'metric_mode': 'NR', # Caption image similarity
+    },
+    'entropy': {
+        'metric_opts': {
+            'type': 'Entropy',
+        },
+        'metric_mode': 'NR',
     }
 })
