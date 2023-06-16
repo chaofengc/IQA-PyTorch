@@ -1,12 +1,10 @@
-r"""Peak signal-to-noise ratio (PSNR) Metric
+r"""Entropy Metric for grayscale images.
+Entropy is a statistical measure of randomness that can be used to characterize the texture of the input image.
 
-Created by: https://github.com/photosynthesis-team/piq
-
-Modified by: Jiadi Mo (https://github.com/JiadiMo)
+Created by: Chaofeng Chen (https://github.com/chaofengc)
 
 Refer to:
-    Wikipedia from https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
-    QIQA from https://github.com/francois-rozet/piqa/blob/master/piqa/psnr.py
+    Matlab: https://www.mathworks.com/help/images/ref/entropy.html
 
 """
 
