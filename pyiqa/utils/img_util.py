@@ -10,15 +10,8 @@ from PIL import Image
 import torchvision.transforms.functional as TF
 
 
-IMG_EXTENSIONS = [
-    '.jpg', '.JPG', '.jpeg', '.JPEG',
-    '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP',
-    '.tif', '.TIF', '.tiff', '.TIFF',
-]
-
-
 def is_image_file(filename):
-    return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
+    return any(filename.endswith(extension) for extension in Image.registered_extensions())
 
 
 def imread2tensor(img_source, rgb=False):

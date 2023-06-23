@@ -7,27 +7,7 @@ import csv
 import pandas as pd
 from tqdm import tqdm
 from glob import glob
-
-IMG_EXTENSIONS = [
-    '.jpg',
-    '.JPG',
-    '.jpeg',
-    '.JPEG',
-    '.png',
-    '.PNG',
-    '.ppm',
-    '.PPM',
-    '.bmp',
-    '.BMP',
-    '.tif',
-    '.TIF',
-    '.tiff',
-    '.TIFF',
-]
-
-
-def is_image_file(filename):
-    return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
+from pyiqa.utils.img_util import is_image_file
 
 
 def make_dataset(dir, max_dataset_size=float('inf')):
