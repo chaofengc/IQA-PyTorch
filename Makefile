@@ -10,7 +10,6 @@ build_dist:
 	make clean
 	python setup.py sdist bdist_wheel
 	pip install dist/*.whl
-	# make test
 
 release:
 	python -m twine upload dist/*
@@ -18,8 +17,8 @@ release:
 # lint:
 # 	flake8 pyiqa/ --count --max-line-length=127 --ignore=W293,W503,W504,E126,E741
 
-# test:
-# 	python -m unittest
+test:
+	pytest tests/ -m calibration -v
 
 clean:
 	rm -rf __pycache__

@@ -59,6 +59,7 @@ def dist_img() -> torch.Tensor:
 
 # ==================================== Test metrics ====================================
 
+@pytest.mark.calibration
 @pytest.mark.parametrize(
         ("metric_name"),
         [(k) for k in metrics_with_official_results().keys()]
