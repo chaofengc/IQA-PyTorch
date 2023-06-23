@@ -11,7 +11,7 @@ import torchvision.transforms.functional as TF
 
 
 def is_image_file(filename):
-    return any(filename.endswith(extension) for extension in Image.registered_extensions())
+    return any(filename.lower().endswith(extension) for extension in Image.registered_extensions())
 
 
 def imread2tensor(img_source, rgb=False):
