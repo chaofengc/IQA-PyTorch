@@ -114,7 +114,7 @@ class DBCNN(nn.Module):
         super(DBCNN, self).__init__()
 
         # Convolution and pooling layers of VGG-16.
-        self.features1 = torchvision.models.vgg16(pretrained=True).features
+        self.features1 = torchvision.models.vgg16(weights='IMAGENET1K_V1').features
         self.features1 = nn.Sequential(*list(self.features1.children())[:-1])
         scnn = SCNN(use_bn=use_bn)
         if pretrained_scnn_path is not None:

@@ -43,7 +43,7 @@ class PAQ2PIQ(nn.Module):
         super(PAQ2PIQ, self).__init__()
 
         if backbone == 'resnet18':
-            model = tv.models.resnet18(pretrained=False)
+            model = tv.models.resnet18(weights='IMAGENET1K_V1')
             cut = -2
             spatial_scale = 1 / 32
 

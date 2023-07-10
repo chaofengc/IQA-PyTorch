@@ -265,16 +265,16 @@ class TReS(nn.Module):
 
         if network == 'resnet50':
             dim_modelt = 3840
-            self.model = models.resnet50(pretrained=True)
+            self.model = models.resnet50(weights='IMAGENET1K_V1')
         elif network == 'resnet34':
-            self.model = models.resnet34(pretrained=True)
+            self.model = models.resnet34(weights='IMAGENET1K_V1')
             dim_modelt = 960
             self.L2pooling_l1 = L2pooling(channels=64)
             self.L2pooling_l2 = L2pooling(channels=128)
             self.L2pooling_l3 = L2pooling(channels=256)
             self.L2pooling_l4 = L2pooling(channels=512)
         elif network == 'resnet18':
-            self.model = models.resnet18(pretrained=True)
+            self.model = models.resnet18(weights='IMAGENET1K_V1')
             dim_modelt = 960
             self.L2pooling_l1 = L2pooling(channels=64)
             self.L2pooling_l2 = L2pooling(channels=128)

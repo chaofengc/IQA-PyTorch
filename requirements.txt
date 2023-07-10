@@ -11,8 +11,8 @@ scikit-image
 scipy
 tb-nightly
 timm
-torch>=1.8.1
-torchvision>=0.9
+torch>=1.12
+torchvision>=0.13
 tqdm
 yapf
 einops

@@ -20,6 +20,9 @@ release:
 test:
 	pytest tests/ -m calibration -v
 
+test_general:
+	pytest tests/test_metric_general.py::test_cpu_gpu_consistency -v
+
 clean:
 	rm -rf __pycache__
 	rm -rf pyiqa/__pycache__

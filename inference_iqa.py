@@ -41,26 +41,32 @@ def main():
 
     avg_score = 0
     test_img_num = len(input_paths)
-    pbar = tqdm(total=test_img_num, unit='image')
-    for idx, img_path in enumerate(input_paths):
-        img_name = os.path.basename(img_path)
-        if metric_mode == 'FR':
-            ref_img_path = ref_paths[idx]
-        else:
-            ref_img_path = None
+    if metric_name != 'fid':
+        pbar = tqdm(total=test_img_num, unit='image')
+        for idx, img_path in enumerate(input_paths):
+            img_name = os.path.basename(img_path)
+            if metric_mode == 'FR':
+                ref_img_path = ref_paths[idx]
+            else:
+                ref_img_path = None
 
-        score = iqa_model(img_path, ref_img_path).cpu().item()
-        avg_score += score
-        pbar.update(1)
-        pbar.set_description(f'{metric_name} of {img_name}: {score}')
-        pbar.write(f'{metric_name} of {img_name}: {score}')
-        if args.save_file:
-            sf.write(f'{img_name}\t{score}\n')
-    pbar.close()
-    avg_score /= test_img_num
-    if test_img_num > 1:
-        print(f'Average {metric_name} score of {args.input} with {test_img_num} images is: {avg_score}')
+            score = iqa_model(img_path, ref_img_path).cpu().item()
+            avg_score += score
+            pbar.update(1)
+            pbar.set_description(f'{metric_name} of {img_name}: {score}')
+            pbar.write(f'{metric_name} of {img_name}: {score}')
+            if args.save_file:
+                sf.write(f'{img_name}\t{score}\n')
+        pbar.close()
+        avg_score /= test_img_num
+    else:
+        assert os.path.isdir(args.input), 'input path must be a folder for FID.'
+        avg_score = iqa_model(args.input, args.ref)
+    
+    msg = f'Average {metric_name} score of {args.input} with {test_img_num} images is: {avg_score}'
+    print(msg)
     if args.save_file:
+        sf.write(msg + '\n')
         sf.close()
 
     if args.save_file:

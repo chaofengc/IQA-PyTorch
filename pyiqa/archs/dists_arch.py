@@ -50,7 +50,7 @@ class DISTS(torch.nn.Module):
         """Refer to offical code https://github.com/dingkeyan93/DISTS
         """
         super(DISTS, self).__init__()
-        vgg_pretrained_features = models.vgg16(pretrained=True).features
+        vgg_pretrained_features = models.vgg16(weights='IMAGENET1K_V1').features
         self.stage1 = torch.nn.Sequential()
         self.stage2 = torch.nn.Sequential()
         self.stage3 = torch.nn.Sequential()

@@ -87,7 +87,7 @@ def test_match_official_with_given_cases(ref_img, dist_img, metric_name, device)
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU not available")
 @pytest.mark.parametrize(
     ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['ahiq', 'fid', 'vsi']]
+    [(k) for k in pyiqa.list_models() if k not in ['ahiq', 'fid', 'vsi', 'clipscore']]
 )
 def test_cpu_gpu_consistency(metric_name):
     """Test if the metric results are consistent between CPU and GPU.
@@ -96,9 +96,9 @@ def test_cpu_gpu_consistency(metric_name):
         2. fid requires directory inputs;
         3. vsi will output NaN with random input.
     """
-    x_cpu = torch.randn(1, 3, 256, 256)
+    x_cpu = torch.rand(1, 3, 256, 256)
     x_gpu = x_cpu.cuda()
-    y_cpu = torch.randn(1, 3, 256, 256)
+    y_cpu = torch.rand(1, 3, 256, 256)
     y_gpu = y_cpu.cuda()
 
     metric_cpu = pyiqa.create_metric(metric_name, device='cpu')

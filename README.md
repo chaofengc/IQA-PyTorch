@@ -45,7 +45,8 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 ### Dependencies and Installation
 - Ubuntu >= 18.04
 - Python >= 3.8
-- Pytorch >= 1.10
+- PyTorch >= 1.12
+- Torchvision >= 0.13
 - CUDA >= 10.2 (if use GPU)
 ```
 # Install with pip
