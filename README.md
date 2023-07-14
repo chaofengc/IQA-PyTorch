@@ -27,7 +27,9 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 This is a image quality assessment toolbox with **pure python and pytorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Please refer to the following documents for details:  
 
 <div align="center">
-📦 [Model Cards](docs/ModelCard.md)  | 🗃️ [Dataset Cards](docs/Dataset_Preparation.md) 
+
+📦 [Model Cards](docs/ModelCard.md)  |  🗃️ [Dataset Cards](docs/Dataset_Preparation.md) 
+
 </div>
 
 ---
