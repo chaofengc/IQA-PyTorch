@@ -24,7 +24,11 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
  
 ## :open_book: Introduction
 
-This is a image quality assessment toolbox with **pure python and pytorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Please refer to the [Model Cards](docs/ModelCard.md) and [Dataset Cards](docs/Dataset_Preparation.md) for all supported methods and datasets.
+This is a image quality assessment toolbox with **pure python and pytorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Please refer to the following documents for details:  
+
+<div align="center">
+📦 [Model Cards](docs/ModelCard.md)  | 🗃️ [Dataset Cards](docs/Dataset_Preparation.md) 
+</div>
 
 ---
 
@@ -33,9 +37,6 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 - **March 30, 2023**. Add [URanker](https://github.com/RQ-Wu/UnderwaterRanker) for IQA of under water images. 
 - **March 29, 2023**. :rotating_light: Hot fix of NRQM & PI. 
 - **March 25, 2023**. Add TreS, HyperIQA, CNNIQA, CLIPIQA.
-- **Sep 1, 2022**. 1) Add pretrained models for MANIQA and AHIQ. 2) Add dataset interface for pieapp and PIPAL.
-- **June 3, 2022**. Add FID metric. See [clean-fid](https://github.com/GaParmar/clean-fid) for more details.
-- **March 11, 2022**. Add pretrained DBCNN, NIMA, and official model of PieAPP, paq2piq.
 - [**More**](docs/history_changelog.md)
 
 ---
@@ -124,7 +125,7 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 | Metric Type   | Train     | Test                                       | Results                                                  |
 | ------------- | --------- | ------------------------------------------ | -------------------------------------------------------- |
 | FR            | KADID-10k | CSIQ, LIVE, TID2008, TID2013               | [FR benchmark results](tests/FR_benchmark_results.csv)   |
-| NR            | KonIQ-10k | LIVEC, KonIQ-10k (official split), TID2013 | [NR benchmark results](tests/NR_benchmark_results.csv)   |
+| NR            | KonIQ-10k | LIVEC, KonIQ-10k (official split), TID2013, SPAQ | [NR benchmark results](tests/NR_benchmark_results.csv)   |
 | Aesthetic IQA | AVA       | AVA (official split)                       | [IAA benchmark results](tests/IAA_benchmark_results.csv) |
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
