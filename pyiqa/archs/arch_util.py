@@ -34,6 +34,33 @@ def dist_to_mos(dist_score: torch.Tensor) -> torch.Tensor:
     return mos_score
 
 
+def random_crop(input_list, crop_size, crop_num):
+    if not isinstance(input_list, collections.abc.Sequence):
+        input_list = [input_list]
+
+    b, c, h, w = input_list[0].shape
+    ch, cw = to_2tuple(crop_size)
+
+    if min(h, w) <= crop_size:
+        scale_factor = (crop_size + 1) / min(h, w)
+        input_list = [F.interpolate(x, scale_factor=scale_factor, mode='bilinear') for x in input_list] 
+        b, c, h, w = input_list[0].shape
+
+    crops_list = [[] for i in range(len(input_list))]
+    for i in range(crop_num):
+        sh = np.random.randint(0, h - ch + 1) 
+        sw = np.random.randint(0, w - cw + 1)
+        for j in range(len(input_list)):
+            crops_list[j].append(input_list[j][..., sh: sh + ch, sw: sw + cw])
+            
+    for i in range(len(crops_list)):
+        crops_list[i] = torch.stack(crops_list[i], dim=1).reshape(b * crop_num, c, ch, cw)
+    
+    if len(crops_list) == 1:
+        crops_list = crops_list[0]
+    return crops_list
+
+
 # --------------------------------------------
 # Common utils
 # --------------------------------------------

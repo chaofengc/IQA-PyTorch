@@ -17,7 +17,7 @@ from pyiqa.archs.arch_util import load_pretrained_network
 
 
 default_model_urls = {
-    'koniq10k': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CNNIQA_koniq10k-fd89516f.pth'
+    'koniq10k': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CNNIQA_koniq10k-e6f14c91.pth'
 }
 
 

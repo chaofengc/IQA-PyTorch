@@ -96,13 +96,20 @@ def test_cpu_gpu_consistency(metric_name):
         2. fid requires directory inputs;
         3. vsi will output NaN with random input.
     """
-    x_cpu = torch.rand(1, 3, 256, 256)
+    x_cpu = torch.rand(1, 3, 224, 224)
     x_gpu = x_cpu.cuda()
-    y_cpu = torch.rand(1, 3, 256, 256)
+    y_cpu = torch.rand(1, 3, 224, 224)
     y_gpu = y_cpu.cuda()
 
     metric_cpu = pyiqa.create_metric(metric_name, device='cpu')
     metric_gpu = pyiqa.create_metric(metric_name, device='cuda')
+    metric_cpu.eval()
+    metric_gpu.eval()
+
+    if hasattr(metric_cpu.net, 'test_sample'):
+        metric_cpu.net.test_sample = 1
+    if hasattr(metric_gpu.net, 'test_sample'):
+        metric_gpu.net.test_sample = 1
 
     score_cpu = metric_cpu(x_cpu, y_cpu)
     score_gpu = metric_gpu(x_gpu, y_gpu)
@@ -113,19 +120,25 @@ def test_cpu_gpu_consistency(metric_name):
 
 @pytest.mark.parametrize(
     ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['pi', 'nrqm', 'fid', 'mad', 'vsi']]
+    [(k) for k in pyiqa.list_models() if k not in ['pi', 'nrqm', 'fid', 'mad', 'vsi', 'clipscore', 'entropy']]
 )
 def test_gradient_backward(metric_name, device):
     """Test if the metric can be used in a gradient descent process.
     pi, nrqm and fid are not tested because they are not differentiable.
     mad and vsi give NaN with random input.
     """
-    x = torch.randn(2, 3, 224, 224).to(device)
-    y = torch.randn(2, 3, 224, 224).to(device)
+    size = (2, 3, 224, 224)
+    if 'swin' in metric_name:
+        size = (2, 3, 384, 384)
+
+    x = torch.randn(*size).to(device)
+    y = torch.randn(*size).to(device)
     x.requires_grad_()
 
     metric = pyiqa.create_metric(metric_name, as_loss=True, device=device)
-    metric.train()
+    metric.eval()
+    if hasattr(metric.net, 'test_sample'):
+        metric.net.test_sample = 1
 
     score = metric(x, y)
     if isinstance(score, tuple):

@@ -2,89 +2,10 @@ from pyiqa.data import build_dataset, build_dataloader
 import torch
 import pytest
 import os
+import yaml
 
-options = {
-    'BAPPS': {
-        'type': 'BAPPSDataset',
-        'dataroot_target': './datasets/PerceptualSimilarity/dataset',
-        'meta_info_file': './datasets/meta_info/meta_info_BAPPSDataset.csv',
-    },
-    'PieAPP': {
-        'type': 'PieAPPDataset',
-        'dataroot_target': './datasets/PieAPP_dataset_CVPR_2018/',
-        'meta_info_file': './datasets/meta_info/meta_info_PieAPPDataset.csv',
-    },
-    'FLIVE': {
-        'type': 'GeneralNRDataset',
-        'dataroot_target': './datasets/FLIVE_Database/database',
-        'meta_info_file': './datasets/meta_info/meta_info_FLIVEDataset.csv',
-    },
-    'PIPAL': {
-        'type': 'PIPALDataset',
-        'dataroot_target': './datasets/PIPAL/Dist_Imgs',
-        'dataroot_ref': './datasets/PIPAL/Train_Ref',
-        'meta_info_file': './datasets/meta_info/meta_info_PIPALDataset.csv',
-        'split_file': './datasets/meta_info/pipal_official.pkl'
-    },
-    'KonIQ10k++': {
-        'type': 'GeneralNRDataset',
-        'dataroot_target': './datasets/koniq10k/512x384',
-        'meta_info_file': './datasets/meta_info/meta_info_KonIQ10k++Dataset.csv',
-    },
-    'AVA': {
-        'type': 'AVADataset',
-        'dataroot_target': './datasets/AVA_dataset/ava_images/',
-        'meta_info_file': './datasets/meta_info/meta_info_AVADataset.csv',
-    },
-    'SPAQ': {
-        'type': 'GeneralNRDataset',
-        'dataroot_target': './datasets/SPAQ/TestImage',
-        'meta_info_file': './datasets/meta_info/meta_info_SPAQDataset.csv',
-    },
-    'KADID10k': {
-        'type': 'GeneralFRDataset',
-        'dataroot_target': './datasets/kadid10k/images',
-        'meta_info_file': './datasets/meta_info/meta_info_KADID10kDataset.csv',
-    },
-    'KonIQ10k': {
-        'type': 'GeneralNRDataset',
-        'dataroot_target': './datasets/koniq10k/512x384',
-        'meta_info_file': './datasets/meta_info/meta_info_KonIQ10kDataset.csv',
-    },
-    'LIVEC': {
-        'type': 'LIVEChallengeDataset',
-        'dataroot_target': './datasets/LIVEC',
-        'meta_info_file': './datasets/meta_info/meta_info_LIVEChallengeDataset.csv',
-    },
-    'LIVEM': {
-        'type': 'GeneralFRDataset',
-        'dataroot_target': './datasets/LIVEmultidistortiondatabase',
-        'meta_info_file': './datasets/meta_info/meta_info_LIVEMDDataset.csv',
-    },
-    'LIVE': {
-        'type': 'GeneralFRDataset',
-        'dataroot_target': './datasets/LIVEIQA_release2',
-        'meta_info_file': './datasets/meta_info/meta_info_LIVEIQADataset.csv',
-    },
-    'TID2013': {
-        'type': 'GeneralFRDataset',
-        'dataroot_target': './datasets/tid2013/distorted_images',
-        'dataroot_ref': './datasets/tid2013/reference_images',
-        'meta_info_file': './datasets/meta_info/meta_info_TID2013Dataset.csv',
-    },
-    'TID2008': {
-        'type': 'GeneralFRDataset',
-        'dataroot_target': './datasets/tid2008/distorted_images',
-        'dataroot_ref': './datasets/tid2008/reference_images',
-        'meta_info_file': './datasets/meta_info/meta_info_TID2008Dataset.csv',
-    },
-    'CSIQ': {
-        'type': 'GeneralFRDataset',
-        'dataroot_target': './datasets/CSIQ/dst_imgs',
-        'dataroot_ref': './datasets/CSIQ/src_imgs',
-        'meta_info_file': './datasets/meta_info/meta_info_CSIQDataset.csv',
-    },
-}
+with open('./options/default_dataset_opt.yml') as f:
+    options = yaml.safe_load(f)
 
 common_opt = {
     'name': 'test',

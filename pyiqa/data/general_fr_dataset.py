@@ -1,58 +1,26 @@
-import numpy as np
-import pickle
 from PIL import Image
 
 import torch
 from torch.utils import data as data
 import torchvision.transforms as tf
-from torchvision.transforms.functional import normalize
 
 from pyiqa.data.data_util import read_meta_info_file 
-from pyiqa.data.transforms import transform_mapping, augment, PairedToTensor
-from pyiqa.utils import FileClient, imfrombytes, img2tensor
+from pyiqa.data.transforms import transform_mapping, PairedToTensor
 from pyiqa.utils.registry import DATASET_REGISTRY
 
+from .base_iqa_dataset import BaseIQADataset
 
 @DATASET_REGISTRY.register()
-class GeneralFRDataset(data.Dataset):
+class GeneralFRDataset(BaseIQADataset):
     """General Full Reference dataset with meta info file.
-    
-    Args:
-        opt (dict): Config for train datasets with the following keys:
-            phase (str): 'train' or 'val'.
     """
-
-    def __init__(self, opt):
-        super(GeneralFRDataset, self).__init__()
-        self.opt = opt
-
-        if opt.get('override_phase', None) is None:
-            self.phase = opt['phase']
-        else:
-            self.phase = opt['override_phase']
-
+    
+    def init_path_mos(self, opt):
         target_img_folder = opt['dataroot_target']
         ref_img_folder = opt.get('dataroot_ref', None)
         self.paths_mos = read_meta_info_file(target_img_folder, opt['meta_info_file'], mode='fr', ref_dir=ref_img_folder) 
 
-        # read train/val/test splits
-        split_file_path = opt.get('split_file', None)
-        if split_file_path:
-            split_index = opt.get('split_index', 1)
-            with open(opt['split_file'], 'rb') as f:
-                split_dict = pickle.load(f)
-                splits = split_dict[split_index][self.phase]
-            self.paths_mos = [self.paths_mos[i] for i in splits] 
-        
-        dmos_max = opt.get('dmos_max', 0.)
-        if dmos_max:
-            self.use_dmos = True
-            self.dmos_max = opt.get('dmos_max') 
-        else:
-            self.use_dmos = False
-        
-        self.mos_max = opt.get('mos_max', 1.)
-
+    def get_transforms(self, opt):
         # do paired transform first and then do common transform
         paired_transform_list = []
         augment_dict = opt.get('augment', None)
@@ -67,7 +35,23 @@ class GeneralFRDataset(data.Dataset):
                 PairedToTensor(),
                 ]
         self.common_trans = tf.Compose(common_transform_list)
+    
+    def mos_normalize(self, opt):
+        mos_range = opt.get('mos_range', None)
+        mos_lower_better = opt.get('lower_better', None)
+        mos_normalize = opt.get('mos_normalize', False)
 
+        if mos_normalize:
+            assert mos_range is not None and mos_lower_better is not None, 'mos_range and mos_lower_better should be provided when mos_normalize is True'
+
+            def normalize(mos_label):
+                mos_label = (mos_label - mos_range[0]) / (mos_range[1] - mos_range[0])
+                if mos_lower_better:
+                    mos_label = 1 - mos_label
+                return mos_label
+
+            self.paths_mos = [item[:2] + [normalize(item[2])] for item in self.paths_mos]
+            self.logger.info(f'mos_label is normalized from {mos_range}, lower_better[{mos_lower_better}] to [0, 1], higher better.')
 
     def __getitem__(self, index):
 
@@ -81,13 +65,6 @@ class GeneralFRDataset(data.Dataset):
 
         img_tensor = self.common_trans(img_pil) * self.img_range
         ref_tensor = self.common_trans(ref_pil) * self.img_range
-        if self.use_dmos:
-            mos_label = (self.dmos_max - mos_label) / self.dmos_max
-        else:
-            mos_label /= self.mos_max
         mos_label_tensor = torch.Tensor([mos_label])
         
         return {'img': img_tensor, 'ref_img': ref_tensor, 'mos_label': mos_label_tensor, 'img_path': img_path, 'ref_img_path': ref_path}
-
-    def __len__(self):
-        return len(self.paths_mos)

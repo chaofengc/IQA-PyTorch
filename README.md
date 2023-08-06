@@ -139,6 +139,7 @@ Basically, we use the largest existing datasets for training, and cross dataset 
 | Aesthetic IQA | `nima`, `nima-vgg16-ava`      |
 
 Notes:
+- **Results of all retrained models are normalized to [0, 1] and change to higher better for convenience.**
 - Due to optimized training process, performance of some retrained approaches may be higher than original paper.
 - Results of KonIQ-10k, AVA are both tested with official split.
 - NIMA is only applicable to AVA dataset now. We use `inception_resnet_v2` for default `nima`.
@@ -176,7 +177,7 @@ mkdir datasets && cd datasets
 ln -sf your/dataset/path datasetname
 
 # download meta info files and train split files
-wget https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz
+wget https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/meta_info.tgz
 tar -xvf data_info_files.tgz
 ```
 

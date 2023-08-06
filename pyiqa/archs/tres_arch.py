@@ -20,29 +20,13 @@ import torchvision.models as models
 
 from .arch_util import load_pretrained_network
 from pyiqa.utils.registry import ARCH_REGISTRY
+from .arch_util import random_crop
 
 
 default_model_urls = {
     'koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/tres_koniq-f0502926.pth',
     'flive': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/tres_flive-09b0de5b.pth',
 }
-
-
-def random_crop(x, sample_size=224, sample_num=8):
-    b, c, h, w = x.shape
-    if min(h, w) <= sample_size:
-        scale_factor = (sample_size + 1) / min(h, w)
-        x = F.interpolate(x, scale_factor=scale_factor, mode='bicubic')
-        b, c, h, w = x.shape
-
-    th = tw = sample_size
-    cropped_x = []
-    for s in range(sample_num):
-        i = torch.randint(0, h - th + 1, size=(1, )).item()
-        j = torch.randint(0, w - tw + 1, size=(1, )).item()
-        cropped_x.append(x[:, :, i:i + th, j:j + tw])
-    cropped_x = torch.stack(cropped_x, dim=1)
-    return cropped_x
 
 
 def _get_activation_fn(activation):
@@ -337,14 +321,14 @@ class TReS(nn.Module):
 
     def forward(self, x):
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
+        bsz = x.shape[0]
 
         if self.training:
-            x = random_crop(x, sample_size=224, sample_num=1)
+            x = random_crop(x, 224, 1)
+            num_patches = 1
         else:
-            x = random_crop(x, sample_size=224, sample_num=self.test_sample)
-
-        bsz, num_patches, c, psz, psz = x.shape
-        x = x.reshape(bsz * num_patches, c, psz, psz)
+            x = random_crop(x, 224, self.test_sample)
+            num_patches = self.test_sample
 
         self.pos_enc_1 = self.position_embedding(torch.ones(1, self.dim_modelt, 7, 7).to(x))
         self.pos_enc = self.pos_enc_1.repeat(x.shape[0], 1, 1, 1).contiguous()

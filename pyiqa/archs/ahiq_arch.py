@@ -1,4 +1,3 @@
-from pyexpat import model
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -7,31 +6,15 @@ import numpy as np
 
 import timm
 from timm.models.vision_transformer import Block
-from timm.models.resnet import BasicBlock, Bottleneck
+from timm.models.resnet import Bottleneck
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network, default_init_weights, to_2tuple, ExactPadding2d, load_file_from_url
+from pyiqa.archs.arch_util import load_pretrained_network, to_2tuple, load_file_from_url, random_crop
 
 
 default_model_urls = {
     'pipal': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/AHIQ_vit_p8_epoch33-da3ea303.pth'
 }
-
-
-def random_crop(x, y, crop_size, crop_num):
-    b, c, h, w = x.shape
-    ch, cw = to_2tuple(crop_size)
-
-    crops_x = []
-    crops_y = []
-    for i in range(crop_num):
-        sh = np.random.randint(0, h - ch)
-        sw = np.random.randint(0, w - cw)
-        crops_x.append(x[..., sh: sh + ch, sw: sw + cw])
-        crops_y.append(y[..., sh: sh + ch, sw: sw + cw])
-    crops_x = torch.stack(crops_x, dim=1)
-    crops_y = torch.stack(crops_y, dim=1)
-    return crops_x.reshape(b * crop_num, c, ch, cw), crops_y.reshape(b * crop_num, c, ch, cw)
 
 
 class SaveOutput:
@@ -51,7 +34,7 @@ class SaveOutput:
 class DeformFusion(nn.Module):
     def __init__(self, patch_size=8, in_channels=768 * 5, cnn_channels=256 * 3, out_channels=256 * 3):
         super().__init__()
-        #in_channels, out_channels, kernel_size, stride, padding
+        # in_channels, out_channels, kernel_size, stride, padding
         self.d_hidn = 512
         if patch_size == 8:
             stride = 1
@@ -227,7 +210,7 @@ class AHIQ(nn.Module):
         bsz = x.shape[0]
 
         if self.crops > 1 and not self.training:
-            x, y = random_crop(x, y, self.crop_size, self.crops)
+            x, y = random_crop([x, y], self.crop_size, self.crops)
             score = self.regress_score(x, y)
             score = score.reshape(bsz, self.crops, 1)
             score = score.mean(dim=1)

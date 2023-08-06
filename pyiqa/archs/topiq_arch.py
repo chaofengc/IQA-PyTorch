@@ -17,7 +17,7 @@ import torchvision.transforms.functional as TF
 import timm
 from .constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network, to_2tuple 
+from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network, random_crop
 
 import copy
 from .clip_model import load
@@ -140,27 +140,6 @@ class TransformerDecoder(nn.Module):
         
         return output
 
-
-def random_crop(input_list, crop_size, crop_num):
-    b, c, h, w = input_list[0].shape
-    ch, cw = to_2tuple(crop_size)
-
-    if min(h, w) <= crop_size:
-        scale_factor = (crop_size + 1) / min(h, w)
-        input_list = [F.interpolate(x, scale_factor=scale_factor, mode='bilinear') for x in input_list] 
-        b, c, h, w = input_list[0].shape
-
-    crops_list = [[] for i in range(len(input_list))]
-    for i in range(crop_num):
-        sh = np.random.randint(0, h - ch + 1) 
-        sw = np.random.randint(0, w - cw + 1)
-        for j in range(len(input_list)):
-            crops_list[j].append(input_list[j][..., sh: sh + ch, sw: sw + cw])
-            
-    for i in range(len(crops_list)):
-        crops_list[i] = torch.stack(crops_list[i], dim=1).reshape(b * crop_num, c, ch, cw)
-    
-    return crops_list
 
 
 class GatedConv(nn.Module):

@@ -14,7 +14,7 @@ from pyiqa.archs.arch_util import load_pretrained_network
 
 
 default_model_urls = {
-    'resnet50-koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/HyperIQA-resnet50-koniq10k-48579ec9.pth', 
+    'resnet50-koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/HyperIQA-resnet50-koniq10k-c96c41b1.pth',
 }
 
 

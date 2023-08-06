@@ -19,7 +19,7 @@ from torch import nn
 from einops import rearrange
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import load_pretrained_network, random_crop
 
 default_model_urls = {
     'pipal': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/MANIQA_PIPAL-ae6d356b.pth',
@@ -27,17 +27,6 @@ default_model_urls = {
     'kadid': 'https://github.com/IIGROUP/MANIQA/releases/download/Kadid10k/ckpt_kadid10k.pt',
 }
 
-
-def random_crop(x, sample_size=224, sample_num=8):
-    b, c, h, w = x.shape
-    th = tw = sample_size
-    cropped_x = []
-    for s in range(sample_num):
-        i = torch.randint(0, h - th + 1, size=(1, )).item()
-        j = torch.randint(0, w - tw + 1, size=(1, )).item()
-        cropped_x.append(x[:, :, i:i + th, j:j + tw])
-    cropped_x = torch.stack(cropped_x, dim=1)
-    return cropped_x
 
 
 class TABlock(nn.Module):
@@ -169,14 +158,12 @@ class MANIQA(nn.Module):
     def forward(self, x):
 
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
+        bsz = x.shape[0]
 
         if self.training:
-            x_patches = random_crop(x, sample_size=224, sample_num=1)
+            x = random_crop(x, crop_size=224, crop_num=1)
         else:
-            x_patches = random_crop(x, sample_size=224, sample_num=self.test_sample)
-
-        bsz, num_patches, c, psz, psz = x_patches.shape
-        x = x_patches.reshape(bsz * num_patches, c, psz, psz)
+            x = random_crop(x, crop_size=224, crop_num=self.test_sample)
 
         _x = self.vit(x)
         x = self.extract_feature(self.save_output)

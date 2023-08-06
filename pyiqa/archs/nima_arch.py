@@ -68,7 +68,7 @@ class NIMA(nn.Module):
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
         
         if pretrained and pretrained_model_path is None:
-            url_key = f'{base_model_name}-{pretrained}'
+            url_key = f'{base_model_name}-ava'
             load_pretrained_network(self, default_model_urls[url_key], True, weight_keys='params')
         elif pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')

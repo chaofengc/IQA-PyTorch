@@ -1,23 +1,18 @@
-import numpy as np
 import pickle
 from PIL import Image
 import os
 
 import torch
 from torch.utils import data as data
-import torchvision.transforms as tf
-from torchvision.transforms.functional import normalize
 
-from pyiqa.data.data_util import read_meta_info_file 
-from pyiqa.data.transforms import transform_mapping, augment, PairedToTensor
-from pyiqa.utils import FileClient, imfrombytes, img2tensor
 from pyiqa.utils.registry import DATASET_REGISTRY
+from .base_iqa_dataset import BaseIQADataset 
 
 import pandas as pd
 
 
 @DATASET_REGISTRY.register()
-class BAPPSDataset(data.Dataset):
+class BAPPSDataset(BaseIQADataset):
     """The BAPPS Dataset introduced by:
 
     Zhang, Richard and Isola, Phillip and Efros, Alexei A and Shechtman, Eli and Wang, Oliver
@@ -33,24 +28,21 @@ class BAPPSDataset(data.Dataset):
             - jnd: load jnd pair data
     """
 
-    def __init__(self, opt):
-        super(BAPPSDataset, self).__init__()
-        self.opt = opt
-
+    def init_path_mos(self, opt):
         if opt.get('override_phase', None) is None:
             self.phase = opt['phase'] 
         else:
             self.phase = opt['override_phase'] 
 
         self.dataset_mode = opt.get('mode', '2afc')
-        val_types = opt.get('val_types', None)
 
         target_img_folder = opt['dataroot_target']
         self.dataroot = target_img_folder
-        ref_img_folder = opt.get('dataroot_ref', None)
 
         self.paths_mos = pd.read_csv(opt['meta_info_file']).values.tolist()
-
+    
+    def get_split(self, opt):
+        val_types = opt.get('val_types', None)
         # read train/val/test splits
         split_file_path = opt.get('split_file', None)
         if split_file_path:
@@ -72,20 +64,7 @@ class BAPPSDataset(data.Dataset):
                     if vt in item[1]:
                         tmp_paths_mos.append(item)
             self.paths_mos = tmp_paths_mos
-
-        # TODO: paired transform
-        transform_list = []
-        augment_dict = opt.get('augment', None)
-        if augment_dict is not None:
-            for k, v in augment_dict.items():
-                transform_list += transform_mapping(k, v)
-
-        img_range = opt.get('img_range', 1.0)
-        transform_list += [
-                PairedToTensor(),
-                ]
-        self.trans = tf.Compose(transform_list)
-
+        
     def __getitem__(self, index):
         is_jnd_data = self.paths_mos[index][0] == 'jnd'
         distA_path = os.path.join(self.dataroot, self.paths_mos[index][1])
@@ -117,6 +96,3 @@ class BAPPSDataset(data.Dataset):
                 'mos_label': mos_label_tensor,  
                 'distB_path': distB_path, 'distA_path': distA_path}
 
-
-    def __len__(self):
-        return len(self.paths_mos)

@@ -4,7 +4,8 @@ csiq:
   dataroot_target: ./datasets/CSIQ/dst_imgs
   dataroot_ref: ./datasets/CSIQ/src_imgs
   meta_info_file: ./datasets/meta_info/meta_info_CSIQDataset.csv
-  dmos_max: 1
+  mos_range: [0, 1]
+  lower_better: true
 
 tid2008:
   name: TID2008
@@ -12,6 +13,8 @@ tid2008:
   dataroot_target: ./datasets/tid2008/distorted_images
   dataroot_ref: ./datasets/tid2008/reference_images
   meta_info_file: ./datasets/meta_info/meta_info_TID2008Dataset.csv
+  mos_range: [0, 9]
+  lower_better: false 
 
 tid2013:
   name: TID2013
@@ -19,25 +22,32 @@ tid2013:
   dataroot_target: ./datasets/tid2013/distorted_images
   dataroot_ref: ./datasets/tid2013/reference_images
   meta_info_file: ./datasets/meta_info/meta_info_TID2013Dataset.csv
+  mos_range: [0, 9]
+  lower_better: false 
 
 live:
   name: LIVE
   type: GeneralFRDataset
   dataroot_target: './datasets/LIVEIQA_release2'
   meta_info_file: './datasets/meta_info/meta_info_LIVEIQADataset.csv'
-  dmos_max: 100
+  mos_range: [1, 100]
+  lower_better: true
 
 livem:
   name: LIVEM
   type: GeneralFRDataset
   dataroot_target: './datasets/LIVEmultidistortiondatabase'
   meta_info_file: './datasets/meta_info/meta_info_LIVEMDDataset.csv'
+  mos_range: [1, 100]
+  lower_better: true
 
 livec:
   name: LIVEC
   type: LIVEChallengeDataset
   dataroot_target: ./datasets/LIVEC/
   meta_info_file: ./datasets/meta_info/meta_info_LIVEChallengeDataset.csv
+  mos_range: [1, 100]
+  lower_better: false 
 
 koniq10k:
   name: KonIQ10k
@@ -46,6 +56,8 @@ koniq10k:
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
   split_file: './datasets/meta_info/koniq10k_official.pkl'
   phase: 'test'
+  mos_range: [0, 100]
+  lower_better: false 
 
 koniq10k-1024:
   name: KonIQ10k
@@ -54,6 +66,8 @@ koniq10k-1024:
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
   split_file: './datasets/meta_info/koniq10k_official.pkl'
   phase: 'test'
+  mos_range: [0, 100]
+  lower_better: false 
 
 koniq10k++:
   name: KonIQ10k++
@@ -62,12 +76,16 @@ koniq10k++:
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10k++Dataset.csv'
   split_file: './datasets/meta_info/koniq10k_official.pkl'
   phase: 'test'
+  mos_range: [1, 5]
+  lower_better: false
 
 kadid10k:
   name: KADID10k
   type: GeneralFRDataset
   dataroot_target: './datasets/kadid10k/images'
   meta_info_file: './datasets/meta_info/meta_info_KADID10kDataset.csv'
+  mos_range: [1, 5]
+  lower_better: false
 
 spaq:
   name: SPAQ
@@ -76,6 +94,8 @@ spaq:
   meta_info_file: './datasets/meta_info/meta_info_SPAQDataset.csv'
   augment:
     resize: 448
+  mos_range: [0, 100]
+  lower_better: false
 
 ava:
   name: AVA
@@ -84,21 +104,28 @@ ava:
   meta_info_file: './datasets/meta_info/meta_info_AVADataset.csv'
   split_file: './datasets/meta_info/ava_official_ilgnet.pkl'
   split_index: 1 # use official split
+  mos_range: [1, 10]
+  lower_better: false
 
 pipal:
   name: PIPAL
-  type: PIPALDataset 
+  type: GeneralFRDataset 
   dataroot_target: './datasets/PIPAL/Dist_Imgs'
   dataroot_ref: './datasets/PIPAL/Train_Ref'
   meta_info_file: './datasets/meta_info/meta_info_PIPALDataset.csv'
+  split_file: './datasets/meta_info/pipal_official.pkl'
+  mos_range: [0, 1]
+  lower_better: false 
 
 flive:
   name: FLIVE
-  type: FLIVEDataset 
+  type: GeneralNRDataset 
   dataroot_target: './datasets/FLIVE_Database/database'
   meta_info_file: './datasets/meta_info/meta_info_FLIVEDataset.csv'
   split_file: './datasets/meta_info/flive_official.pkl'
   phase: test
+  mos_range: [0, 100]
+  lower_better: false
 
 pieapp:
   name: PieAPPDataset

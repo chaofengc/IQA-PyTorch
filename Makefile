@@ -23,6 +23,16 @@ test:
 test_general:
 	pytest tests/test_metric_general.py::test_cpu_gpu_consistency -v
 
+test_gradient:
+	pytest tests/test_metric_general.py::test_gradient_backward -v
+
+
+test_dataset:
+	pytest tests/test_datasets_general.py -v
+
+test_all:
+	pytest tests/ -v
+
 clean:
 	rm -rf __pycache__
 	rm -rf pyiqa/__pycache__

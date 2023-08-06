@@ -13,6 +13,9 @@ datasets:
     dataroot_target: ./datasets/koniq10k/512x384
     meta_info_file: ./datasets/meta_info/meta_info_KonIQ10kDataset.csv
     split_file: ./datasets/meta_info/koniq10k_official.pkl
+    mos_range: [0, 100]
+    lower_better: false 
+    mos_normalize: true
 
     augment:
       hflip: true
@@ -62,7 +65,7 @@ train:
 
   # losses
   mos_loss_opt:
-    type: PLCCLoss
+    type: MSELoss 
     loss_weight: !!float 1.0
 
 # validation settings
