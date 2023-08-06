@@ -4,6 +4,7 @@ import math
 import time
 import torch
 import os
+import tarfile
 from os import path as osp
 
 from pyiqa.data import build_dataloader, build_dataset
@@ -11,7 +12,7 @@ from pyiqa.data.data_sampler import EnlargedSampler
 from pyiqa.data.prefetch_dataloader import CPUPrefetcher, CUDAPrefetcher
 from pyiqa.models import build_model
 from pyiqa.utils import (AvgTimer, MessageLogger, check_resume, get_env_info, get_root_logger, get_time_str,
-                           init_tb_logger, init_wandb_logger, make_exp_dirs, mkdir_and_rename, scandir)
+                           init_tb_logger, init_wandb_logger, make_exp_dirs, mkdir_and_rename, scandir, load_file_from_url)
 from pyiqa.utils.options import copy_opt_file, dict2str, parse_options
 
 
@@ -28,6 +29,14 @@ def init_tb_loggers(opt):
 
 
 def create_train_val_dataloader(opt, logger):
+    # download meta informatioin for datasets if needed
+    if not os.path.exists(f"{opt['root_path']}/datasets/meta_info"):
+        logger.info('Downloading meta information for datasets.')
+        os.makedirs(f"{opt['root_path']}/datasets", exist_ok=True)
+        file_path = load_file_from_url('https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/meta_info.tgz', f"{opt['root_path']}/datasets")
+        metainfo_file = tarfile.open(file_path, mode='r|gz')
+        metainfo_file.extractall(f"{opt['root_path']}/datasets")
+
     # create train and val dataloaders
     train_loader, val_loaders = None, []
     for phase, dataset_opt in opt['datasets'].items():

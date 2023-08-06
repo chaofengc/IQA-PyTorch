@@ -35,7 +35,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
-
+- **Aug 05, 2023**. Add our work `TOPIQ` with remarkable performance on almost all benchmarks via efficient Resnet50 backbone. Use it with `topiq_fr, topiq_nr, topiqa_iaa` for Full-Reference, No-Reference and Aesthetic assessment respectively.
 - **March 30, 2023**. Add [URanker](https://github.com/RQ-Wu/UnderwaterRanker) for IQA of under water images. 
 - **March 29, 2023**. :rotating_light: Hot fix of NRQM & PI. 
 - **March 25, 2023**. Add TreS, HyperIQA, CNNIQA, CLIPIQA.
@@ -165,7 +165,7 @@ python benchmark_results.py --metric_opt options/example_benchmark_metric_opts.y
 ### Dataset Preparation
 
 - You only need to unzip downloaded datasets from official website without any extra operation. And then make soft links of these dataset folder under `datasets/` folder. Download links are provided in [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment).
-- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [download_link](https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/data_info_files.tgz) and extract them to `datasets/` folder.
+- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [download_link](https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/meta_info.tgz) and extract them to `datasets/` folder.
 
 You may also use the following commands:
 
@@ -216,6 +216,11 @@ If you find our codes helpful to your research, please consider to use the follo
   howpublished = "[Online]. Available: \url{https://github.com/chaofengc/IQA-PyTorch}"
 }
 ```
+
+Please also consider to cite our new work `TOPIQ` if it is useful:
+```
+
+``` 
 
 ## :heart: Acknowledgement
 

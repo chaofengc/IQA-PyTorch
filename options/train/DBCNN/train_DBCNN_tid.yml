@@ -15,7 +15,7 @@ datasets:
     dataroot_target: ./datasets/tid2008/distorted_images
     dataroot_ref: ./datasets/tid2008/reference_images
     meta_info_file: ./datasets/meta_info/meta_info_TID2008Dataset.csv
-    split_file: ./datasets/train_split_info/tid2008_seed123.pkl
+    split_file: ./datasets/meta_info/tid2008_seed123.pkl
 
     augment:
       hflip: true
@@ -35,7 +35,7 @@ datasets:
     dataroot_target: ./datasets/tid2008/distorted_images
     dataroot_ref: ./datasets/tid2008/reference_images
     meta_info_file: ./datasets/meta_info/meta_info_TID2008Dataset.csv
-    split_file: ./datasets/train_split_info/tid2008_seed123.pkl
+    split_file: ./datasets/meta_info/tid2008_seed123.pkl
     
 # network structures
 network:

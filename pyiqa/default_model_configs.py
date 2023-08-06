@@ -1,8 +1,5 @@
 from collections import OrderedDict
 
-IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
-IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
-
 DEFAULT_CONFIGS = OrderedDict({
     'ahiq': {
         'metric_opts': {
@@ -216,7 +213,7 @@ DEFAULT_CONFIGS = OrderedDict({
     'nima': {
         'metric_opts': {
             'type': 'NIMA',
-            'pretrained': 'ava',
+            'num_classes': 10,
             'base_model_name': 'inception_resnet_v2',
         },
         'metric_mode': 'NR',
@@ -224,7 +221,7 @@ DEFAULT_CONFIGS = OrderedDict({
     'nima-vgg16-ava': {
         'metric_opts': {
             'type': 'NIMA',
-            'pretrained': 'ava',
+            'num_classes': 10,
             'base_model_name': 'vgg16',
         },
         'metric_mode': 'NR',
@@ -358,5 +355,74 @@ DEFAULT_CONFIGS = OrderedDict({
             'type': 'Entropy',
         },
         'metric_mode': 'NR',
-    }
+    },
+    'topiq_nr': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'resnet50',
+            'model_name': 'cfanet_nr_koniq_res50',
+            'use_ref': False,
+        },
+        'metric_mode': 'NR',
+    },
+    'topiq_nr-flive': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'resnet50',
+            'model_name': 'cfanet_nr_flive_res50',
+            'use_ref': False,
+        },
+        'metric_mode': 'NR',
+    },
+    'topiq_nr-spaq': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'resnet50',
+            'model_name': 'cfanet_nr_spaq_res50',
+            'use_ref': False,
+        },
+        'metric_mode': 'NR',
+    },
+    'topiq_fr': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'resnet50',
+            'model_name': 'cfanet_fr_kadid_res50',
+            'use_ref': True,
+        },
+        'metric_mode': 'FR',
+    },
+    'topiq_fr-pipal': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'resnet50',
+            'model_name': 'cfanet_fr_pipal_res50',
+            'use_ref': True,
+        },
+        'metric_mode': 'FR',
+    },
+    'topiq_iaa': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'swin_base_patch4_window12_384',
+            'model_name': 'cfanet_iaa_ava_swin',
+            'use_ref': False,
+            'inter_dim': 512,
+            'num_heads': 8,
+            'num_class': 10,
+        },
+        'metric_mode': 'NR',
+    },
+    'topiq_iaa_res50': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'resnet50',
+            'model_name': 'cfanet_iaa_ava_res50',
+            'use_ref': False,
+            'inter_dim': 512,
+            'num_heads': 8,
+            'num_class': 10,
+        },
+        'metric_mode': 'NR',
+    },
 })

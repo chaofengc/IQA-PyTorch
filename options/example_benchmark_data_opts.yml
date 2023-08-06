@@ -4,7 +4,7 @@ live-split1:
   type: GeneralFRDataset
   dataroot_target: './datasets/LIVEIQA_release2'
   meta_info_file: './datasets/meta_info/meta_info_LIVEIQADataset.csv'
-  split_file: './datasets/train_split_info/live_123.pkl'
+  split_file: './datasets/meta_info/live_123.pkl'
   split_index: 1
   phase: val
   dmos_max: 100

@@ -24,7 +24,7 @@ options = {
         'dataroot_target': './datasets/PIPAL/Dist_Imgs',
         'dataroot_ref': './datasets/PIPAL/Train_Ref',
         'meta_info_file': './datasets/meta_info/meta_info_PIPALDataset.csv',
-        'split_file': './datasets/train_split_info/pipal_official.pkl'
+        'split_file': './datasets/meta_info/pipal_official.pkl'
     },
     'KonIQ10k++': {
         'type': 'GeneralNRDataset',

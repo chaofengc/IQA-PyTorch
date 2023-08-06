@@ -14,7 +14,7 @@ datasets:
     type: LIVEChallengeDataset
     dataroot_target: ./datasets/LIVEC/
     meta_info_file: ./datasets/meta_info/meta_info_LIVEChallengeDataset.csv
-    split_file: ./datasets/train_split_info/livechallenge_seed123.pkl
+    split_file: ./datasets/meta_info/livechallenge_seed123.pkl
     split_index: 2 # which split to use, start from 1
 
     augment:
@@ -34,7 +34,7 @@ datasets:
     type: LIVEChallengeDataset
     dataroot_target: ./datasets/LIVEC
     meta_info_file: ./datasets/meta_info/meta_info_LIVEChallengeDataset.csv
-    split_file: ./datasets/train_split_info/livechallenge_seed123.pkl
+    split_file: ./datasets/meta_info/livechallenge_seed123.pkl
     split_index: 2 # which split to use, start from 1
 
 # network structures

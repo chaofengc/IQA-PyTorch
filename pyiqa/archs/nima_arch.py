@@ -12,9 +12,9 @@ Modified by: Chaofeng Chen (https://github.com/chaofengc)
 import torch
 import torch.nn as nn
 import timm
-from timm.data import IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network
+
 
 default_model_urls = {
     'vgg16-ava': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA_VGG16_ava-dc4e8265.pth',
@@ -46,14 +46,9 @@ class NIMA(nn.Module):
         dropout_rate=0.,
         pretrained=True,
         pretrained_model_path=None,
-        default_mean=[0.485, 0.456, 0.406],
-        default_std=[0.229, 0.224, 0.225],
     ):
         super(NIMA, self).__init__()
         self.base_model = timm.create_model(base_model_name, pretrained=True, features_only=True)
-
-        # set output number of classes
-        num_classes = 10 if 'ava' in pretrained else num_classes
         
         self.global_pool = nn.AdaptiveAvgPool2d(1)
         in_ch = self.base_model.feature_info.channels()[-1]
@@ -67,10 +62,8 @@ class NIMA(nn.Module):
             self.classifier.append(nn.Softmax(dim=-1))
         self.classifier = nn.Sequential(*self.classifier)
 
-        if 'inception' in base_model_name:
-            default_mean = IMAGENET_INCEPTION_MEAN
-            default_std = IMAGENET_INCEPTION_STD
-
+        default_mean = self.base_model.pretrained_cfg['mean']
+        default_std = self.base_model.pretrained_cfg['std']
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
         

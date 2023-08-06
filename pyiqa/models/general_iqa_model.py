@@ -56,18 +56,51 @@ class GeneralIQAModel(BaseModel):
 
     def setup_optimizers(self):
         train_opt = self.opt['train']
+        optim_opt = train_opt['optim']
+
+        param_dict = {k: v for k, v in self.net.named_parameters()}
+        param_keys = list(param_dict.keys())
+        # set different lr for different modules if needed, e.g., lr_backbone, lr_head
+        lr_keys = [i for i in optim_opt.keys() if i.startswith('lr_')]
+
         optim_params = []
-        for k, v in self.net.named_parameters():
-            if v.requires_grad:
-                optim_params.append(v)
-            else:
+        for key in lr_keys:
+            if key.startswith('lr_'):
+                module_key = key.replace('lr_', '')
+                logger = get_root_logger()
+                logger.info(f'Set optimizer for {module_key} with lr: {optim_opt[key]}, weight_decay: {optim_opt.get(f"weight_decay_{module_key}", 0.)}')
+
+                optim_params.append({
+                    'params': [param_dict[k] for k in param_keys if module_key in k and param_dict[k].requires_grad],
+                    'lr': optim_opt.pop(key, 0.),
+                    'weight_decay': optim_opt.pop(f'weight_decay_{module_key}', 0.),
+                })
+
+                # should use param_keys[:] to avoid iteration error
+                for k in param_keys[:]:
+                    if module_key in k:
+                        param_keys.remove(k)
+        
+        # append the rest of the parameters
+        optim_params.append({
+            'params': [param_dict[k] for k in param_keys if param_dict[k].requires_grad],
+        })
+
+        # log params that will not be optimized
+        for k, v in param_dict.items():
+            if not v.requires_grad:
                 logger = get_root_logger()
                 logger.warning(f'Params {k} will not be optimized.')
+        
+        # remove blank param list
+        for k in optim_params:
+            if len(k['params']) == 0:
+                optim_params.remove(k)
 
         optim_type = train_opt['optim'].pop('type')
         self.optimizer = self.get_optimizer(optim_type, optim_params, **train_opt['optim'])
         self.optimizers.append(self.optimizer)
-
+    
     def feed_data(self, data):
         self.img_input = data['img'].to(self.device)
 

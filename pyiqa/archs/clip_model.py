@@ -282,6 +282,8 @@ class ModifiedResNet(nn.Module):
         self.layer3 = self._make_layer(width * 4, layers[2], stride=2)
         self.layer4 = self._make_layer(width * 8, layers[3], stride=2)
 
+        self.feature_dim_list = [width, width * 4, width * 8, width * 16, width * 32]
+
         embed_dim = width * 32  # the ResNet feature dimension
         self.attnpool = AttentionPool2d(input_resolution // 32, embed_dim, heads, output_dim)
 
@@ -293,6 +295,26 @@ class ModifiedResNet(nn.Module):
             layers.append(Bottleneck(self._inplanes, planes))
 
         return nn.Sequential(*layers)
+    
+    def forward_features(self, x, return_token=False, pos_embedding=False):
+        def stem(x):
+            for conv, bn in [(self.conv1, self.bn1), (self.conv2, self.bn2), (self.conv3, self.bn3)]:
+                x = self.relu(bn(conv(x)))
+            x = self.avgpool(x)
+            return x
+        
+        x = x.type(self.conv1.weight.dtype)
+        x = stem(x)
+        feat_list = [x]
+        x = self.layer1(x)
+        feat_list += [x]
+        x = self.layer2(x)
+        feat_list += [x]
+        x = self.layer3(x)
+        feat_list += [x]
+        x = self.layer4(x)
+        feat_list += [x]
+        return feat_list
 
     def forward(self, x, return_token=False, pos_embedding=False):
         def stem(x):
