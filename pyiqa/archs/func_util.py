@@ -6,14 +6,18 @@ from pyiqa.utils.color_util import to_y_channel
 from pyiqa.matlab_utils import fspecial, imfilter
 from .arch_util import excact_padding_2d
 
+
 EPS = torch.finfo(torch.float32).eps
 
 
-def preprocess_rgb(x, test_y_channel, data_range=1., color_space='yiq'):
+def preprocess_rgb(x, test_y_channel, data_range: int = 1, color_space='yiq'):
     if test_y_channel and x.shape[1] == 3:
         x = to_y_channel(x, data_range, color_space)
     else:
         x = x * data_range
+    
+    # use rounded uint8 value to make the input image same as MATLAB
+    if data_range == 255:
         x = x - x.detach() + x.round()
     return x
 
