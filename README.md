@@ -1,6 +1,6 @@
 # <img align="left" width="100" height="100" src="docs/pyiqa_logo.jpg"> PyTorch Toolbox for Image Quality Assessment
 
-An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive survey of IQA methods, as well as download links for IQA datasets.
+An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive survey of IQA methods and download links for IQA datasets.
 
 <a href="https://colab.research.google.com/drive/14J3KoyrjJ6R531DsdOy5Bza5xfeMODi6?usp=sharing"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
 [![PyPI](https://img.shields.io/pypi/v/pyiqa)](https://pypi.org/project/pyiqa/)
@@ -124,11 +124,15 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 
 **We use official models for evaluation if available.** Otherwise, we use the following settings to train and evaluate different models for simplicity and consistency:
 
-| Metric Type   | Train     | Test                                       | Results                                                  |
+| Metric Type   | Train     | Test                                       | Results                                                  | 
 | ------------- | --------- | ------------------------------------------ | -------------------------------------------------------- |
 | FR            | KADID-10k | CSIQ, LIVE, TID2008, TID2013               | [FR benchmark results](tests/FR_benchmark_results.csv)   |
 | NR            | KonIQ-10k | LIVEC, KonIQ-10k (official split), TID2013, SPAQ | [NR benchmark results](tests/NR_benchmark_results.csv)   |
 | Aesthetic IQA | AVA       | AVA (official split)                       | [IAA benchmark results](tests/IAA_benchmark_results.csv) |
+
+Results are calculated with:
+- **PLCC/SRCC without any correction**, which is common in IQA papers
+- **Full image single input.** We use multi-patch testing only when it is necessary for the model to work.
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
 
@@ -138,9 +142,9 @@ Basically, we use the largest existing datasets for training, and cross dataset 
 | NR            | `cnniqa`, `dbcnn`, `hyperiqa` |
 | Aesthetic IQA | `nima`, `nima-vgg16-ava`      |
 
-Notes:
-- **Results of all retrained models are normalized to [0, 1] and change to higher better for convenience.**
-- Due to optimized training process, performance of some retrained approaches may be higher than original paper.
+**Important Notes:**
+- Due to optimized training process, performance of some retrained approaches may be different with original paper.
+- Results of all **retrained models by ours** are normalized to [0, 1] and change to higher better for convenience.
 - Results of KonIQ-10k, AVA are both tested with official split.
 - NIMA is only applicable to AVA dataset now. We use `inception_resnet_v2` for default `nima`.
 - MUSIQ is not included in the IAA benchmark because we do not have train/split information of the official model.
