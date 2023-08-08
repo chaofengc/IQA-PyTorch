@@ -10,7 +10,7 @@ requests
 scikit-image
 scipy
 tb-nightly
-timm
+timm==0.8.0.dev0
 torch>=1.12
 torchvision>=0.13
 tqdm
