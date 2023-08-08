@@ -35,7 +35,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
-- **Aug 05, 2023**. Add our work `TOPIQ` with remarkable performance on almost all benchmarks via efficient Resnet50 backbone. Use it with `topiq_fr, topiq_nr, topiqa_iaa` for Full-Reference, No-Reference and Aesthetic assessment respectively.
+- **Aug 05, 2023**. Add our work `TOPIQ` with remarkable performance on almost all benchmarks via efficient Resnet50 backbone. Use it with `topiq_fr, topiq_nr, topiq_iaa` for Full-Reference, No-Reference and Aesthetic assessment respectively.
 - **March 30, 2023**. Add [URanker](https://github.com/RQ-Wu/UnderwaterRanker) for IQA of under water images. 
 - **March 29, 2023**. :rotating_light: Hot fix of NRQM & PI. 
 - **March 25, 2023**. Add TreS, HyperIQA, CNNIQA, CLIPIQA.
@@ -131,7 +131,7 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 | Aesthetic IQA | AVA       | AVA (official split)                       | [IAA benchmark results](tests/IAA_benchmark_results.csv) |
 
 Results are calculated with:
-- **PLCC/SRCC without any correction**, which is common in IQA papers
+- **PLCC/SRCC without any correction**. Although test time value correction is common in IQA papers, we want to use the original value in our benchmark.
 - **Full image single input.** We use multi-patch testing only when it is necessary for the model to work.
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
