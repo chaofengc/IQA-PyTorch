@@ -42,6 +42,7 @@ datasets:
 # network structures
 network:
   type: CNNIQA
+  pretrained: false
 
 # path
 path:

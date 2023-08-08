@@ -44,6 +44,7 @@ datasets:
 # network structures
 network:
   type: HyperNet
+  pretrained: false
 
 # path
 path:

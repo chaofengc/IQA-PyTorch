@@ -39,7 +39,7 @@ datasets:
 # network structures
 network:
   type: DBCNN
-  pretrained_scnn_path: './experiments/pretrained_models/DBCNN/scnn.pkl'
+  pretrained: false
 
 # path
 path:

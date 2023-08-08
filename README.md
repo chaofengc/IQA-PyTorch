@@ -1,4 +1,4 @@
-# PyTorch Toolbox for Image Quality Assessment
+# <img align="left" width="100" height="100" src="docs/pyiqa_logo.jpg"> PyTorch Toolbox for Image Quality Assessment
 
 An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive survey of IQA methods, as well as download links for IQA datasets.
 
@@ -8,7 +8,7 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/chaofengc/Awesome-Image-Quality-Assessment)
 [![Citation](https://img.shields.io/badge/Citation-bibtex-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/README.md#bookmark_tabs-citation)
 
-![demo](demo.gif)
+![demo](docs/demo.gif)
 
 - [:open\_book: Introduction](#open_book-introduction)
 - [:zap: Quick Start](#zap-quick-start)
@@ -218,9 +218,16 @@ If you find our codes helpful to your research, please consider to use the follo
 }
 ```
 
-Please also consider to cite our new work `TOPIQ` if it is useful:
+Please also consider to cite our new work `TOPIQ` if it is useful to you:
 ```
-
+@misc{chen2023topiq,
+      title={TOPIQ: A Top-down Approach from Semantics to Distortions for Image Quality Assessment}, 
+      author={Chaofeng Chen and Jiadi Mo and Jingwen Hou and Haoning Wu and Liang Liao and Wenxiu Sun and Qiong Yan and Weisi Lin},
+      year={2023},
+      eprint={2308.03060},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
 ``` 
 
 ## :heart: Acknowledgement

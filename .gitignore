@@ -17,15 +17,15 @@ tmp*
 version.py
 
 # ignored files with suffix
-*.html
-*.png
-*.jpeg
-*.jpg
-*.gif
-*.pth
-*.zip
+# *.html
+# *.png
+# *.jpeg
+# *.jpg
+# *.gif
+# *.pth
+# *.zip
 
-!demo.gif
+# !demo.gif
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
