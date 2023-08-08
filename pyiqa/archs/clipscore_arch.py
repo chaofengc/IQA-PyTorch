@@ -44,8 +44,8 @@ class CLIPScore(nn.Module):
 
         img_features = self.clip_model.encode_image(self.preprocess(img))
         text_features = self.clip_model.encode_text(text)
-        img_features /= img_features.norm(dim=-1, keepdim=True)
-        text_features /= text_features.norm(dim=-1, keepdim=True)
+        img_features = img_features / img_features.norm(dim=-1, keepdim=True)
+        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
         score = self.w * torch.relu((img_features * text_features).sum(dim=-1))
         return score
 
