@@ -118,7 +118,7 @@ class STLPIPS(nn.Module):
         if eval_mode:
             self.eval()
 
-    def forward(self, in0, in1, retPerLayer=False, normalize=False):
+    def forward(self, in0, in1, retPerLayer=False, normalize=True):
         """Computation IQA using LPIPS.
         Args:
             in1: An input tensor. Shape :math:`(N, C, H, W)`.
@@ -133,9 +133,7 @@ class STLPIPS(nn.Module):
 
         """
 
-        if (
-            normalize
-        ):  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
+        if (normalize):  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1
 
