@@ -31,6 +31,24 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'FR',
         'lower_better': True,
     },
+    'stlpips': {
+        'metric_opts': {
+            'type': 'STLPIPS',
+            'net': 'alex',
+            'variant': 'shift_tolerant',
+        },
+        'metric_mode': 'FR',
+        'lower_better': True,
+    },
+    'stlpips-vgg': {
+        'metric_opts': {
+            'type': 'STLPIPS',
+            'net': 'vgg',
+            'variant': 'shift_tolerant',
+        },
+        'metric_mode': 'FR',
+        'lower_better': True,
+    },
     'dists': {
         'metric_opts': {
             'type': 'DISTS',
