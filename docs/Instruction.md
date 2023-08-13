@@ -5,12 +5,13 @@ To manage our codebase, it is necessary to learn some tools. This may take some 
 ### Workflow
 
 Steps to contribute your codes to this repository:
-1. `git clone` and `git pull` the latest codes
+1. Fork the repo to your own github account.
+1. `git clone` and `git pull` the forked repo to your own computer.
 1. Create your own branch `git checkout -b`. Write codes and test.
-1. `git commit` your changes with clean commit message
-1. Push your branch to github with `git push origin your_branch`.
-1. Open a pull request to merge your branch
-1. Get your PR reviewed and approved
+1. `git commit` your changes with clean commit message.
+1. Push your branch to your forked repo with `git push`.
+1. Head on over to the forked repo on GitHub, and open a pull request to merge your changes to main project. 
+1. Get your PR reviewed and approved.
 
 ### Style
 
