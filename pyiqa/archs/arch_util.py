@@ -10,8 +10,11 @@ from torch import nn as nn
 from torch.nn import functional as F
 from torch.nn import init as init
 from torch.nn.modules.batchnorm import _BatchNorm
+import torchvision.transforms as T 
 
+from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 from pyiqa.utils.download_util import load_file_from_url
+
 
 # --------------------------------------------
 # IQA utils
@@ -59,6 +62,21 @@ def random_crop(input_list, crop_size, crop_num):
     if len(crops_list) == 1:
         crops_list = crops_list[0]
     return crops_list
+
+
+def clip_preprocess_tensor(x: torch.Tensor, model):
+    """clip preprocess function with tensor input.
+
+    NOTE: Results are slightly different with original preprocess function with PIL image input, because of differences in resize function.
+    """
+    # Bicubic interpolation
+    x = (x * 255).byte()
+    x = T.functional.resize(x, model.visual.input_resolution, interpolation=T.InterpolationMode.BICUBIC, antialias=True)
+    # Center crop
+    x = T.functional.center_crop(x, model.visual.input_resolution)
+    x = x.float() / 255.0
+    x = T.functional.normalize(x, OPENAI_CLIP_MEAN, OPENAI_CLIP_STD)
+    return x
 
 
 # --------------------------------------------

@@ -12,11 +12,10 @@ Reference code: https://github.com/jmhessel/clipscore
 """
 import torch
 import torch.nn as nn
-import torchvision.transforms as T
 
 import clip
-from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
+from .arch_util import clip_preprocess_tensor
 
 
 @ARCH_REGISTRY.register()
@@ -30,19 +29,11 @@ class CLIPScore(nn.Module):
         self.prefix = 'A photo depicts'
         self.w = 2.5
     
-    def preprocess(self, x):
-        # Bicubic interpolation
-        x = T.functional.resize(x, self.clip_model.visual.input_resolution, interpolation=T.InterpolationMode.BICUBIC)
-        # Center crop
-        x = T.functional.center_crop(x, self.clip_model.visual.input_resolution)
-        x = T.functional.normalize(x, OPENAI_CLIP_MEAN, OPENAI_CLIP_STD)
-        return x
-    
     def forward(self, img, caption_list=None):
         assert caption_list is not None, f'caption_list is None'
         text = clip.tokenize([self.prefix + ' ' + caption for caption in caption_list]).to(img.device)
 
-        img_features = self.clip_model.encode_image(self.preprocess(img))
+        img_features = self.clip_model.encode_image(clip_preprocess_tensor(img, self.clip_model))
         text_features = self.clip_model.encode_text(text)
         img_features = img_features / img_features.norm(dim=-1, keepdim=True)
         text_features = text_features / text_features.norm(dim=-1, keepdim=True)

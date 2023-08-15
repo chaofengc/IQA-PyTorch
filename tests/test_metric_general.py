@@ -21,6 +21,7 @@ TOL_DICT = {
     'musiq-koniq': (1e-2, 3e-2),
     'musiq-paq2piq': (1e-2, 3e-2),
     'musiq-spaq': (1e-2, 3e-2),
+    'laion_aes': (1e-2, 2e-2),
 }
 
 REF_IMG_DIR = './ResultsCalibra/ref_dir'

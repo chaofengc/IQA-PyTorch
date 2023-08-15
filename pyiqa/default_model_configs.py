@@ -443,4 +443,10 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
     },
+    'laion_aes': {
+        'metric_opts': {
+            'type': 'LAIONAes',
+        },
+        'metric_mode': 'NR',
+    }
 })
