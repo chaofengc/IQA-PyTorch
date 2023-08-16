@@ -132,7 +132,7 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 | Aesthetic IQA | AVA       | AVA (official split)                       | [IAA benchmark results](tests/IAA_benchmark_results.csv) |
 
 Results are calculated with:
-- **PLCC/SRCC without any correction**. Although test time value correction is common in IQA papers, we want to use the original value in our benchmark.
+- **PLCC without any correction**. Although test time value correction is common in IQA papers, we want to use the original value in our benchmark.
 - **Full image single input.** We use multi-patch testing only when it is necessary for the model to work.
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
