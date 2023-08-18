@@ -3,8 +3,7 @@ import torch
 import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
-from pyiqa.matlab_utils import fspecial, imfilter
-from .arch_util import excact_padding_2d
+from pyiqa.matlab_utils import fspecial, imfilter, exact_padding_2d
 
 
 EPS = torch.finfo(torch.float32).eps
@@ -28,7 +27,7 @@ def extract_2d_patches(x, kernel, stride=1, dilation=1, padding='same'):
     """
     b, c, h, w = x.shape
     if padding != 'none':
-        x = excact_padding_2d(x, kernel, stride, dilation, mode=padding)
+        x = exact_padding_2d(x, kernel, stride, dilation, mode=padding)
 
     # Extract patches
     patches = F.unfold(x, kernel, dilation, stride=stride)

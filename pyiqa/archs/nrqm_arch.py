@@ -17,10 +17,9 @@ import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.matlab_utils import imresize, fspecial, SCFpyr_PyTorch, dct2d, im2col
+from pyiqa.matlab_utils import imresize, fspecial, SCFpyr_PyTorch, dct2d, im2col, ExactPadding2d
 from pyiqa.archs.func_util import extract_2d_patches
 from pyiqa.archs.ssim_arch import ssim as ssim_func
-from pyiqa.archs.arch_util import ExactPadding2d
 from pyiqa.archs.niqe_arch import NIQE
 from warnings import warn
 

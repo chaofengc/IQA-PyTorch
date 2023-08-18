@@ -2,7 +2,7 @@ import math
 import numpy as np
 import torch
 import torch.nn.functional as F
-from pyiqa.archs.arch_util import ExactPadding2d, to_2tuple, symm_pad
+from .padding import ExactPadding2d, to_2tuple, symm_pad
 
 
 def fspecial(size=None, sigma=None, channels=1, filter_type='gaussian'):

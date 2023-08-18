@@ -8,6 +8,8 @@ and return batched results.
 from .resize import imresize
 from .functions import *
 from .scfpyr_util import SCFpyr_PyTorch
+from .padding import ExactPadding2d, exact_padding_2d, symm_pad
+
 
 __all__ = [
     'imresize',
@@ -22,4 +24,7 @@ __all__ = [
     'nanmean',
     'im2col',
     'blockproc',
+    'ExactPadding2d',
+    'exact_padding_2d',
+    'symm_pad',
 ]
