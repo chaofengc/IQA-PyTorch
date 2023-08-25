@@ -1,16 +1,14 @@
 from collections import OrderedDict
-import math
 import collections.abc
 from itertools import repeat
 import numpy as np
-from typing import Tuple
 
 import torch
 from torch import nn as nn
 from torch.nn import functional as F
 from torch.nn import init as init
 from torch.nn.modules.batchnorm import _BatchNorm
-import torchvision.transforms as T 
+import torchvision.transforms as T
 
 from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 from pyiqa.utils.download_util import load_file_from_url
@@ -46,19 +44,24 @@ def random_crop(input_list, crop_size, crop_num):
 
     if min(h, w) <= crop_size:
         scale_factor = (crop_size + 1) / min(h, w)
-        input_list = [F.interpolate(x, scale_factor=scale_factor, mode='bilinear') for x in input_list] 
+        input_list = [
+            F.interpolate(x, scale_factor=scale_factor, mode="bilinear")
+            for x in input_list
+        ]
         b, c, h, w = input_list[0].shape
 
     crops_list = [[] for i in range(len(input_list))]
     for i in range(crop_num):
-        sh = np.random.randint(0, h - ch + 1) 
+        sh = np.random.randint(0, h - ch + 1)
         sw = np.random.randint(0, w - cw + 1)
         for j in range(len(input_list)):
-            crops_list[j].append(input_list[j][..., sh: sh + ch, sw: sw + cw])
-            
+            crops_list[j].append(input_list[j][..., sh : sh + ch, sw : sw + cw])
+
     for i in range(len(crops_list)):
-        crops_list[i] = torch.stack(crops_list[i], dim=1).reshape(b * crop_num, c, ch, cw)
-    
+        crops_list[i] = torch.stack(crops_list[i], dim=1).reshape(
+            b * crop_num, c, ch, cw
+        )
+
     if len(crops_list) == 1:
         crops_list = crops_list[0]
     return crops_list
@@ -71,7 +74,12 @@ def clip_preprocess_tensor(x: torch.Tensor, model):
     """
     # Bicubic interpolation
     x = (x * 255).byte()
-    x = T.functional.resize(x, model.visual.input_resolution, interpolation=T.InterpolationMode.BICUBIC, antialias=True)
+    x = T.functional.resize(
+        x,
+        model.visual.input_resolution,
+        interpolation=T.InterpolationMode.BICUBIC,
+        antialias=True,
+    )
     # Center crop
     x = T.functional.center_crop(x, model.visual.input_resolution)
     x = x.float() / 255.0
@@ -88,16 +96,16 @@ def clean_state_dict(state_dict):
     # 'clean' checkpoint by removing .module prefix from state dict if it exists from parallel training
     cleaned_state_dict = OrderedDict()
     for k, v in state_dict.items():
-        name = k[7:] if k.startswith('module.') else k
+        name = k[7:] if k.startswith("module.") else k
         cleaned_state_dict[name] = v
     return cleaned_state_dict
 
 
 def load_pretrained_network(net, model_path, strict=True, weight_keys=None):
-    if model_path.startswith('https://') or model_path.startswith('http://'):
+    if model_path.startswith("https://") or model_path.startswith("http://"):
         model_path = load_file_from_url(model_path)
-    print(f'Loading pretrained model {net.__class__.__name__} from {model_path}')
-    state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+    print(f"Loading pretrained model {net.__class__.__name__} from {model_path}")
+    state_dict = torch.load(model_path, map_location=torch.device("cpu"))
     if weight_keys is not None:
         state_dict = state_dict[weight_keys]
     state_dict = clean_state_dict(state_dict)
@@ -105,7 +113,6 @@ def load_pretrained_network(net, model_path, strict=True, weight_keys=None):
 
 
 def _ntuple(n):
-
     def parse(x):
         if isinstance(x, collections.abc.Iterable):
             return x

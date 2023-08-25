@@ -1,19 +1,20 @@
+import timm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.ops.deform_conv import DeformConv2d
-import numpy as np
-
-import timm
-from timm.models.vision_transformer import Block
 from timm.models.resnet import Bottleneck
+from timm.models.vision_transformer import Block
+from torchvision.ops.deform_conv import DeformConv2d
 
+from pyiqa.archs.arch_util import (
+    load_file_from_url,
+    load_pretrained_network,
+    random_crop,
+)
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network, to_2tuple, load_file_from_url, random_crop
-
 
 default_model_urls = {
-    'pipal': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/AHIQ_vit_p8_epoch33-da3ea303.pth'
+    "pipal": "https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/AHIQ_vit_p8_epoch33-da3ea303.pth"
 }
 
 
@@ -32,7 +33,13 @@ class SaveOutput:
 
 
 class DeformFusion(nn.Module):
-    def __init__(self, patch_size=8, in_channels=768 * 5, cnn_channels=256 * 3, out_channels=256 * 3):
+    def __init__(
+        self,
+        patch_size=8,
+        in_channels=768 * 5,
+        cnn_channels=256 * 3,
+        out_channels=256 * 3,
+    ):
         super().__init__()
         # in_channels, out_channels, kernel_size, stride, padding
         self.d_hidn = 512
@@ -43,9 +50,21 @@ class DeformFusion(nn.Module):
         self.conv_offset = nn.Conv2d(in_channels, 2 * 3 * 3, 3, 1, 1)
         self.deform = DeformConv2d(cnn_channels, out_channels, 3, 1, 1)
         self.conv1 = nn.Sequential(
-            nn.Conv2d(in_channels=out_channels, out_channels=self.d_hidn, kernel_size=3, padding=1, stride=2),
+            nn.Conv2d(
+                in_channels=out_channels,
+                out_channels=self.d_hidn,
+                kernel_size=3,
+                padding=1,
+                stride=2,
+            ),
             nn.ReLU(),
-            nn.Conv2d(in_channels=self.d_hidn, out_channels=out_channels, kernel_size=3, padding=1, stride=stride)
+            nn.Conv2d(
+                in_channels=self.d_hidn,
+                out_channels=out_channels,
+                kernel_size=3,
+                padding=1,
+                stride=stride,
+            ),
         )
 
     def forward(self, cnn_feat, vit_feat):
@@ -63,18 +82,21 @@ class Pixel_Prediction(nn.Module):
         self.d_hidn = d_hidn
         self.down_channel = nn.Conv2d(inchannels, outchannels, kernel_size=1)
         self.feat_smoothing = nn.Sequential(
-            nn.Conv2d(in_channels=256 * 3, out_channels=self.d_hidn, kernel_size=3, padding=1),
+            nn.Conv2d(
+                in_channels=256 * 3, out_channels=self.d_hidn, kernel_size=3, padding=1
+            ),
             nn.ReLU(),
-            nn.Conv2d(in_channels=self.d_hidn, out_channels=512, kernel_size=3, padding=1)
+            nn.Conv2d(
+                in_channels=self.d_hidn, out_channels=512, kernel_size=3, padding=1
+            ),
         )
 
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels=512, out_channels=256, kernel_size=3, padding=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
         self.conv_attent = nn.Sequential(
-            nn.Conv2d(in_channels=256, out_channels=1, kernel_size=1),
-            nn.Sigmoid()
+            nn.Conv2d(in_channels=256, out_channels=1, kernel_size=1), nn.Sigmoid()
         )
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels=256, out_channels=1, kernel_size=1),
@@ -99,18 +121,19 @@ class Pixel_Prediction(nn.Module):
 
 @ARCH_REGISTRY.register()
 class AHIQ(nn.Module):
-    def __init__(self,
-                 num_crop=20,
-                 crop_size=224,
-                 default_mean=[0.485, 0.456, 0.406],
-                 default_std=[0.229, 0.224, 0.225],
-                 pretrained=True,
-                 pretrained_model_path=None,
-                 ):
+    def __init__(
+        self,
+        num_crop=20,
+        crop_size=224,
+        default_mean=[0.485, 0.456, 0.406],
+        default_std=[0.229, 0.224, 0.225],
+        pretrained=True,
+        pretrained_model_path=None,
+    ):
         super().__init__()
 
-        self.resnet50 = timm.create_model('resnet50', pretrained=True)
-        self.vit = timm.create_model('vit_base_patch8_224', pretrained=True)
+        self.resnet50 = timm.create_model("resnet50", pretrained=True)
+        self.vit = timm.create_model("vit_base_patch8_224", pretrained=True)
         self.fix_network(self.resnet50)
         self.fix_network(self.vit)
 
@@ -124,12 +147,14 @@ class AHIQ(nn.Module):
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
 
         if pretrained_model_path is not None:
-            load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
+            load_pretrained_network(
+                self, pretrained_model_path, True, weight_keys="params"
+            )
         elif pretrained:
-            weight_path = load_file_from_url(default_model_urls['pipal'])
+            weight_path = load_file_from_url(default_model_urls["pipal"])
             checkpoint = torch.load(weight_path)
-            self.regressor.load_state_dict(checkpoint['regressor_model_state_dict'])
-            self.deform_net.load_state_dict(checkpoint['deform_net_model_state_dict'])
+            self.regressor.load_state_dict(checkpoint["regressor_model_state_dict"])
+            self.deform_net.load_state_dict(checkpoint["deform_net_model_state_dict"])
 
         self.eps = 1e-12
         self.crops = num_crop
@@ -165,7 +190,7 @@ class AHIQ(nn.Module):
                 self.save_output.outputs[x.device][3][:, 1:, :],
                 self.save_output.outputs[x.device][4][:, 1:, :],
             ),
-            dim=2
+            dim=2,
         )
         self.save_output.clear(x.device)
         return feat
@@ -178,7 +203,7 @@ class AHIQ(nn.Module):
                 self.save_output.outputs[x.device][1],
                 self.save_output.outputs[x.device][2],
             ),
-            dim=1
+            dim=1,
         )
         self.save_output.clear(x.device)
         return feat

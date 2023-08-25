@@ -9,24 +9,24 @@ from pyiqa.matlab_utils import fspecial, imfilter, exact_padding_2d
 EPS = torch.finfo(torch.float32).eps
 
 
-def preprocess_rgb(x, test_y_channel, data_range: int = 1, color_space='yiq'):
+def preprocess_rgb(x, test_y_channel, data_range: int = 1, color_space="yiq"):
     if test_y_channel and x.shape[1] == 3:
         x = to_y_channel(x, data_range, color_space)
     else:
         x = x * data_range
-    
+
     # use rounded uint8 value to make the input image same as MATLAB
     if data_range == 255:
         x = x - x.detach() + x.round()
     return x
 
 
-def extract_2d_patches(x, kernel, stride=1, dilation=1, padding='same'):
+def extract_2d_patches(x, kernel, stride=1, dilation=1, padding="same"):
     """
     Ref: https://stackoverflow.com/a/65886666
     """
     b, c, h, w = x.shape
-    if padding != 'none':
+    if padding != "none":
         x = exact_padding_2d(x, kernel, stride, dilation, mode=padding)
 
     # Extract patches
@@ -57,17 +57,17 @@ def safe_sqrt(x: torch.Tensor) -> torch.Tensor:
 
 
 def diff_round(x: torch.Tensor) -> torch.Tensor:
-    r"""Differentiable round.
-    """
+    r"""Differentiable round."""
     return x - x.detach() + x.round()
 
 
-def normalize_img_with_guass(img: torch.Tensor,
-                             kernel_size: int = 7,
-                             sigma: float = 7. / 6,
-                             C: int = 1,
-                             padding: str = 'same'):
-
+def normalize_img_with_guass(
+    img: torch.Tensor,
+    kernel_size: int = 7,
+    sigma: float = 7.0 / 6,
+    C: int = 1,
+    padding: str = "same",
+):
     kernel = fspecial(kernel_size, sigma, 1).to(img)
     mu = imfilter(img, kernel, padding=padding)
     std = imfilter(img**2, kernel, padding=padding)
@@ -82,11 +82,11 @@ def scharr_filter() -> torch.Tensor:
     Returns:
         kernel: Tensor with shape (1, 3, 3)
     """
-    return torch.tensor([[[-3., 0., 3.], [-10., 0., 10.], [-3., 0., 3.]]]) / 16
+    return torch.tensor([[[-3.0, 0.0, 3.0], [-10.0, 0.0, 10.0], [-3.0, 0.0, 3.0]]]) / 16
 
 
 def gradient_map(x: torch.Tensor, kernels: torch.Tensor) -> torch.Tensor:
-    r""" Compute gradient map for a given tensor and stack of kernels.
+    r"""Compute gradient map for a given tensor and stack of kernels.
     Args:
         x: Tensor with shape (N, C, H, W).
         kernels: Stack of tensors for gradient computation with shape (k_N, k_H, k_W)
@@ -98,20 +98,23 @@ def gradient_map(x: torch.Tensor, kernels: torch.Tensor) -> torch.Tensor:
     return safe_sqrt(torch.sum(grads**2, dim=-3, keepdim=True))
 
 
-def similarity_map(map_x: torch.Tensor, map_y: torch.Tensor, constant: float, alpha: float = 0.0) -> torch.Tensor:
-    r""" Compute similarity_map between two tensors using Dice-like equation.
+def similarity_map(
+    map_x: torch.Tensor, map_y: torch.Tensor, constant: float, alpha: float = 0.0
+) -> torch.Tensor:
+    r"""Compute similarity_map between two tensors using Dice-like equation.
     Args:
         map_x: Tensor with map to be compared
         map_y: Tensor with map to be compared
         constant: Used for numerical stability
         alpha: Masking coefficient. Substracts - `alpha` * map_x * map_y from denominator and nominator
     """
-    return (2.0 * map_x * map_y - alpha * map_x * map_y + constant) / \
-           (map_x ** 2 + map_y ** 2 - alpha * map_x * map_y + constant + EPS)
+    return (2.0 * map_x * map_y - alpha * map_x * map_y + constant) / (
+        map_x**2 + map_y**2 - alpha * map_x * map_y + constant + EPS
+    )
 
 
 def ifftshift(x: torch.Tensor) -> torch.Tensor:
-    r""" Similar to np.fft.ifftshift but applies to PyTorch Tensors"""
+    r"""Similar to np.fft.ifftshift but applies to PyTorch Tensors"""
     shift = [-(ax // 2) for ax in x.size()]
     return torch.roll(x, shift, tuple(range(len(shift))))
 
@@ -134,7 +137,7 @@ def get_meshgrid(size: Tuple[int, int]) -> torch.Tensor:
     else:
         # Even
         y = torch.arange(-size[1] / 2, size[1] / 2) / size[1]
-    return torch.meshgrid(x, y, indexing='ij')
+    return torch.meshgrid(x, y, indexing="ij")
 
 
 def estimate_ggd_param(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -144,14 +147,19 @@ def estimate_ggd_param(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         x (Tensor): shape (b, 1, h, w)
     """
     gamma = torch.arange(0.2, 10 + 0.001, 0.001).to(x)
-    r_table = (torch.lgamma(1. / gamma) + torch.lgamma(3. / gamma) - 2 * torch.lgamma(2. / gamma)).exp()
+    r_table = (
+        torch.lgamma(1.0 / gamma)
+        + torch.lgamma(3.0 / gamma)
+        - 2 * torch.lgamma(2.0 / gamma)
+    ).exp()
     r_table = r_table.repeat(x.size(0), 1)
 
     sigma_sq = x.pow(2).mean(dim=(-1, -2))
     sigma = sigma_sq.sqrt().squeeze(dim=-1)
 
-    assert not torch.isclose(sigma, torch.zeros_like(sigma)).all(), \
-        'Expected image with non zero variance of pixel values'
+    assert not torch.isclose(
+        sigma, torch.zeros_like(sigma)
+    ).all(), "Expected image with non zero variance of pixel values"
 
     E = x.abs().mean(dim=(-1, -2))
     rho = sigma_sq / E**2
@@ -161,7 +169,9 @@ def estimate_ggd_param(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
     return solution, sigma
 
 
-def estimate_aggd_param(block: torch.Tensor, return_sigma=False) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+def estimate_aggd_param(
+    block: torch.Tensor, return_sigma=False
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Estimate AGGD (Asymmetric Generalized Gaussian Distribution) parameters.
     Args:
         block (Tensor): Image block with shape (b, 1, h, w).
@@ -170,7 +180,10 @@ def estimate_aggd_param(block: torch.Tensor, return_sigma=False) -> Tuple[torch.
         (Estimating the parames in Equation 7 in the paper).
     """
     gam = torch.arange(0.2, 10 + 0.001, 0.001).to(block)
-    r_gam = (2 * torch.lgamma(2. / gam) - (torch.lgamma(1. / gam) + torch.lgamma(3. / gam))).exp()
+    r_gam = (
+        2 * torch.lgamma(2.0 / gam)
+        - (torch.lgamma(1.0 / gam) + torch.lgamma(3.0 / gam))
+    ).exp()
     r_gam = r_gam.repeat(block.shape[0], 1)
 
     mask_left = block < 0
@@ -179,16 +192,26 @@ def estimate_aggd_param(block: torch.Tensor, return_sigma=False) -> Tuple[torch.
     count_right = mask_right.sum(dim=(-1, -2), dtype=torch.float32)
 
     left_std = torch.sqrt((block * mask_left).pow(2).sum(dim=(-1, -2)) / (count_left))
-    right_std = torch.sqrt((block * mask_right).pow(2).sum(dim=(-1, -2)) / (count_right))
+    right_std = torch.sqrt(
+        (block * mask_right).pow(2).sum(dim=(-1, -2)) / (count_right)
+    )
 
     gammahat = left_std / right_std
     rhat = block.abs().mean(dim=(-1, -2)).pow(2) / block.pow(2).mean(dim=(-1, -2))
-    rhatnorm = (rhat * (gammahat.pow(3) + 1) * (gammahat + 1)) / (gammahat.pow(2) + 1).pow(2)
+    rhatnorm = (rhat * (gammahat.pow(3) + 1) * (gammahat + 1)) / (
+        gammahat.pow(2) + 1
+    ).pow(2)
     array_position = (r_gam - rhatnorm).abs().argmin(dim=-1)
 
     alpha = gam[array_position]
-    beta_l = left_std.squeeze(-1) * (torch.lgamma(1 / alpha) - torch.lgamma(3 / alpha)).exp().sqrt()
-    beta_r = right_std.squeeze(-1) * (torch.lgamma(1 / alpha) - torch.lgamma(3 / alpha)).exp().sqrt()
+    beta_l = (
+        left_std.squeeze(-1)
+        * (torch.lgamma(1 / alpha) - torch.lgamma(3 / alpha)).exp().sqrt()
+    )
+    beta_r = (
+        right_std.squeeze(-1)
+        * (torch.lgamma(1 / alpha) - torch.lgamma(3 / alpha)).exp().sqrt()
+    )
 
     if return_sigma:
         return alpha, left_std.squeeze(-1), right_std.squeeze(-1)
