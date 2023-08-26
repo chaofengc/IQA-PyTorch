@@ -26,7 +26,7 @@ def get_meta_info(seed=123):
     ]
 
     official_test_list = [
-        x.strip().split()[0] + '.jpg' for x in open('../datasets/AVA_dataset/train_splits/official_test_challenges.txt')
+        x.strip().split()[0] + '.jpg' for x in open('../datasets/AVA_dataset/aesthetics_image_lists/generic_test.jpgl')
     ]
 
     save_meta_path = './datasets/meta_info/meta_info_AVADataset.csv'
