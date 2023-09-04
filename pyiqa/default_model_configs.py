@@ -268,7 +268,8 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_opts': {
             'type': 'FID',
         },
-        'metric_mode': 'NR'
+        'metric_mode': 'NR',
+        'lower_better': True,
     },
     'maniqa': {
         'metric_opts': {

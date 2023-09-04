@@ -137,7 +137,7 @@ Results are calculated with:
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
 
-| Metric Type   | Model Names                   |
+| Metric Type   | Reproduced Models |
 | ------------- | ----------------------------- |
 | FR            |                               |
 | NR            | `cnniqa`, `dbcnn`, `hyperiqa` |
