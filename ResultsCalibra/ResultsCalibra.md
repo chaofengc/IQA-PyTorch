@@ -28,7 +28,7 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | NLPD(ours imported)                                 | 0.5616                    | 0.0139           | 0.0110  | 0.3033  | 0.4335   |
 | VSI<sup>[8](#fn8)</sup>(opt)                        | 0.9139                    | 0.9620           | 0.9922  | 0.9571  | 0.9262   |
 | VSI(ours imported)                                  | 0.9244                    | 0.9497           | 0.9877  | 0.9541  | 0.9348   |
-| MAD<sup>[10](#fn10)</sup>(ours imported)            | 194.9324                  | 0.0000           | 0.0000  | 91.6206 | 181.9651 |
+| MAD<sup>[10](#fn10)</sup>(ours imported)            | 195.2796                  | 80.8379           | 30.3918  | 84.3542 | 202.2371 |
 | NIQE<sup>[11](#fn11)</sup>(org)                     | 15.7536                   | 3.6549           | 3.2355  | 3.1840  | 8.6352   |
 | NIQE(ours imported)                                 | 15.6530                   | 3.6541           | 3.2343  | 3.2076  | 9.1060   |
 | ILNIQE(org)                                         | 113.4801                  | 23.9968          | 19.9750 | 22.4493 | 56.6721  | 10s            |
