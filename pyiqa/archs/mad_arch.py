@@ -272,7 +272,7 @@ class MAD(torch.nn.Module):
         (2010): 011006.
     """
 
-    def __init__(self, channels=3, test_y_channel=True):
+    def __init__(self, channels=3, test_y_channel=False):
         super(MAD, self).__init__()
         self.channels = channels
         self.test_y_channel = test_y_channel
@@ -287,6 +287,9 @@ class MAD(torch.nn.Module):
             ref = to_y_channel(ref, 255.)
             dst = to_y_channel(dst, 255.)
             self.channels = 1
+        else:
+            ref = ref * 255
+            dst = dst * 255
 
         HI = hi_index(ref, dst)
         LO = lo_index(ref, dst)

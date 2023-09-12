@@ -144,7 +144,6 @@ DEFAULT_CONFIGS = OrderedDict({
     'mad': {
         'metric_opts': {
             'type': 'MAD',
-            'test_y_channel': True,
         },
         'metric_mode': 'FR',
         'lower_better': True,
