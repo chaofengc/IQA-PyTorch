@@ -144,6 +144,7 @@ class BRISQUE(torch.nn.Module):
         # This check might look redundant because kernel size is checked within the brisque function anyway.
         # However, this check allows to fail fast when the loss is being initialised and training has not been started.
         assert kernel_size % 2 == 1, f'Kernel size must be odd, got [{kernel_size}]'
+        assert test_y_channel, f'Only [test_y_channel=True] is supported for current BRISQUE model, which is taken directly from official codes: https://github.com/utlive/BRISQUE.'
 
         self.kernel_sigma = kernel_sigma
         self.test_y_channel = test_y_channel
