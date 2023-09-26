@@ -23,6 +23,9 @@ test:
 test_general:
 	pytest tests/test_metric_general.py::test_cpu_gpu_consistency -v
 
+test_forward:
+	pytest tests/test_metric_general.py::test_forward -v
+
 test_gradient:
 	pytest tests/test_metric_general.py::test_gradient_backward -v
 

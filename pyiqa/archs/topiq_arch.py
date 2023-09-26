@@ -21,6 +21,7 @@ from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network, random_c
 
 import copy
 from .clip_model import load
+from .topiq_swin import create_swin
 
 
 default_model_urls = {
@@ -208,7 +209,7 @@ class CFANet(nn.Module):
         # =============================================================
 
         if 'swin' in semantic_model_name:
-            self.semantic_model = timm.create_model(semantic_model_name, pretrained=backbone_pretrain, drop_path_rate=0.0)
+            self.semantic_model = create_swin(semantic_model_name, pretrained=True, drop_path_rate=0.0)
             feature_dim = self.semantic_model.num_features
             feature_dim_list = [int(self.semantic_model.embed_dim * 2 ** i) for i in range(self.semantic_model.num_layers)]
             feature_dim_list = feature_dim_list[1:] + [feature_dim]
