@@ -31,7 +31,7 @@ class CLIPScore(nn.Module):
     
     def forward(self, img, caption_list=None):
         assert caption_list is not None, f'caption_list is None'
-        text = clip.tokenize([self.prefix + ' ' + caption for caption in caption_list]).to(img.device)
+        text = clip.tokenize([self.prefix + ' ' + caption for caption in caption_list], truncate=True).to(img.device)
 
         img_features = self.clip_model.encode_image(clip_preprocess_tensor(img, self.clip_model))
         text_features = self.clip_model.encode_text(text)
