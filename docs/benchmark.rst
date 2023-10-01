@@ -1,9 +1,19 @@
 Performance Benchmark and Calibration
 ==========================================
 
+.. raw:: html
+
+    <style>
+    table {
+        width: 100%;
+        table-layout: auto;
+        overflow-x: auto;
+    }
+    </style>
+
 
 Performance Evaluation Protocol
-----------------
+----------------------------------------
 
 **We use official models for evaluation if available.** Otherwise, we use the following settings to train and evaluate different models for simplicity and consistency:
 
@@ -25,23 +35,21 @@ Basically, we use the largest existing datasets for training, and cross dataset 
 - Aesthetic IQA: ``nima``, ``nima-vgg16-ava``
 
 Performance on FR benchmarks
-----------------
+----------------------------------------
 
 .. csv-table:: FR benchmark
     :header-rows: 1
-    :widths: 10 20 20 20 20
     :file: ../tests/FR_benchmark_results.csv
 
 Performance on NR benchmarks
-----------------
+----------------------------------------
 
 .. csv-table:: NR benchmark
     :header-rows: 1
-    :widths: 5 10 10 10 10 10 10 10 
     :file: ../tests/NR_benchmark_results.csv
 
 Performance on image aesthetic benchmarks
-----------------
+----------------------------------------
 
 .. csv-table:: IAA benchmark
     :header-rows: 1
@@ -49,7 +57,7 @@ Performance on image aesthetic benchmarks
 
 
 Results Calibration
------------------
+----------------------------------------
 
 .. csv-table:: Calibration
     :header-rows: 1
