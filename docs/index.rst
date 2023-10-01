@@ -8,10 +8,14 @@ Welcome to pyiqa's documentation!
 
 .. toctree::
    :maxdepth: 2
-   
+
+   installation 
+   examples
+   ModelCard
    api_entries
    metrics_implement
    training_tools
+   Dataset_Preparation
    
 Indices and tables
 ==================
