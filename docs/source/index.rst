@@ -7,14 +7,17 @@ Welcome to pyiqa's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 3
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: API
 
-API
-=====
-.. autosummary::
-   :toctree: generated
-
+   pyiqa
+   pyiqa.archs
+   pyiqa.models
+   pyiqa.data
+   pyiqa.losses
+   pyiqa.metrics
+   pyiqa.matlab_utils
+   pyiqa.utils
 
 Indices and tables
 ==================
