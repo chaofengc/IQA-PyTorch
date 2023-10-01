@@ -14,7 +14,8 @@ Welcome to pyiqa's documentation!
    :toctree: _autosummary
    :recursive:
 
-   pyiqa
+   pyiqa.api_helpers
+   pyiqa.default_model_configs
    pyiqa.archs
    pyiqa.models
    pyiqa.data
