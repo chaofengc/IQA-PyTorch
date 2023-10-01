@@ -7,9 +7,13 @@ Welcome to pyiqa's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 3
    :caption: Contents:
 
+API
+=====
+.. autosummary::
+   :toctree: generated
 
 
 Indices and tables
