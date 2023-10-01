@@ -55,8 +55,9 @@ extensions = [
  ]
 
 # Config autoapi 
-autoapi_dirs = ['../../pyiqa/']
+autoapi_dirs = ['../pyiqa/']
 autoapi_type = "python"
+autoapi_add_toctree_entry = False
 
 autoapi_options = [
     "members",
