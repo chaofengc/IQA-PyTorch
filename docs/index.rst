@@ -6,35 +6,12 @@
 Welcome to pyiqa's documentation!
 =================================
 
-API entries 
-============
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
    
-   autoapi/pyiqa/api_helpers/index
-   autoapi/pyiqa/default_model_configs/index
-
-Metric implements
-============
-.. toctree::
-   :maxdepth: 3
-
-   autoapi/pyiqa/archs/index
-   autoapi/pyiqa/metrics/index
-   autoapi/pyiqa/matlab_utils/index
-   autoapi/pyiqa/utils/index
-
-Training tools 
-============
-.. toctree::
-   :maxdepth: 3
-   
-   autoapi/pyiqa/data/index
-   autoapi/pyiqa/losses/index
-   autoapi/pyiqa/models/index
-   autoapi/pyiqa/train/index
-   autoapi/pyiqa/train_nsplits/index
-   autoapi/pyiqa/test/index
+   api_entries
+   metrics_implement
+   training_tools
    
 Indices and tables
 ==================
