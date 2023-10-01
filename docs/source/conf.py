@@ -54,10 +54,18 @@ extensions = [
    'autoapi.extension',
  ]
 
-autosummary_generate = True  # Turn on sphinx.ext.autosummary
-
+# Config autoapi 
 autoapi_dirs = ['../../pyiqa/']
 autoapi_type = "python"
+
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "imported-members",
+]
+autodoc_typehints = "signature"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
