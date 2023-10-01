@@ -20,6 +20,7 @@ Results are calculated with:
 - **Full image single input.** We use multi-patch testing only when it is necessary for the model to work.
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
+
 - NR: ``cnniqa``, ``dbcnn``, ``hyperiqa``
 - Aesthetic IQA: ``nima``, ``nima-vgg16-ava``
 
@@ -28,6 +29,7 @@ Performance on FR benchmarks
 
 .. csv-table:: FR benchmark
     :header-rows: 1
+    :widths: 10 20 20 20 20
     :file: ../tests/FR_benchmark_results.csv
 
 Performance on NR benchmarks
@@ -35,6 +37,7 @@ Performance on NR benchmarks
 
 .. csv-table:: NR benchmark
     :header-rows: 1
+    :widths: 5 10 10 10 10 10 10 10 
     :file: ../tests/NR_benchmark_results.csv
 
 Performance on image aesthetic benchmarks
