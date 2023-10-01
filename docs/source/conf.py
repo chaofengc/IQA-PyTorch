@@ -14,8 +14,6 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
-
-from recommonmark.parser import CommonMarkParser
 sys.path.insert(0, os.path.abspath('../../pyiqa/'))
 
 # -- Project information -----------------------------------------------------
@@ -29,11 +27,6 @@ release = '0.1.7'
 
 
 # -- General configuration ---------------------------------------------------
-
-from recommonmark.parser import CommonMarkParser
-source_parsers = {
-    '.md': CommonMarkParser,
-}
 source_suffix = ['.rst', '.md']
 
 # Add any Sphinx extension module names here, as strings. They can be
