@@ -51,6 +51,7 @@ extensions = [
    'sphinx.ext.githubpages',
    'sphinx.ext.autosummary',
    'recommonmark',
+   'sphinx_markdown_tables',
    'autoapi.extension',
  ]
 

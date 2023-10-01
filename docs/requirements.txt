@@ -1,3 +1,4 @@
 recommonmark
 sphinx_rtd_theme
 sphinx-autoapi
+sphinx-markdown-tables
