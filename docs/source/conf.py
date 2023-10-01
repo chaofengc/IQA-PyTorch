@@ -27,6 +27,13 @@ release = '0.1.7'
 
 
 # -- General configuration ---------------------------------------------------
+
+# Markdown support
+from recommonmark.parser import CommonMarkParser
+source_parsers = {
+    '.md': CommonMarkParser,
+}
+
 source_suffix = ['.rst', '.md']
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -42,6 +49,7 @@ extensions = [
    'sphinx.ext.ifconfig',
    'sphinx.ext.viewcode',
    'sphinx.ext.githubpages',
+   'recommonmark',
  ]
 
 # Add any paths that contain templates here, relative to this directory.
