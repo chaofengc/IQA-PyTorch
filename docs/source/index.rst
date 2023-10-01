@@ -7,8 +7,12 @@ Welcome to pyiqa's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API
+
+.. autosummary::
+   :toctree: _autosummary
+   :recursive:
 
    pyiqa
    pyiqa.archs
