@@ -51,9 +51,13 @@ extensions = [
    'sphinx.ext.githubpages',
    'sphinx.ext.autosummary',
    'recommonmark',
+   'autoapi.extension',
  ]
 
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
+
+autoapi_dirs = ['../../pyiqa/']
+autoapi_type = "python"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

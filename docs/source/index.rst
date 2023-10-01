@@ -14,16 +14,8 @@ Welcome to pyiqa's documentation!
    :toctree: _autosummary
    :recursive:
 
-   pyiqa.api_helpers
-   pyiqa.default_model_configs
-   pyiqa.archs
-   pyiqa.models
-   pyiqa.data
-   pyiqa.losses
-   pyiqa.metrics
-   pyiqa.matlab_utils
-   pyiqa.utils
-
+   autoapi/index
+   
 Indices and tables
 ==================
 
