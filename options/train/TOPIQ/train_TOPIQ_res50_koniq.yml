@@ -1,4 +1,4 @@
-name: 001_CFANet_Res50_koniq
+name: 002_CFANet_Res50_koniq
 # name: debug_model
 model_type: GeneralIQAModel 
 num_gpu: 1  # set num_gpu: 0 for cpu mode
@@ -81,6 +81,10 @@ train:
   # losses
   mos_loss_opt:
     type: MSELoss 
+    loss_weight: !!float 1.0
+
+  metric_loss_opt:
+    type: NiNLoss 
     loss_weight: !!float 1.0
 
 # validation settings
