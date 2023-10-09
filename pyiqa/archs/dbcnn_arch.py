@@ -92,11 +92,11 @@ class SCNN(nn.Module):
 class DBCNN(nn.Module):
     """Full DBCNN network.
     Args:
-        fc (Boolean): Whether initialize the fc layers.
-        use_bn (Boolean): Whether use batch normalization.
-        pretrained_scnn_path (String): Pretrained scnn path.
-        default_mean (list): Default mean value.
-        default_std (list): Default std value.
+        - fc (Boolean): Whether initialize the fc layers.
+        - use_bn (Boolean): Whether use batch normalization.
+        - pretrained_scnn_path (String): Pretrained scnn path.
+        - default_mean (list): Default mean value.
+        - default_std (list): Default std value.
 
         """
 

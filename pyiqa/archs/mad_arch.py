@@ -264,8 +264,8 @@ def lo_index(ref, dst):
 @ARCH_REGISTRY.register()
 class MAD(torch.nn.Module):
     r"""Args:
-        channel: Number of input channel.
-        test_y_channel: bool, whether to use y channel on ycbcr which mimics official matlab code.
+        - channel: Number of input channel.
+        - test_y_channel: bool, whether to use y channel on ycbcr which mimics official matlab code.
     References:
         Larson, Eric Cooper, and Damon Michael Chandler. "Most apparent distortion: full-reference
         image quality assessment and the role of strategy." Journal of electronic imaging 19, no. 1

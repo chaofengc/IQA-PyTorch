@@ -37,11 +37,11 @@ def gmsd(
 ) -> torch.Tensor:
     r"""GMSD metric.
     Args:
-        x: A distortion tensor. Shape :math:`(N, C, H, W)`.
-        y: A reference tensor. Shape :math:`(N, C, H, W)`.
-        T: A positive constant that supplies numerical stability.
-        channels: Number of channels.
-        test_y_channel: bool, whether to use y channel on ycbcr.
+        - x: A distortion tensor. Shape :math:`(N, C, H, W)`.
+        - y: A reference tensor. Shape :math:`(N, C, H, W)`.
+        - T: A positive constant that supplies numerical stability.
+        - channels: Number of channels.
+        - test_y_channel: bool, whether to use y channel on ycbcr.
     """
     if test_y_channel:
         x = to_y_channel(x, 255)
@@ -78,8 +78,8 @@ def gmsd(
 class GMSD(nn.Module):
     r'''Gradient Magnitude Similarity Deviation Metric.
     Args:
-        channels: Number of channels.
-        test_y_channel: bool, whether to use y channel on ycbcr.
+        - channels: Number of channels.
+        - test_y_channel: bool, whether to use y channel on ycbcr.
     Reference:
         Xue, Wufeng, Lei Zhang, Xuanqin Mou, and Alan C. Bovik.
         "Gradient magnitude similarity deviation: A highly efficient

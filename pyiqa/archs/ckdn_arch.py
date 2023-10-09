@@ -290,10 +290,10 @@ class CKDN(nn.Module):
     r"""CKDN metric.
 
     Args:
-        pretrained_model_path (String):  The model path.
-        use_default_preprocess (Boolean): Whether use default preprocess, default: True.
-        default_mean (tuple): The mean value.
-        default_std (tuple): The std value.
+        - pretrained_model_path (String):  The model path.
+        - use_default_preprocess (Boolean): Whether use default preprocess, default: True.
+        - default_mean (tuple): The mean value.
+        - default_std (tuple): The std value.
 
     Reference:
         Zheng, Heliang, Huan Yang, Jianlong Fu, Zheng-Jun Zha, and Jiebo Luo.
@@ -348,8 +348,8 @@ class CKDN(nn.Module):
         r"""Compute IQA using CKDN model.
 
         Args:
-            x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
-            y: An reference tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            - x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            - y: An reference tensor with (N, C, H, W) shape. RGB channel order for colour images.
 
         Returns:
             Value of CKDN model.

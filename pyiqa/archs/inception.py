@@ -38,24 +38,24 @@ class InceptionV3(nn.Module):
         """Build pretrained InceptionV3
         Parameters
         ----------
-        output_blocks : list of int
+        - output_blocks : list of int
             Indices of blocks to return features of. Possible values are:
                 - 0: corresponds to output of first max pooling
                 - 1: corresponds to output of second max pooling
                 - 2: corresponds to output which is fed to aux classifier
                 - 3: corresponds to output of final average pooling
-        resize_input : bool
+        - resize_input : bool
             If true, bilinearly resizes input to width and height 299 before
             feeding input to model. As the network without fully connected
             layers is fully convolutional, it should be able to handle inputs
             of arbitrary size, so resizing might not be strictly needed
-        normalize_input : bool
+        - normalize_input : bool
             If true, scales the input from range (0, 1) to the range the
             pretrained Inception network expects, namely (-1, 1)
-        requires_grad : bool
+        - requires_grad : bool
             If true, parameters of the model require gradients. Possibly useful
             for finetuning the network
-        use_fid_inception : bool
+        - use_fid_inception : bool
             If true, uses the pretrained Inception model used in Tensorflow's
             FID implementation. If false, uses the pretrained Inception model
             available in torchvision. The FID Inception model has different

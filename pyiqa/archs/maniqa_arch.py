@@ -71,23 +71,23 @@ class MANIQA(nn.Module):
     Implementation of the MANIQA model for image quality assessment.
 
     Args:
-        embed_dim (int): Embedding dimension for the model. Default is 768.
-        num_outputs (int): Number of output scores. Default is 1.
-        patch_size (int): Size of patches for the model. Default is 8.
-        drop (float): Dropout rate for the model. Default is 0.1.
-        depths (list): List of depths for the Swin Transformer blocks. Default is [2, 2].
-        window_size (int): Window size for the Swin Transformer blocks. Default is 4.
-        dim_mlp (int): Dimension of the MLP for the Swin Transformer blocks. Default is 768.
-        num_heads (list): List of number of heads for the Swin Transformer blocks. Default is [4, 4].
-        img_size (int): Size of the input image. Default is 224.
-        num_tab (int): Number of TA blocks for the model. Default is 2.
-        scale (float): Scale for the Swin Transformer blocks. Default is 0.13.
-        test_sample (int): Number of test samples for the model. Default is 20.
-        pretrained (bool): Whether to use a pretrained model. Default is True.
-        pretrained_model_path (str): Path to the pretrained model. Default is None.
-        train_dataset (str): Name of the training dataset. Default is 'pipal'.
-        default_mean (torch.Tensor): Default mean for the model. Default is None.
-        default_std (torch.Tensor): Default standard deviation for the model. Default is None.
+        - embed_dim (int): Embedding dimension for the model. Default is 768.
+        - num_outputs (int): Number of output scores. Default is 1.
+        - patch_size (int): Size of patches for the model. Default is 8.
+        - drop (float): Dropout rate for the model. Default is 0.1.
+        - depths (list): List of depths for the Swin Transformer blocks. Default is [2, 2].
+        - window_size (int): Window size for the Swin Transformer blocks. Default is 4.
+        - dim_mlp (int): Dimension of the MLP for the Swin Transformer blocks. Default is 768.
+        - num_heads (list): List of number of heads for the Swin Transformer blocks. Default is [4, 4].
+        - img_size (int): Size of the input image. Default is 224.
+        - num_tab (int): Number of TA blocks for the model. Default is 2.
+        - scale (float): Scale for the Swin Transformer blocks. Default is 0.13.
+        - test_sample (int): Number of test samples for the model. Default is 20.
+        - pretrained (bool): Whether to use a pretrained model. Default is True.
+        - pretrained_model_path (str): Path to the pretrained model. Default is None.
+        - train_dataset (str): Name of the training dataset. Default is 'pipal'.
+        - default_mean (torch.Tensor): Default mean for the model. Default is None.
+        - default_std (torch.Tensor): Default standard deviation for the model. Default is None.
 
     Returns:
         torch.Tensor: Predicted quality score for the input image.

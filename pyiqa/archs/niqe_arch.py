@@ -411,11 +411,11 @@ def calculate_ilniqe(img: torch.Tensor,
 @ARCH_REGISTRY.register()
 class NIQE(torch.nn.Module):
     r"""Args:
-        channels (int): Number of processed channel.
-        test_y_channel (bool): whether to use y channel on ycbcr.
-        crop_border (int): Cropped pixels in each edge of an image. These
-            pixels are not involved in the metric calculation.
-        pretrained_model_path (str): The pretrained model path.
+        - channels (int): Number of processed channel.
+        - test_y_channel (bool): whether to use y channel on ycbcr.
+        - crop_border (int): Cropped pixels in each edge of an image. These
+        pixels are not involved in the metric calculation.
+        - pretrained_model_path (str): The pretrained model path.
     References:
         Mittal, Anish, Rajiv Soundararajan, and Alan C. Bovik.
         "Making a “completely blind” image quality analyzer."
@@ -453,11 +453,11 @@ class NIQE(torch.nn.Module):
 @ARCH_REGISTRY.register()
 class ILNIQE(torch.nn.Module):
     r"""Args:
-        channels (int): Number of processed channel.
-        test_y_channel (bool): whether to use y channel on ycbcr.
-        crop_border (int): Cropped pixels in each edge of an image. These
-            pixels are not involved in the metric calculation.
-        pretrained_model_path (str): The pretrained model path.
+        - channels (int): Number of processed channel.
+        - test_y_channel (bool): whether to use y channel on ycbcr.
+        - crop_border (int): Cropped pixels in each edge of an image. These
+        pixels are not involved in the metric calculation.
+        - pretrained_model_path (str): The pretrained model path.
     References:
         Zhang, Lin, Lei Zhang, and Alan C. Bovik. "A feature-enriched
         completely blind image quality evaluator." IEEE Transactions

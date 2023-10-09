@@ -114,8 +114,8 @@ class DISTS(torch.nn.Module):
         r"""Compute IQA using DISTS model.
 
         Args:
-            x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
-            y: An reference tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            - x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            - y: An reference tensor with (N, C, H, W) shape. RGB channel order for colour images.
 
         Returns:
             Value of DISTS model.

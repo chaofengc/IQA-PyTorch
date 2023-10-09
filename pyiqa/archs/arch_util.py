@@ -39,10 +39,10 @@ def random_crop(input_list, crop_size, crop_num):
     Randomly crops the input tensor(s) to the specified size and number of crops.
 
     Args:
-        input_list (list or tensor): List of input tensors or a single input tensor.
-        crop_size (int or tuple): Size of the crop. If an int is provided, a square crop of that size is used.
-            If a tuple is provided, a crop of that size is used.
-        crop_num (int): Number of crops to generate.
+        - input_list (list or tensor): List of input tensors or a single input tensor.
+        - crop_size (int or tuple): Size of the crop. If an int is provided, a square crop of that size is used.
+        If a tuple is provided, a crop of that size is used.
+        - crop_num (int): Number of crops to generate.
 
     Returns:
         tensor or list of tensors: If a single input tensor is provided, a tensor of cropped images is returned.
@@ -145,11 +145,11 @@ def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
     r"""Initialize network weights.
 
     Args:
-        module_list (list[nn.Module] | nn.Module): Modules to be initialized.
-        scale (float): Scale initialized weights, especially for residual
-            blocks. Default: 1.
-        bias_fill (float): The value to fill bias. Default: 0.
-        kwargs (dict): Other arguments for initialization function.
+        - module_list (list[nn.Module] | nn.Module): Modules to be initialized.
+        - scale (float): Scale initialized weights, especially for residual
+        blocks. Default: 1.
+        - bias_fill (float): The value to fill bias. Default: 0.
+        - kwargs (dict): Other arguments for initialization function.
 
     """
     if not isinstance(module_list, list):

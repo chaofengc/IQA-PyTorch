@@ -29,11 +29,11 @@ default_model_urls = {
 class HyperNet(nn.Module):
     """HyperNet Model.
     Args:
-        base_model_name (String): pretrained model to extract features,
-            can be any models supported by timm. Default: resnet50.
-        pretrained_model_path (String): Pretrained model path.
-        default_mean (list): Default mean value.
-        default_std (list): Default std value.
+        - base_model_name (String): pretrained model to extract features,
+        can be any models supported by timm. Default: resnet50.
+        - pretrained_model_path (String): Pretrained model path.
+        - default_mean (list): Default mean value.
+        - default_std (list): Default std value.
 
     Reference:
         Su, Shaolin, Qingsen Yan, Yu Zhu, Cheng Zhang, Xin Ge,

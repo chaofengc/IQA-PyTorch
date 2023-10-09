@@ -442,24 +442,24 @@ class IQT(nn.Module):
     Image Quality Transformer (IQT) model for image quality assessment.
 
     Args:
-        num_crop (int): Number of crops to take from the input image.
-        config_dataset (str): Name of the dataset to use for configuration.
-        default_mean (list): Default mean values for input normalization.
-        default_std (list): Default standard deviation values for input normalization.
-        pretrained (bool): Whether to use a pretrained model.
-        pretrained_model_path (str): Path to the pretrained model.
+        - num_crop (int): Number of crops to take from the input image.
+        - config_dataset (str): Name of the dataset to use for configuration.
+        - default_mean (list): Default mean values for input normalization.
+        - default_std (list): Default standard deviation values for input normalization.
+        - pretrained (bool): Whether to use a pretrained model.
+        - pretrained_model_path (str): Path to the pretrained model.
 
     Attributes:
-        backbone (nn.Module): Inception ResNet V2 backbone model.
-        config (Config): Configuration object for the IQT model.
-        enc_inputs (torch.Tensor): Encoded input tensor.
-        dec_inputs (torch.Tensor): Decoded input tensor.
-        regressor (IQARegression): Regression model for IQT.
-        default_mean (torch.Tensor): Default mean values for input normalization.
-        default_std (torch.Tensor): Default standard deviation values for input normalization.
-        eps (float): Epsilon value for numerical stability.
-        crops (int): Number of crops to take from the input image.
-        crop_size (int): Size of the input image crop.
+        - backbone (nn.Module): Inception ResNet V2 backbone model.
+        - config (Config): Configuration object for the IQT model.
+        - enc_inputs (torch.Tensor): Encoded input tensor.
+        - dec_inputs (torch.Tensor): Decoded input tensor.
+        - regressor (IQARegression): Regression model for IQT.
+        - default_mean (torch.Tensor): Default mean values for input normalization.
+        - default_std (torch.Tensor): Default standard deviation values for input normalization.
+        - eps (float): Epsilon value for numerical stability.
+        - crops (int): Number of crops to take from the input image.
+        - crop_size (int): Size of the input image crop.
     """
 
     def __init__(self,

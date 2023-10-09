@@ -139,32 +139,32 @@ class AHIQ(nn.Module):
     AHIQ model implementation.
 
     Args:
-        num_crop (int): Number of crops to use for testing. Default is 20.
-        crop_size (int): Size of the crops. Default is 224.
-        default_mean (list): List of mean values for normalization. Default is [0.485, 0.456, 0.406].
-        default_std (list): List of standard deviation values for normalization. Default is [0.229, 0.224, 0.225].
-        pretrained (bool): Whether to use a pretrained model. Default is True.
-        pretrained_model_path (str): Path to a pretrained model. Default is None.
+        - num_crop (int): Number of crops to use for testing. Default is 20.
+        - crop_size (int): Size of the crops. Default is 224.
+        - default_mean (list): List of mean values for normalization. Default is [0.485, 0.456, 0.406].
+        - default_std (list): List of standard deviation values for normalization. Default is [0.229, 0.224, 0.225].
+        - pretrained (bool): Whether to use a pretrained model. Default is True.
+        - pretrained_model_path (str): Path to a pretrained model. Default is None.
 
     Attributes:
-        resnet50 (nn.Module): ResNet50 backbone.
-        vit (nn.Module): Vision Transformer backbone.
-        deform_net (nn.Module): Deformable fusion network.
-        regressor (nn.Module): Pixel prediction network.
-        default_mean (torch.Tensor): Mean values for normalization.
-        default_std (torch.Tensor): Standard deviation values for normalization.
-        eps (float): Small value to avoid division by zero.
-        crops (int): Number of crops to use for testing.
+        - resnet50 (nn.Module): ResNet50 backbone.
+        - vit (nn.Module): Vision Transformer backbone.
+        - deform_net (nn.Module): Deformable fusion network.
+        - regressor (nn.Module): Pixel prediction network.
+        - default_mean (torch.Tensor): Mean values for normalization.
+        - default_std (torch.Tensor): Standard deviation values for normalization.
+        - eps (float): Small value to avoid division by zero.
+        - crops (int): Number of crops to use for testing.
         crop_size (int): Size of the crops.
 
     Methods:
-        init_saveoutput(): Initializes the SaveOutput hook to get intermediate features.
-        fix_network(model): Fixes the network by setting all parameters to not require gradients.
-        preprocess(x): Preprocesses the input tensor by normalizing it.
-        get_vit_feature(x): Gets the intermediate features from the Vision Transformer backbone.
-        get_resnet_feature(x): Gets the intermediate features from the ResNet50 backbone.
-        regress_score(dis, ref): Computes the quality score for a distorted and reference image pair.
-        forward(x, y): Computes the quality score for a batch of distorted and reference image pairs.
+        - init_saveoutput(): Initializes the SaveOutput hook to get intermediate features.
+        - fix_network(model): Fixes the network by setting all parameters to not require gradients.
+        - preprocess(x): Preprocesses the input tensor by normalizing it.
+        - get_vit_feature(x): Gets the intermediate features from the Vision Transformer backbone.
+        - get_resnet_feature(x): Gets the intermediate features from the ResNet50 backbone.
+        - regress_score(dis, ref): Computes the quality score for a distorted and reference image pair.
+        - forward(x, y): Computes the quality score for a batch of distorted and reference image pairs.
     """
 
     def __init__(
@@ -295,8 +295,8 @@ class AHIQ(nn.Module):
         Computes the quality score for a distorted and reference image pair.
 
         Args:
-            dis (torch.Tensor): The distorted image.
-            ref (torch.Tensor): The reference image.
+            - dis (torch.Tensor): The distorted image.
+            - ref (torch.Tensor): The reference image.
 
         Returns:
             torch.Tensor: The quality score.
@@ -328,8 +328,8 @@ class AHIQ(nn.Module):
         Computes the quality score for a batch of distorted and reference image pairs.
 
         Args:
-            x (torch.Tensor): The batch of distorted images.
-            y (torch.Tensor): The batch of reference images.
+            - x (torch.Tensor): The batch of distorted images.
+            - y (torch.Tensor): The batch of reference images.
 
         Returns:
             torch.Tensor: The quality scores.

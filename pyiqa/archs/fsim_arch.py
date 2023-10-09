@@ -43,22 +43,22 @@ def fsim(x: torch.Tensor,
          k: float = 2.0) -> torch.Tensor:
     r"""Compute Feature Similarity Index Measure for a batch of images.
     Args:
-        x: An input tensor. Shape :math:`(N, C, H, W)`.
-        y: A target tensor. Shape :math:`(N, C, H, W)`.
-        chromatic: Flag to compute FSIMc, which also takes into account chromatic components
-        scales: Number of wavelets used for computation of phase congruensy maps
-        orientations: Number of filter orientations used for computation of phase congruensy maps
-        min_length: Wavelength of smallest scale filter
-        mult: Scaling factor between successive filters
-        sigma_f: Ratio of the standard deviation of the Gaussian describing the log Gabor filter's
-            transfer function in the frequency domain to the filter center frequency.
-        delta_theta: Ratio of angular interval between filter orientations and the standard deviation
-            of the angular Gaussian function used to construct filters in the frequency plane.
-        k: No of standard deviations of the noise energy beyond the mean at which we set the noise
+        - x: An input tensor. Shape :math:`(N, C, H, W)`.
+        - y: A target tensor. Shape :math:`(N, C, H, W)`.
+        - chromatic: Flag to compute FSIMc, which also takes into account chromatic components
+        - scales: Number of wavelets used for computation of phase congruensy maps
+        - orientations: Number of filter orientations used for computation of phase congruensy maps
+        - min_length: Wavelength of smallest scale filter
+        - mult: Scaling factor between successive filters
+        - sigma_f: Ratio of the standard deviation of the Gaussian describing the log Gabor filter's
+        transfer function in the frequency domain to the filter center frequency.
+        - delta_theta: Ratio of angular interval between filter orientations and the standard deviation
+        of the angular Gaussian function used to construct filters in the frequency plane.
+        - k: No of standard deviations of the noise energy beyond the mean at which we set the noise
             threshold  point, below which phase congruency values get penalized.
 
     Returns:
-        Index of similarity betwen two images. Usually in [0, 1] interval.
+        - Index of similarity betwen two images. Usually in [0, 1] interval.
         Can be bigger than 1 for predicted :math:`x` images with higher contrast than the original ones.
     References:
         L. Zhang, L. Zhang, X. Mou and D. Zhang, "FSIM: A Feature Similarity Index for Image Quality Assessment,"
@@ -156,18 +156,18 @@ def _construct_filters(x: torch.Tensor,
     """Creates a stack of filters used for computation of phase congruensy maps
 
     Args:
-        x: Tensor. Shape :math:`(N, 1, H, W)`.
-        scales: Number of wavelets
-        orientations: Number of filter orientations
-        min_length: Wavelength of smallest scale filter
-        mult: Scaling factor between successive filters
-        sigma_f: Ratio of the standard deviation of the Gaussian
-            describing the log Gabor filter's transfer function
-            in the frequency domain to the filter center frequency.
-        delta_theta: Ratio of angular interval between filter orientations
-            and the standard deviation of the angular Gaussian function
-            used to construct filters in the freq. plane.
-        k: No of standard deviations of the noise energy beyond the mean
+        - x: Tensor. Shape :math:`(N, 1, H, W)`.
+        - scales: Number of wavelets
+        - orientations: Number of filter orientations
+        - min_length: Wavelength of smallest scale filter
+        - mult: Scaling factor between successive filters
+        - sigma_f: Ratio of the standard deviation of the Gaussian
+        describing the log Gabor filter's transfer function
+        in the frequency domain to the filter center frequency.
+        - delta_theta: Ratio of angular interval between filter orientations
+        and the standard deviation of the angular Gaussian function
+        used to construct filters in the freq. plane.
+        - k: No of standard deviations of the noise energy beyond the mean
             at which we set the noise threshold point, below which phase
             congruency values get penalized.
         """
@@ -392,16 +392,16 @@ def _lowpassfilter(size: Tuple[int, int], cutoff: float, n: int) -> torch.Tensor
 @ARCH_REGISTRY.register()
 class FSIM(nn.Module):
     r"""Args:
-        chromatic: Flag to compute FSIMc, which also takes into account chromatic components
-        scales: Number of wavelets used for computation of phase congruensy maps
-        orientations: Number of filter orientations used for computation of phase congruensy maps
-        min_length: Wavelength of smallest scale filter
-        mult: Scaling factor between successive filters
-        sigma_f: Ratio of the standard deviation of the Gaussian describing the log Gabor filter's
-            transfer function in the frequency domain to the filter center frequency.
-        delta_theta: Ratio of angular interval between filter orientations and the standard deviation
-            of the angular Gaussian function used to construct filters in the frequency plane.
-        k: No of standard deviations of the noise energy beyond the mean at which we set the noise
+        - chromatic: Flag to compute FSIMc, which also takes into account chromatic components
+        - scales: Number of wavelets used for computation of phase congruensy maps
+        - orientations: Number of filter orientations used for computation of phase congruensy maps
+        - min_length: Wavelength of smallest scale filter
+        - mult: Scaling factor between successive filters
+        - sigma_f: Ratio of the standard deviation of the Gaussian describing the log Gabor filter's
+        transfer function in the frequency domain to the filter center frequency.
+        - delta_theta: Ratio of angular interval between filter orientations and the standard deviation
+        of the angular Gaussian function used to construct filters in the frequency plane.
+        - k: No of standard deviations of the noise energy beyond the mean at which we set the noise
             threshold  point, below which phase congruency values get penalized.
     References:
         L. Zhang, L. Zhang, X. Mou and D. Zhang, "FSIM: A Feature Similarity Index for Image Quality Assessment,"
@@ -440,10 +440,10 @@ class FSIM(nn.Module):
     ) -> torch.Tensor:
         r"""Computation of FSIM as a loss function.
         Args:
-            x: An input tensor. Shape :math:`(N, C, H, W)`.
-            y: A target tensor. Shape :math:`(N, C, H, W)`.
+            - x: An input tensor. Shape :math:`(N, C, H, W)`.
+            - y: A target tensor. Shape :math:`(N, C, H, W)`.
         Returns:
-            Value of FSIM loss to be minimized in [0, 1] range.
+            - Value of FSIM loss to be minimized in [0, 1] range.
         """
 
         assert X.shape == Y.shape, f'Input and reference images should have the same shape, but got {X.shape} and {Y.shape}'

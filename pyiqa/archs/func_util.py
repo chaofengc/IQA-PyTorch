@@ -14,10 +14,10 @@ def preprocess_rgb(x, test_y_channel, data_range: float = 1, color_space="yiq"):
     Preprocesses an RGB image tensor.
 
     Args:
-        x (torch.Tensor): The input RGB image tensor.
-        test_y_channel (bool): Whether to test the Y channel.
-        data_range (float): The data range of the input tensor. Default is 1.
-        color_space (str): The color space of the input tensor. Default is "yiq".
+        - x (torch.Tensor): The input RGB image tensor.
+        - test_y_channel (bool): Whether to test the Y channel.
+        - data_range (float): The data range of the input tensor. Default is 1.
+        - color_space (str): The color space of the input tensor. Default is "yiq".
 
     Returns:
         torch.Tensor: The preprocessed RGB image tensor.
@@ -38,11 +38,11 @@ def extract_2d_patches(x, kernel, stride=1, dilation=1, padding="same"):
     Extracts 2D patches from a 4D tensor.
 
     Args:
-        x (torch.Tensor): Input tensor of shape (batch_size, channels, height, width).
-        kernel (int): Size of the kernel to be used for patch extraction.
-        stride (int): Stride of the kernel. Default is 1.
-        dilation (int): Dilation rate of the kernel. Default is 1.
-        padding (str): Type of padding to be applied. Can be "same" or "none". Default is "same".
+        - x (torch.Tensor): Input tensor of shape (batch_size, channels, height, width).
+        - kernel (int): Size of the kernel to be used for patch extraction.
+        - stride (int): Stride of the kernel. Default is 1.
+        - dilation (int): Dilation rate of the kernel. Default is 1.
+        - padding (str): Type of padding to be applied. Can be "same" or "none". Default is "same".
 
     Returns:
         torch.Tensor: Extracted patches tensor of shape (batch_size, num_patches, channels, kernel, kernel).

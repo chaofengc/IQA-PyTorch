@@ -30,11 +30,11 @@ def brisque(x: torch.Tensor,
     r"""Interface of BRISQUE index.
 
     Args:
-        x: An input tensor. Shape :math:`(N, C, H, W)`.
-        kernel_size: The side-length of the sliding window used in comparison. Must be an odd value.
-        kernel_sigma: Sigma of normal distribution.
-        data_range: Maximum value range of images (usually 1.0 or 255).
-        to_y_channel: Whether use the y-channel of YCBCR.
+        - x: An input tensor. Shape :math:`(N, C, H, W)`.
+        - kernel_size: The side-length of the sliding window used in comparison. Must be an odd value.
+        - kernel_sigma: Sigma of normal distribution.
+        - data_range: Maximum value range of images (usually 1.0 or 255).
+        - to_y_channel: Whether use the y-channel of YCBCR.
         pretrained_model_path: The model path.
 
     Returns:
@@ -125,11 +125,11 @@ class BRISQUE(torch.nn.Module):
     r"""Creates a criterion that measures the BRISQUE score.
 
     Args:
-        kernel_size (int): By default, the mean and covariance of a pixel is obtained
-            by convolution with given filter_size. Must be an odd value.
-        kernel_sigma (float): Standard deviation for Gaussian kernel.
-        to_y_channel (bool): Whether use the y-channel of YCBCR.
-        pretrained_model_path (str): The model path.
+        - kernel_size (int): By default, the mean and covariance of a pixel is obtained
+        by convolution with given filter_size. Must be an odd value.
+        - kernel_sigma (float): Standard deviation for Gaussian kernel.
+        - to_y_channel (bool): Whether use the y-channel of YCBCR.
+        - pretrained_model_path (str): The model path.
 
     """
 
