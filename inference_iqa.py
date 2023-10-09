@@ -3,6 +3,7 @@ import glob
 import os
 from pyiqa import create_metric
 from tqdm import tqdm
+import csv
 
 
 def main():
@@ -38,6 +39,7 @@ def main():
 
     if args.save_file:
         sf = open(args.save_file, 'w')
+        sfwriter = csv.writer(sf)
 
     avg_score = 0
     test_img_num = len(input_paths)
@@ -56,7 +58,8 @@ def main():
             pbar.set_description(f'{metric_name} of {img_name}: {score}')
             pbar.write(f'{metric_name} of {img_name}: {score}')
             if args.save_file:
-                sf.write(f'{img_name}\t{score}\n')
+                sfwriter.writerow([img_name, score])
+            
         pbar.close()
         avg_score /= test_img_num
     else:
@@ -66,7 +69,6 @@ def main():
     msg = f'Average {metric_name} score of {args.input} with {test_img_num} images is: {avg_score}'
     print(msg)
     if args.save_file:
-        sf.write(msg + '\n')
         sf.close()
 
     if args.save_file:
