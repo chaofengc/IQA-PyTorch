@@ -9,7 +9,7 @@ pyyaml
 requests
 scikit-image
 scipy
-tb-nightly
+tensorboard
 timm
 torch>=1.12
 torchvision>=0.13
