@@ -32,6 +32,7 @@ default_model_urls = {
     'cfanet_nr_spaq_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_nr_spaq_res50-a7f799ac.pth',
     'cfanet_iaa_ava_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_iaa_ava_res50-3cd62bb3.pth',
     'cfanet_iaa_ava_swin': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_iaa_ava_swin-393b41b4.pth',
+    'topiq_nr_gfiqa_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/topiq_nr_gfiqa_res50-d76bf1ae.pth',
 }
 
 
@@ -186,7 +187,7 @@ class CFANet(nn.Module):
                  pretrained_model_path=None,
                  out_act=False,
                  block_pool='weighted_avg',
-                 iaa_img_size=384,
+                 test_img_size=None,
                  default_mean=IMAGENET_DEFAULT_MEAN,
                  default_std=IMAGENET_DEFAULT_STD,
                  ):
@@ -202,7 +203,7 @@ class CFANet(nn.Module):
 
         self.num_class = num_class 
         self.block_pool = block_pool
-        self.iaa_img_size = iaa_img_size
+        self.test_img_size = test_img_size 
 
         # =============================================================
         # define semantic backbone network
@@ -357,12 +358,12 @@ class CFANet(nn.Module):
         
     def forward_cross_attention(self, x, y=None):
         
-        # resize image when testing IAA model
+        # resize image when testing 
         if not self.training:
-            if self.model_name == 'cfanet_iaa_ava_res50':
-                x = TF.resize(x, self.iaa_img_size, antialias=True)  # keep aspect ratio for CNN backbone 
-            elif self.model_name == 'cfanet_iaa_ava_swin':
+            if self.model_name == 'cfanet_iaa_ava_swin':
                 x = TF.resize(x, [384, 384], antialias=True)  # swin require square inputs
+            elif self.test_img_size is not None:
+                x = TF.resize(x, self.test_img_size, antialias=True)  
 
         x = self.preprocess(x)
         if self.use_ref:

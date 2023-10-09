@@ -401,6 +401,16 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
     },
+    'topiq_nr-face': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'resnet50',
+            'model_name': 'topiq_nr_gfiqa_res50',
+            'use_ref': False,
+            'test_img_size': 512,
+        },
+        'metric_mode': 'NR',
+    },
     'topiq_fr': {
         'metric_opts': {
             'type': 'CFANet',
@@ -440,6 +450,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'inter_dim': 512,
             'num_heads': 8,
             'num_class': 10,
+            'test_img_size': 384,
         },
         'metric_mode': 'NR',
     },

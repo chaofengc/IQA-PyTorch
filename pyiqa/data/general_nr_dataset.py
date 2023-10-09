@@ -17,7 +17,7 @@ class GeneralNRDataset(BaseIQADataset):
     def __getitem__(self, index):
 
         img_path = self.paths_mos[index][0]
-        mos_label = self.paths_mos[index][1]
+        mos_label = float(self.paths_mos[index][1])
         img_pil = Image.open(img_path).convert('RGB')
 
         img_tensor = self.trans(img_pil) * self.img_range

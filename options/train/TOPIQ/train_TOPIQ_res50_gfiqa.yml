@@ -1,0 +1,116 @@
+name: 002_CFANet_Res50_gfiqa
+# name: debug_model
+model_type: GeneralIQAModel 
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 123 
+
+define: &img_size_oneside 512 
+define: &img_size [*img_size_oneside, *img_size_oneside]
+
+define: &backbone resnet50
+
+define: &train_batch_size 16 
+define: &test_batch_size 1 
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: GFIQA 
+    type: GeneralNRDataset
+    dataroot_target: ./datasets/GFIQA/image
+    meta_info_file: ./datasets/meta_info/meta_info_GFIQADataset.csv
+    split_file: ./datasets/meta_info/gfiqa_seed123.pkl
+
+    augment:
+      hflip: true
+    img_range: 1
+
+    # data loader
+    use_shuffle: true
+    num_worker_per_gpu: 4
+    batch_size_per_gpu: *train_batch_size
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+  val:
+    name: GFIQA 
+    type: GeneralNRDataset
+    dataroot_target: ./datasets/GFIQA/image
+    meta_info_file: ./datasets/meta_info/meta_info_GFIQADataset.csv
+    split_file: ./datasets/meta_info/gfiqa_seed123.pkl
+
+
+# network structures
+network:
+  type: CFANet 
+  use_ref: false
+  pretrained: false
+  num_crop: 1 
+  num_attn_layers: 1
+  crop_size: *img_size
+  semantic_model_name: *backbone
+  block_pool: weighted_avg
+
+# path
+path:
+  strict_load_g: true
+  resume_state: ~
+
+# training settings
+train:
+  optim:
+    type: AdamW
+    lr: !!float 3e-5 
+    weight_decay: !!float 1e-5
+  
+  scheduler:
+    type: CosineAnnealingLR
+    T_max: 50 
+    eta_min: 0 
+    # type: StepLR 
+    # step_size: !!float 1e9
+    # gamma: 1.0 
+
+  total_iter: 20000 
+  total_epoch: 200
+  warmup_iter: -1  # no warm up
+  
+  # losses
+  mos_loss_opt:
+    type: MSELoss 
+    loss_weight: !!float 1.0
+
+  metric_loss_opt:
+    type: NiNLoss 
+    loss_weight: !!float 1.0
+
+# validation settings
+val:
+  val_freq: !!float 800 
+  save_img: false
+  pbar: true
+
+  key_metric: srcc # if this metric improve, update all metrics. If not specified, each best metric results will be updated separately 
+  metrics:
+    srcc: 
+      type: calculate_srcc
+
+    plcc: 
+      type: calculate_plcc
+
+# logging settings
+logger:
+  print_freq: 100
+  save_latest_freq: !!float 500 
+  log_imgs_freq: 1000
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500
+
+find_unused_parameters: True

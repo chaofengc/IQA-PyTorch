@@ -2,49 +2,53 @@
 
 ## General FR/NR Methods
 
-<table>
-<tr><td>
+List all model names with:
+```
+import pyiqa
+print(pyiqa.list_models())
+```
 
-| FR Method                | Backward           |
-| ------------------------ | ------------------ |
-| AHIQ                     | :white_check_mark: |
-| PieAPP                   | :white_check_mark: |
-| LPIPS                    | :white_check_mark: |
-| DISTS                    | :white_check_mark: |
-| WaDIQaM                  | :white_check_mark: |
-| CKDN<sup>[1](#fn1)</sup> | :white_check_mark: |
-| FSIM                     | :white_check_mark: |
-| SSIM                     | :white_check_mark: |
-| MS-SSIM                  | :white_check_mark: |
-| CW-SSIM                  | :white_check_mark: |
-| PSNR                     | :white_check_mark: |
-| VIF                      | :white_check_mark: |
-| GMSD                     | :white_check_mark: |
-| NLPD                     | :white_check_mark: |
-| VSI                      | :white_check_mark: |
-| MAD                      | :white_check_mark: |
+| FR Method                | Model names | Description
+| ------------------------ | ------------------ | ------------ |
+| TOPIQ |  `topiq_fr`, `topiq_fr-pipal` | Proposed in [this paper](https://arxiv.org/abs/2308.03060) | 
+| AHIQ                     |  `ahiq` |
+| PieAPP                   |  `pieapp` |
+| LPIPS                    |  `lpips`, `lpips-vgg`, `stlpips`, `stlpips-vgg`  |
+| DISTS                    |  `dists` |
+| WaDIQaM                  |  | *No pretrain models* |
+| CKDN<sup>[1](#fn1)</sup> |  `ckdn` |
+| FSIM                     |  `fsim` |
+| SSIM                     |  `ssim`, `ssimc` | Gray input (y channel), color input
+| MS-SSIM                  |  `ms_ssim` |
+| CW-SSIM                  |  `cw_ssim` |
+| PSNR                     |  `psnr`, `psnry` | Color input, gray input (y channel)
+| VIF                      |  `vif` |
+| GMSD                     |  `gmsd` |
+| NLPD                     |  `nlpd` |
+| VSI                      |  `vsi` |
+| MAD                      |  `mad` |
 
-</td><td>
-
-| NR Method                    | Backward                 |
-| ---------------------------- | ------------------------ |
-| FID                          | :heavy_multiplication_x: |
-| CLIPIQA(+)                   | :white_check_mark:       |
-| MANIQA                       | :white_check_mark:       |
-| MUSIQ                        | :white_check_mark:       |
-| DBCNN                        | :white_check_mark:       |
-| PaQ-2-PiQ                    | :white_check_mark:       |
-| HyperIQA                     | :white_check_mark:       |
-| NIMA                         | :white_check_mark:       |
-| WaDIQaM                      | :white_check_mark:       |
-| CNNIQA                       | :white_check_mark:       |
-| NRQM(Ma)<sup>[2](#fn2)</sup> | :heavy_multiplication_x: |
-| PI(Perceptual Index)         | :heavy_multiplication_x: |
-| BRISQUE                      | :white_check_mark:       |
-| ILNIQE                       | :white_check_mark:       |
-| NIQE                         | :white_check_mark:       |
-</tr>
-</table>
+| NR Method                    | Model names | Description |
+| ---------------------------- | ------------------------ | ------ |
+| TOPIQ | `topiq_nr`, `topiq_nr-flive`, `topiq_nr-spaq` | [TOPIQ](https://arxiv.org/abs/2308.03060) with different datasets, `koniq` by default |
+| TReS | `tres`, `tres-koniq`, `tres-flive` | TReS with different datasets, `koniq` by default |
+| FID                          | `fid` | Statistic distance between two datasets |
+| CLIPIQA(+)                   |  `clipiqa`, `clipiqa+`, `clipiqa+_vitL14_512`,`clipiqa+_rn50_512`  | CLIPIQA(+) with different backbone, RN50 by default |
+| MANIQA                       | `maniqa`, `maniqa-kadid`, `maniqa-koniq`, `maniqa-pipal` |MUSIQ with different datasets, `koniq` by default |
+| MUSIQ                        | `musiq`, `musiq-koniq`, `musiq-spaq`, `musiq-paq2piq`, `musiq-ava` | MUSIQ with different datasets, `koniq` by default |
+| DBCNN                        | `dbcnn` |
+| PaQ-2-PiQ                    | `paq2piq` |
+| HyperIQA                     |  `hyperiqa` |
+| NIMA                         |  `nima`, `nima-vgg16-ava` | Aesthetic metric trained with AVA dataset |
+| WaDIQaM                      |  | *No pretrain models*
+| CNNIQA                       |  `cnniqa` |
+| NRQM(Ma)<sup>[2](#fn2)</sup> |  `nrqm` | No backward |
+| PI(Perceptual Index)         |  `pi` | No backward |
+| BRISQUE                      | `brisque` | No backward |
+| ILNIQE                       | `ilniqe` | No backward |
+| NIQE                         | `niqe` | No backward |
+<!-- </tr>
+</table> -->
 
 <a name="fn1">[1]</a> This method use distorted image as reference. Please refer to the paper for details.<br>
 <a name="fn2">[2]</a> Currently, only naive random forest regression is implemented and **does not** support backward.
@@ -53,6 +57,7 @@
 
 | Task           | Method  | Description                                                                                                                                                                 |
 | -------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Face IQA | `topiq_face` | TOPIQ model trained with face IQA dataset (GFIQA) |
 | Underwater IQA | URanker | A ranking-based underwater image quality assessment (UIQA) method, AAAI2023, [Arxiv](https://arxiv.org/abs/2208.06857), [Github](https://github.com/RQ-Wu/UnderwaterRanker) |
 
 ## Outputs of Different Metrics 

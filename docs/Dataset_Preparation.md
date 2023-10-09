@@ -16,11 +16,12 @@
 | PieAPP     | *2AFC*      | AVA              | *Aesthetic*        |
 | KADID-10k  |             | KonIQ-10k(++)    |                    |
 | LIVEM      |             | LIVEChallange    |                    |
-| LIVE       |             |                  |                    |
-| TID2013    |             |                  |                    |
+| LIVE       |             | [PIQ2023](https://github.com/DXOMARK-Research/PIQ2023)| Portrait dataset   |
+| TID2013    |             | [GFIQA](http://database.mmsp-kn.de/gfiqa-20k-database.html)| Face IQA Dataset   |
 | TID2008    |             |                  |                    |
 | CSIQ       |             |                  |                    |
 
+Please see more details at [Awesome Image Quality Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment)
 
 ## Resources
 
