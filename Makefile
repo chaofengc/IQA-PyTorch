@@ -17,18 +17,16 @@ release:
 # lint:
 # 	flake8 pyiqa/ --count --max-line-length=127 --ignore=W293,W503,W504,E126,E741
 
+# test calibration and forward inference
 test:
 	pytest tests/ -m calibration -v
+	pytest tests/test_metric_general.py::test_forward -v  
 
 test_general:
 	pytest tests/test_metric_general.py::test_cpu_gpu_consistency -v
 
-test_forward:
-	pytest tests/test_metric_general.py::test_forward -v
-
 test_gradient:
 	pytest tests/test_metric_general.py::test_gradient_backward -v
-
 
 test_dataset:
 	pytest tests/test_datasets_general.py -v
