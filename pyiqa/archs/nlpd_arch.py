@@ -40,8 +40,8 @@ LAPLACIAN_FILTER = np.array([[0.0025, 0.0125, 0.0200, 0.0125, 0.0025], [0.0125, 
 class NLPD(nn.Module):
     r"""Normalised lapalcian pyramid distance
     Args:
-        channels: Number of channel expected to calculate.
-        test_y_channel: Boolean, whether to use y channel on ycbcr which mimics official matlab code.
+        - channels: Number of channel expected to calculate.
+        - test_y_channel: Boolean, whether to use y channel on ycbcr which mimics official matlab code.
 
     References:
         Laparra, Valero, Johannes Ballé, Alexander Berardino, and Eero P. Simoncelli.

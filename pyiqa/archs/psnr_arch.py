@@ -21,11 +21,11 @@ def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8, color_space='yiq'
     r"""Compute Peak Signal-to-Noise Ratio for a batch of images.
     Supports both greyscale and color images with RGB channel order.
     Args:
-        x: An input tensor. Shape :math:`(N, C, H, W)`.
-        y: A target tensor. Shape :math:`(N, C, H, W)`.
-        test_y_channel (Boolean): Convert RGB image to YCbCr format and computes PSNR
-            only on luminance channel if `True`. Compute on all 3 channels otherwise.
-        data_range: Maximum value range of images (default 1.0).
+        - x: An input tensor. Shape :math:`(N, C, H, W)`.
+        - y: A target tensor. Shape :math:`(N, C, H, W)`.
+        - test_y_channel (Boolean): Convert RGB image to YCbCr format and computes PSNR
+        only on luminance channel if `True`. Compute on all 3 channels otherwise.
+        - data_range: Maximum value range of images (default 1.0).
 
     Returns:
         PSNR Index of similarity betwen two images.
@@ -46,10 +46,10 @@ def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8, color_space='yiq'
 class PSNR(nn.Module):
     r"""
     Args:
-        X, Y (torch.Tensor): distorted image and reference image tensor with shape (B, 3, H, W)
-        test_y_channel (Boolean): Convert RGB image to YCbCr format and computes PSNR
+        - X, Y (torch.Tensor): distorted image and reference image tensor with shape (B, 3, H, W)
+        - test_y_channel (Boolean): Convert RGB image to YCbCr format and computes PSNR
             only on luminance channel if `True`. Compute on all 3 channels otherwise.
-        kwargs: other parameters, including
+        - kwargs: other parameters, including
             - data_range: maximun numeric value
             - eps: small constant for numeric stability
     Return:

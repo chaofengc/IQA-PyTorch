@@ -414,11 +414,11 @@ class NRQM(torch.nn.Module):
     Computer Vision and Image Understanding 158 (2017): 1-16.
 
     Args:
-        channels (int): Number of processed channel.
-        test_y_channel (Boolean): whether to use y channel on ycbcr.
-        crop_border (int): Cropped pixels in each edge of an image. These
+        - channels (int): Number of processed channel.
+        - test_y_channel (Boolean): whether to use y channel on ycbcr.
+        - crop_border (int): Cropped pixels in each edge of an image. These
             pixels are not involved in the metric calculation.
-        pretrained_model_path (String): The pretrained model path.
+        - pretrained_model_path (String): The pretrained model path.
     """
 
     def __init__(self,
@@ -460,8 +460,8 @@ class PI(torch.nn.Module):
     It is a combination of NIQE and NRQM: 1/2 * ((10 - NRQM) + NIQE)
 
     Args:
-        color_space (str): color space of y channel, default ycbcr.
-        crop_border (int): Cropped pixels in each edge of an image, default 4.
+        - color_space (str): color space of y channel, default ycbcr.
+        - crop_border (int): Cropped pixels in each edge of an image, default 4.
     """
 
     def __init__(self, crop_border=4, color_space='ycbcr'):

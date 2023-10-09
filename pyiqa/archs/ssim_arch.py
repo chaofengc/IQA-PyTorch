@@ -79,9 +79,9 @@ def ssim(X,
 @ARCH_REGISTRY.register()
 class SSIM(torch.nn.Module):
     r"""Args:
-        channel: number of channel.
-        downsample: boolean, whether to downsample same as official matlab code.
-        test_y_channel: boolean, whether to use y channel on ycbcr same as official matlab code.
+        - channel: number of channel.
+        - downsample: boolean, whether to downsample same as official matlab code.
+        - test_y_channel: boolean, whether to use y channel on ycbcr same as official matlab code.
     """
 
     def __init__(self, channels=3, downsample=False, test_y_channel=True, color_space='yiq', crop_border=0.):
@@ -209,12 +209,12 @@ class CW_SSIM(torch.nn.Module):
         IEEE Transactions on Image Processing, 18(11), 2385-401, 2009.
 
     Args:
-        channel: Number of channel.
-        test_y_channel: Boolean, whether to use y channel on ycbcr.
-        level: The number of levels to used in the complex steerable pyramid decomposition
-        ori: The number of orientations to be used in the complex steerable pyramid decomposition
-        guardb: How much is discarded from the four image boundaries.
-        K: the constant in the CWSSIM index formula (see the above reference) default value: K=0
+        - channel: Number of channel.
+        - test_y_channel: Boolean, whether to use y channel on ycbcr.
+        - level: The number of levels to used in the complex steerable pyramid decomposition
+        - ori: The number of orientations to be used in the complex steerable pyramid decomposition
+        - guardb: How much is discarded from the four image boundaries.
+        - K: the constant in the CWSSIM index formula (see the above reference) default value: K=0
     '''
 
     def __init__(self, channels=1, level=4, ori=8, guardb=0, K=0, test_y_channel=True, color_space='yiq'):
