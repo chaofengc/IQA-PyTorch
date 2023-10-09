@@ -1,5 +1,16 @@
 r"""VSI Metric.
 
+@article{zhang2014vsi,
+  title={VSI: A visual saliency-induced index for perceptual image quality assessment},
+  author={Zhang, Lin and Shen, Ying and Li, Hongyu},
+  journal={IEEE Transactions on Image processing},
+  volume={23},
+  number={10},
+  pages={4270--4281},
+  year={2014},
+  publisher={IEEE}
+}
+
 Created by: https://github.com/photosynthesis-team/piq/blob/master/piq/vsi.py
 
 Modified by: Jiadi Mo (https://github.com/JiadiMo)

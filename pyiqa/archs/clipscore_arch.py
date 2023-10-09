@@ -8,7 +8,8 @@ Reference:
     year={2021}
     }
 
-Reference code: https://github.com/jmhessel/clipscore
+Reference url: https://github.com/jmhessel/clipscore
+Re-implmented by: Chaofeng Chen (https://github.com/chaofengc) 
 """
 import torch
 import torch.nn as nn
@@ -20,6 +21,20 @@ from .arch_util import clip_preprocess_tensor
 
 @ARCH_REGISTRY.register()
 class CLIPScore(nn.Module):
+    """
+    A PyTorch module for computing image-text similarity scores using the CLIP model.
+
+    Args:
+        backbone (str): The name of the CLIP model backbone to use. Default is 'ViT-B/32'.
+
+    Attributes:
+        clip_model (CLIP): The CLIP model used for computing image and text features.
+        prefix (str): The prefix to add to each caption when computing text features.
+        w (float): The weight to apply to the similarity score.
+
+    Methods:
+        forward(img, caption_list): Computes the similarity score between the input image and a list of captions.
+    """
     def __init__(self,
                  backbone='ViT-B/32',
                  ) -> None:

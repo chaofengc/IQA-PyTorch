@@ -1,7 +1,17 @@
 r"""FSIM Metric
 
-Created by: https://github.com/photosynthesis-team/piq/blob/master/piq/fsim.py
+@article{zhang2011fsim,
+  title={FSIM: A feature similarity index for image quality assessment},
+  author={Zhang, Lin and Zhang, Lei and Mou, Xuanqin and Zhang, David},
+  journal={IEEE transactions on Image Processing},
+  volume={20},
+  number={8},
+  pages={2378--2386},
+  year={2011},
+  publisher={IEEE}
+}
 
+Created by: https://github.com/photosynthesis-team/piq/blob/master/piq/fsim.py
 Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 Refer to:

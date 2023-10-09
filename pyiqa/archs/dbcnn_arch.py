@@ -1,9 +1,12 @@
 r"""DBCNN Metric
 
-Created by: https://github.com/zwx8981/DBCNN-PyTorch/blob/master/DBCNN.py
+Reference:
+    Zhang, Weixia, et al. "Blind image quality assessment using
+    a deep bilinear convolutional neural network." IEEE Transactions
+    on Circuits and Systems for Video Technology 30.1 (2018): 36-47.
 
-Modified by: Chaofeng Chen (https://github.com/chaofengc)
-
+Ref url: https://github.com/zwx8981/DBCNN-PyTorch/blob/master/DBCNN.py
+Re-implemented by: Chaofeng Chen (https://github.com/chaofengc)
 """
 
 import torch
@@ -94,11 +97,6 @@ class DBCNN(nn.Module):
         pretrained_scnn_path (String): Pretrained scnn path.
         default_mean (list): Default mean value.
         default_std (list): Default std value.
-
-    Reference:
-        Zhang, Weixia, et al. "Blind image quality assessment using
-        a deep bilinear convolutional neural network." IEEE Transactions
-        on Circuits and Systems for Video Technology 30.1 (2018): 36-47.
 
         """
 

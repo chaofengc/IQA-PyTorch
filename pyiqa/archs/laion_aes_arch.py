@@ -42,6 +42,17 @@ class MLP(nn.Module):
 
 @ARCH_REGISTRY.register()
 class LAIONAes(nn.Module):
+    """
+    LAIONAes is a class that implements a neural network architecture for image quality assessment.
+
+    The architecture is based on the ViT-L/14 model from the OpenAI CLIP library, and uses an MLP to predict image quality scores.
+
+    Args:
+        None
+
+    Returns:
+        A tensor representing the predicted image quality scores.
+    """
     def __init__(self) -> None:
         super().__init__()
 

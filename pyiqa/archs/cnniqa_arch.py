@@ -1,10 +1,12 @@
 r"""CNNIQA Model.
 
-Created by: https://github.com/lidq92/CNNIQA
+Zheng, Heliang, Huan Yang, Jianlong Fu, Zheng-Jun Zha, and Jiebo Luo.
+"Learning conditional knowledge distillation for degraded-reference image
+quality assessment." In Proceedings of the IEEE/CVF International Conference
+on Computer Vision (ICCV), pp. 10242-10251. 2021.
 
-Modified by: Chaofeng Chen (https://github.com/chaofengc)
-
-Modification:
+Ref url: https://github.com/lidq92/CNNIQA
+Re-implemented by: Chaofeng Chen (https://github.com/chaofengc) with modification:
     - We use 3 channel RGB input.
 
 """
@@ -30,12 +32,6 @@ class CNNIQA(nn.Module):
         n1_nodes (int): Number of n1 nodes.
         n2_nodes (int): Number of n2 nodes.
         pretrained_model_path (String): Pretrained model path.
-
-    Reference:
-        Kang, Le, Peng Ye, Yi Li, and David Doermann. "Convolutional
-        neural networks for no-reference image quality assessment."
-        In Proceedings of the IEEE conference on computer vision and
-        pattern recognition, pp. 1733-1740. 2014.
 
     """
 

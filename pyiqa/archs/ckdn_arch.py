@@ -1,9 +1,10 @@
-"""CKDN model.
+"""CKDN model introduced by
 
-Created by: Chaofeng Chen (https://github.com/chaofengc)
+Zheng, Heliang, Huan Yang, Jianlong Fu, Zheng-Jun Zha, and Jiebo Luo.
+"Learning conditional knowledge distillation for degraded-reference image quality assessment." In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp. 10242-10251. 2021.
 
-Refer to:
-    https://github.com/researchmm/CKDN.
+Ref url: https://github.com/researchmm/CKDN.
+Re-implmented by: Chaofeng Chen (https://github.com/chaofengc)
 
 """
 

@@ -1,3 +1,17 @@
+r"""AHIQ metric introduced by
+
+@article{lao2022attentions,
+  title   = {Attentions Help CNNs See Better: Attention-based Hybrid Image Quality Assessment Network},
+  author  = {Lao, Shanshan and Gong, Yuan and Shi, Shuwei and Yang, Sidi and Wu, Tianhe and Wang, Jiahao and Xia, Weihao and Yang, Yujiu},
+  journal = {arXiv preprint arXiv:2204.10485},
+  year    = {2022}
+}
+
+Ref url: https://github.com/IIGROUP/AHIQ
+Re-implmented by: Chaofeng Chen (https://github.com/chaofengc)
+
+"""
+
 import timm
 import torch
 import torch.nn as nn
@@ -121,6 +135,38 @@ class Pixel_Prediction(nn.Module):
 
 @ARCH_REGISTRY.register()
 class AHIQ(nn.Module):
+    """
+    AHIQ model implementation.
+
+    Args:
+        num_crop (int): Number of crops to use for testing. Default is 20.
+        crop_size (int): Size of the crops. Default is 224.
+        default_mean (list): List of mean values for normalization. Default is [0.485, 0.456, 0.406].
+        default_std (list): List of standard deviation values for normalization. Default is [0.229, 0.224, 0.225].
+        pretrained (bool): Whether to use a pretrained model. Default is True.
+        pretrained_model_path (str): Path to a pretrained model. Default is None.
+
+    Attributes:
+        resnet50 (nn.Module): ResNet50 backbone.
+        vit (nn.Module): Vision Transformer backbone.
+        deform_net (nn.Module): Deformable fusion network.
+        regressor (nn.Module): Pixel prediction network.
+        default_mean (torch.Tensor): Mean values for normalization.
+        default_std (torch.Tensor): Standard deviation values for normalization.
+        eps (float): Small value to avoid division by zero.
+        crops (int): Number of crops to use for testing.
+        crop_size (int): Size of the crops.
+
+    Methods:
+        init_saveoutput(): Initializes the SaveOutput hook to get intermediate features.
+        fix_network(model): Fixes the network by setting all parameters to not require gradients.
+        preprocess(x): Preprocesses the input tensor by normalizing it.
+        get_vit_feature(x): Gets the intermediate features from the Vision Transformer backbone.
+        get_resnet_feature(x): Gets the intermediate features from the ResNet50 backbone.
+        regress_score(dis, ref): Computes the quality score for a distorted and reference image pair.
+        forward(x, y): Computes the quality score for a batch of distorted and reference image pairs.
+    """
+
     def __init__(
         self,
         num_crop=20,
@@ -161,6 +207,9 @@ class AHIQ(nn.Module):
         self.crop_size = crop_size
 
     def init_saveoutput(self):
+        """
+        Initializes the SaveOutput hook to get intermediate features.
+        """
         self.save_output = SaveOutput()
         hook_handles = []
         for layer in self.resnet50.modules():
@@ -173,14 +222,38 @@ class AHIQ(nn.Module):
                 hook_handles.append(handle)
 
     def fix_network(self, model):
+        """
+        Fixes the network by setting all parameters to not require gradients.
+
+        Args:
+            model (nn.Module): The model to fix.
+        """
         for p in model.parameters():
             p.requires_grad = False
 
     def preprocess(self, x):
+        """
+        Preprocesses the input tensor by normalizing it.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            torch.Tensor: The normalized tensor.
+        """
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x
 
     def get_vit_feature(self, x):
+        """
+        Gets the intermediate features from the Vision Transformer backbone.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            torch.Tensor: The intermediate features.
+        """
         self.vit(x)
         feat = torch.cat(
             (
@@ -196,6 +269,15 @@ class AHIQ(nn.Module):
         return feat
 
     def get_resnet_feature(self, x):
+        """
+        Gets the intermediate features from the ResNet50 backbone.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            torch.Tensor: The intermediate features.
+        """
         self.resnet50(x)
         feat = torch.cat(
             (
@@ -209,6 +291,16 @@ class AHIQ(nn.Module):
         return feat
 
     def regress_score(self, dis, ref):
+        """
+        Computes the quality score for a distorted and reference image pair.
+
+        Args:
+            dis (torch.Tensor): The distorted image.
+            ref (torch.Tensor): The reference image.
+
+        Returns:
+            torch.Tensor: The quality score.
+        """
         self.resnet50.eval()
         self.vit.eval()
         dis = self.preprocess(dis)
@@ -232,6 +324,16 @@ class AHIQ(nn.Module):
         return score
 
     def forward(self, x, y):
+        """
+        Computes the quality score for a batch of distorted and reference image pairs.
+
+        Args:
+            x (torch.Tensor): The batch of distorted images.
+            y (torch.Tensor): The batch of reference images.
+
+        Returns:
+            torch.Tensor: The quality scores.
+        """
         bsz = x.shape[0]
 
         if self.crops > 1 and not self.training:

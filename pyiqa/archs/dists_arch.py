@@ -1,8 +1,16 @@
-r"""DISTS metric
+r"""DISTS metric introduced in
+
+@article{ding2020iqa,
+  title={Image Quality Assessment: Unifying Structure and Texture Similarity},
+  author={Ding, Keyan and Ma, Kede and Wang, Shiqi and Simoncelli, Eero P.},
+  journal = {CoRR},
+  volume = {abs/2004.07728},
+  year={2020},
+  url = {https://arxiv.org/abs/2004.07728}
+}
 
 Created by: https://github.com/dingkeyan93/DISTS/blob/master/DISTS_pytorch/DISTS_pt.py
-
-Modified by: Jiadi Mo (https://github.com/JiadiMo)
+Re-implemented by: Jiadi Mo (https://github.com/JiadiMo)
 
 """
 

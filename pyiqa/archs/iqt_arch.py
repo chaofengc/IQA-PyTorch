@@ -1,3 +1,18 @@
+r"""IQA metric introduced by
+
+@inproceedings{cheon2021iqt,
+  title={Perceptual image quality assessment with transformers},
+  author={Cheon, Manri and Yoon, Sung-Jun and Kang, Byungyeon and Lee, Junwoo},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={433--442},
+  year={2021}
+}
+
+Ref url: https://github.com/anse3832/IQT
+Re-implmented by: Chaofeng Chen (https://github.com/chaofengc)
+
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -423,6 +438,30 @@ class Pixel_Prediction(nn.Module):
 
 @ARCH_REGISTRY.register()
 class IQT(nn.Module):
+    """
+    Image Quality Transformer (IQT) model for image quality assessment.
+
+    Args:
+        num_crop (int): Number of crops to take from the input image.
+        config_dataset (str): Name of the dataset to use for configuration.
+        default_mean (list): Default mean values for input normalization.
+        default_std (list): Default standard deviation values for input normalization.
+        pretrained (bool): Whether to use a pretrained model.
+        pretrained_model_path (str): Path to the pretrained model.
+
+    Attributes:
+        backbone (nn.Module): Inception ResNet V2 backbone model.
+        config (Config): Configuration object for the IQT model.
+        enc_inputs (torch.Tensor): Encoded input tensor.
+        dec_inputs (torch.Tensor): Decoded input tensor.
+        regressor (IQARegression): Regression model for IQT.
+        default_mean (torch.Tensor): Default mean values for input normalization.
+        default_std (torch.Tensor): Default standard deviation values for input normalization.
+        eps (float): Epsilon value for numerical stability.
+        crops (int): Number of crops to take from the input image.
+        crop_size (int): Size of the input image crop.
+    """
+
     def __init__(self,
                  num_crop=20,
                  config_dataset='live',
@@ -433,10 +472,16 @@ class IQT(nn.Module):
                  ):
         super().__init__()
 
+        # Initialize the backbone model
         self.backbone = timm.create_model('inception_resnet_v2', pretrained=True)
         self.fix_network(self.backbone)
 
+        # Define the configuration object for the IQT model
         class Config:
+            """
+            Configuration object for the IQT model.
+            """
+
             def __init__(self, dataset=config_dataset) -> None:
                 if dataset in ['live', 'csiq', 'tid']:
                     # model for PIPAL (NTIRE2021 Challenge)
@@ -475,25 +520,35 @@ class IQT(nn.Module):
         config = Config()
         self.config = config
 
+        # Register input tensors as buffers
         self.register_buffer('enc_inputs', torch.ones(1, config.n_enc_seq+1))
         self.register_buffer('dec_inputs', torch.ones(1, config.n_dec_seq+1))
         
+        # Initialize the regression model
         self.regressor = IQARegression(config)
 
-        # register hook to get intermediate features
+        # Register hook to get intermediate features
         self.init_saveoutput()
 
+        # Set default mean and standard deviation values for input normalization
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
 
+        # Load pretrained model if specified
         if pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, False, weight_keys='params')
 
+        # Set epsilon value for numerical stability
         self.eps = 1e-12
+
+        # Set number of crops and crop size
         self.crops = num_crop 
         self.crop_size = config.crop_size 
     
     def init_saveoutput(self):
+        """
+        Initialize the SaveOutput object and register hook handles for the backbone model.
+        """
         self.save_output = SaveOutput()
         hook_handles = []
         for layer in self.backbone.modules():
@@ -504,15 +559,39 @@ class IQT(nn.Module):
                 handle = layer.register_forward_hook(self.save_output)
         
     def fix_network(self, model):
+        """
+        Fix the network by setting all parameters to not require gradients.
+
+        Args:
+            model (nn.Module): The model to fix.
+        """
         for p in model.parameters():
             p.requires_grad = False    
 
     def preprocess(self, x):
+        """
+        Preprocess the input tensor by normalizing it.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            torch.Tensor: The normalized input tensor.
+        """
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x
 
     @torch.no_grad() 
     def get_backbone_feature(self, x):
+        """
+        Get the backbone features for the input tensor.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            torch.Tensor: The backbone features for the input tensor.
+        """
         self.backbone(x)
         feat = torch.cat(
             (
@@ -529,6 +608,16 @@ class IQT(nn.Module):
         return feat
     
     def regress_score(self, dis, ref):
+        """
+        Regress the score for the input image.
+
+        Args:
+            dis (torch.Tensor): The distorted image.
+            ref (torch.Tensor): The reference image.
+
+        Returns:
+            torch.Tensor: The predicted score for the input image.
+        """
         assert dis.shape[-1] == dis.shape[-2]== self.config.crop_size, f'Input shape should be {self.config.crop_size, self.config.crop_size} but got {dis.shape[2:]}'
         
         self.backbone.eval()
@@ -540,6 +629,7 @@ class IQT(nn.Module):
         feat_ref = self.get_backbone_feature(ref)
         feat_diff = feat_ref - feat_dis
 
+        return self.regressor(feat_diff)
         score = self.regressor(self.enc_inputs, feat_diff, self.dec_inputs, feat_ref)
 
         return score

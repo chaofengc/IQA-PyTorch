@@ -1,8 +1,15 @@
 r"""HyperNet Metric
 
-Created by: https://github.com/SSL92/hyperIQA
+@InProceedings{hyperiqa,
+    author = {Su, Shaolin and Yan, Qingsen and Zhu, Yu and Zhang, Cheng and Ge, Xin and Sun, Jinqiu and Zhang, Yanning},
+    title = {Blindly Assess Image Quality in the Wild Guided by a Self-Adaptive Hyper Network},
+    booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month = {June},
+    year = {2020}
+}
 
-Modified by: Chaofeng Chen (https://github.com/chaofengc)
+Ref url: https://github.com/SSL92/hyperIQA
+Re-implemented by: Chaofeng Chen (https://github.com/chaofengc)
 
 """
 

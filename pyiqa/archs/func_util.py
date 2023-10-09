@@ -9,7 +9,19 @@ from pyiqa.matlab_utils import fspecial, imfilter, exact_padding_2d
 EPS = torch.finfo(torch.float32).eps
 
 
-def preprocess_rgb(x, test_y_channel, data_range: int = 1, color_space="yiq"):
+def preprocess_rgb(x, test_y_channel, data_range: float = 1, color_space="yiq"):
+    """
+    Preprocesses an RGB image tensor.
+
+    Args:
+        x (torch.Tensor): The input RGB image tensor.
+        test_y_channel (bool): Whether to test the Y channel.
+        data_range (float): The data range of the input tensor. Default is 1.
+        color_space (str): The color space of the input tensor. Default is "yiq".
+
+    Returns:
+        torch.Tensor: The preprocessed RGB image tensor.
+    """
     if test_y_channel and x.shape[1] == 3:
         x = to_y_channel(x, data_range, color_space)
     else:
@@ -23,7 +35,17 @@ def preprocess_rgb(x, test_y_channel, data_range: int = 1, color_space="yiq"):
 
 def extract_2d_patches(x, kernel, stride=1, dilation=1, padding="same"):
     """
-    Ref: https://stackoverflow.com/a/65886666
+    Extracts 2D patches from a 4D tensor.
+
+    Args:
+        x (torch.Tensor): Input tensor of shape (batch_size, channels, height, width).
+        kernel (int): Size of the kernel to be used for patch extraction.
+        stride (int): Stride of the kernel. Default is 1.
+        dilation (int): Dilation rate of the kernel. Default is 1.
+        padding (str): Type of padding to be applied. Can be "same" or "none". Default is "same".
+
+    Returns:
+        torch.Tensor: Extracted patches tensor of shape (batch_size, num_patches, channels, kernel, kernel).
     """
     b, c, h, w = x.shape
     if padding != "none":

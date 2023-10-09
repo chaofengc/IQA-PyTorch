@@ -38,7 +38,6 @@ class AdaptiveConcatPool2d(nn.Module):
 
 @ARCH_REGISTRY.register()
 class PAQ2PIQ(nn.Module):
-
     def __init__(self, backbone='resnet18', pretrained=True, pretrained_model_path=None):
         super(PAQ2PIQ, self).__init__()
 

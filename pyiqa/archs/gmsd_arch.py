@@ -1,5 +1,16 @@
 r"""GMSD Metric
 
+@article{xue2013gmsd,
+  title={Gradient magnitude similarity deviation: A highly efficient perceptual image quality index},
+  author={Xue, Wufeng and Zhang, Lei and Mou, Xuanqin and Bovik, Alan C},
+  journal={IEEE transactions on image processing},
+  volume={23},
+  number={2},
+  pages={684--695},
+  year={2013},
+  publisher={IEEE}
+}
+
 Created by: https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/GMSD.py
 
 Modified by: Jiadi Mo (https://github.com/JiadiMo)

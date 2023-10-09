@@ -67,6 +67,31 @@ class SaveOutput:
 
 @ARCH_REGISTRY.register()
 class MANIQA(nn.Module):
+    """
+    Implementation of the MANIQA model for image quality assessment.
+
+    Args:
+        embed_dim (int): Embedding dimension for the model. Default is 768.
+        num_outputs (int): Number of output scores. Default is 1.
+        patch_size (int): Size of patches for the model. Default is 8.
+        drop (float): Dropout rate for the model. Default is 0.1.
+        depths (list): List of depths for the Swin Transformer blocks. Default is [2, 2].
+        window_size (int): Window size for the Swin Transformer blocks. Default is 4.
+        dim_mlp (int): Dimension of the MLP for the Swin Transformer blocks. Default is 768.
+        num_heads (list): List of number of heads for the Swin Transformer blocks. Default is [4, 4].
+        img_size (int): Size of the input image. Default is 224.
+        num_tab (int): Number of TA blocks for the model. Default is 2.
+        scale (float): Scale for the Swin Transformer blocks. Default is 0.13.
+        test_sample (int): Number of test samples for the model. Default is 20.
+        pretrained (bool): Whether to use a pretrained model. Default is True.
+        pretrained_model_path (str): Path to the pretrained model. Default is None.
+        train_dataset (str): Name of the training dataset. Default is 'pipal'.
+        default_mean (torch.Tensor): Default mean for the model. Default is None.
+        default_std (torch.Tensor): Default standard deviation for the model. Default is None.
+
+    Returns:
+        torch.Tensor: Predicted quality score for the input image.
+    """
     def __init__(self, embed_dim=768, num_outputs=1, patch_size=8, drop=0.1,
                  depths=[2, 2], window_size=4, dim_mlp=768, num_heads=[4, 4],
                  img_size=224, num_tab=2, scale=0.13, test_sample=20,
@@ -156,7 +181,15 @@ class MANIQA(nn.Module):
         return x
 
     def forward(self, x):
+        """
+        Forward pass of the MANIQA model.
 
+        Args:
+            x (torch.Tensor): Input image tensor.
+
+        Returns:
+            torch.Tensor: Predicted quality score for the input image.
+        """
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         bsz = x.shape[0]
 

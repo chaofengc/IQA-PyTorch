@@ -1,5 +1,16 @@
 r"""NLPD Metric
 
+@article{laparra2016nlpd,
+  title={Perceptual image quality assessment using a normalized Laplacian pyramid},
+  author={Laparra, Valero and Ball{\'e}, Johannes and Berardino, Alexander and Simoncelli, Eero P},
+  journal={Electronic Imaging},
+  volume={2016},
+  number={16},
+  pages={1--6},
+  year={2016},
+  publisher={Society for Imaging Science and Technology}
+}
+
 Created by: https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/NLPD.py
 
 Modified by: Jiadi Mo (https://github.com/JiadiMo)

@@ -1,9 +1,12 @@
 r"""MUSIQ model.
 
-Implemented by: Chaofeng Chen (https://github.com/chaofengc)
+Reference:
+        Ke, Junjie, Qifei Wang, Yilin Wang, Peyman Milanfar, and Feng Yang.
+        "Musiq: Multi-scale image quality transformer." In Proceedings of the
+        IEEE/CVF International Conference on Computer Vision (ICCV), pp. 5148-5157. 2021.
 
-Refer to:
-    Official code from: https://github.com/google-research/google-research/tree/master/musiq
+Ref url: https://github.com/google-research/google-research/tree/master/musiq
+Re-implemented by: Chaofeng Chen (https://github.com/chaofengc)
 
 """
 
@@ -265,15 +268,39 @@ class TransformerEncoder(nn.Module):
 
 @ARCH_REGISTRY.register()
 class MUSIQ(nn.Module):
-    r"""
+    """
+    MUSIQ model architecture.
 
-    Evaluation:
-        - n_crops: currently only test with 1 crop evaluation
+    Args:
+        patch_size (int): Size of the patches to extract from the images.
+        num_class (int): Number of classes to predict.
+        hidden_size (int): Size of the hidden layer in the transformer encoder.
+        mlp_dim (int): Size of the feedforward layer in the transformer encoder.
+        attention_dropout_rate (float): Dropout rate for the attention layer in the transformer encoder.
+        dropout_rate (float): Dropout rate for the transformer encoder.
+        num_heads (int): Number of attention heads in the transformer encoder.
+        num_layers (int): Number of layers in the transformer encoder.
+        num_scales (int): Number of scales to use in the transformer encoder.
+        spatial_pos_grid_size (int): Size of the spatial position grid in the transformer encoder.
+        use_scale_emb (bool): Whether to use scale embeddings in the transformer encoder.
+        use_sinusoid_pos_emb (bool): Whether to use sinusoidal position embeddings in the transformer encoder.
+        pretrained (bool or str): Whether to use a pretrained model. If str, specifies the path to the pretrained model.
+        pretrained_model_path (str): Path to the pretrained model.
+        longer_side_lengths (list): List of longer side lengths to use for multiscale evaluation.
+        max_seq_len_from_original_res (int): Maximum sequence length to use for multiscale evaluation.
 
-    Reference:
-        Ke, Junjie, Qifei Wang, Yilin Wang, Peyman Milanfar, and Feng Yang.
-        "Musiq: Multi-scale image quality transformer." In Proceedings of the
-        IEEE/CVF International Conference on Computer Vision (ICCV), pp. 5148-5157. 2021.
+    Attributes:
+        conv_root (StdConv): Convolutional layer for the root of the network.
+        gn_root (nn.GroupNorm): Group normalization layer for the root of the network.
+        root_pool (nn.Sequential): Max pooling layer for the root of the network.
+        block1 (Bottleneck): First bottleneck block in the network.
+        embedding (nn.Linear): Linear layer for the transformer encoder input.
+        transformer_encoder (TransformerEncoder): Transformer encoder.
+        head (nn.Sequential or nn.Linear): Output layer of the network.
+
+    Methods:
+        forward(x, return_mos=True, return_dist=False): Forward pass of the network.
+
     """
 
     def __init__(
@@ -344,6 +371,18 @@ class MUSIQ(nn.Module):
             load_pretrained_network(self, pretrained_model_path, True)
 
     def forward(self, x, return_mos=True, return_dist=False):
+        """
+        Forward pass of the MUSIQ network.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+            return_mos (bool): Whether to return the mean opinion score (MOS).
+            return_dist (bool): Whether to return the predicted distribution.
+
+        Returns:
+            torch.Tensor or tuple: If only one of return_mos and return_dist is True, returns a tensor. If both are True, returns a tuple of tensors.
+
+        """
 
         # normalize inputs to [-1, 1] as the official code
         if not self.training:

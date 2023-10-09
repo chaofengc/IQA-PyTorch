@@ -38,7 +38,21 @@ class CompactLinear(nn.Module):
 
 @ARCH_REGISTRY.register()
 class PieAPP(nn.Module):
-
+    r"""
+    PieAPP model implementation.
+    
+    Args:
+        patch_size (int): Size of the patches to extract from the images.
+        stride (int): Stride to use when extracting patches.
+        pretrained (bool): Whether to use a pretrained model or not.
+        pretrained_model_path (str): Path to the pretrained model.
+    
+    Methods:
+        flatten(matrix): Takes NxCxHxW input and outputs NxHWC.
+        compute_features(input): Computes the features of the input image.
+        preprocess(x): Preprocesses the input image.
+        forward(dist, ref): Computes the PieAPP score between the distorted and reference images.
+    """
     def __init__(self, patch_size=64, stride=27, pretrained=True, pretrained_model_path=None):
         super(PieAPP, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, 3, padding=1)

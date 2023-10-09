@@ -1,5 +1,16 @@
 r"""VIF Metric
 
+@article{sheikh2006vif,
+  title={Image information and visual quality},
+  author={Sheikh, Hamid R and Bovik, Alan C},
+  journal={IEEE Transactions on image processing},
+  volume={15},
+  number={2},
+  pages={430--444},
+  year={2006},
+  publisher={IEEE}
+}
+
 Created by: https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/VIF.py
 
 Modified by: Jiadi Mo (https://github.com/JiadiMo)
