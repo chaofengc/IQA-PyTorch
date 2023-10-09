@@ -57,7 +57,7 @@ print(pyiqa.list_models())
 
 | Task           | Method  | Description                                                                                                                                                                 |
 | -------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Face IQA | `topiq_face` | TOPIQ model trained with face IQA dataset (GFIQA) |
+| Face IQA | `topiq_nr-face` | TOPIQ model trained with face IQA dataset (GFIQA) |
 | Underwater IQA | `uranker` | A ranking-based underwater image quality assessment (UIQA) method, AAAI2023, [Arxiv](https://arxiv.org/abs/2208.06857), [Github](https://github.com/RQ-Wu/UnderwaterRanker) |
 
 ## Outputs of Different Metrics 
