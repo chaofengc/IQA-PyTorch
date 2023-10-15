@@ -60,7 +60,9 @@ class BaseIQADataset(data.Dataset):
             assert mos_range is not None and mos_lower_better is not None, 'mos_range and mos_lower_better should be provided when mos_normalize is True'
 
             def normalize(mos_label):
+                print(mos_label)
                 mos_label = (mos_label - mos_range[0]) / (mos_range[1] - mos_range[0])
+                print(mos_label)
                 # convert to higher better if lower better is true
                 if mos_lower_better:
                     mos_label = 1 - mos_label
@@ -68,6 +70,7 @@ class BaseIQADataset(data.Dataset):
 
             for item in self.paths_mos:
                 item[1] = normalize(float(item[1]))
+                break
             self.logger.info(f'mos_label is normalized from {mos_range}, lower_better[{mos_lower_better}] to [0, 1], lower_better[False(higher better)].')
 
     def get_transforms(self, opt):
