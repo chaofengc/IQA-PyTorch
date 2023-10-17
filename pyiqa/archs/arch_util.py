@@ -85,7 +85,6 @@ def clip_preprocess_tensor(x: torch.Tensor, model):
     NOTE: Results are slightly different with original preprocess function with PIL image input, because of differences in resize function.
     """
     # Bicubic interpolation
-    x = (x * 255).byte()
     x = T.functional.resize(
         x,
         model.visual.input_resolution,
@@ -94,7 +93,6 @@ def clip_preprocess_tensor(x: torch.Tensor, model):
     )
     # Center crop
     x = T.functional.center_crop(x, model.visual.input_resolution)
-    x = x.float() / 255.0
     x = T.functional.normalize(x, OPENAI_CLIP_MEAN, OPENAI_CLIP_STD)
     return x
 
