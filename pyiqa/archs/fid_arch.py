@@ -301,7 +301,7 @@ class FID(nn.Module):
 
         # compute fid of a folder
         elif fdir1 is not None and fdir2 is None:
-            assert dataset_name is not None, "The reference dataset_name should be specified to calcualte fid score."
+            assert dataset_name is not None, "When fdir2 is not provided, the reference dataset_name should be specified to calcualte fid score."
             if verbose:
                 print(f"compute FID of a folder with {dataset_name}-{mode}-{dataset_split}-{dataset_res} statistics")
             fbname1 = os.path.basename(fdir1)
