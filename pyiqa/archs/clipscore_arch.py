@@ -37,12 +37,14 @@ class CLIPScore(nn.Module):
     """
     def __init__(self,
                  backbone='ViT-B/32',
+                 w = 2.5,
+                 prefix = 'A photo depicts'
                  ) -> None:
         super().__init__()
 
         self.clip_model, _ = clip.load(backbone)
-        self.prefix = 'A photo depicts'
-        self.w = 2.5
+        self.prefix = prefix
+        self.w = w 
     
     def forward(self, img, caption_list=None):
         assert caption_list is not None, f'caption_list is None'
