@@ -83,6 +83,11 @@ class ResizeDataset(torch.utils.data.Dataset):
         else:
             img_np = np.array(img_pil).clip(0, 255)
             img_t = self.transforms(img_np)
+            img_t = nn.functional.interpolate(img_t.unsqueeze(0),
+                              size=self.size,
+                              mode='bilinear',
+                              align_corners=False)
+            img_t = img_t.squeeze(0)
 
         return img_t
 
@@ -213,14 +218,14 @@ def get_folder_features(fdir, model=None, num_workers=12,
         pbar = dataloader
 
     if mode == 'clean':
-        resize_input = normalize_input = False
+        normalize_input = False
     else:
-        resize_input = normalize_input = True
+        normalize_input = True
 
     l_feats = []
     with torch.no_grad():
         for batch in pbar:
-            feat = model(batch.to(device), resize_input, normalize_input)
+            feat = model(batch.to(device), False, normalize_input)
             feat = feat[0].squeeze(-1).squeeze(-1).detach().cpu().numpy()
             l_feats.append(feat)
     np_feats = np.concatenate(l_feats)
