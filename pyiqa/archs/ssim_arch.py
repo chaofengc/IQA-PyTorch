@@ -252,8 +252,8 @@ class CW_SSIM(torch.nn.Module):
         """
         # Whether calculate on y channel of ycbcr
         if test_y_channel and x.shape[1] == 3:
-            x = to_y_channel(x, 255, self.color_space).to(torch.float64)
-            y = to_y_channel(y, 255, self.color_space).to(torch.float64)
+            x = to_y_channel(x, 255, self.color_space)
+            y = to_y_channel(y, 255, self.color_space)
 
         pyr = SCFpyr_PyTorch(height=self.level, nbands=self.ori, scale_factor=2, device=x.device)
         cw_x = pyr.build(x)
@@ -292,5 +292,5 @@ class CW_SSIM(torch.nn.Module):
             Value of CW-SSIM metric in [0, 1] range.
         """
         assert X.shape == Y.shape, f'Input {X.shape} and reference images should have the same shape'
-        score = self.cw_ssim(X, Y, self.test_y_channel)
+        score = self.cw_ssim(X.to(torch.float64), Y.to(torch.float64), self.test_y_channel)
         return score
