@@ -101,8 +101,8 @@ class SSIM(torch.nn.Module):
             X = X[..., crop_border:-crop_border, crop_border:-crop_border]
             Y = Y[..., crop_border:-crop_border, crop_border:-crop_border]
         
-        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space)
-        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space) 
+        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space).to(torch.float64)
+        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space).to(torch.float64)
 
         score = ssim(X, Y, data_range=self.data_range, downsample=self.downsample)
         return score
@@ -187,8 +187,8 @@ class MS_SSIM(torch.nn.Module):
         assert X.shape == Y.shape, 'Input and reference images should have the same shape, but got'
         f'{X.shape} and {Y.shape}'
 
-        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space)
-        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space) 
+        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space).to(torch.float64)
+        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space).to(torch.float64)
 
         score = ms_ssim(
             X, Y,
@@ -252,8 +252,8 @@ class CW_SSIM(torch.nn.Module):
         """
         # Whether calculate on y channel of ycbcr
         if test_y_channel and x.shape[1] == 3:
-            x = to_y_channel(x, 255, self.color_space)
-            y = to_y_channel(y, 255, self.color_space)
+            x = to_y_channel(x, 255, self.color_space).to(torch.float64)
+            y = to_y_channel(y, 255, self.color_space).to(torch.float64)
 
         pyr = SCFpyr_PyTorch(height=self.level, nbands=self.ori, scale_factor=2, device=x.device)
         cw_x = pyr.build(x)
