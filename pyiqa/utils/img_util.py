@@ -26,7 +26,7 @@ def imread2tensor(img_source, rgb=False):
     elif type(img_source) == str:
         assert is_image_file(img_source), f'{img_source} is not a valid image file.'
         img = Image.open(img_source)
-    elif type(img_source) == Image.Image:
+    elif isinstance(img_source, Image.Image):
         img = img_source
     else:
         raise Exception("Unsupported source type")
