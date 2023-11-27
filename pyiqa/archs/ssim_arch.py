@@ -101,8 +101,8 @@ class SSIM(torch.nn.Module):
             X = X[..., crop_border:-crop_border, crop_border:-crop_border]
             Y = Y[..., crop_border:-crop_border, crop_border:-crop_border]
         
-        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space)
-        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space) 
+        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space).to(torch.float64)
+        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space).to(torch.float64)
 
         score = ssim(X, Y, data_range=self.data_range, downsample=self.downsample)
         return score
@@ -187,8 +187,8 @@ class MS_SSIM(torch.nn.Module):
         assert X.shape == Y.shape, 'Input and reference images should have the same shape, but got'
         f'{X.shape} and {Y.shape}'
 
-        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space)
-        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space) 
+        X = preprocess_rgb(X, self.test_y_channel, self.data_range, self.color_space).to(torch.float64)
+        Y = preprocess_rgb(Y, self.test_y_channel, self.data_range, self.color_space).to(torch.float64)
 
         score = ms_ssim(
             X, Y,
@@ -292,5 +292,5 @@ class CW_SSIM(torch.nn.Module):
             Value of CW-SSIM metric in [0, 1] range.
         """
         assert X.shape == Y.shape, f'Input {X.shape} and reference images should have the same shape'
-        score = self.cw_ssim(X, Y, self.test_y_channel)
+        score = self.cw_ssim(X.to(torch.float64), Y.to(torch.float64), self.test_y_channel)
         return score
