@@ -163,8 +163,9 @@ class MANIQA(nn.Module):
             nn.Sigmoid()
         )
 
-        self.default_mean = torch.Tensor(IMAGENET_INCEPTION_MEAN).view(1, 3, 1, 1)
-        self.default_std = torch.Tensor(IMAGENET_INCEPTION_STD).view(1, 3, 1, 1)
+        if default_mean is None and default_std is None:
+            self.default_mean = torch.Tensor(IMAGENET_INCEPTION_MEAN).view(1, 3, 1, 1)
+            self.default_std = torch.Tensor(IMAGENET_INCEPTION_STD).view(1, 3, 1, 1)
 
         if pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')

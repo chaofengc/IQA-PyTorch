@@ -274,6 +274,7 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_opts': {
             'type': 'MANIQA',
             'train_dataset': 'koniq',
+            'scale': 0.8,
         },
         'metric_mode': 'NR',
     },
@@ -281,6 +282,7 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_opts': {
             'type': 'MANIQA',
             'train_dataset': 'koniq',
+            'scale': 0.8,
         },
         'metric_mode': 'NR',
     },
@@ -295,6 +297,7 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_opts': {
             'type': 'MANIQA',
             'train_dataset': 'kadid',
+            'scale': 0.8,
         },
         'metric_mode': 'NR',
     },

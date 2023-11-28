@@ -4,6 +4,7 @@ from collections import OrderedDict
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.img_util import imread2tensor
+from pyiqa.utils import set_random_seed
 
 from pyiqa.losses.loss_util import weight_reduce_loss
 
@@ -18,6 +19,7 @@ class InferenceModel(torch.nn.Module):
             loss_weight=None,
             loss_reduction='mean',
             device=None,
+            seed=123,
             **kwargs  # Other metric options
     ):
         super(InferenceModel, self).__init__()
@@ -53,6 +55,7 @@ class InferenceModel(torch.nn.Module):
         self.net = ARCH_REGISTRY.get(network_type)(**net_opts)
         self.net = self.net.to(self.device)
         self.net.eval()
+        set_random_seed(seed)
 
     def to(self, device):
         self.net.to(device)
