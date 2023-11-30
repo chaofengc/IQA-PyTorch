@@ -78,6 +78,7 @@ class InferenceModel(torch.nn.Module):
                         ref = ref.unsqueeze(0)
 
                 if self.metric_mode == 'FR':
+                    assert ref is not None, 'Please specify reference image for Full Reference metric'
                     output = self.net(target.to(self.device), ref.to(self.device), **kwargs)
                 elif self.metric_mode == 'NR':
                     output = self.net(target.to(self.device), **kwargs)

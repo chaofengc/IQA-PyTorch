@@ -83,7 +83,7 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 # create metric with default setting
 iqa_metric = pyiqa.create_metric('lpips', device=device)
 # Note that gradient propagation is disabled by default. set as_loss=True to enable it as a loss function.
-iqa_loss = pyiqa.create_metric('lpips', device=device, as_loss=True)
+# iqa_loss = pyiqa.create_metric('lpips', device=device, as_loss=True)
 
 # create metric with custom setting
 iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True, color_space='ycbcr').to(device)
@@ -94,7 +94,6 @@ print(iqa_metric.lower_better)
 # example for iqa score inference
 # Tensor inputs, img_tensor_x/y: (N, 3, H, W), RGB, 0 ~ 1
 score_fr = iqa_metric(img_tensor_x, img_tensor_y)
-score_nr = iqa_metric(img_tensor_x)
 
 # img path as inputs.
 score_fr = iqa_metric('./ResultsCalibra/dist_dir/I03.bmp', './ResultsCalibra/ref_dir/I03.bmp')
