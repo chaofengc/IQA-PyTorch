@@ -57,12 +57,10 @@ class InferenceModel(torch.nn.Module):
         self.net.eval()
         set_random_seed(seed)
 
-    def to(self, device):
-        self.net.to(device)
-        self.device = torch.device(device)
-        return self
-
+        self.dummy_param = torch.nn.Parameter(torch.empty(0))
+    
     def forward(self, target, ref=None, **kwargs):
+        self.device = self.dummy_param.device
 
         with torch.set_grad_enabled(self.as_loss):
 
