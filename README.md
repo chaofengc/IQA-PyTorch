@@ -9,9 +9,9 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/chaofengc/Awesome-Image-Quality-Assessment)
 [![Citation](https://img.shields.io/badge/Citation-bibtex-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/README.md#bookmark_tabs-citation)
 
-![demo](docs/demo.gif)
+<!-- ![demo](docs/demo.gif) -->
 
-- [:open\_book: Introduction](#open_book-introduction)
+<!-- - [:open\_book: Introduction](#open_book-introduction)
 - [:zap: Quick Start](#zap-quick-start)
   - [Dependencies and Installation](#dependencies-and-installation)
   - [Basic Usage](#basic-usage)
@@ -21,7 +21,7 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
   - [Benchmark Performance with Provided Script](#benchmark-performance-with-provided-script)
 - [:hammer\_and\_wrench: Train](#hammer_and_wrench-train)
   - [Dataset Preparation](#dataset-preparation)
-  - [Example Train Script](#example-trai-script)
+  - [Example Train Script](#example-trai-script) -->
  
 ## :open_book: Introduction
 
@@ -29,7 +29,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 
 <div align="center">
 
-📦 [Model Cards](docs/ModelCard.md)  |  🗃️ [Dataset Cards](docs/Dataset_Preparation.md) | 🤗 [Datasets](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets) | 📚 [Documentation](https://iqa-pytorch.readthedocs.io/en/latest/) 
+📦 [Model Cards](docs/ModelCard.md)  |  🗃️ [Dataset Cards](docs/Dataset_Preparation.md) | 🤗 [Datasets](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets/tree/main) | 📚 [Documentation](https://iqa-pytorch.readthedocs.io/en/latest/) 
 
 </div>
 
