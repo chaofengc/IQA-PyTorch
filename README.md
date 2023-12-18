@@ -122,6 +122,27 @@ python inference_iqa.py -m brisque -i ./ResultsCalibra/dist_dir/I03.bmp
 
 Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to verify the correctness of the python implementations compared with official scripts in matlab or python.
 
+### ⏬ Download Benchmark Datasets
+
+For convenience, we upload all related datasets to [huggingface](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets/tree/main). **Note that we only collect the datasets for academic, research, and educational purposes. It is important for the users to adhere to the usage guidelines, licensing terms, and conditions set forth by the original creators or owners of each dataset.** Here are examples codes to download datasets from huggingface:
+
+```
+import os, glob
+from huggingface_hub import snapshot_download
+
+save_dir = './datasets'
+
+os.makedirs(save_dir, exist_ok=True)
+
+filename = "meta_info.tgz"
+
+snapshot_download("chaofengc/IQA-Toolbox-Datasets", repo_type="dataset", local_dir=save_dir, allow_patterns=filename, local_dir_use_symlinks=False)
+
+os.system(f"tar -xzvf {save_dir}/{filename} -C {save_dir}")
+```
+
+Examples to specific dataset options can be found in `./options/default_dataset_opt.yml`. Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md)
+
 ### Performance Evaluation Protocol
 
 **We use official models for evaluation if available.** Otherwise, we use the following settings to train and evaluate different models for simplicity and consistency:
@@ -169,25 +190,7 @@ python benchmark_results.py --metric_opt options/example_benchmark_metric_opts.y
 
 ## :hammer_and_wrench: Train
 
-### Dataset Preparation
 
-- You only need to unzip downloaded datasets from official website without any extra operation. And then make soft links of these dataset folder under `datasets/` folder. Download links are provided in [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment).
-- We provide common interface to load these datasets with the prepared meta information files and train/val/test split files, which can be downloaded from [download_link](https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/meta_info.tgz) and extract them to `datasets/` folder.
-
-You may also use the following commands:
-
-```
-mkdir datasets && cd datasets
-
-# make soft links of your dataset
-ln -sf your/dataset/path datasetname
-
-# download meta info files and train split files
-wget https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/meta_info.tgz
-tar -xvf data_info_files.tgz
-```
-
-Examples to specific dataset options can be found in `./options/default_dataset_opt.yml`. Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md)
 
 ### Example Train Script
 

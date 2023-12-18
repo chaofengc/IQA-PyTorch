@@ -65,7 +65,7 @@ class AVADataset(BaseIQADataset):
 
         img_tensor = self.trans(img_pil)
         img_tensor2 = self.trans(img_pil)
-        mos_label_tensor = torch.Tensor([mos_label])
+        mos_label_tensor = torch.Tensor([mos_label]) / 10.
         mos_dist_tensor = torch.Tensor(mos_dist) / sum(mos_dist)
 
         if self.opt.get('list_imgs', False):
