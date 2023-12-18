@@ -29,7 +29,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 
 <div align="center">
 
-📦 [Model Cards](docs/ModelCard.md)  |  🗃️ [Dataset Cards](docs/Dataset_Preparation.md) 
+📦 [Model Cards](docs/ModelCard.md)  |  🗃️ [Dataset Cards](docs/Dataset_Preparation.md) | 🤗 [Datasets](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets) | 📚 [Documentation](https://iqa-pytorch.readthedocs.io/en/latest/) 
 
 </div>
 
