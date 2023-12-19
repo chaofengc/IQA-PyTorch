@@ -85,7 +85,7 @@ path:
 train:
   optim:
     type: AdamW
-    lr: !!float 1e-4 
+    lr: !!float 3e-5 
   
   scheduler:
     type: CosineAnnealingLR

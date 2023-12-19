@@ -57,13 +57,19 @@ class LAIONAes(nn.Module):
     Returns:
         A tensor representing the predicted image quality scores.
     """
-    def __init__(self, pretrained=True) -> None:
+    def __init__(self, 
+                pretrained=True, 
+                pretrained_model_path=None,
+                ) -> None:
         super().__init__()
 
         clip_model, _ = clip.load("ViT-L/14")
         self.mlp = MLP(clip_model.visual.output_dim)
         self.clip_model = [clip_model]
-        if pretrained:
+
+        if pretrained_model_path is not None:
+            load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
+        elif pretrained:
             load_pretrained_network(self.mlp, default_model_urls["url"])
 
     def forward(self, x):

@@ -155,7 +155,7 @@ Examples to specific dataset options can be found in `./options/default_dataset_
 
 Results are calculated with:
 - **PLCC without any correction**. Although test time value correction is common in IQA papers, we want to use the original value in our benchmark.
-- **Full image single input.** We use multi-patch testing only when it is necessary for the model to work.
+- **Full image single input.** We **do not** use multi-patch testing unless necessary.
 
 Basically, we use the largest existing datasets for training, and cross dataset evaluation performance for fair comparison. The following models do not provide official weights, and are retrained by our scripts:
 

@@ -57,15 +57,15 @@ class InferenceModel(torch.nn.Module):
         self.net.eval()
         set_random_seed(seed)
 
-        self.dummy_param = torch.nn.Parameter(torch.empty(0))
+        self.dummy_param = torch.nn.Parameter(torch.empty(0)).to(self.device)
     
     def forward(self, target, ref=None, **kwargs):
-        self.device = self.dummy_param.device
+        device = self.dummy_param.device
 
         with torch.set_grad_enabled(self.as_loss):
 
             if 'fid' in self.metric_name:
-                output = self.net(target, ref, device=self.device, **kwargs)
+                output = self.net(target, ref, device=device, **kwargs)
             else:
                 if not torch.is_tensor(target):
                     target = imread2tensor(target, rgb=True)
@@ -77,9 +77,9 @@ class InferenceModel(torch.nn.Module):
 
                 if self.metric_mode == 'FR':
                     assert ref is not None, 'Please specify reference image for Full Reference metric'
-                    output = self.net(target.to(self.device), ref.to(self.device), **kwargs)
+                    output = self.net(target.to(device), ref.to(device), **kwargs)
                 elif self.metric_mode == 'NR':
-                    output = self.net(target.to(self.device), **kwargs)
+                    output = self.net(target.to(device), **kwargs)
 
         if self.as_loss:
             if isinstance(output, tuple):
