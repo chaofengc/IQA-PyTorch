@@ -235,6 +235,24 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
     },
+    'nima-koniq': {
+        'metric_opts': {
+            'type': 'NIMA',
+            'train_dataset': 'koniq',
+            'num_classes': 1,
+            'base_model_name': 'inception_resnet_v2',
+        },
+        'metric_mode': 'NR',
+    },
+    'nima-spaq': {
+        'metric_opts': {
+            'type': 'NIMA',
+            'train_dataset': 'spaq',
+            'num_classes': 1,
+            'base_model_name': 'inception_resnet_v2',
+        },
+        'metric_mode': 'NR',
+    },
     'nima-vgg16-ava': {
         'metric_opts': {
             'type': 'NIMA',

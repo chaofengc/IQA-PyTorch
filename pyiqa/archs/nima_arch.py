@@ -15,10 +15,13 @@ import timm
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network
 
+import torchvision.transforms as T
 
 default_model_urls = {
     'vgg16-ava': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA_VGG16_ava-dc4e8265.pth',
     'inception_resnet_v2-ava': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA_InceptionV2_ava-b0c77c00.pth',
+    'inception_resnet_v2-koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA_koniq-250367ae.pth',
+    'inception_resnet_v2-spaq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA-spaq-46a7fcb7.pth',
 }
 
 
@@ -42,6 +45,7 @@ class NIMA(nn.Module):
     def __init__(
         self,
         base_model_name='vgg16',
+        train_dataset='ava',
         num_classes=10,
         dropout_rate=0.,
         pretrained=True,
@@ -68,12 +72,16 @@ class NIMA(nn.Module):
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
         
         if pretrained and pretrained_model_path is None:
-            url_key = f'{base_model_name}-ava'
+            url_key = f'{base_model_name}-{train_dataset}'
             load_pretrained_network(self, default_model_urls[url_key], True, weight_keys='params')
         elif pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
-
+    
     def preprocess(self, x):
+        if not self.training:
+            x = T.functional.resize(x, self.base_model.default_cfg['input_size'][-1])
+            x = T.functional.center_crop(x, self.base_model.default_cfg['input_size'][-1])
+
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x
 

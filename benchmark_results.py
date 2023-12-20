@@ -32,6 +32,8 @@ def main():
     parser.add_argument('--metric_opt', type=str, default=None, help='Path to custom metric option YAML file.')
     parser.add_argument('--data_opt', type=str, default=None, help='Path to custom data option YAML file.')
     parser.add_argument('--batch_size', type=int, default=None, help='batch size for benchmark.')
+    parser.add_argument('--split_file', type=str, default=None, help='split file for test.')
+    parser.add_argument('--test_phase', type=str, default=None, help='phase for benchmark: val/test.')
     parser.add_argument('--save_result_path', type=str, default=None, help='file to save results.')
     parser.add_argument('--update_benchmark', type=str, default=None, help='update benchmark results.')
     parser.add_argument('--use_gpu', action='store_true', default=False, help='use gpu or not')
@@ -104,6 +106,15 @@ def main():
                 data_opts.update({
                     'batch_size_per_gpu': args.batch_size,
                 })
+            if args.split_file is not None:
+                data_opts.update({
+                    'split_file': args.split_file,
+                })
+            if args.split_file is not None and args.test_phase is not None:
+                data_opts.update({
+                    'phase': args.test_phase,
+                })
+
             if 'phase' not in data_opts:
                 data_opts['phase'] = 'test'
             dataset = build_dataset(data_opts)
