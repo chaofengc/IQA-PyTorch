@@ -124,18 +124,16 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 
 ### ⏬ Download Benchmark Datasets
 
-For convenience, we upload all related datasets to [huggingface](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets/tree/main). **Note that we only collect the datasets for academic, research, and educational purposes. It is important for the users to adhere to the usage guidelines, licensing terms, and conditions set forth by the original creators or owners of each dataset.** Here are examples codes to download datasets from huggingface:
+For convenience, we upload all related datasets to [huggingface](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets/tree/main). **Note that we only collect the datasets for academic, research, and educational purposes. It is important for the users to adhere to the usage guidelines, licensing terms, and conditions set forth by the original creators or owners of each dataset.** Here are example codes to download datasets from huggingface:
 
 ```
-import os, glob
+import os
 from huggingface_hub import snapshot_download
 
 save_dir = './datasets'
-
 os.makedirs(save_dir, exist_ok=True)
 
 filename = "meta_info.tgz"
-
 snapshot_download("chaofengc/IQA-Toolbox-Datasets", repo_type="dataset", local_dir=save_dir, allow_patterns=filename, local_dir_use_symlinks=False)
 
 os.system(f"tar -xzvf {save_dir}/{filename} -C {save_dir}")
