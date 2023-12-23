@@ -480,5 +480,19 @@ DEFAULT_CONFIGS = OrderedDict({
             'type': 'LAIONAes',
         },
         'metric_mode': 'NR',
-    }
+    },
+    'liqe': {
+            'metric_opts': {
+                'type': 'LIQE',
+                'pretrained': 'koniq'
+            },
+            'metric_mode': 'NR',
+        },
+    'liqe_mix': {
+            'metric_opts': {
+                'type': 'LIQE',
+                'pretrained': 'mix'
+            },
+            'metric_mode': 'NR',
+        },
 })
