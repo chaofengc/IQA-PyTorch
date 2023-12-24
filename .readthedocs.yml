@@ -2,9 +2,9 @@ version: 2
 
 # Set the OS, Python version and other tools you might need
 build:
-  os: ubuntu-22.04
-  tools:
-    python: "3.8"
+  os: ubuntu20
+  languages:
+    python: "3.9"
     
 sphinx:
   configuration: docs/conf.py
