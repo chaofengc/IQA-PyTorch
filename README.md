@@ -228,13 +228,11 @@ If you find our codes helpful to your research, please consider to use the follo
 
 Please also consider to cite our new work `TOPIQ` if it is useful to you:
 ```
-@misc{chen2023topiq,
-      title={TOPIQ: A Top-down Approach from Semantics to Distortions for Image Quality Assessment}, 
-      author={Chaofeng Chen and Jiadi Mo and Jingwen Hou and Haoning Wu and Liang Liao and Wenxiu Sun and Qiong Yan and Weisi Lin},
-      year={2023},
-      eprint={2308.03060},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+@article{chen2023topiq,
+  title={TOPIQ: A Top-down Approach from Semantics to Distortions for Image Quality Assessment},
+  author={Chen, Chaofeng and Mo, Jiadi and Hou, Jingwen and Wu, Haoning and Liao, Liang and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
+  journal={arXiv preprint arXiv:2308.03060},
+  year={2023}
 }
 ``` 
 
