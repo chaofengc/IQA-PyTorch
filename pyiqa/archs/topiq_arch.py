@@ -23,6 +23,10 @@ import copy
 from .clip_model import load
 from .topiq_swin import create_swin
 
+from facexlib.utils.face_restoration_helper import FaceRestoreHelper
+import os
+import warnings
+
 
 default_model_urls = {
     'cfanet_fr_kadid_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_fr_kadid_res50-2c4cc61d.pth',
@@ -316,6 +320,17 @@ class CFANet(nn.Module):
             
         self.eps = 1e-8
         self.crops = num_crop 
+
+        if model_name == 'topiq_nr_gfiqa_res50':
+            self.face_helper = FaceRestoreHelper(
+                1, 
+                face_size=512, 
+                crop_ratio=(1, 1),
+                det_model='retinaface_resnet50',
+                save_ext='png',
+                use_parse=True,
+                model_rootpath=os.path.join(os.path.expanduser('~'), '.cache', 'pyiqa'),
+            )
     
     def _init_linear(self, m):
         for module in m.modules():
@@ -434,11 +449,32 @@ class CFANet(nn.Module):
 
         return out_score
     
-    def forward(self, x, y=None, return_mos=True, return_dist=False):
+    def preprocess_face(self, x):
+        warnings.warn(f'The faces will be aligned, cropped and resized to 512x512 with facexlib. Currently, this metric does not support batch size > 1 and gradient backpropagation.', UserWarning)
+        # warning message
+        device = x.device
+        assert x.shape[0] == 1, f'Only support batch size 1, but got {x.shape[0]}'
+        self.face_helper.input_img = x[0].permute(1, 2, 0).cpu().numpy() * 255
+        self.face_helper.input_img = self.face_helper.input_img[..., ::-1]
+        if self.face_helper.get_face_landmarks_5(only_center_face=True, eye_dist_threshold=5) > 0:
+            self.face_helper.align_warp_face()
+            x = self.face_helper.cropped_faces[0]
+            x = torch.from_numpy(x[..., ::-1].copy()).permute(2, 0, 1).unsqueeze(0).float() / 255.0
+            return x.to(device)
+        else:
+            assert False, f'No face detected in the input image.'
+    
+    def forward(self, x, y=None, return_mos=True, return_dist=False, align_crop_face=True):
         if self.use_ref:
             assert y is not None, f'Please input y when use reference is True.'
         else:
             y = None
+
+        if self.model_name == 'topiq_nr_gfiqa_res50':
+            if align_crop_face:
+                x = self.preprocess_face(x)
+            else:
+                x = nn.functional.interpolate(x, size=(512, 512), mode='bicubic', align_corners=False)
 
         if self.crops > 1 and not self.training:
             bsz = x.shape[0]
