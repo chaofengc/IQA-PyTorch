@@ -92,19 +92,21 @@ class LIQE(nn.Module):
 
         if x.size(1) < self.num_patch:
             num_patch = x.size(1)
+            self.num_patch = num_patch
         else:
             num_patch = self.num_patch
 
         if self.training:
             sel = torch.randint(low=0, high=x.size(0), size=(num_patch, ))
         else:
-            sel_step = x.size(1) // self.num_patch
+            sel_step = max(1, x.size(1) // self.num_patch)
             sel = torch.zeros(num_patch)
             for i in range(num_patch):
                 sel[i] = sel_step * i
             sel = sel.long()
 
         x = x[:, sel, ...]
+        x = x.reshape(bs, num_patch, x.shape[2], x.shape[3], x.shape[4])
 
         text_features = self.clip_model.encode_text(self.joint_texts.to(x.device))
         text_features = text_features / text_features.norm(dim=1, keepdim=True)
@@ -130,5 +132,4 @@ class LIQE(nn.Module):
 
         quality = 1 * logits_quality[:, 0] + 2 * logits_quality[:, 1] + 3 * logits_quality[:, 2] + \
                              4 * logits_quality[:, 3] + 5 * logits_quality[:, 4]
-
         return quality

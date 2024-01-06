@@ -266,6 +266,8 @@ class CW_SSIM(torch.nn.Module):
         w = fspecial(s - 7 + 1, s[0] / 4, 1).to(x.device)
         gb = int(self.guardb / (2**(self.level - 1)))
 
+        self.win7 = self.win7.to(x.dtype)
+
         for i in range(self.ori):
 
             band1 = cw_x[bandind][i]

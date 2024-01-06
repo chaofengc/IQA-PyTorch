@@ -21,11 +21,12 @@ release:
 test:
 	pytest tests/ -m calibration -v
 	pytest tests/test_metric_general.py::test_forward -v  
-
-test_general:
 	pytest tests/test_metric_general.py::test_cpu_gpu_consistency -v
 
-test_gradient:
+test_cs:
+	pytest tests/test_metric_general.py::test_cpu_gpu_consistency -v
+
+test_grad:
 	pytest tests/test_metric_general.py::test_gradient_backward -v
 
 test_dataset:
