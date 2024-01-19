@@ -495,4 +495,20 @@ DEFAULT_CONFIGS = OrderedDict({
             },
             'metric_mode': 'NR',
         },
+    'wadiqam_fr': {
+        'metric_opts': {
+            'type': 'WaDIQaM',
+            'metric_type': 'FR',
+            'model_name': 'wadiqam_fr_kadid',
+        },
+        'metric_mode': 'FR',
+    },
+    'wadiqam_nr': {
+        'metric_opts': {
+            'type': 'WaDIQaM',
+            'metric_type': 'NR',
+            'model_name': 'wadiqam_nr_koniq',
+        },
+        'metric_mode': 'NR',
+    },
 })

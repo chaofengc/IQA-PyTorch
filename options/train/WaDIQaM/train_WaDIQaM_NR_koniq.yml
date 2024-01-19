@@ -1,6 +1,5 @@
 # general settings
-name: debug001_WaDIQaM_FR_TID2013
-name: 005_WaDIQaM_FR_TID2013
+name: 005_WaDIQaM_FR_koniq
 model_type: WaDIQaMModel
 num_gpu: 1  # set num_gpu: 0 for cpu mode
 manual_seed: 123
@@ -8,34 +7,42 @@ manual_seed: 123
 # dataset and data loader settings
 datasets:
   train:
-    name: tid2013
-    type: GeneralFRDataset
-    dataroot_target: ./datasets/tid2013/distorted_images
-    dataroot_ref: ./datasets/tid2013/reference_images
-    meta_info_file: ./datasets/meta_info/meta_info_TID2013Dataset.csv
-
+    name: koniq10k
+    type: GeneralNRDataset
+    dataroot_target: ./datasets/koniq10k/512x384
+    meta_info_file: ./datasets/meta_info/meta_info_KonIQ10kDataset.csv
+    split_file: ./datasets/meta_info/koniq10k_official.pkl
+    mos_range: [0, 100]
+    lower_better: false 
+    mos_normalize: true
+    
     # data loader
     use_shuffle: true
     num_worker_per_gpu: 12
     batch_size_per_gpu: 64
     dataset_enlarge_ratio: 1
     prefetch_mode: cpu
-    num_prefetch_queue: 8
+    num_prefetch_queue: 128
 
   val:
-    name: tid2013
-    type: GeneralFRDataset
-    dataroot_target: ./datasets/tid2013/distorted_images
-    dataroot_ref: ./datasets/tid2013/reference_images
-    meta_info_file: ./datasets/meta_info/meta_info_TID2013Dataset.csv
-
+    name: koniq10k
+    type: GeneralNRDataset
+    dataroot_target: ./datasets/koniq10k/512x384
+    meta_info_file: ./datasets/meta_info/meta_info_KonIQ10kDataset.csv
+    split_file: ./datasets/meta_info/koniq10k_official.pkl
+    mos_range: [0, 100]
+    lower_better: false 
+    mos_normalize: true
+        
     num_worker_per_gpu: 4
     batch_size_per_gpu: 32
 
 # network structures
 network:
   type: WaDIQaM
-  metric_mode: FR
+  metric_type: NR
+  pretrained_model_path: ./experiments/005_WaDIQaM_FR_kadid/models/net_best.pth
+  load_feature_weight_only: True
 
 # path
 path:

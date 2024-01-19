@@ -16,8 +16,15 @@ Refer to:
 import torch
 import torch.nn as nn
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.arch_util import load_pretrained_network
 
 from typing import Union, List, cast
+
+
+default_model_urls = {
+    'wadiqam_fr_kadid': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/WaDIQaM-kadid-f7541ea5.pth', 
+    'wadiqam_nr_koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/WaDIQaM-NR-koniq-aaffea29.pth',
+}
 
 
 def make_layers(cfg: List[Union[str, int]]) -> nn.Sequential:
@@ -38,7 +45,7 @@ def make_layers(cfg: List[Union[str, int]]) -> nn.Sequential:
 class WaDIQaM(nn.Module):
     """WaDIQaM model.
     Args:
-        metric_mode (String): Choose metric mode.
+        metric_type (String): Choose metric mode.
         weighted_average (Boolean): Average the weight.
         train_patch_num (int): Number of patch trained. Default: 32.
         pretrained_model_path (String): The pretrained model path.
@@ -49,7 +56,9 @@ class WaDIQaM(nn.Module):
 
     def __init__(
         self,
-        metric_mode='FR',
+        metric_type='FR',
+        model_name='wadiqam_fr_kadid',
+        pretrained=True,
         weighted_average=True,
         train_patch_num=32,
         pretrained_model_path=None,
@@ -63,8 +72,8 @@ class WaDIQaM(nn.Module):
 
         self.train_patch_num = train_patch_num
         self.patch_size = 32  # This cannot be changed due to network design
-        self.metric_mode = metric_mode
-        fc_in_channel = 512 * 3 if metric_mode == 'FR' else 512
+        self.metric_type = metric_type
+        fc_in_channel = 512 * 3 if metric_type == 'FR' else 512
         self.eps = eps
 
         self.fc_q = nn.Sequential(
@@ -86,19 +95,22 @@ class WaDIQaM(nn.Module):
 
         if pretrained_model_path is not None:
             self.load_pretrained_network(pretrained_model_path, load_feature_weight_only)
+        elif pretrained:
+            self.metric_type = model_name.split('_')[1].upper()
+            load_pretrained_network(self, default_model_urls[model_name], True, weight_keys='params')
 
     def load_pretrained_network(self, model_path, load_feature_weight_only=False):
         print(f'Loading pretrained model from {model_path}')
-        state_dict = torch.load(model_path, map_location=torch.device('cpu'))['state_dict']
+        state_dict = torch.load(model_path, map_location=torch.device('cpu'))['params']
         if load_feature_weight_only:
             print('Only load backbone feature net')
             new_state_dict = {}
             for k in state_dict.keys():
                 if 'features' in k:
                     new_state_dict[k] = state_dict[k]
-            self.net.load_state_dict(new_state_dict, strict=False)
+            self.load_state_dict(new_state_dict, strict=False)
         else:
-            self.net.load_state_dict(state_dict, strict=True)
+            self.load_state_dict(state_dict, strict=True)
 
     def _get_random_patches(self, x, y=None):
         """train with random crop patches"""
@@ -165,7 +177,7 @@ class WaDIQaM(nn.Module):
             x: An input tensor. Shape :math:`(N, C, H, W)`.
             y: A reference tensor. Shape :math:`(N, C, H, W)`.
         """
-        if self.metric_mode == 'FR':
+        if self.metric_type == 'FR':
             assert y is not None, 'Full reference metric requires reference input'
             x_patches, y_patches = self.get_patches(x, y)
             feat_img = self.extract_features(x_patches)
