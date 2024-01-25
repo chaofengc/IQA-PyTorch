@@ -454,6 +454,7 @@ class CFANet(nn.Module):
         # warning message
         device = x.device
         assert x.shape[0] == 1, f'Only support batch size 1, but got {x.shape[0]}'
+        self.face_helper.clean_all()
         self.face_helper.input_img = x[0].permute(1, 2, 0).cpu().numpy() * 255
         self.face_helper.input_img = self.face_helper.input_img[..., ::-1]
         if self.face_helper.get_face_landmarks_5(only_center_face=True, eye_dist_threshold=5) > 0:
