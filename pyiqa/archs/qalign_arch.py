@@ -56,7 +56,7 @@ class QAlign(nn.Module):
         """
             task_: str, optional [quality, aesthetic]
         """
-        if input == "image":
+        if input_ == "image":
             image_tensor = self.preprocess(x)
             score = self.model.score(images=None, image_tensor=image_tensor, task_=task_, input_=input_)
         else:
