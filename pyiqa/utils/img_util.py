@@ -14,6 +14,27 @@ def is_image_file(filename):
     return any(filename.lower().endswith(extension) for extension in Image.registered_extensions())
 
 
+def imread2pil(img_source, rgb=False):
+    """Read image to tensor.
+
+    Args:
+        img_source (str, bytes, or PIL.Image): image filepath string, image contents as a bytearray or a PIL Image instance
+        rgb: convert input to RGB if true
+    """
+    if type(img_source) == bytes:
+        img = Image.open(io.BytesIO(img_source))
+    elif type(img_source) == str:
+        assert is_image_file(img_source), f'{img_source} is not a valid image file.'
+        img = Image.open(img_source)
+    elif isinstance(img_source, Image.Image):
+        img = img_source
+    else:
+        raise Exception("Unsupported source type")
+    if rgb:
+        img = img.convert('RGB')
+    return img
+
+
 def imread2tensor(img_source, rgb=False):
     """Read image to tensor.
 

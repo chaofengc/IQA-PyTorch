@@ -36,6 +36,12 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
+- :boom: **Jan 31, 2024**. Add `qalign` for both NR and IAA. It is our most powerful unified metric based on large vision-language models, and shows remarkable performance and robustness. Refer [Q-Align](https://github.com/Q-Future/Q-Align) for more details. Use it with the following codes:
+  ```
+  qalign = create_metric('qalign').cuda()
+  quality_score = qalign(input, task_='quality')
+  aesthetic_score = qalign(input, task_='aesthetic')
+  ```
 - **Jan 19, 2024**. Add `wadiqam_fr` and `wadiqam_nr`. All implemented methods are usable now 🍻. 
 - **Dec 23, 2023**. Add `liqe` and `liqe_mix`. Thanks for the contribution from [Weixia Zhang](https://github.com/zwx8981) 🤗.
 - **Oct 09, 2023**. Add datasets: [PIQ2023](https://github.com/DXOMARK-Research/PIQ2023), [GFIQA](http://database.mmsp-kn.de/gfiqa-20k-database.html). Add metric `topiq_nr-face`. We release example results on FFHQ [here](tests/ffhq_score_topiq_nr-face.csv) for reference. 
@@ -224,7 +230,7 @@ If you find our codes helpful to your research, please consider to use the follo
 }
 ```
 
-Please also consider to cite our new work `TOPIQ` if it is useful to you:
+Please also consider to cite our works on image quality assessment if it is useful to you:
 ```
 @article{chen2023topiq,
   title={TOPIQ: A Top-down Approach from Semantics to Distortions for Image Quality Assessment},
@@ -233,6 +239,16 @@ Please also consider to cite our new work `TOPIQ` if it is useful to you:
   year={2023}
 }
 ``` 
+```
+@article{wu2023qalign,
+  title={Q-Align: Teaching LMMs for Visual Scoring via Discrete Text-Defined Levels},
+  author={Wu, Haoning and Zhang, Zicheng and Zhang, Weixia and Chen, Chaofeng and Li, Chunyi and Liao, Liang and Wang, Annan and Zhang, Erli and Sun, Wenxiu and Yan, Qiong and Min, Xiongkuo and Zhai, Guangtai and Lin, Weisi},
+  journal={arXiv preprint arXiv:2312.17090},
+  year={2023},
+  institution={Nanyang Technological University and Shanghai Jiao Tong University and Sensetime Research},
+  note={Equal Contribution by Wu, Haoning and Zhang, Zicheng. Project Lead by Wu, Haoning. Corresponding Authors: Zhai, Guangtai and Lin, Weisi.}
+}
+```
 
 ## :heart: Acknowledgement
 

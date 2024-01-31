@@ -511,4 +511,10 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
     },
+    'qalign': {
+        'metric_opts': {
+            'type': 'QAlign',
+        },
+        'metric_mode': 'NR',
+    }
 })
