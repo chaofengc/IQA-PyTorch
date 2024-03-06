@@ -19,7 +19,7 @@ einops
 imgaug
 openai-clip
 facexlib
-transformers>=4.36.1
+transformers==4.37.2
 accelerate
 icecream
 sentencepiece

@@ -41,7 +41,6 @@ class QAlign(nn.Module):
             "q-future/one-align", 
             trust_remote_code=True, 
             torch_dtype=torch.float16, 
-            device_map="auto",
             )
         self.image_processor = CLIPImageProcessor.from_pretrained("q-future/one-align")
     
