@@ -8,3 +8,7 @@
 - **March 11, 2022**. Add pretrained DBCNN, NIMA, and official model of PieAPP, paq2piq.
 - **March 5, 2022**. Add NRQM, PI, ILNIQE metrics.
 - **Feb 2, 2022**. Add MUSIQ inference code, and the converted official weights. See [Official codes](https://github.com/google-research/google-research/tree/master/musiq).
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=chaofengc/IQA-PyTorch&type=Date)](https://star-history.com/#chaofengc/IQA-PyTorch&Date)
