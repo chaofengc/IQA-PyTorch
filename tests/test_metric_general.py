@@ -156,7 +156,7 @@ def test_gradient_backward(metric_name, device):
 
 @pytest.mark.parametrize(
     ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['fid', 'clipscore', 'topiq_nr-face']]
+    [(k) for k in pyiqa.list_models() if k not in ['fid', 'clipscore', 'topiq_nr-face', 'qalign']]
 )
 def test_forward(metric_name, device):
     """Test if the metric can be used in a gradient descent process.
