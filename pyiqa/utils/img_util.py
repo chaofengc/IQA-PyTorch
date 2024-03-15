@@ -14,6 +14,20 @@ def is_image_file(filename):
     return any(filename.lower().endswith(extension) for extension in Image.registered_extensions())
 
 
+def scandir_images(dir, max_dataset_size=float("inf"), followlinks=True):
+    """Get all image files from a directory and return a sorted list of fullpath.
+    """
+    images = []
+    assert os.path.isdir(dir), '%s is not a valid directory' % dir
+
+    for root, _, fnames in sorted(os.walk(dir, followlinks=followlinks)):
+        for fname in fnames:
+            if is_image_file(fname):
+                path = os.path.join(root, fname)
+                images.append(path)
+    return images[:min(max_dataset_size, len(images))]
+
+
 def imread2pil(img_source, rgb=False):
     """Read image to tensor.
 
