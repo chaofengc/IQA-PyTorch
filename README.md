@@ -36,6 +36,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
+- **Apr 24, 2024**. Add `inception_score` and console entry point with `pyiqa` command.
 - **Mar 11, 2024**. Add `unique`, refer to official repo [here](https://github.com/zwx8981/UNIQUE). Thanks for the contribution from [Weixia Zhang](https://github.com/zwx8981) 🤗.
 - :boom: **Jan 31, 2024**. Add `qalign` for both NR and IAA. It is our most powerful unified metric based on large vision-language models, and shows remarkable performance and robustness. Refer [Q-Align](https://github.com/Q-Future/Q-Align) for more details. Use it with the following codes:
   ```
@@ -74,6 +75,19 @@ python setup.py develop
 ```
 
 ### Basic Usage 
+
+#### Commandline Usage
+
+You can now simply use the package with commandline interface. 
+```
+# list all available metrics
+pyiqa -ls
+
+# test with default settings
+pyiqa [metric_name(s)] --target [image_path or dir] --ref [image_path or dir]
+```
+
+#### Code Usage
 
 ```
 import pyiqa

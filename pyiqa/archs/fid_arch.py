@@ -275,6 +275,7 @@ class FID(nn.Module):
                 batch_size=32,
                 device=torch.device('cuda'),
                 verbose=True,
+                **kwargs
                 ):
         """Computes the FID or Clean-FID score between two sets of images or a set of images and a reference dataset.
 

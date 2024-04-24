@@ -111,6 +111,11 @@ if __name__ == '__main__':
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: Image Processing',
         ],
+        entry_points={
+            "console_scripts": [
+                "pyiqa=pyiqa.pyiqa:main",
+            ],
+        },
         install_requires=get_requirements(),
         python_requires='>=3.6',
     )

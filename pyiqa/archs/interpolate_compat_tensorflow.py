@@ -1,3 +1,7 @@
+r""" 
+This file is taken from: https://github.com/toshas/torch-fidelity/blob/master/torch_fidelity/interpolate_compat_tensorflow.py
+"""
+
 import math
 
 import torch

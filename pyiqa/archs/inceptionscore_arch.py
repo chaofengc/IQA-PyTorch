@@ -50,6 +50,7 @@ class InceptionScore(nn.Module):
                 batch_size=32,
                 device=torch.device('cuda'),
                 verbose=True,
+                **kwargs
                 ):
                 
         if verbose:
@@ -75,4 +76,4 @@ class InceptionScore(nn.Module):
         scores = [k.sum(dim=1).mean().exp().item() for k in kl_]
 
         # return mean and std
-        return torch.tensor([np.mean(scores), np.std(scores)])
+        return {'inception_score_mean': np.mean(scores), 'inception_score_std': np.std(scores)}
