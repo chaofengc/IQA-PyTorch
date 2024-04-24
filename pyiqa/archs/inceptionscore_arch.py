@@ -44,7 +44,7 @@ class InceptionScore(nn.Module):
 
     def forward(self,
                 img_dir,
-                mode='tensorflow_compat_resize',
+                mode='legacy_tensorflow',
                 splits=10,
                 num_workers=12,
                 batch_size=32,

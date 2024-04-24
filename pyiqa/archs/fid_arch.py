@@ -82,7 +82,7 @@ class ResizeDataset(torch.utils.data.Dataset):
             img_np = np.concatenate(img_np, axis=2).astype(np.float32)
             img_np = (img_np - 128) / 128
             img_t = torch.tensor(img_np).permute(2, 0, 1)
-        elif self.mode == 'tensorflow_compat_resize':
+        elif self.mode == 'legacy_tensorflow':
             img_np = np.array(img_pil).clip(0, 255)
             img_t = torch.from_numpy(img_np).permute(2, 0, 1).float()
             img_t = interpolate_bilinear_2d_like_tensorflow1x(img_t.unsqueeze(0),
@@ -226,7 +226,7 @@ def get_folder_features(fdir, model=None, num_workers=12,
     else:
         pbar = dataloader
 
-    if mode == 'clean' or mode=='tensorflow_compat_resize':
+    if mode == 'clean' or mode == 'legacy_tensorflow':
         normalize_input = False
     else:
         normalize_input = True
