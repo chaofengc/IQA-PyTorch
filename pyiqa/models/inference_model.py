@@ -64,8 +64,10 @@ class InferenceModel(torch.nn.Module):
 
         with torch.set_grad_enabled(self.as_loss):
 
-            if 'fid' in self.metric_name:
+            if self.metric_name == 'fid':
                 output = self.net(target, ref, device=device, **kwargs)
+            elif self.metric_name == 'inception_score':
+                output = self.net(target, device=device, **kwargs)
             else:
                 if not torch.is_tensor(target):
                     target = imread2tensor(target, rgb=True)

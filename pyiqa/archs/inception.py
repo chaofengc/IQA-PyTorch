@@ -34,7 +34,8 @@ class InceptionV3(nn.Module):
                  resize_input=True,
                  normalize_input=True,
                  requires_grad=False,
-                 use_fid_inception=True):
+                 use_fid_inception=True,
+                 ):
         """Build pretrained InceptionV3
         Parameters
         ----------
@@ -68,8 +69,13 @@ class InceptionV3(nn.Module):
 
         self.resize_input = resize_input
         self.normalize_input = normalize_input
-        self.output_blocks = sorted(output_blocks)
-        self.last_needed_block = max(output_blocks)
+
+        if isinstance(output_blocks, (list, tuple)):
+            self.output_blocks = sorted(output_blocks)
+            self.last_needed_block = max(output_blocks)
+        elif isinstance(output_blocks, str) and 'logits' in output_blocks:
+            self.output_blocks = output_blocks
+            self.last_needed_block = 3
 
         assert self.last_needed_block <= 3, \
             'Last possible output block index is 3'
@@ -80,6 +86,8 @@ class InceptionV3(nn.Module):
             inception = fid_inception_v3()
         else:
             inception = _inception_v3(pretrained=True)
+        
+        self.fc = inception.fc
 
         # Block 0: input to maxpool1
         block0 = [
@@ -143,20 +151,25 @@ class InceptionV3(nn.Module):
 
         if resize_input:
             x = F.interpolate(x,
-                              size=(299, 299),
-                              mode='bilinear',
-                              align_corners=False)
+                          size=(299, 299),
+                          mode='bilinear',
+                          align_corners=False)
 
         if normalize_input:
             x = 2 * x - 1  # Scale from range (0, 1) to range (-1, 1)
 
         for idx, block in enumerate(self.blocks):
             x = block(x)
-            if idx in self.output_blocks:
+            if not isinstance(self.output_blocks, str) and idx in self.output_blocks:
                 outp.append(x)
 
             if idx == self.last_needed_block:
                 break
+        
+        if self.output_blocks == 'logits_unbiased':
+            outp.append(x.flatten(1).mm(self.fc.weight.T))
+        elif self.output_blocks == 'logits':
+            outp.append(self.fc(x))
 
         return outp
 

@@ -88,7 +88,7 @@ def test_match_official_with_given_cases(ref_img, dist_img, metric_name, device)
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU not available")
 @pytest.mark.parametrize(
     ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['ahiq', 'fid', 'vsi', 'clipscore', 'topiq_nr-face', 'tres', 'tres-koniq']]
+    [(k) for k in pyiqa.list_models() if k not in ['ahiq', 'fid', 'vsi', 'clipscore', 'topiq_nr-face', 'tres', 'tres-koniq', 'inception_score']]
 )
 def test_cpu_gpu_consistency(metric_name):
     """Test if the metric results are consistent between CPU and GPU.
@@ -121,7 +121,7 @@ def test_cpu_gpu_consistency(metric_name):
 
 @pytest.mark.parametrize(
     ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['pi', 'nrqm', 'fid', 'mad', 'vsi', 'clipscore', 'entropy', 'topiq_nr-face']]
+    [(k) for k in pyiqa.list_models() if k not in ['pi', 'nrqm', 'fid', 'mad', 'vsi', 'clipscore', 'entropy', 'topiq_nr-face', 'inception_score']]
 )
 def test_gradient_backward(metric_name, device):
     """Test if the metric can be used in a gradient descent process.
@@ -156,7 +156,7 @@ def test_gradient_backward(metric_name, device):
 
 @pytest.mark.parametrize(
     ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['fid', 'clipscore', 'topiq_nr-face', 'qalign']]
+    [(k) for k in pyiqa.list_models() if k not in ['fid', 'inception_score', 'clipscore', 'topiq_nr-face', 'qalign']]
 )
 def test_forward(metric_name, device):
     """Test if the metric can be used in a gradient descent process.

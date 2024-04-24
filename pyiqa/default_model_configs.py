@@ -522,5 +522,12 @@ DEFAULT_CONFIGS = OrderedDict({
             'type': 'UNIQUE',
         },
         'metric_mode': 'NR',
-    }
+    },
+    'inception_score': {
+        'metric_opts': {
+            'type': 'InceptionScore',
+        },
+        'metric_mode': 'NR',
+        'lower_better': False,
+    },
 })

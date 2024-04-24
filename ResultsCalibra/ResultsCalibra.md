@@ -53,6 +53,8 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | PieAPP (ours imported)                              | 4.2976                    | 3.9088           | 2.2620  | 1.4274  | 3.4188   |
 | FID<sup>[15](#fn15)</sup>                           | 225.3678 (legacy_pytorch) | 220.5819 (clean) |         |         |          |
 | FID (ours imported)                                 | 225.3679 (legacy_pytorch) | 220.5819 (clean) |         |         |          |
+| InceptionScore <sup>[16](#fn16)</sup>               | 2.8300 (splits=1) |  |         |         |          |
+| InceptionScore (ours imported) | 2.8303 (splits=1) |  |         |         |          |
 
 
 #### Notice
@@ -77,3 +79,4 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 <a name="fn13">[13]</a> Results have about ±2% difference with tensorflow codes because of some detailed implementation differences between TensorFlow and PyTorch. For example, PyTorch does not support gaussian interpolation, different default epsilon value, etc.<br>
 <a name="fn14">[14]</a> Perceptual Index (PI) use YCBCR color space and crop border with size 4.<br>
 <a name="fn15">[15]</a> We use codes from the [clean-fid](https://github.com/GaParmar/clean-fid) project.<br>
+<a name="fn15">[15]</a> We use codes from the [torch-fidelity](https://github.com/toshas/torch-fidelity) project with "fidelity --gpu 0 --samples-find-ext bmp,BMP --isc --isc-splits 1 --input1 ResultsCalibra/dist_dir/".<br>
