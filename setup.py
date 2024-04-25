@@ -113,7 +113,7 @@ if __name__ == '__main__':
         ],
         entry_points={
             "console_scripts": [
-                "pyiqa=pyiqa.pyiqa:main",
+                "pyiqa=pyiqa.pyiqa_cmd:main",
             ],
         },
         install_requires=get_requirements(),
