@@ -2,12 +2,7 @@
 # name: debug_DBCNN_LIVEC
 name: 002_CLIPIQA_ViT-L14_KonIQ10k
 name: 003_CLIPIQA_RN50_KonIQ10k
-# name: debug_CLIPIQA
-model_type: GeneralIQAModel
-num_gpu: 1  # set num_gpu: 0 for cpu mode
-manual_seed: 123
-
-# name: debug_CLIPIQA
+name: debug_CLIPIQA
 model_type: GeneralIQAModel
 num_gpu: 1  # set num_gpu: 0 for cpu mode
 manual_seed: 123

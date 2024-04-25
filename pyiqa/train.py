@@ -14,8 +14,10 @@ from pyiqa.models import build_model
 from pyiqa.utils import (AvgTimer, MessageLogger, check_resume, get_env_info, get_root_logger, get_time_str,
                            init_tb_logger, init_wandb_logger, make_exp_dirs, mkdir_and_rename, scandir, load_file_from_url)
 from pyiqa.utils.options import copy_opt_file, dict2str, parse_options
+from pyiqa.utils.dist_util import master_only
 
 
+@master_only
 def init_tb_loggers(opt):
     # initialize wandb logger before tensorboard logger to allow proper sync
     if (opt['logger'].get('wandb') is not None) and (opt['logger']['wandb'].get('project')
@@ -199,7 +201,7 @@ def train_pipeline(root_path, opt=None, args=None):
                 log_vars.update({'time': iter_timer.get_avg_time(), 'data_time': data_timer.get_avg_time()})
                 log_vars.update(model.get_current_log())
                 msg_logger(log_vars)
-            
+
             # log images
             log_img_freq = opt['logger'].get('log_imgs_freq', 1e99)
             if current_iter % log_img_freq == 0:
@@ -227,10 +229,15 @@ def train_pipeline(root_path, opt=None, args=None):
             data_timer.start()
             iter_timer.start()
             train_data = prefetcher.next()
+
+            if 'debug' in opt['name'] and current_iter >= 8:
+                break
         # end of iter
         # use epoch based learning rate scheduler
         model.update_learning_rate(epoch+2, warmup_iter=opt['train'].get('warmup_iter', -1))
 
+        if 'debug' in opt['name'] and epoch >= 2:
+            break
     # end of epoch
 
     consumed_time = str(datetime.timedelta(seconds=int(time.time() - start_time)))
@@ -243,7 +250,8 @@ def train_pipeline(root_path, opt=None, args=None):
     if tb_logger:
         tb_logger.close()
 
-    return model.best_metric_results
+    if opt['rank'] == 0:
+        return model.best_metric_results
 
 if __name__ == '__main__':
     root_path = osp.abspath(osp.join(__file__, osp.pardir, osp.pardir))
