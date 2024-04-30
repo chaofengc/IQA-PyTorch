@@ -56,6 +56,7 @@ class InferenceModel(torch.nn.Module):
         self.net = self.net.to(self.device)
         self.net.eval()
 
+        self.seed = seed
         if not as_loss:
             set_random_seed(seed)
 
@@ -63,6 +64,8 @@ class InferenceModel(torch.nn.Module):
     
     def forward(self, target, ref=None, **kwargs):
         device = self.dummy_param.device
+        if not self.as_loss:
+            set_random_seed(self.seed)
 
         with torch.set_grad_enabled(self.as_loss):
 
