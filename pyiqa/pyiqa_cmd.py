@@ -4,6 +4,7 @@ from pyiqa.utils import scandir_images
 
 import os
 import sys
+from tqdm import tqdm
 import numpy as np
 from pprint import pprint
 
@@ -27,6 +28,7 @@ def main():
         pprint(list_models(), compact=True)
         return 
 
+    print(f"{'='*50} Loading metrics {'='*50}")
     metric_func_list = {}
     results = {}
     for metric in args.metric:
@@ -39,6 +41,7 @@ def main():
             results[metric] = result
         else:
             metric_func_list[metric] = metric_func
+    print(f"{'='*50} Metrics loaded {'='*50}")
     
     if os.path.isdir(args.target):
         target_list = scandir_images(args.target) 
@@ -51,15 +54,24 @@ def main():
             ref_list = [args.ref]    
 
     for metric, func in metric_func_list.items():
-        if args.ref is None:
+        pbar = tqdm(total=len(target_list), unit='image')
+
+        if args.ref is None or func.metric_mode == 'NR':
             tmp_result = []
             for target in target_list:
                 tmp_result.append(func(target).item())
+
+                pbar.update(1)
+                pbar.set_description(f'Testing {metric} with input {target:>20}')
         else:
             tmp_result = []
             for target, ref in zip(target_list, ref_list):
                 tmp_result.append(func(target, ref).item())
 
+                pbar.update(1)
+                pbar.set_description(f'Testing {metric} with input {target:>20}')
+
+        pbar.close()
         results[metric] = np.mean(tmp_result) 
     
     pprint(results)
