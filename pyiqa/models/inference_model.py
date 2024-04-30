@@ -55,7 +55,9 @@ class InferenceModel(torch.nn.Module):
         self.net = ARCH_REGISTRY.get(network_type)(**net_opts)
         self.net = self.net.to(self.device)
         self.net.eval()
-        set_random_seed(seed)
+
+        if not as_loss:
+            set_random_seed(seed)
 
         self.dummy_param = torch.nn.Parameter(torch.empty(0)).to(self.device)
     

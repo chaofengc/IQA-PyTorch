@@ -30,18 +30,21 @@ def main():
 
     print(f"{'='*50} Loading metrics {'='*50}")
     metric_func_list = {}
-    results = {}
     for metric in args.metric:
         metric_func = create_metric(metric)
-        if metric == 'fid':
-            result = metric_func(args.target, args.ref, mode=args.fid_mode, verbose=args.verbose)
-            results[metric] = result
-        elif metric == 'inception_score':
-            result = metric_func(args.target, splits=args.isc_splits, verbose=args.verbose)
-            results[metric] = result
-        else:
-            metric_func_list[metric] = metric_func
+        metric_func_list[metric] = metric_func
     print(f"{'='*50} Metrics loaded {'='*50}")
+
+    results = {}
+    # Test fid, inception_score
+    if 'fid' in metric_func_list:
+        metric_func = metric_func_list.pop('fid')
+        result = metric_func(args.target, args.ref, mode=args.fid_mode, verbose=args.verbose)
+        results['fid'] = result
+    if 'inception_score' in metric_func_list:
+        metric_func = metric_func_list.pop('inception_score')
+        result = metric_func(args.target, splits=args.isc_splits, verbose=args.verbose)
+        results['inception_score'] = result
     
     if os.path.isdir(args.target):
         target_list = scandir_images(args.target) 
