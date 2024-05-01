@@ -25,7 +25,7 @@ def scandir_images(dir, max_dataset_size=float("inf"), followlinks=True):
             if is_image_file(fname):
                 path = os.path.join(root, fname)
                 images.append(path)
-    return images[:min(max_dataset_size, len(images))]
+    return sorted(images[:min(max_dataset_size, len(images))])
 
 
 def imread2pil(img_source, rgb=False):
