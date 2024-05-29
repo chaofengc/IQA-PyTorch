@@ -173,7 +173,7 @@ class LPIPS(nn.Module):
         if (retPerLayer):
             return (val, res)
         else:
-            return val.squeeze()
+            return val.squeeze(-1).squeeze(-1)
 
 
 class ScalingLayer(nn.Module):

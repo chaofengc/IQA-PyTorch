@@ -17,7 +17,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import load_pretrained_network, random_crop
 from .func_util import extract_2d_patches
 
 default_model_urls = {
@@ -115,12 +115,16 @@ class PieAPP(nn.Module):
         assert dist.shape == ref.shape, f'Input and reference images should have the same shape, but got {dist.shape}'
         f' and {ref.shape}'
 
-        if self.pretrained:
-            dist = self.preprocess(dist)
-            ref = self.preprocess(ref)
+        dist = self.preprocess(dist)
+        ref = self.preprocess(ref)
 
+        if not self.training:
             image_A_patches = extract_2d_patches(dist, self.patch_size, self.stride, padding='none')
             image_ref_patches = extract_2d_patches(ref, self.patch_size, self.stride, padding='none')
+        else:
+            image_A_patches, image_ref_patches = dist, ref
+            image_A_patches = image_A_patches.unsqueeze(1)
+            image_ref_patches = image_ref_patches.unsqueeze(1)
 
         bsz, num_patches, c, psz, psz = image_A_patches.shape
         image_A_patches = image_A_patches.reshape(bsz * num_patches, c, psz, psz)
@@ -138,4 +142,4 @@ class PieAPP(nn.Module):
         per_patch_weight = per_patch_weight.view((-1, num_patches))
 
         score = (per_patch_weight * per_patch_score).sum(dim=-1) / per_patch_weight.sum(dim=-1)
-        return score.squeeze()
+        return score.reshape(bsz, 1)
