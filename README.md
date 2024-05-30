@@ -219,6 +219,10 @@ python pyiqa/train.py -opt options/train/DBCNN/train_DBCNN.yml
 python pyiqa/train_nsplits.py -opt options/train/DBCNN/train_DBCNN.yml
 ```
 
+Example for distributed training
+```
+torchrun --nproc_per_node=2 --master_port=4321 pyiqa/train.py -opt options/train/CLIPIQA/train_CLIPIQA_koniq10k.yml --launcher pytorch
+```
 
 ## :beers: Contribution
 
