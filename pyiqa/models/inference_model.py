@@ -7,7 +7,7 @@ from pyiqa.utils.img_util import imread2tensor
 from pyiqa.utils import set_random_seed
 
 from pyiqa.losses.loss_util import weight_reduce_loss
-
+from pyiqa.archs.arch_util import load_pretrained_network
 
 class InferenceModel(torch.nn.Module):
     """Common interface for quality inference of images with default setting of each metric."""
@@ -61,6 +61,9 @@ class InferenceModel(torch.nn.Module):
             set_random_seed(seed)
 
         self.dummy_param = torch.nn.Parameter(torch.empty(0)).to(self.device)
+    
+    def load_weights(self, weights_path, weight_keys='params'):
+        self.net = load_pretrained_network(self.net, weights_path, weight_keys=weight_keys)
     
     def forward(self, target, ref=None, **kwargs):
         device = self.dummy_param.device

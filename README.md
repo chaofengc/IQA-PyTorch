@@ -53,12 +53,7 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 
 ## :zap: Quick Start
 
-### Dependencies and Installation
-- Ubuntu >= 18.04
-- Python >= 3.8
-- PyTorch >= 1.12
-- Torchvision >= 0.13
-- CUDA >= 10.2 (if use GPU)
+### Installation
 ```
 # Install with pip
 pip install pyiqa
@@ -76,9 +71,7 @@ python setup.py develop
 
 ### Basic Usage 
 
-#### Commandline Usage
-
-You can now simply use the package with commandline interface. 
+You can simply use the package with commandline interface. 
 ```
 # list all available metrics
 pyiqa -ls
@@ -87,7 +80,9 @@ pyiqa -ls
 pyiqa [metric_name(s)] --target [image_path or dir] --ref [image_path or dir]
 ```
 
-#### Code Usage
+### Advanced Usage with Codes
+
+#### Test metrics 
 
 ```
 import pyiqa
@@ -100,11 +95,6 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 
 # create metric with default setting
 iqa_metric = pyiqa.create_metric('lpips', device=device)
-# Note that gradient propagation is disabled by default. set as_loss=True to enable it as a loss function.
-# iqa_loss = pyiqa.create_metric('lpips', device=device, as_loss=True)
-
-# create metric with custom setting
-iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True, color_space='ycbcr').to(device)
 
 # check if lower better or higher better
 print(iqa_metric.lower_better)
@@ -121,6 +111,27 @@ score_fr = iqa_metric('./ResultsCalibra/dist_dir/I03.bmp', './ResultsCalibra/ref
 fid_metric = pyiqa.create_metric('fid')
 score = fid_metric('./ResultsCalibra/dist_dir/', './ResultsCalibra/ref_dir')
 score = fid_metric('./ResultsCalibra/dist_dir/', dataset_name="FFHQ", dataset_res=1024, dataset_split="trainval70k")
+```
+
+#### Use as loss functions
+
+Note that gradient propagation is disabled by default. Set `as_loss=True` to enable it as a loss function. **Not all metrics support backpropagation, please refer to [Model Cards](docs/ModelCard.md) and be sure that you are using it in a `lower_better` way.**
+```
+lpips_loss = pyiqa.create_metric('lpips', device=device, as_loss=True)
+
+ssim_loss = pyiqa.create_metric('ssimc', device=device, as_loss=True)
+loss = 1 - ssim_loss(img_tensor_x, img_tensor_y)   # ssim is not lower better
+```
+
+#### Use custom settings and weights 
+
+We also provide a flexible way to use custom settings and weights in case you want to retrain or fine-tune the models. 
+
+```
+iqa_metric = pyiqa.create_metric('topiq_nr', device=device, **custom_opts)
+
+# Note that if you train the model with this package, the weights will be saved in weight_dict['params']. Otherwise, please set weight_keys=None.
+iqa_metric.load_weights('path/to/weights.pth', weight_keys='params')
 ```
 
 #### Example Test script

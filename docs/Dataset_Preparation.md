@@ -9,6 +9,8 @@
 
 ## Supported Datasets
 
+The following datasets can be loaded with the current codes after downloaded (see example [scripts](../options/example_benchmark_data_opts.yml)):
+
 | FR Dataset | Description | NR Dataset       | Description        |
 | ---------- | ----------- | ---------------- | ------------------ |
 | PIPAL      | *2AFC*      | FLIVE(PaQ-2-PiQ) | *Tech & Aesthetic* |
@@ -26,6 +28,7 @@ Please see more details at [Awesome Image Quality Assessment](https://github.com
 ## Resources
 
 Here are some other resources to download the dataset:
+- [**Our huggingface archive 🤗**](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets/tree/main)
 - [**Waterloo Bayesian IQA project**](http://ivc.uwaterloo.ca/research/bayesianIQA/). [ [IQA-Dataset](https://github.com/icbcbicc/IQA-Dataset) | [download links](http://ivc.uwaterloo.ca/database/IQADataset) ]
 
 ## Interface of Dataloader
