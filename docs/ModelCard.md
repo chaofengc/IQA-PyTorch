@@ -8,45 +8,46 @@ import pyiqa
 print(pyiqa.list_models())
 ```
 
-| FR Method                | Model names | Description
-| ------------------------ | ------------------ | ------------ |
-| TOPIQ |  `topiq_fr`, `topiq_fr-pipal` | Proposed in [this paper](https://arxiv.org/abs/2308.03060) | 
-| AHIQ                     |  `ahiq` |
-| PieAPP                   |  `pieapp` |
-| LPIPS                    |  `lpips`, `lpips-vgg`, `stlpips`, `stlpips-vgg`  |
-| DISTS                    |  `dists` |
-| WaDIQaM                  |  | *No pretrain models* |
-| CKDN<sup>[1](#fn1)</sup> |  `ckdn` |
-| FSIM                     |  `fsim` |
-| SSIM                     |  `ssim`, `ssimc` | Gray input (y channel), color input
-| MS-SSIM                  |  `ms_ssim` |
-| CW-SSIM                  |  `cw_ssim` |
-| PSNR                     |  `psnr`, `psnry` | Color input, gray input (y channel)
-| VIF                      |  `vif` |
-| GMSD                     |  `gmsd` |
-| NLPD                     |  `nlpd` |
-| VSI                      |  `vsi` |
-| MAD                      |  `mad` |
+| FR Method                | Model names                                                                                                                         | Description
+| ------------------------ |-------------------------------------------------------------------------------------------------------------------------------------| ------------ |
+| TOPIQ | `topiq_fr`, `topiq_fr-pipal`                                                                                                        | Proposed in [this paper](https://arxiv.org/abs/2308.03060) | 
+| AHIQ                     | `ahiq`                                                                                                                              |
+| PieAPP                   | `pieapp`                                                                                                                            |
+| LPIPS                    | `lpips`, `lpips-vgg`, `stlpips`, `stlpips-vgg`                                                                                      |
+| DISTS                    | `dists`                                                                                                                             |
+| WaDIQaM                  |                                                                                                                                     | *No pretrain models* |
+| CKDN<sup>[1](#fn1)</sup> | `ckdn`                                                                                                                              |
+| FSIM                     | `fsim`                                                                                                                              |
+| SSIM                     | `ssim`, `ssimc`                                                                                                                     | Gray input (y channel), color input
+| MS-SSIM                  | `ms_ssim`                                                                                                                           |
+| CW-SSIM                  | `cw_ssim`                                                                                                                           |
+| PSNR                     | `psnr`, `psnry`                                                                                                                     | Color input, gray input (y channel)
+| VIF                      | `vif`                                                                                                                               |
+| GMSD                     | `gmsd`                                                                                                                              |
+| NLPD                     | `nlpd`                                                                                                                              |
+| VSI                      | `vsi`                                                                                                                               |
+| MAD                      | `mad`                                                                                                                               |
 
-| NR Method                    | Model names | Description |
-| ---------------------------- | ------------------------ | ------ |
+| NR Method                    | Model names | Description                                                                         |
+| ---------------------------- | ------------------------ |-------------------------------------------------------------------------------------|
+| ARNIQA                   | `arniqa`, `arniqa-live`, `arniqa-csiq`, `arniqa-tid`, `arniqa-kadid`, `arniqa-koniq`, `arniqa-clive`, `arniqa-flive`, `arniqa-spaq` | [ARNIQA](https://arxiv.org/abs/2310.14918) with different datasets, `koniq` by default |
 | TOPIQ | `topiq_nr`, `topiq_nr-flive`, `topiq_nr-spaq` | [TOPIQ](https://arxiv.org/abs/2308.03060) with different datasets, `koniq` by default |
-| TReS | `tres`, `tres-koniq`, `tres-flive` | TReS with different datasets, `koniq` by default |
-| FID                          | `fid` | Statistic distance between two datasets |
-| CLIPIQA(+)                   |  `clipiqa`, `clipiqa+`, `clipiqa+_vitL14_512`,`clipiqa+_rn50_512`  | CLIPIQA(+) with different backbone, RN50 by default |
-| MANIQA                       | `maniqa`, `maniqa-kadid`, `maniqa-koniq`, `maniqa-pipal` |MUSIQ with different datasets, `koniq` by default |
-| MUSIQ                        | `musiq`, `musiq-koniq`, `musiq-spaq`, `musiq-paq2piq`, `musiq-ava` | MUSIQ with different datasets, `koniq` by default |
+| TReS | `tres`, `tres-koniq`, `tres-flive` | TReS with different datasets, `koniq` by default                                    |
+| FID                          | `fid` | Statistic distance between two datasets                                             |
+| CLIPIQA(+)                   |  `clipiqa`, `clipiqa+`, `clipiqa+_vitL14_512`,`clipiqa+_rn50_512`  | CLIPIQA(+) with different backbone, RN50 by default                                 |
+| MANIQA                       | `maniqa`, `maniqa-kadid`, `maniqa-koniq`, `maniqa-pipal` | MUSIQ with different datasets, `koniq` by default                                   |
+| MUSIQ                        | `musiq`, `musiq-koniq`, `musiq-spaq`, `musiq-paq2piq`, `musiq-ava` | MUSIQ with different datasets, `koniq` by default                                   |
 | DBCNN                        | `dbcnn` |
 | PaQ-2-PiQ                    | `paq2piq` |
 | HyperIQA                     |  `hyperiqa` |
-| NIMA                         |  `nima`, `nima-vgg16-ava` | Aesthetic metric trained with AVA dataset |
-| WaDIQaM                      |  | *No pretrain models*
+| NIMA                         |  `nima`, `nima-vgg16-ava` | Aesthetic metric trained with AVA dataset                                           |
+| WaDIQaM                      |  | *No pretrain models*                                                                
 | CNNIQA                       |  `cnniqa` |
-| NRQM(Ma)<sup>[2](#fn2)</sup> |  `nrqm` | No backward |
-| PI(Perceptual Index)         |  `pi` | No backward |
-| BRISQUE                      | `brisque` | No backward |
-| ILNIQE                       | `ilniqe` | No backward |
-| NIQE                         | `niqe` | No backward |
+| NRQM(Ma)<sup>[2](#fn2)</sup> |  `nrqm` | No backward                                                                         |
+| PI(Perceptual Index)         |  `pi` | No backward                                                                         |
+| BRISQUE                      | `brisque` | No backward                                                                         |
+| ILNIQE                       | `ilniqe` | No backward                                                                         |
+| NIQE                         | `niqe` | No backward                                                                         |
 <!-- </tr>
 </table> -->
 

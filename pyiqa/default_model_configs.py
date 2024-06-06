@@ -530,4 +530,67 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'NR',
         'lower_better': False,
     },
+    'arniqa': {
+        'metric_opts': {
+            'type': 'ARNIQA',
+            'regressor_dataset': 'koniq',
+        },
+        'metric_mode': 'NR',
+    },
+    'arniqa-live': {
+        'metric_opts': {
+            'type': 'ARNIQA',
+            'regressor_dataset': 'live',
+        },
+        'metric_mode': 'NR',
+    },
+    'arniqa-csiq': {
+        'metric_opts': {
+            'type': 'ARNIQA',
+            'regressor_dataset': 'csiq',
+        },
+        'metric_mode': 'NR',
+    },
+    'arniqa-tid': {
+        'metric_opts': {
+            'type': 'ARNIQA',
+            'regressor_dataset': 'tid',
+        },
+        'metric_mode': 'NR',
+    },
+    'arniqa-kadid': {
+        'metric_opts': {
+            'type': 'ARNIQA',
+            'regressor_dataset': 'kadid',
+        },
+        'metric_mode': 'NR',
+    },
+    'arniqa-koniq': {
+        'metric_opts': {
+            'type': 'ARNIQA',
+            'regressor_dataset': 'koniq',
+        },
+        'metric_mode': 'NR',
+    },
+    'arniqa-clive': {
+        'metric_opts': {
+            'type': 'ARNIQA',
+            'regressor_dataset': 'clive',
+        },
+        'metric_mode': 'NR',
+    },
+    'arniqa-flive': {
+        'metric_opts': {
+            'type': 'ARNIQA',
+            'regressor_dataset': 'flive',
+        },
+        'metric_mode': 'NR',
+    },
+    'arniqa-spaq': {
+        'metric_opts': {
+            'type': 'ARNIQA',
+            'regressor_dataset': 'spaq',
+        },
+        'metric_mode': 'NR',
+    },
 })
