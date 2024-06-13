@@ -16,6 +16,7 @@ TOL_DICT = {
     'niqe': (1e-2, 6e-2),
     'pi': (1e-2, 3e-2),
     'ilniqe': (1e-2, 4e-2),
+    'ckdn': (1e-2, 3e-2),
     'musiq': (1e-2, 3e-2),
     'musiq-ava': (1e-2, 3e-2),
     'musiq-koniq': (1e-2, 3e-2),
