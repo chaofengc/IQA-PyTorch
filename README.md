@@ -154,7 +154,12 @@ Please refer to the [results calibration](./ResultsCalibra/ResultsCalibra.md) to
 
 ### ⏬ Download Benchmark Datasets
 
-For convenience, we upload all related datasets to [huggingface](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets/tree/main). **Note that we only collect the datasets for academic, research, and educational purposes. It is important for the users to adhere to the usage guidelines, licensing terms, and conditions set forth by the original creators or owners of each dataset.** Here are example codes to download datasets from huggingface:
+For convenience, we upload all related datasets to [huggingface](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets/tree/main). 
+Here are example codes to download datasets from huggingface:
+
+>[!CAUTION]
+> we only collect the datasets for academic, research, and educational purposes. It is important for the users to adhere to the usage guidelines, licensing terms, and conditions set forth by the original creators or owners of each dataset.
+
 
 ```
 import os
@@ -193,12 +198,12 @@ Basically, we use the largest existing datasets for training, and cross dataset 
 | NR            | `cnniqa`, `dbcnn`, `hyperiqa`,  `wadiqam_nr` |
 | Aesthetic IQA | `nima`, `nima-vgg16-ava`      |
 
-**Important Notes:**
-- Due to optimized training process, performance of some retrained approaches may be different with original paper.
-- Results of all **retrained models by ours** are normalized to [0, 1] and change to higher better for convenience.
-- Results of KonIQ-10k, AVA are both tested with official split.
-- NIMA is only applicable to AVA dataset now. We use `inception_resnet_v2` for default `nima`.
-- MUSIQ is not included in the IAA benchmark because we do not have train/split information of the official model.
+>[!NOTE]
+>- Due to optimized training process, performance of some retrained approaches may be different with original paper.
+>- Results of all **retrained models by ours** are normalized to [0, 1] and change to higher better for convenience.
+>- Results of KonIQ-10k, AVA are both tested with official split.
+>- NIMA is only applicable to AVA dataset now. We use `inception_resnet_v2` for default `nima`.
+>- MUSIQ is not included in the IAA benchmark because we do not have train/split information of the official model.
 
 ### Benchmark Performance with Provided Script
 
