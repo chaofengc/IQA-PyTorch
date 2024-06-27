@@ -2,7 +2,7 @@ addict
 future
 lmdb
 numpy
-opencv-python
+opencv-python-headless
 pandas
 Pillow
 pyyaml
