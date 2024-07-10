@@ -77,6 +77,10 @@ class LIQE(nn.Module):
                  in product(qualitys, scenes, dists_map)])
         else:
             self.joint_texts = torch.cat([clip.tokenize(f"a photo with {c} quality") for c in qualitys])
+        
+        with torch.no_grad(): 
+            self.text_features = self.clip_model.encode_text(self.joint_texts)
+            self.text_features = self.text_features / self.text_features.norm(dim=1, keepdim=True)
 
     def forward(self, x):
         bs = x.size(0)
@@ -108,16 +112,14 @@ class LIQE(nn.Module):
         x = x[:, sel, ...]
         x = x.reshape(bs, num_patch, x.shape[2], x.shape[3], x.shape[4])
 
-        text_features = self.clip_model.encode_text(self.joint_texts.to(x.device))
-        text_features = text_features / text_features.norm(dim=1, keepdim=True)
-
         x = x.view(bs*x.size(1), x.size(2), x.size(3), x.size(4))
         image_features = self.clip_model.encode_image(x, pos_embedding=True)
         # normalized features
         image_features = image_features / image_features.norm(dim=1, keepdim=True)
         # cosine similarity as logits
+        self.text_features = self.text_features.to(x.device)
         logit_scale = self.clip_model.logit_scale.exp()
-        logits_per_image = logit_scale * image_features @ text_features.t()
+        logits_per_image = logit_scale * image_features @ self.text_features.t()
 
         logits_per_image = logits_per_image.view(bs, self.num_patch, -1)
         logits_per_image = logits_per_image.mean(1)
