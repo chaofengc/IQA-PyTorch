@@ -102,8 +102,7 @@ class LIQE(nn.Module):
         # preprocess image
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
 
-        x = x.unfold(2, 224, self.step).unfold(3, 224, self.step).permute(2, 3, 0, 1, 4, 5).reshape(bs, -1, 3,
-                                                                                                    224, 224)
+        x = x.unfold(2, 224, self.step).unfold(3, 224, self.step).permute(0, 2, 3, 1, 4, 5).reshape(bs, -1, 3, 224, 224)
 
         if x.size(1) < self.num_patch:
             num_patch = x.size(1)
@@ -119,12 +118,10 @@ class LIQE(nn.Module):
             for i in range(num_patch):
                 sel[i] = sel_step * i
             sel = sel.long()
-
         x = x[:, sel, ...]
         x = x.reshape(bs, num_patch, x.shape[2], x.shape[3], x.shape[4])
 
         text_features = self.text_features.to(x)
-        
         x = x.view(bs*x.size(1), x.size(2), x.size(3), x.size(4))
         image_features = self.clip_model.encode_image(x, pos_embedding=True)
         # normalized features
