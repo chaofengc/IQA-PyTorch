@@ -1,5 +1,5 @@
 import argparse
-from .api_helpers import create_metric, list_models
+from pyiqa.api_helpers import create_metric, list_models
 from pyiqa.utils import scandir_images
 
 import os

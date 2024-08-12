@@ -1,9 +1,9 @@
 import fnmatch
 import re
-from .default_model_configs import DEFAULT_CONFIGS
+from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
-from .utils import get_root_logger
-from .models.inference_model import InferenceModel
+from pyiqa.utils import get_root_logger
+from pyiqa.models.inference_model import InferenceModel
 
 
 def create_metric(metric_name, as_loss=False, device=None, **kwargs):
