@@ -17,7 +17,7 @@ import torchvision.transforms.functional as TF
 import timm
 from .constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network, random_crop
+from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network, uniform_crop 
 
 import copy
 from .clip_model import load
@@ -480,9 +480,9 @@ class CFANet(nn.Module):
         if self.crops > 1 and not self.training:
             bsz = x.shape[0]
             if y is not None:
-                x, y = random_crop([x, y], self.crop_size, self.crops)
+                x, y = uniform_crop([x, y], self.crop_size, self.crops)
             else:
-                x = random_crop([x], self.crop_size, self.crops)[0]
+                x = uniform_crop([x], self.crop_size, self.crops)[0]
 
             score = self.forward_cross_attention(x, y)
             score = score.reshape(bsz, self.crops, self.num_class)

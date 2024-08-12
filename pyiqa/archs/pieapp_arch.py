@@ -17,7 +17,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network, random_crop
+from pyiqa.archs.arch_util import load_pretrained_network
 from .func_util import extract_2d_patches
 
 default_model_urls = {

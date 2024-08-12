@@ -23,7 +23,7 @@ from torchvision.ops.deform_conv import DeformConv2d
 from pyiqa.archs.arch_util import (
     load_file_from_url,
     load_pretrained_network,
-    random_crop,
+    uniform_crop,
 )
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -337,7 +337,7 @@ class AHIQ(nn.Module):
         bsz = x.shape[0]
 
         if self.crops > 1 and not self.training:
-            x, y = random_crop([x, y], self.crop_size, self.crops)
+            x, y = uniform_crop([x, y], self.crop_size, self.crops)
             score = self.regress_score(x, y)
             score = score.reshape(bsz, self.crops, 1)
             score = score.mean(dim=1)

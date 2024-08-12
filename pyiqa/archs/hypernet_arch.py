@@ -17,7 +17,7 @@ import torch
 import torch.nn as nn
 import timm
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import load_pretrained_network, uniform_crop
 
 
 default_model_urls = {
@@ -47,6 +47,7 @@ class HyperNet(nn.Module):
     def __init__(
         self,
         base_model_name='resnet50',
+        num_crop=25,
         pretrained=True,
         pretrained_model_path=None,
         default_mean=[0.485, 0.456, 0.406],
@@ -61,6 +62,8 @@ class HyperNet(nn.Module):
         hyper_fc_channels = [112, 56, 28, 14, 1]
         feature_size = 7  # spatial size of the last features from base model
         self.hyper_fc_channels = hyper_fc_channels
+
+        self.num_crop = num_crop 
 
         # local distortion aware module
         self.lda_modules = nn.ModuleList([
@@ -132,19 +135,6 @@ class HyperNet(nn.Module):
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x
 
-    def random_crop_test(self, x, sample_num=25):
-        b, c, h, w = x.shape
-        th = tw = 224
-        cropped_x = []
-        for s in range(sample_num):
-            i = torch.randint(0, h - th + 1, size=(1, )).item()
-            j = torch.randint(0, w - tw + 1, size=(1, )).item()
-            cropped_x.append(x[:, :, i:i + th, j:j + tw])
-        cropped_x = torch.cat(cropped_x, dim=0)
-        results = self.forward_patch(cropped_x)
-        results = results.reshape(sample_num, b).mean(dim=0)
-        return results.unsqueeze(-1)
-
     def forward_patch(self, x):
         assert x.shape[2:] == torch.Size([224, 224]), f'Input patch size must be (224, 224), but got {x.shape[2:]}'
         x = self.preprocess(x)
@@ -187,4 +177,9 @@ class HyperNet(nn.Module):
         if self.training:
             return self.forward_patch(x)
         else:
-            return self.random_crop_test(x)
+            b, c, h, w = x.shape
+            crops = uniform_crop([x], 224, self.num_crop)
+            results = self.forward_patch(crops)
+            results = results.reshape(b, self.num_crop, -1).mean(dim=1)
+
+        return results.unsqueeze(-1)

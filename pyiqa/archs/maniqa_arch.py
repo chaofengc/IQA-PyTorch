@@ -19,7 +19,7 @@ from torch import nn
 from einops import rearrange
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network, random_crop
+from pyiqa.archs.arch_util import load_pretrained_network, random_crop, uniform_crop 
 
 default_model_urls = {
     'pipal': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/MANIQA_PIPAL-ae6d356b.pth',
@@ -197,7 +197,7 @@ class MANIQA(nn.Module):
         if self.training:
             x = random_crop(x, crop_size=224, crop_num=1)
         else:
-            x = random_crop(x, crop_size=224, crop_num=self.test_sample)
+            x = uniform_crop(x, crop_size=224, crop_num=self.test_sample)
 
         _x = self.vit(x)
         x = self.extract_feature(self.save_output)

@@ -59,23 +59,29 @@ def main():
     for metric, func in metric_func_list.items():
         pbar = tqdm(total=len(target_list), unit='image')
 
+        all_results = {}
         if args.ref is None or func.metric_mode == 'NR':
             tmp_result = []
             for target in target_list:
-                tmp_result.append(func(target).item())
+                score = func(target).item()
+                tmp_result.append(score)
+                all_results[target] = score
 
                 pbar.update(1)
                 pbar.set_description(f'Testing {metric} with input {target:>20}')
         else:
             tmp_result = []
             for target, ref in zip(target_list, ref_list):
-                tmp_result.append(func(target, ref).item())
+                score = func(target, ref).item()
+                tmp_result.append(score)
+                all_results[f"{target} | {ref}"] = score
 
                 pbar.update(1)
                 pbar.set_description(f'Testing {metric} with input {target:>20}')
 
         pbar.close()
-        results[metric] = np.mean(tmp_result) 
+        all_results['mean'] = np.mean(tmp_result)
+        results[metric] = all_results
     
     pprint(results)
 

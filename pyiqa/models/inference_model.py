@@ -4,7 +4,6 @@ from collections import OrderedDict
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.img_util import imread2tensor
-from pyiqa.utils import set_random_seed
 
 from pyiqa.losses.loss_util import weight_reduce_loss
 from pyiqa.archs.arch_util import load_pretrained_network
@@ -33,12 +32,12 @@ class InferenceModel(torch.nn.Module):
             self.metric_mode = kwargs.pop('metric_mode')
         elif 'metric_mode' in kwargs:
             kwargs.pop('metric_mode')
-
+        
         if device is None:
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         else:
             self.device = device
-
+        
         self.as_loss = as_loss
         self.loss_weight = loss_weight
         self.loss_reduction = loss_reduction
@@ -57,8 +56,6 @@ class InferenceModel(torch.nn.Module):
         self.net.eval()
 
         self.seed = seed
-        if not as_loss:
-            set_random_seed(seed)
 
         self.dummy_param = torch.nn.Parameter(torch.empty(0)).to(self.device)
     
@@ -67,8 +64,6 @@ class InferenceModel(torch.nn.Module):
     
     def forward(self, target, ref=None, **kwargs):
         device = self.dummy_param.device
-        if not self.as_loss:
-            set_random_seed(self.seed)
 
         with torch.set_grad_enabled(self.as_loss):
 

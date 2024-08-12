@@ -79,6 +79,54 @@ def random_crop(input_list, crop_size, crop_num):
     return crops_list
 
 
+def uniform_crop(input_list, crop_size, crop_num):
+    """
+    Randomly crops the input tensor(s) to the specified size and number of crops.
+
+    Args:
+        - input_list (list or tensor): List of input tensors or a single input tensor.
+        - crop_size (int or tuple): Size of the crop. If an int is provided, a square crop of that size is used.
+        If a tuple is provided, a crop of that size is used.
+        - crop_num (int): Number of crops to generate.
+
+    Returns:
+        tensor or list of tensors: If a single input tensor is provided, a tensor of cropped images is returned.
+            If a list of input tensors is provided, a list of tensors of cropped images is returned.
+    """
+    if not isinstance(input_list, collections.abc.Sequence):
+        input_list = [input_list]
+
+    b, c, h, w = input_list[0].shape
+    ch, cw = to_2tuple(crop_size)
+
+    if min(h, w) <= crop_size:
+        scale_factor = (crop_size + 1) / min(h, w)
+        input_list = [
+            F.interpolate(x, scale_factor=scale_factor, mode="bilinear")
+            for x in input_list
+        ]
+        b, c, h, w = input_list[0].shape
+    
+    step_h = (h - ch) // int(np.sqrt(crop_num))
+    step_w = (w - cw) // int(np.sqrt(crop_num))
+
+    crops_list = []
+    for idx, inp in enumerate(input_list):
+        tmp_list = []
+        for i in range(int(np.ceil(np.sqrt(crop_num)))):
+            for j in range(int(np.ceil(np.sqrt(crop_num)))):
+                sh = i * step_h
+                sw = j * step_w
+                tmp_list.append(inp[..., sh : sh + ch, sw : sw + cw])
+        crops_list.append(
+            torch.stack(tmp_list[:crop_num], dim=1).reshape(b * crop_num, c, ch, cw)
+        )
+
+    if len(crops_list) == 1:
+        crops_list = crops_list[0]
+    return crops_list
+
+
 def clip_preprocess_tensor(x: torch.Tensor, model):
     """clip preprocess function with tensor input.
 

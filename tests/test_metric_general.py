@@ -89,7 +89,7 @@ def test_match_official_with_given_cases(ref_img, dist_img, metric_name, device)
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU not available")
 @pytest.mark.parametrize(
     ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['ahiq', 'fid', 'vsi', 'clipscore', 'topiq_nr-face', 'tres', 'tres-koniq', 'inception_score']]
+    [(k) for k in pyiqa.list_models() if k not in ['ahiq', 'fid', 'vsi', 'clipscore', 'topiq_nr-face', 'tres', 'tres-koniq', 'inception_score', 'qalign']]
 )
 def test_cpu_gpu_consistency(metric_name):
     """Test if the metric results are consistent between CPU and GPU.

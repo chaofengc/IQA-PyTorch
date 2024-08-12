@@ -20,7 +20,7 @@ import torchvision.models as models
 
 from .arch_util import load_pretrained_network
 from pyiqa.utils.registry import ARCH_REGISTRY
-from .arch_util import random_crop
+from .arch_util import random_crop, uniform_crop
 
 
 default_model_urls = {
@@ -327,7 +327,7 @@ class TReS(nn.Module):
             x = random_crop(x, 224, 1)
             num_patches = 1
         else:
-            x = random_crop(x, 224, self.test_sample)
+            x = uniform_crop(x, 224, self.test_sample)
             num_patches = self.test_sample
 
         self.pos_enc_1 = self.position_embedding(torch.ones(1, self.dim_modelt, 7, 7).to(x))
