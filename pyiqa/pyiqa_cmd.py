@@ -65,7 +65,8 @@ def main():
             for target in target_list:
                 score = func(target).item()
                 tmp_result.append(score)
-                all_results[target] = score
+                if args.verbose:
+                    all_results[target] = score
 
                 pbar.update(1)
                 pbar.set_description(f'Testing {metric} with input {target:>20}')
@@ -74,7 +75,8 @@ def main():
             for target, ref in zip(target_list, ref_list):
                 score = func(target, ref).item()
                 tmp_result.append(score)
-                all_results[f"{target} | {ref}"] = score
+                if args.verbose:
+                    all_results[f"{target} | {ref}"] = score
 
                 pbar.update(1)
                 pbar.set_description(f'Testing {metric} with input {target:>20}')
