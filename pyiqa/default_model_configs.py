@@ -31,6 +31,26 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'FR',
         'lower_better': True,
     },
+    'lpips+': {
+        'metric_opts': {
+            'type': 'LPIPS',
+            'net': 'alex',
+            'version': '0.1',
+            'semantic_weight_layer': 2,
+        },
+        'metric_mode': 'FR',
+        'lower_better': True,
+    },
+    'lpips-vgg+': {
+        'metric_opts': {
+            'type': 'LPIPS',
+            'net': 'vgg',
+            'version': '0.1',
+            'semantic_weight_layer': 2,
+        },
+        'metric_mode': 'FR',
+        'lower_better': True,
+    },
     'stlpips': {
         'metric_opts': {
             'type': 'STLPIPS',

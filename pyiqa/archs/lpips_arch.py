@@ -4,6 +4,14 @@ Created by: https://github.com/richzhang/PerceptualSimilarity.
 
 Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
+Reference:
+    Zhang, Richard, et al. "The unreasonable effectiveness of deep features as
+    a perceptual metric." Proceedings of the IEEE conference on computer vision
+    and pattern recognition. 2018.
+
+    TOPIQ: A Top-down Approach from Semantics to Distortions for Image Quality Assessment.
+    Chaofeng Chen, Jiadi Mo, Jingwen Hou, Haoning Wu, Liang Liao, Wenxiu Sun, Qiong Yan, Weisi Lin.
+    Transactions on Image Processing, 2024.
 """
 
 import torch
@@ -63,10 +71,6 @@ class LPIPS(nn.Module):
         pnet_tune (Boolean): Whether to tune the base/trunk network.
         use_dropout (Boolean): Whether to use dropout when training linear layers.
 
-    Reference:
-        Zhang, Richard, et al. "The unreasonable effectiveness of deep features as
-        a perceptual metric." Proceedings of the IEEE conference on computer vision
-        and pattern recognition. 2018.
 
         """
 
@@ -81,6 +85,7 @@ class LPIPS(nn.Module):
                  use_dropout=True,
                  pretrained_model_path=None,
                  eval_mode=True,
+                 semantic_weight_layer=-1,
                  **kwargs):
 
         super(LPIPS, self).__init__()
@@ -92,6 +97,8 @@ class LPIPS(nn.Module):
         self.lpips = lpips  # false means baseline of just averaging all layers
         self.version = version
         self.scaling_layer = ScalingLayer()
+
+        self.semantic_weight_layer = semantic_weight_layer 
 
         if (self.pnet_type in ['vgg', 'vgg16']):
             net_type = vgg16
@@ -156,8 +163,16 @@ class LPIPS(nn.Module):
             diffs[kk] = (feats0[kk] - feats1[kk])**2
 
         if (self.lpips):
-            if (self.spatial):
+            if self.spatial:
                 res = [upsample(self.lins[kk](diffs[kk]), out_HW=in0.shape[2:]) for kk in range(self.L)]
+            elif self.semantic_weight_layer >= 0:
+                res = []
+                semantic_feat = outs0[self.semantic_weight_layer] 
+                for kk in range(self.L):
+                    diff_score = self.lins[kk](diffs[kk])
+                    semantic_weight = torch.nn.functional.interpolate(semantic_feat, size=diff_score.shape[2:], mode='bilinear', align_corners=False)
+                    avg_score = torch.sum(diff_score * semantic_weight, dim=[1, 2, 3], keepdim=True) / torch.sum(semantic_weight, dim=[1, 2, 3], keepdim=True)
+                    res.append(avg_score)
             else:
                 res = [spatial_average(self.lins[kk](diffs[kk]), keepdim=True) for kk in range(self.L)]
         else:

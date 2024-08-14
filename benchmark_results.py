@@ -126,9 +126,9 @@ def main():
             for data in dataloader:
                 gt_labels += flatten_list(data['mos_label'].cpu().tolist())
                 if metric_mode == 'FR':
-                    iqa_score = iqa_model(data['img'], data['ref_img']).cpu().tolist()
+                    iqa_score = iqa_model(data['img'], data['ref_img']).squeeze().cpu().tolist()
                 else:
-                    iqa_score = iqa_model(data['img']).cpu().tolist()
+                    iqa_score = iqa_model(data['img']).squeeze().cpu().tolist()
                 result_scores += flatten_list(iqa_score)
                 pbar.update(1)
             pbar.close()
@@ -151,14 +151,12 @@ def main():
         if save_result_path is not None:
             csv_writer.writerow(results_row)
         
-        
-
     if save_result_path is not None:
         csv_file.close()
 
     if update_benchmark_file is not None:
+        benchmark = benchmark.sort_values(by=benchmark.columns[0], key=lambda x: x.str.split('/').str[0].astype(float))
         benchmark.to_csv(update_benchmark_file)
-
 
 if __name__ == '__main__':
     main()

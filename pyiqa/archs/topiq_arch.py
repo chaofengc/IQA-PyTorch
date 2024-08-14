@@ -2,7 +2,7 @@
 
 TOPIQ: A Top-down Approach from Semantics to Distortions for Image Quality Assessment.
 Chaofeng Chen, Jiadi Mo, Jingwen Hou, Haoning Wu, Liang Liao, Wenxiu Sun, Qiong Yan, Weisi Lin.
-Arxiv 2023.
+Transactions on Image Processing, 2024.
 
 Paper link: https://arxiv.org/abs/2308.03060
 
