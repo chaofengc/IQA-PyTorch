@@ -18,7 +18,6 @@ from pyiqa.utils.download_util import load_file_from_url
 # IQA utils
 # --------------------------------------------
 
-
 def dist_to_mos(dist_score: torch.Tensor) -> torch.Tensor:
     """Convert distribution prediction to mos score.
     For datasets with detailed score labels, such as AVA
@@ -39,10 +38,10 @@ def random_crop(input_list, crop_size, crop_num):
     Randomly crops the input tensor(s) to the specified size and number of crops.
 
     Args:
-        - input_list (list or tensor): List of input tensors or a single input tensor.
-        - crop_size (int or tuple): Size of the crop. If an int is provided, a square crop of that size is used.
+        input_list (list or tensor): List of input tensors or a single input tensor.
+        crop_size (int or tuple): Size of the crop. If an int is provided, a square crop of that size is used.
         If a tuple is provided, a crop of that size is used.
-        - crop_num (int): Number of crops to generate.
+        crop_num (int): Number of crops to generate.
 
     Returns:
         tensor or list of tensors: If a single input tensor is provided, a tensor of cropped images is returned.
@@ -81,17 +80,17 @@ def random_crop(input_list, crop_size, crop_num):
 
 def uniform_crop(input_list, crop_size, crop_num):
     """
-    Randomly crops the input tensor(s) to the specified size and number of crops.
+    Crop the input_list of tensors into multiple crops with uniform steps according to input size and crop_num.
 
     Args:
-        - input_list (list or tensor): List of input tensors or a single input tensor.
-        - crop_size (int or tuple): Size of the crop. If an int is provided, a square crop of that size is used.
-        If a tuple is provided, a crop of that size is used.
-        - crop_num (int): Number of crops to generate.
+        input_list (list or torch.Tensor): List of input tensors or a single input tensor.
+        crop_size (int or tuple): Size of the crops. If int, the same size will be used for height and width.
+            If tuple, should be (height, width).
+        crop_num (int): Number of crops to generate.
 
     Returns:
-        tensor or list of tensors: If a single input tensor is provided, a tensor of cropped images is returned.
-            If a list of input tensors is provided, a list of tensors of cropped images is returned.
+        torch.Tensor or list of torch.Tensor: Cropped tensors. If input_list is a list, the output will be a list
+            of cropped tensors. If input_list is a single tensor, the output will be a single tensor.
     """
     if not isinstance(input_list, collections.abc.Sequence):
         input_list = [input_list]
@@ -188,15 +187,29 @@ to_ntuple = _ntuple
 
 @torch.no_grad()
 def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
-    r"""Initialize network weights.
+    """
+    Initializes the weights of the given module(s) using Kaiming Normal initialization.
 
     Args:
-        - module_list (list[nn.Module] | nn.Module): Modules to be initialized.
-        - scale (float): Scale initialized weights, especially for residual
-        blocks. Default: 1.
-        - bias_fill (float): The value to fill bias. Default: 0.
-        - kwargs (dict): Other arguments for initialization function.
+        module_list (list or nn.Module): List of modules or a single module to initialize.
+        scale (float, optional): Scaling factor for the weights. Default is 1.
+        bias_fill (float, optional): Value to fill the biases with. Default is 0.
+        **kwargs: Additional arguments for the Kaiming Normal initialization.
 
+    Returns:
+        None
+
+    Example:
+        >>> import torch.nn as nn
+        >>> from arch_util import default_init_weights
+        >>> model = nn.Sequential(
+        >>>     nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
+        >>>     nn.ReLU(),
+        >>>     nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+        >>>     nn.ReLU(),
+        >>>     nn.Linear(64 * 32 * 32, 10)
+        >>> )
+        >>> default_init_weights(model, scale=0.1, bias_fill=0.01)
     """
     if not isinstance(module_list, list):
         module_list = [module_list]
