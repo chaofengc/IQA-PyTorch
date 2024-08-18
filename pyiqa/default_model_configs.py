@@ -1,17 +1,22 @@
 from collections import OrderedDict
 
+# IMPORTANT NOTES !!!
+#   - The score range (min, max) is only rough estimation, the actual score range may vary.
+
 DEFAULT_CONFIGS = OrderedDict({
     'ahiq': {
         'metric_opts': {
             'type': 'AHIQ',
         },
         'metric_mode': 'FR',
+        'score_range': '~0, ~1',
     },
     'ckdn': {
         'metric_opts': {
             'type': 'CKDN',
         },
         'metric_mode': 'FR',
+        'score_range': '0, 1',
     },
     'lpips': {
         'metric_opts': {
@@ -21,6 +26,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, 1',
     },
     'lpips-vgg': {
         'metric_opts': {
@@ -30,6 +36,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, 1',
     },
     'lpips+': {
         'metric_opts': {
@@ -40,6 +47,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, 1',
     },
     'lpips-vgg+': {
         'metric_opts': {
@@ -50,6 +58,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, 1',
     },
     'stlpips': {
         'metric_opts': {
@@ -59,6 +68,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, 1',
     },
     'stlpips-vgg': {
         'metric_opts': {
@@ -68,6 +78,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, 1',
     },
     'dists': {
         'metric_opts': {
@@ -75,6 +86,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, 1',
     },
     'ssim': {
         'metric_opts': {
@@ -83,6 +95,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'test_y_channel': True,
         },
         'metric_mode': 'FR',
+        'score_range': '0, 1',
     },
     'ssimc': {
         'metric_opts': {
@@ -91,6 +104,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'test_y_channel': False,
         },
         'metric_mode': 'FR',
+        'score_range': '0, 1',
     },
     'psnr': {
         'metric_opts': {
@@ -98,6 +112,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'test_y_channel': False,
         },
         'metric_mode': 'FR',
+        'score_range': '~0, ~40',
     },
     'psnry': {
         'metric_opts': {
@@ -105,6 +120,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'test_y_channel': True,
         },
         'metric_mode': 'FR',
+        'score_range': '~0, ~60',
     },
     'fsim': {
         'metric_opts': {
@@ -112,6 +128,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'chromatic': True,
         },
         'metric_mode': 'FR',
+        'score_range': '0, 1',
     },
     'ms_ssim': {
         'metric_opts': {
@@ -121,12 +138,14 @@ DEFAULT_CONFIGS = OrderedDict({
             'is_prod': True,
         },
         'metric_mode': 'FR',
+        'score_range': '0, 1',
     },
     'vif': {
         'metric_opts': {
             'type': 'VIF',
         },
         'metric_mode': 'FR',
+        'score_range': '0, ~1',
     },
     'gmsd': {
         'metric_opts': {
@@ -135,6 +154,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, ~1',
     },
     'nlpd': {
         'metric_opts': {
@@ -144,12 +164,14 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, 1',
     },
     'vsi': {
         'metric_opts': {
             'type': 'VSI',
         },
         'metric_mode': 'FR',
+        'score_range': '0, ~1',
     },
     'cw_ssim': {
         'metric_opts': {
@@ -160,6 +182,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'test_y_channel': True,
         },
         'metric_mode': 'FR',
+        'score_range': '0, 1',
     },
     'mad': {
         'metric_opts': {
@@ -167,6 +190,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '0, ~',
     },
     # =============================================================
     'niqe': {
@@ -176,6 +200,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
         'lower_better': True,
+        'score_range': '~0, ~100',
     },
     'ilniqe': {
         'metric_opts': {
@@ -183,6 +208,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
         'lower_better': True,
+        'score_range': '~0, ~100',
     },
     'brisque': {
         'metric_opts': {
@@ -191,12 +217,14 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
         'lower_better': True,
+        'score_range': '~0, ~150',
     },
     'nrqm': {
         'metric_opts': {
             'type': 'NRQM',
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~10',
     },
     'pi': {
         'metric_opts': {
@@ -204,6 +232,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
         'lower_better': True,
+        'score_range': '~0, ~',
     },
     'cnniqa': {
         'metric_opts': {
@@ -211,6 +240,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'pretrained': 'koniq10k'
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'musiq': {
         'metric_opts': {
@@ -218,6 +248,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'pretrained': 'koniq10k'
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~100',
     },
     'musiq-ava': {
         'metric_opts': {
@@ -225,13 +256,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'pretrained': 'ava'
         },
         'metric_mode': 'NR',
-    },
-    'musiq-koniq': {
-        'metric_opts': {
-            'type': 'MUSIQ',
-            'pretrained': 'koniq10k'
-        },
-        'metric_mode': 'NR',
+        'score_range': '1, 10',
     },
     'musiq-paq2piq': {
         'metric_opts': {
@@ -239,6 +264,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'pretrained': 'paq2piq'
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~100',
     },
     'musiq-spaq': {
         'metric_opts': {
@@ -246,6 +272,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'pretrained': 'spaq'
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~100',
     },
     'nima': {
         'metric_opts': {
@@ -254,6 +281,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'base_model_name': 'inception_resnet_v2',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 10',
     },
     'nima-koniq': {
         'metric_opts': {
@@ -263,6 +291,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'base_model_name': 'inception_resnet_v2',
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'nima-spaq': {
         'metric_opts': {
@@ -272,6 +301,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'base_model_name': 'inception_resnet_v2',
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'nima-vgg16-ava': {
         'metric_opts': {
@@ -280,6 +310,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'base_model_name': 'vgg16',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 10',
     },
     'pieapp': {
         'metric_opts': {
@@ -287,12 +318,14 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'FR',
         'lower_better': True,
+        'score_range': '~0, ~5',
     },
     'paq2piq': {
         'metric_opts': {
             'type': 'PAQ2PIQ',
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~100',
     },
     'dbcnn': {
         'metric_opts': {
@@ -300,6 +333,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'pretrained': 'koniq'
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'fid': {
         'metric_opts': {
@@ -307,6 +341,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
         'lower_better': True,
+        'score_range': '0, ~',
     },
     'maniqa': {
         'metric_opts': {
@@ -315,14 +350,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'scale': 0.8,
         },
         'metric_mode': 'NR',
-    },
-    'maniqa-koniq': {
-        'metric_opts': {
-            'type': 'MANIQA',
-            'train_dataset': 'koniq',
-            'scale': 0.8,
-        },
-        'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'maniqa-pipal': {
         'metric_opts': {
@@ -330,6 +358,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'train_dataset': 'pipal',
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'maniqa-kadid': {
         'metric_opts': {
@@ -338,12 +367,14 @@ DEFAULT_CONFIGS = OrderedDict({
             'scale': 0.8,
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'clipiqa': {
         'metric_opts': {
             'type': 'CLIPIQA',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'clipiqa+': {
         'metric_opts': {
@@ -351,6 +382,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'model_type': 'clipiqa+',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'clipiqa+_vitL14_512': {
         'metric_opts': {
@@ -360,6 +392,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'pos_embedding': True,
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'clipiqa+_rn50_512': {
         'metric_opts': {
@@ -369,6 +402,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'pos_embedding': True,
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'tres': {
         'metric_opts': {
@@ -376,13 +410,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'train_dataset': 'koniq',
         },
         'metric_mode': 'NR',
-    },
-    'tres-koniq': {
-        'metric_opts': {
-            'type': 'TReS',
-            'train_dataset': 'koniq',
-        },
-        'metric_mode': 'NR',
+        'score_range': '~0, ~100',
     },
     'tres-flive': {
         'metric_opts': {
@@ -390,30 +418,35 @@ DEFAULT_CONFIGS = OrderedDict({
             'train_dataset': 'flive',
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~100',
     },
     'hyperiqa': {
         'metric_opts': {
             'type': 'HyperNet',
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'uranker': {
         'metric_opts': {
             'type': 'URanker',
         },
         'metric_mode': 'NR',
+        'score_range': '~-1, ~2',
     },
     'clipscore': {
         'metric_opts': {
             'type': 'CLIPScore',
         },
         'metric_mode': 'NR',  # Caption image similarity
+        'score_range': '0, 2.5'
     },
     'entropy': {
         'metric_opts': {
             'type': 'Entropy',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 8'
     },
     'topiq_nr': {
         'metric_opts': {
@@ -423,6 +456,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'use_ref': False,
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'topiq_nr-flive': {
         'metric_opts': {
@@ -432,6 +466,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'use_ref': False,
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'topiq_nr-spaq': {
         'metric_opts': {
@@ -441,6 +476,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'use_ref': False,
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'topiq_nr-face': {
         'metric_opts': {
@@ -451,6 +487,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'test_img_size': 512,
         },
         'metric_mode': 'NR',
+        'score_range': '~0, ~1',
     },
     'topiq_fr': {
         'metric_opts': {
@@ -460,6 +497,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'use_ref': True,
         },
         'metric_mode': 'FR',
+        'score_range': '~0, ~1',
     },
     'topiq_fr-pipal': {
         'metric_opts': {
@@ -469,6 +507,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'use_ref': True,
         },
         'metric_mode': 'FR',
+        'score_range': '~0, ~1',
     },
     'topiq_iaa': {
         'metric_opts': {
@@ -481,6 +520,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'num_class': 10,
         },
         'metric_mode': 'NR',
+        'score_range': '1, 10',
     },
     'topiq_iaa_res50': {
         'metric_opts': {
@@ -494,12 +534,14 @@ DEFAULT_CONFIGS = OrderedDict({
             'test_img_size': 384,
         },
         'metric_mode': 'NR',
+        'score_range': '1, 10',
     },
     'laion_aes': {
         'metric_opts': {
             'type': 'LAIONAes',
         },
         'metric_mode': 'NR',
+        'score_range': '~1, ~10',
     },
     'liqe': {
             'metric_opts': {
@@ -507,6 +549,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 'pretrained': 'koniq'
             },
             'metric_mode': 'NR',
+            'score_range': '1, 5'
         },
     'liqe_mix': {
             'metric_opts': {
@@ -514,6 +557,7 @@ DEFAULT_CONFIGS = OrderedDict({
                 'pretrained': 'mix'
             },
             'metric_mode': 'NR',
+            'score_range': '1, 5'
         },
     'wadiqam_fr': {
         'metric_opts': {
@@ -522,6 +566,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'model_name': 'wadiqam_fr_kadid',
         },
         'metric_mode': 'FR',
+        'score_range': '~-1, ~0.1',
     },
     'wadiqam_nr': {
         'metric_opts': {
@@ -530,18 +575,21 @@ DEFAULT_CONFIGS = OrderedDict({
             'model_name': 'wadiqam_nr_koniq',
         },
         'metric_mode': 'NR',
+        'score_range': '~-1, ~0.1',
     },
     'qalign': {
         'metric_opts': {
             'type': 'QAlign',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'unique': {
         'metric_opts': {
             'type': 'UNIQUE',
         },
         'metric_mode': 'NR',
+        'score_range': '~-3, ~3',
     },
     'inception_score': {
         'metric_opts': {
@@ -549,6 +597,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
         'lower_better': False,
+        'score_range': '0, ~',
     },
     'arniqa': {
         'metric_opts': {
@@ -556,6 +605,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'regressor_dataset': 'koniq',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'arniqa-live': {
         'metric_opts': {
@@ -563,6 +613,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'regressor_dataset': 'live',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'arniqa-csiq': {
         'metric_opts': {
@@ -570,6 +621,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'regressor_dataset': 'csiq',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'arniqa-tid': {
         'metric_opts': {
@@ -577,6 +629,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'regressor_dataset': 'tid',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'arniqa-kadid': {
         'metric_opts': {
@@ -584,13 +637,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'regressor_dataset': 'kadid',
         },
         'metric_mode': 'NR',
-    },
-    'arniqa-koniq': {
-        'metric_opts': {
-            'type': 'ARNIQA',
-            'regressor_dataset': 'koniq',
-        },
-        'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'arniqa-clive': {
         'metric_opts': {
@@ -598,6 +645,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'regressor_dataset': 'clive',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'arniqa-flive': {
         'metric_opts': {
@@ -605,6 +653,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'regressor_dataset': 'flive',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
     'arniqa-spaq': {
         'metric_opts': {
@@ -612,5 +661,6 @@ DEFAULT_CONFIGS = OrderedDict({
             'regressor_dataset': 'spaq',
         },
         'metric_mode': 'NR',
+        'score_range': '0, 1',
     },
 })

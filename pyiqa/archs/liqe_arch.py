@@ -75,7 +75,7 @@ class LIQE(nn.Module):
             text_feat_cache_path = os.path.expanduser("~/.cache/pyiqa/liqe_text_feat.pt")
 
         if os.path.exists(text_feat_cache_path):
-            self.text_features = torch.load(text_feat_cache_path, map_location='cpu')
+            self.text_features = torch.load(text_feat_cache_path, map_location='cpu', weights_only=False)
         else:
             print(f'Generating text features for LIQE model, will be cached at {text_feat_cache_path}.')
             if self.mtl:

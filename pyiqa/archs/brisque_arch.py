@@ -61,7 +61,7 @@ def brisque(x: torch.Tensor,
     scaled_features = scale_features(features)
 
     if pretrained_model_path:
-        sv_coef, sv = torch.load(pretrained_model_path)
+        sv_coef, sv = torch.load(pretrained_model_path, weights_only=False)
         sv_coef = sv_coef.to(x)
         sv = sv.to(x)
 

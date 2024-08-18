@@ -28,6 +28,7 @@ class InferenceModel(torch.nn.Module):
         # ============ set metric properties ===========
         self.lower_better = DEFAULT_CONFIGS[metric_name].get('lower_better', False)
         self.metric_mode = DEFAULT_CONFIGS[metric_name].get('metric_mode', None)
+        self.score_range = DEFAULT_CONFIGS[metric_name].get('score_range', None)
         if self.metric_mode is None:
             self.metric_mode = kwargs.pop('metric_mode')
         elif 'metric_mode' in kwargs:

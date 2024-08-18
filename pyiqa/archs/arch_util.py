@@ -163,7 +163,7 @@ def load_pretrained_network(net, model_path, strict=True, weight_keys=None):
     if model_path.startswith("https://") or model_path.startswith("http://"):
         model_path = load_file_from_url(model_path)
     print(f"Loading pretrained model {net.__class__.__name__} from {model_path}")
-    state_dict = torch.load(model_path, map_location=torch.device("cpu"))
+    state_dict = torch.load(model_path, map_location=torch.device("cpu"), weights_only=False)
     if weight_keys is not None:
         state_dict = state_dict[weight_keys]
     state_dict = clean_state_dict(state_dict)

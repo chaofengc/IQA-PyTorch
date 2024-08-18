@@ -198,7 +198,7 @@ class AHIQ(nn.Module):
             )
         elif pretrained:
             weight_path = load_file_from_url(default_model_urls["pipal"])
-            checkpoint = torch.load(weight_path)
+            checkpoint = torch.load(weight_path, map_location='cpu', weights_only=False)
             self.regressor.load_state_dict(checkpoint["regressor_model_state_dict"])
             self.deform_net.load_state_dict(checkpoint["deform_net_model_state_dict"])
 
