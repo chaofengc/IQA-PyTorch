@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'pyiqa'
-copyright = '2023, Chaofeng Chen'
+copyright = '2021 - 2024, Chaofeng Chen'
 author = 'Chaofeng Chen'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.7'
+release = '0.1.12'
 
 
 # -- General configuration ---------------------------------------------------
@@ -92,7 +92,8 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 # html_theme = 'alabaster'
-html_theme = 'sphinx_rtd_theme'
+# html_theme = 'sphinx_rtd_theme'
+html_theme = "furo"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

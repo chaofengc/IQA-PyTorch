@@ -145,23 +145,23 @@ class AHIQ(nn.Module):
     ResNet50 and Vision Transformer (ViT) backbones with deformable convolution layers for enhanced image quality assessment.
 
     Args:
-        num_crop (int, optional): Number of crops to use for testing. Default is 20.
-        crop_size (int, optional): Size of the crops. Default is 224.
-        default_mean (list, optional): List of mean values for normalization. Default is [0.485, 0.456, 0.406].
-        default_std (list, optional): List of standard deviation values for normalization. Default is [0.229, 0.224, 0.225].
-        pretrained (bool, optional): Whether to use a pretrained model. Default is True.
-        pretrained_model_path (str, optional): Path to a pretrained model. Default is None.
+        - num_crop (int, optional): Number of crops to use for testing. Default is 20.
+        - crop_size (int, optional): Size of the crops. Default is 224.
+        - default_mean (list, optional): List of mean values for normalization. Default is [0.485, 0.456, 0.406].
+        - default_std (list, optional): List of standard deviation values for normalization. Default is [0.229, 0.224, 0.225].
+        - pretrained (bool, optional): Whether to use a pretrained model. Default is True.
+        - pretrained_model_path (str, optional): Path to a pretrained model. Default is None.
 
     Attributes:
-        resnet50 (nn.Module): ResNet50 backbone.
-        vit (nn.Module): Vision Transformer backbone.
-        deform_net (nn.Module): Deformable fusion network.
-        regressor (nn.Module): Pixel prediction network.
-        default_mean (torch.Tensor): Mean values for normalization.
-        default_std (torch.Tensor): Standard deviation values for normalization.
-        eps (float): Small value to avoid division by zero.
-        crops (int): Number of crops to use for testing.
-        crop_size (int): Size of the crops.
+        - resnet50 (nn.Module): ResNet50 backbone.
+        - vit (nn.Module): Vision Transformer backbone.
+        - deform_net (nn.Module): Deformable fusion network.
+        - regressor (nn.Module): Pixel prediction network.
+        - default_mean (torch.Tensor): Mean values for normalization.
+        - default_std (torch.Tensor): Standard deviation values for normalization.
+        - eps (float): Small value to avoid division by zero.
+        - crops (int): Number of crops to use for testing.
+        - crop_size (int): Size of the crops.
     """
     def __init__(
         self,
