@@ -74,8 +74,13 @@ autodoc_typehints = "signature"
 #         skip = True
 #     return skip
 
-# def setup(sphinx):
-#     sphinx.connect("autoapi-skip-member", skip_submodules)
+def skip_attributes(app, what, name, obj, skip, options):
+    if what == "attribute":
+        return True  # Skip all attributes
+    return None  # Use default behavior for other members
+
+def setup(sphinx):
+    sphinx.connect("autoapi-skip-member", skip_attributes)
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -93,7 +98,7 @@ exclude_patterns = []
 #
 # html_theme = 'alabaster'
 # html_theme = 'sphinx_rtd_theme'
-html_theme = "furo"
+html_theme = 'furo'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
