@@ -9,23 +9,9 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/chaofengc/Awesome-Image-Quality-Assessment)
 [![Citation](https://img.shields.io/badge/Citation-bibtex-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/README.md#bookmark_tabs-citation)
 
-<!-- ![demo](docs/demo.gif) -->
-
-<!-- - [:open\_book: Introduction](#open_book-introduction)
-- [:zap: Quick Start](#zap-quick-start)
-  - [Dependencies and Installation](#dependencies-and-installation)
-  - [Basic Usage](#basic-usage)
-- [:1st\_place\_medal: Benchmark Performances and Model Zoo](#1st_place_medal-benchmark-performances-and-model-zoo)
-  - [Results Calibration](#results-calibration)
-  - [Performance Evaluation Protocol](#performance-evaluation-protocol)
-  - [Benchmark Performance with Provided Script](#benchmark-performance-with-provided-script)
-- [:hammer\_and\_wrench: Train](#hammer_and_wrench-train)
-  - [Dataset Preparation](#dataset-preparation)
-  - [Example Train Script](#example-trai-script) -->
- 
 ## :open_book: Introduction
 
-This is a image quality assessment toolbox with **pure python and pytorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Please refer to the following documents for details:  
+This is a comprehensive image quality assessment (IQA) toolbox built with **pure Python and PyTorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Please refer to the following documents for details:  
 
 <div align="center">
 
@@ -36,19 +22,11 @@ This is a image quality assessment toolbox with **pure python and pytorch**. We 
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
-- 🔥**Aug, 2024**. Add `lpips+` and `lpips-vgg+` proposed in our paper [TOPIQ](https://arxiv.org/abs/2308.03060). 
+- ✨**Aug, 2024**. Add `piqe` metric.
+- 💥**Aug, 2024**. Add `lpips+` and `lpips-vgg+` proposed in our paper [TOPIQ](https://arxiv.org/abs/2308.03060). 
 - 🔥**June, 2024**. Add `arniqa` and its variances trained on different datasets, refer to official repo [here](https://github.com/miccunifi/ARNIQA). Thanks for the contribution from [Lorenzo Agnolucci](https://github.com/LorenzoAgnolucci) 🤗.
 - **Apr 24, 2024**. Add `inception_score` and console entry point with `pyiqa` command.
 - **Mar 11, 2024**. Add `unique`, refer to official repo [here](https://github.com/zwx8981/UNIQUE). Thanks for the contribution from [Weixia Zhang](https://github.com/zwx8981) 🤗.
-- :boom: **Jan 31, 2024**. Add `qalign` for both NR and IAA. It is our most powerful unified metric based on large vision-language models, and shows remarkable performance and robustness. Refer [Q-Align](https://github.com/Q-Future/Q-Align) for more details. Use it with the following codes:
-  ```
-  qalign = create_metric('qalign').cuda()
-  quality_score = qalign(input, task_='quality')
-  aesthetic_score = qalign(input, task_='aesthetic')
-  ```
-- **Jan 19, 2024**. Add `wadiqam_fr` and `wadiqam_nr`. All implemented methods are usable now 🍻. 
-- **Dec 23, 2023**. Add `liqe` and `liqe_mix`. Thanks for the contribution from [Weixia Zhang](https://github.com/zwx8981) 🤗.
-- **Oct 09, 2023**. Add datasets: [PIQ2023](https://github.com/DXOMARK-Research/PIQ2023), [GFIQA](http://database.mmsp-kn.de/gfiqa-20k-database.html). Add metric `topiq_nr-face`. We release example results on FFHQ [here](tests/ffhq_score_topiq_nr-face.csv) for reference. 
 - [**More**](docs/history_changelog.md)
 
 ---

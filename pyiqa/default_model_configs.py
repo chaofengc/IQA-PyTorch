@@ -193,6 +193,14 @@ DEFAULT_CONFIGS = OrderedDict({
         'score_range': '0, ~',
     },
     # =============================================================
+    'piqe': {
+        'metric_opts': {
+            'type': 'PIQE',
+        },
+        'metric_mode': 'NR',
+        'lower_better': True,
+        'score_range': '0, 100',
+    },
     'niqe': {
         'metric_opts': {
             'type': 'NIQE',

@@ -94,4 +94,7 @@ class ExactPadding2d(nn.Module):
         self.mode = mode
 
     def forward(self, x):
-        return exact_padding_2d(x, self.kernel, self.stride, self.dilation, self.mode)
+        if self.mode is None:
+            return x
+        else:
+            return exact_padding_2d(x, self.kernel, self.stride, self.dilation, self.mode)
