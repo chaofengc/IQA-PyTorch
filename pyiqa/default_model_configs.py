@@ -610,7 +610,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'type': 'QAlign',
         },
         'metric_mode': 'NR',
-        'score_range': '0, 1',
+        'score_range': '1, 5',
     },
     'unique': {
         'metric_opts': {
