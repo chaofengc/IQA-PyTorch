@@ -15,7 +15,7 @@ print(pyiqa.list_models())
 | PieAPP                   | `pieapp`                                                                                                                            |
 | LPIPS                    | `lpips`, `lpips-vgg`, `stlpips`, `stlpips-vgg`, `lpips+`, `lpips-vgg+`                                                                                      |
 | DISTS                    | `dists`                                                                                                                             |
-| WaDIQaM                  |                                                                                                                                     | *No pretrain models* |
+| WaDIQaM                  | `wadiqam_fr`                                                                                                                                     |  |
 | CKDN<sup>[1](#fn1)</sup> | `ckdn`                                                                                                                              |
 | FSIM                     | `fsim`                                                                                                                              |
 | SSIM                     | `ssim`, `ssimc`                                                                                                                     | Gray input (y channel), color input
@@ -43,7 +43,7 @@ print(pyiqa.list_models())
 | PaQ-2-PiQ                    | `paq2piq` |
 | HyperIQA                     |  `hyperiqa` |
 | NIMA                         |  `nima`, `nima-vgg16-ava` | Aesthetic metric trained with AVA dataset                                           |
-| WaDIQaM                      |  | *No pretrain models*                                                                
+| WaDIQaM                      | `wadiqam_nr` | |                                                                
 | CNNIQA                       |  `cnniqa` |
 | NRQM(Ma)<sup>[2](#fn2)</sup> |  `nrqm` | No backward                                                                         |
 | PI(Perceptual Index)         |  `pi` | No backward                                                                         |
