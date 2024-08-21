@@ -245,7 +245,7 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
         'lower_better': True,
-        'score_range': '~0, ~150',
+        'score_range': '~0, ~100',
     },
     'nrqm': {
         'metric_opts': {
