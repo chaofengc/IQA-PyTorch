@@ -28,6 +28,7 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 default_model_urls = {
     'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_modelparameters.mat',
     'niqe': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_modelparameters.mat',
+    'niqe_matlab': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_matlab_params.mat',
     'ilniqe': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/ILNIQE_templateModel.mat',
 }
 
@@ -427,6 +428,7 @@ class NIQE(torch.nn.Module):
                  test_y_channel: bool = True,
                  color_space: str = 'yiq',
                  crop_border: int = 0,
+                 version: str = 'original',
                  pretrained_model_path: str = None) -> None:
 
         super(NIQE, self).__init__()
@@ -436,8 +438,10 @@ class NIQE(torch.nn.Module):
         self.crop_border = crop_border
         if pretrained_model_path is not None:
             self.pretrained_model_path = pretrained_model_path
-        else:
+        elif version == 'original':
             self.pretrained_model_path = load_file_from_url(default_model_urls['url'])
+        elif version == 'matlab':
+            self.pretrained_model_path = load_file_from_url(default_model_urls['niqe_matlab'])
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""Computation of NIQE metric.

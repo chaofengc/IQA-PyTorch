@@ -23,6 +23,9 @@ test:
 	pytest tests/test_metric_general.py::test_forward -v  
 	pytest tests/test_metric_general.py::test_cpu_gpu_consistency -v
 
+test_cal:
+	pytest tests/ -m calibration -v
+
 test_cs:
 	pytest tests/test_metric_general.py::test_cpu_gpu_consistency -v
 

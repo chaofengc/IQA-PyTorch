@@ -10,15 +10,19 @@ Reference:
 
 """
 
+import scipy
+import numpy as np
 import torch
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.matlab_utils import imresize
+from pyiqa.matlab_utils.nss_feature import compute_nss_features
 from .func_util import estimate_ggd_param, estimate_aggd_param, normalize_img_with_guass
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/brisque_svm_weights.pth'
+    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/brisque_svm_weights.pth',
+    'brisque_matlab': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/brisque_matlab.mat',
 }
 
 
@@ -50,29 +54,45 @@ def brisque(x: torch.Tensor,
         x = to_y_channel(x, 255.)
     else:
         x = x * 255
+    
+    use_matlab_version = 'matlab' in pretrained_model_path
 
     features = []
     num_of_scales = 2
     for _ in range(num_of_scales):
-        features.append(natural_scene_statistics(x, kernel_size, kernel_sigma))
+        if use_matlab_version: 
+            xnorm = normalize_img_with_guass(x, kernel_size, kernel_sigma, padding='replicate')
+            features.append(compute_nss_features(xnorm))
+        else:
+            features.append(natural_scene_statistics(x, kernel_size, kernel_sigma))
         x = imresize(x, scale=0.5, antialiasing=True)
-
     features = torch.cat(features, dim=-1)
     scaled_features = scale_features(features)
 
-    if pretrained_model_path:
+    if pretrained_model_path and not use_matlab_version:
+        # gamma and rho are SVM model parameters taken from official implementation of BRISQUE on MATLAB
+        # Source: https://live.ece.utexas.edu/research/Quality/index_algorithms.htm
         sv_coef, sv = torch.load(pretrained_model_path, weights_only=False)
         sv_coef = sv_coef.to(x)
         sv = sv.to(x)
+        gamma = 0.05
+        rho = -153.591
+    elif use_matlab_version:
+        params = scipy.io.loadmat(pretrained_model_path)
+        sv = params['sv']
+        sv_coef = np.ravel(params['sv_coef'])
+        sv = torch.from_numpy(sv).to(features)
+        sv_coef = torch.from_numpy(sv_coef).to(features)
+        scale = 0.3210
+        scaled_features = features / scale
+        sv = sv / scale
+        gamma = 1
+        rho = - 43.4582
 
-    # gamma and rho are SVM model parameters taken from official implementation of BRISQUE on MATLAB
-    # Source: https://live.ece.utexas.edu/research/Quality/index_algorithms.htm
-    gamma = 0.05
-    rho = -153.591
     sv.t_()
     kernel_features = rbf_kernel(features=scaled_features, sv=sv, gamma=gamma)
-    score = kernel_features @ sv_coef
-    return score - rho
+    score = kernel_features @ sv_coef - rho
+    return score 
 
 
 def natural_scene_statistics(luma: torch.Tensor, kernel_size: int = 7, sigma: float = 7. / 6) -> torch.Tensor:
@@ -137,6 +157,7 @@ class BRISQUE(torch.nn.Module):
                  kernel_size: int = 7,
                  kernel_sigma: float = 7 / 6,
                  test_y_channel: bool = True,
+                 version: str = 'original',
                  pretrained_model_path: str = None) -> None:
         super().__init__()
         self.kernel_size = kernel_size
@@ -150,8 +171,10 @@ class BRISQUE(torch.nn.Module):
         self.test_y_channel = test_y_channel
         if pretrained_model_path is not None:
             self.pretrained_model_path = pretrained_model_path
-        else:
+        elif version == 'original':
             self.pretrained_model_path = load_file_from_url(default_model_urls['url'])
+        elif version == 'matlab':
+            self.pretrained_model_path = load_file_from_url(default_model_urls['brisque_matlab']) 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""Computation of BRISQUE score as a loss function.

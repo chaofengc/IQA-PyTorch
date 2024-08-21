@@ -210,6 +210,16 @@ DEFAULT_CONFIGS = OrderedDict({
         'lower_better': True,
         'score_range': '~0, ~100',
     },
+    'niqe_matlab': {
+        'metric_opts': {
+            'type': 'NIQE',
+            'test_y_channel': True,
+            'version': 'matlab',
+        },
+        'metric_mode': 'NR',
+        'lower_better': True,
+        'score_range': '~0, ~100',
+    },
     'ilniqe': {
         'metric_opts': {
             'type': 'ILNIQE',
@@ -222,6 +232,16 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_opts': {
             'type': 'BRISQUE',
             'test_y_channel': True,
+        },
+        'metric_mode': 'NR',
+        'lower_better': True,
+        'score_range': '~0, ~150',
+    },
+    'brisque_matlab': {
+        'metric_opts': {
+            'type': 'BRISQUE',
+            'test_y_channel': True,
+            'version': 'matlab',
         },
         'metric_mode': 'NR',
         'lower_better': True,

@@ -47,9 +47,9 @@ print(pyiqa.list_models())
 | CNNIQA                       |  `cnniqa` |
 | NRQM(Ma)<sup>[2](#fn2)</sup> |  `nrqm` | No backward                                                                         |
 | PI(Perceptual Index)         |  `pi` | No backward                                                                         |
-| BRISQUE                      | `brisque` | No backward                                                                         |
+| BRISQUE                      | `brisque`, `brisque_matlab` | No backward                                                                         |
 | ILNIQE                       | `ilniqe` | No backward                                                                         |
-| NIQE                         | `niqe` | No backward                                                                         |
+| NIQE                         | `niqe`, `niqe_matlab` | No backward                                                                         |
 | PIQE                         | `piqe` | No backward                                                                         |
 <!-- </tr>
 </table> -->
