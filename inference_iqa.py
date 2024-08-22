@@ -4,6 +4,7 @@ import os
 from pyiqa import create_metric
 from tqdm import tqdm
 import csv
+from time import time
 
 
 def main():
@@ -52,11 +53,13 @@ def main():
             else:
                 ref_img_path = None
 
+            start_time = time()
             score = iqa_model(img_path, ref_img_path).cpu().item()
+            end_time = time()
             avg_score += score
             pbar.update(1)
             pbar.set_description(f'{metric_name} of {img_name}: {score}')
-            pbar.write(f'{metric_name} of {img_name}: {score}')
+            pbar.write(f'{metric_name} of {img_name}: {score}\tTime: {end_time - start_time:.2f}s')
             if args.save_file:
                 sfwriter.writerow([img_name, score])
             
