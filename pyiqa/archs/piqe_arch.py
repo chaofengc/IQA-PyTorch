@@ -116,7 +116,6 @@ def cal_center_sur_dev(block, block_size):
     # block surround
     block = torch.cat((block[..., :center1 - 1], block[..., center1:]), dim=-1)
     block = torch.cat((block[..., :center2 - 1], block[..., center2:]), dim=-1)
-    print(block.shape, center.shape)
 
     # Compute standard deviation of block center and block surround
     center_std = torch.std(center, dim=[2, 3], unbiased=True)
