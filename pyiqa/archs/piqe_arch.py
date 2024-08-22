@@ -11,9 +11,9 @@ This PyTorch implementation by: Chaofeng Chen (https://github.com/chaofengc)
 """
 
 import torch
+import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
-from pyiqa.utils import scandir_images, imread2tensor
 from pyiqa.matlab_utils import symm_pad
 from pyiqa.archs.func_util import normalize_img_with_guass
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -51,64 +51,46 @@ def piqe(
     img = symm_pad(img, (0, col_pad, 0, row_pad))
 
     # Normalize image to zero mean and ~unit std
-    # used circularly-symmetric Gaussian weighting function sampled out 
-    # to 3 standard deviations.
     img_normalized = normalize_img_with_guass(img, padding='replicate')
 
-    # Preallocation for masks
-    noticeable_artifacts_mask = torch.zeros_like(img_normalized, dtype=bool)
-    noise_mask = torch.zeros_like(img_normalized, dtype=bool)
-    activity_mask = torch.zeros_like(img_normalized, dtype=bool)
-    score = torch.zeros(bsz)
+    # Create blocks
+    blocks = img_normalized.unfold(2, block_size, block_size).unfold(3, block_size, block_size)
+    blocks = blocks.contiguous().view(bsz, -1, block_size, block_size)
 
-    nsegments = block_size - window_size + 1
-    # Start of block by block processing
-    for b in range(0, bsz):
-        NHSA = 0
-        dist_block_scores = 0
-        for i in range(0, height, block_size):
-            for j in range(0, width, block_size):
+    # Compute block variance
+    block_var = torch.var(blocks, dim=[2, 3], unbiased=True)
 
-                # Weights Initialization
-                WNDC = WNC = 0
+    # Considering spatially prominent blocks
+    active_blocks = block_var > activity_threshold
 
-                # Compute block variance
-                block = img_normalized[b, 0, i:i + block_size, j:j + block_size]
-                block_var = torch.var(block, unbiased=True)
+    # Analyze blocks for noticeable artifacts and Gaussian noise distortions
+    block_sigma, block_beta = noise_criterion(blocks, block_size - 1, block_var)
+    noise_mask = (block_sigma > 2 * block_beta)
+    
+    block_impaired = notice_dist_criterion(blocks, window_size, block_impaired_threshold, block_size)
 
-                # Considering spatially prominent blocks 
-                if block_var > activity_threshold:
-                    activity_mask[b, 0, i:i + block_size, j:j + block_size] = True
-                    WHSA = 1
-                    NHSA += 1
+    # Pooling/ distortion assignment
+    WHSA = active_blocks.float()
+    WNDC = block_impaired.float()
+    WNC = noise_mask.float()
+    dist_block_scores = WHSA * WNDC * (1 - block_var) + WHSA * WNC * block_var
 
-                    # Analyze Block for noticeable artifacts
-                    block_impaired = notice_dist_criterion(block, nsegments, block_size - 1, window_size, block_impaired_threshold, block_size)
+    # Quality score computation
+    NHSA = active_blocks.sum(dim=1)
+    dist_block_scores = dist_block_scores.sum(dim=1)
+    C = 1
+    score = ((dist_block_scores + C) / (C + NHSA)) * 100
 
-                    if block_impaired:
-                        WNDC = 1
-                        noticeable_artifacts_mask[b, 0, i:i + block_size, j:j + block_size] = True
+    noticeable_artifacts_mask = block_impaired.view(bsz, 1, height // block_size, width // block_size)
+    noticeable_artifacts_mask = F.interpolate(noticeable_artifacts_mask.float(), scale_factor=block_size, mode='nearest')
 
-                    # Analyze Block for Gaussian noise distortions
-                    block_sigma, block_beta = noise_criterion(block, block_size - 1, block_var)
+    noise_mask = noise_mask.view(bsz, 1, height // block_size, width // block_size)
+    noise_mask = F.interpolate(noise_mask.float(), scale_factor=block_size, mode='nearest')
 
-                    if block_sigma > 2 * block_beta:
-                        WNC = 1
-                        noise_mask[b, 0, i:i + block_size, j:j + block_size] = True
+    activity_mask = active_blocks.view(bsz, 1, height // block_size, width // block_size)
+    activity_mask = F.interpolate(activity_mask.float(), scale_factor=block_size, mode='nearest')[..., :height, :width]
 
-                    # Pooling/ distortion assignment
-                    dist_block_scores += WHSA * WNDC * (1 - block_var) + WHSA * WNC * block_var
-
-        # Quality score computation
-        # C is a positive constant, it is included to prevent numerical instability
-        C = 1
-        score[b] = ((dist_block_scores + C) / (C + NHSA)) * 100
-
-    noticeable_artifacts_mask = noticeable_artifacts_mask[..., :height, :width]
-    noise_mask = noise_mask[..., :height, :width]
-    activity_mask = activity_mask[..., :height, :width]
-
-    return score, noticeable_artifacts_mask, noise_mask, activity_mask 
+    return score, noticeable_artifacts_mask, noise_mask, activity_mask
 
 
 def noise_criterion(block, block_size, block_var):
@@ -129,69 +111,62 @@ def cal_center_sur_dev(block, block_size):
     # block center
     center1 = (block_size + 1) // 2
     center2 = center1 + 1
-    center = torch.cat((block[..., center1 - 1], block[..., center2 - 1]), dim=0)
+    center = torch.stack((block[..., center1 - 1], block[..., center2 - 1]), dim=3)
 
     # block surround
     block = torch.cat((block[..., :center1 - 1], block[..., center1:]), dim=-1)
     block = torch.cat((block[..., :center2 - 1], block[..., center2:]), dim=-1)
+    print(block.shape, center.shape)
 
     # Compute standard deviation of block center and block surround
-    center_std = torch.std(center, unbiased=True)
-    surround_std = torch.std(block, unbiased=True)
+    center_std = torch.std(center, dim=[2, 3], unbiased=True)
+    surround_std = torch.std(block, dim=[2, 3], unbiased=True)
     # Ratio of center and surround standard deviation
     cen_sur_dev = center_std / surround_std
     # Check for nan's
-    if torch.isnan(cen_sur_dev):
-        cen_sur_dev = 0
+    cen_sur_dev = torch.nan_to_num(cen_sur_dev)
     return cen_sur_dev
 
 
-def notice_dist_criterion(block, nsegments, block_size, window_size, block_impaired_threshold, N):
-    # Top edge of block
-    top_edge = block[0, :]
-    seg_top_edge = segment_edge(top_edge, nsegments, block_size, window_size)
+def notice_dist_criterion(blocks, window_size, block_impaired_threshold, N):
+    """
+    Analyze blocks for noticeable artifacts and Gaussian noise distortions.
 
-    # Right side edge of block
-    right_side_edge = block[:, N - 1]
-    seg_right_side_edge = segment_edge(right_side_edge, nsegments, block_size, window_size)
+    Args:
+        blocks (torch.Tensor): Tensor of shape (b, num_blocks, block_size, block_size).
+        window_size (int): Size of the window for segment analysis.
+        block_impaired_threshold (float): Threshold for considering a block as impaired.
+        N (int): Size of the blocks (same as block_size).
 
-    # Down side edge of block
-    down_side_edge = block[N - 1, :]
-    seg_down_side_edge = segment_edge(down_side_edge, nsegments, block_size, window_size)
+    Returns:
+        torch.Tensor: Tensor indicating impaired blocks.
+    """
 
-    # Left side edge of block
-    left_side_edge = block[:, 0]
-    seg_left_side_edge = segment_edge(left_side_edge, nsegments, block_size, window_size)
+    top_edge = blocks[:, :, 0, :]
+    seg_top_edge = top_edge.unfold(-1, window_size, 1)
 
-    # Compute standard deviation of segments in left, right, top and down side edges of a block
-    seg_top_edge_std_dev = torch.std(seg_top_edge, dim=1, unbiased=True)
-    seg_right_side_edge_std_dev = torch.std(seg_right_side_edge, dim=1, unbiased=True)
-    seg_down_side_edge_std_dev = torch.std(seg_down_side_edge, dim=1, unbiased=True)
-    seg_left_side_edge_std_dev = torch.std(seg_left_side_edge, dim=1, unbiased=True)
+    right_side_edge = blocks[:, :, :, N-1]
+    seg_right_side_edge = right_side_edge.unfold(-1, window_size, 1)
 
-    # Check for segment in block exhibits impairedness, if the standard deviation of the segment is less than block_impaired_threshold.
-    block_impaired = 0
-    for seg_index in range(seg_top_edge.shape[0]):
-        if (
-            (seg_top_edge_std_dev[seg_index] < block_impaired_threshold)
-            or (seg_right_side_edge_std_dev[seg_index] < block_impaired_threshold)
-            or (seg_down_side_edge_std_dev[seg_index] < block_impaired_threshold)
-            or (seg_left_side_edge_std_dev[seg_index] < block_impaired_threshold)
-        ):
-            block_impaired = 1
-            break
-    
+    down_side_edge = blocks[:, :, N-1, :]
+    seg_down_side_edge = down_side_edge.unfold(-1, window_size, 1)
+
+    left_side_edge = blocks[:, :, :, 0]
+    seg_left_side_edge = left_side_edge.unfold(-1, window_size, 1)
+
+    seg_top_edge_std_dev = torch.std(seg_top_edge, dim=-1, unbiased=True)
+    seg_right_side_edge_std_dev = torch.std(seg_right_side_edge, dim=-1, unbiased=True)
+    seg_down_side_edge_std_dev = torch.std(seg_down_side_edge, dim=-1, unbiased=True)
+    seg_left_side_edge_std_dev = torch.std(seg_left_side_edge, dim=-1, unbiased=True)
+
+    block_impaired = (
+        (seg_top_edge_std_dev < block_impaired_threshold).sum(dim=2) +
+        (seg_right_side_edge_std_dev < block_impaired_threshold).sum(dim=2) +
+        (seg_down_side_edge_std_dev < block_impaired_threshold).sum(dim=2) +
+        (seg_left_side_edge_std_dev < block_impaired_threshold).sum(dim=2)
+    ) > 0
+
     return block_impaired
-
-
-def segment_edge(block_edge, nsegments, block_size, window_size):
-    # Segment is defined as a collection of 6 contiguous pixels in a block edge
-    segments = torch.zeros(nsegments, window_size)
-    for i in range(nsegments):
-        segments[i, :] = block_edge[i: window_size]
-        if window_size <= (block_size + 1):
-            window_size += 1
-    return segments
 
 
 @ARCH_REGISTRY.register()
