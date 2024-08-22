@@ -82,10 +82,10 @@ def piqe(
     score = ((dist_block_scores + C) / (C + NHSA)) * 100
 
     noticeable_artifacts_mask = block_impaired.view(bsz, 1, height // block_size, width // block_size)
-    noticeable_artifacts_mask = F.interpolate(noticeable_artifacts_mask.float(), scale_factor=block_size, mode='nearest')
+    noticeable_artifacts_mask = F.interpolate(noticeable_artifacts_mask.float(), scale_factor=block_size, mode='nearest')[..., :height, :width]
 
     noise_mask = noise_mask.view(bsz, 1, height // block_size, width // block_size)
-    noise_mask = F.interpolate(noise_mask.float(), scale_factor=block_size, mode='nearest')
+    noise_mask = F.interpolate(noise_mask.float(), scale_factor=block_size, mode='nearest')[..., :height, :width]
 
     activity_mask = active_blocks.view(bsz, 1, height // block_size, width // block_size)
     activity_mask = F.interpolate(activity_mask.float(), scale_factor=block_size, mode='nearest')[..., :height, :width]
