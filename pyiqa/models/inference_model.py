@@ -61,7 +61,7 @@ class InferenceModel(torch.nn.Module):
         self.dummy_param = torch.nn.Parameter(torch.empty(0)).to(self.device)
     
     def load_weights(self, weights_path, weight_keys='params'):
-        self.net = load_pretrained_network(self.net, weights_path, weight_keys=weight_keys)
+        load_pretrained_network(self.net, weights_path, weight_keys=weight_keys)
     
     def is_valid_input(self, x):
         if x is not None:
