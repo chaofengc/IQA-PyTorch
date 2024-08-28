@@ -19,6 +19,7 @@ class InferenceModel(torch.nn.Module):
             loss_reduction='mean',
             device=None,
             seed=123,
+            check_input=True,
             **kwargs  # Other metric options
     ):
         super(InferenceModel, self).__init__()
@@ -42,6 +43,7 @@ class InferenceModel(torch.nn.Module):
         self.as_loss = as_loss
         self.loss_weight = loss_weight
         self.loss_reduction = loss_reduction
+        self.check_input = check_input
 
         # =========== define metric model ===============
         net_opts = OrderedDict()
@@ -64,7 +66,7 @@ class InferenceModel(torch.nn.Module):
         load_pretrained_network(self.net, weights_path, weight_keys=weight_keys)
     
     def is_valid_input(self, x):
-        if x is not None:
+        if x is not None and self.check_input:
             assert isinstance(x, torch.Tensor), 'Input must be a torch.Tensor'
             assert x.dim() == 4, 'Input must be 4D tensor (B, C, H, W)'
             assert x.shape[1] in [1, 3], 'Input must be RGB or gray image'
