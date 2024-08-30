@@ -36,7 +36,6 @@ class QAlign(nn.Module):
     def __init__(self, dtype='fp16') -> None:
         super().__init__()
 
-        dtype = '4bit'
         assert dtype in ["fp16", "4bit", "8bit"], f"Invalid dtype {dtype}. Choose from 'nf4', 'int8', or 'fp16'."
 
         # load model
