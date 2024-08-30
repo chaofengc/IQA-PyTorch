@@ -612,6 +612,22 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'NR',
         'score_range': '1, 5',
     },
+    'qalign_8bit': {
+        'metric_opts': {
+            'type': 'QAlign',
+            'dtype': '8bit',
+        },
+        'metric_mode': 'NR',
+        'score_range': '1, 5',
+    },
+    'qalign_4bit': {
+        'metric_opts': {
+            'type': 'QAlign',
+            'dtype': '4bit',
+        },
+        'metric_mode': 'NR',
+        'score_range': '1, 5',
+    },
     'unique': {
         'metric_opts': {
             'type': 'UNIQUE',

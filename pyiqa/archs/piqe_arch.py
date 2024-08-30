@@ -49,6 +49,7 @@ def piqe(
     bsz, _, height, width = img.shape
     col_pad, row_pad = width % block_size, height % block_size
     img = symm_pad(img, (0, col_pad, 0, row_pad))
+    new_height, new_width = img.shape[2], img.shape[3]
 
     # Normalize image to zero mean and ~unit std
     img_normalized = normalize_img_with_guass(img, padding='replicate')
@@ -81,13 +82,13 @@ def piqe(
     C = 1
     score = ((dist_block_scores + C) / (C + NHSA)) * 100
 
-    noticeable_artifacts_mask = block_impaired.view(bsz, 1, height // block_size, width // block_size)
+    noticeable_artifacts_mask = block_impaired.view(bsz, 1, new_height // block_size, new_width // block_size)
     noticeable_artifacts_mask = F.interpolate(noticeable_artifacts_mask.float(), scale_factor=block_size, mode='nearest')[..., :height, :width]
 
-    noise_mask = noise_mask.view(bsz, 1, height // block_size, width // block_size)
+    noise_mask = noise_mask.view(bsz, 1, new_height // block_size, new_width // block_size)
     noise_mask = F.interpolate(noise_mask.float(), scale_factor=block_size, mode='nearest')[..., :height, :width]
 
-    activity_mask = active_blocks.view(bsz, 1, height // block_size, width // block_size)
+    activity_mask = active_blocks.view(bsz, 1, new_height // block_size, new_width // block_size)
     activity_mask = F.interpolate(activity_mask.float(), scale_factor=block_size, mode='nearest')[..., :height, :width]
 
     return score, noticeable_artifacts_mask, noise_mask, activity_mask
