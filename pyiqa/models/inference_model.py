@@ -19,7 +19,7 @@ class InferenceModel(torch.nn.Module):
             loss_reduction='mean',
             device=None,
             seed=123,
-            check_input=True,
+            check_input_range=True,
             **kwargs  # Other metric options
     ):
         super(InferenceModel, self).__init__()
@@ -43,7 +43,8 @@ class InferenceModel(torch.nn.Module):
         self.as_loss = as_loss
         self.loss_weight = loss_weight
         self.loss_reduction = loss_reduction
-        self.check_input = check_input
+        # disable input range check when used as loss
+        self.check_input_range = check_input_range if not as_loss else False
 
         # =========== define metric model ===============
         net_opts = OrderedDict()
@@ -66,11 +67,13 @@ class InferenceModel(torch.nn.Module):
         load_pretrained_network(self.net, weights_path, weight_keys=weight_keys)
     
     def is_valid_input(self, x):
-        if x is not None and self.check_input:
+        if x is not None:
             assert isinstance(x, torch.Tensor), 'Input must be a torch.Tensor'
             assert x.dim() == 4, 'Input must be 4D tensor (B, C, H, W)'
             assert x.shape[1] in [1, 3], 'Input must be RGB or gray image'
-            assert x.min() >= 0 and x.max() <= 1, f'Input must be normalized to [0, 1], but got min={x.min():.4f}, max={x.max():.4f}'
+        
+            if self.check_input_range:
+                assert x.min() >= 0 and x.max() <= 1, f'Input must be normalized to [0, 1], but got min={x.min():.4f}, max={x.max():.4f}'
     
     def forward(self, target, ref=None, **kwargs):
         device = self.dummy_param.device

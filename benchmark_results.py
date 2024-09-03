@@ -124,12 +124,18 @@ def main():
             pbar = tqdm(total=len(dataloader), unit='image')
             pbar.set_description(f'Testing *{metric_name}* on ({dataset_name})')
             for data in dataloader:
-                gt_labels += flatten_list(data['mos_label'].cpu().tolist())
-                if metric_mode == 'FR':
-                    iqa_score = iqa_model(data['img'], data['ref_img']).squeeze().cpu().tolist()
-                else:
-                    iqa_score = iqa_model(data['img']).squeeze().cpu().tolist()
-                result_scores += flatten_list(iqa_score)
+                try:
+                    if metric_mode == 'FR':
+                        iqa_score = iqa_model(data['img'], data['ref_img'])
+                    else:
+                        iqa_score = iqa_model(data['img'])
+
+                    if not torch.isnan(iqa_score).any():
+                        iqa_score = iqa_score.squeeze().cpu().tolist()
+                        gt_labels += flatten_list(data['mos_label'].cpu().tolist())
+                        result_scores += flatten_list(iqa_score)
+                except:
+                    print(f'Error in testing {metric_name} on {dataset_name}: {data["img_path"]}')
                 pbar.update(1)
             pbar.close()
 
