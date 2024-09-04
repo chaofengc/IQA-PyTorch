@@ -218,15 +218,7 @@ def norm_sender_normalized(pyr, num_scale=2, num_bands=6, blksz=3, eps=1e-12):
             o_c = o_c.reshape(b, hw)
             o_c = o_c - o_c.mean(dim=1, keepdim=True)
 
-            if tmp.shape[1] >= 2e5: # To avoid out of GPU memory
-                C_x = C_x.cpu()
-                tmp = tmp.cpu()
-            if hasattr(torch.linalg, 'lstsq'):
-                tmp_y = torch.linalg.lstsq(C_x.transpose(1, 2), tmp.transpose(1, 2)).solution.transpose(1, 2) * tmp / N
-            else:
-                warn(
-                    "For numerical stability, we use torch.linal.lstsq to calculate matrix inverse for PyTorch > 1.9.0. The results might be slightly different if you use older version of PyTorch.")
-                tmp_y = (tmp @ torch.linalg.pinv(C_x)) * tmp / N
+            tmp_y = torch.linalg.solve(C_x.transpose(1, 2), tmp.transpose(1, 2)).transpose(1, 2) * tmp / N
             tmp_y = tmp_y.to(o_c)
 
             z = tmp_y.sum(dim=2).sqrt()
@@ -367,8 +359,9 @@ def nrqm(
 def calculate_nrqm(img: torch.Tensor,
                    crop_border: int = 0,
                    test_y_channel: bool = True,
-                   pretrained_model_path: str = None,
                    color_space: str = 'yiq',
+                   linear_param: torch.Tensor = None,
+                   rf_params_list: list = None,
                    **kwargs) -> torch.Tensor:
     """Calculate NRQM
     Args:
@@ -380,19 +373,6 @@ def calculate_nrqm(img: torch.Tensor,
     Returns:
         Tensor: NIQE result.
     """
-
-    params = scipy.io.loadmat(pretrained_model_path)['model']
-    linear_param = params['linear'][0, 0]
-    rf_params_list = []
-    for i in range(3):
-        tmp_list = []
-        tmp_param = params['rf'][0, 0][0, i][0, 0]
-        tmp_list.append(tmp_param[0])  # ldau
-        tmp_list.append(tmp_param[1])  # rdau
-        tmp_list.append(tmp_param[4])  # threshold value
-        tmp_list.append(tmp_param[5])  # pred value
-        tmp_list.append(tmp_param[6])  # best attribute index
-        rf_params_list.append(tmp_list)
 
     if test_y_channel and img.shape[1] == 3:
         img = to_y_channel(img, 255, color_space)
@@ -433,9 +413,25 @@ class NRQM(torch.nn.Module):
         self.color_space = color_space
 
         if pretrained_model_path is not None:
-            self.pretrained_model_path = pretrained_model_path
+            pretrained_model_path = pretrained_model_path
         else:
-            self.pretrained_model_path = load_file_from_url(default_model_urls['url'])
+            pretrained_model_path = load_file_from_url(default_model_urls['url'])
+        
+        # load model
+        params = scipy.io.loadmat(pretrained_model_path)['model']
+        linear_param = params['linear'][0, 0]
+        rf_params_list = []
+        for i in range(3):
+            tmp_list = []
+            tmp_param = params['rf'][0, 0][0, i][0, 0]
+            tmp_list.append(tmp_param[0])  # ldau
+            tmp_list.append(tmp_param[1])  # rdau
+            tmp_list.append(tmp_param[4])  # threshold value
+            tmp_list.append(tmp_param[5])  # pred value
+            tmp_list.append(tmp_param[6])  # best attribute index
+            rf_params_list.append(tmp_list)
+        self.linear_param = linear_param
+        self.rf_params_list = rf_params_list
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         r"""Computation of NRQM metric.
@@ -444,7 +440,7 @@ class NRQM(torch.nn.Module):
         Returns:
             Value of nrqm metric.
         """
-        score = calculate_nrqm(X, self.crop_border, self.test_y_channel, self.pretrained_model_path, self.color_space)
+        score = calculate_nrqm(X, self.crop_border, self.test_y_channel, self.color_space, self.linear_param, self.rf_params_list)
         return score
 
 

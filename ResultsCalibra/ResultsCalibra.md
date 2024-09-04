@@ -44,7 +44,7 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 | MUSIQ/spaq(org)                                     | 17.685                    | 70.492           | 78.740  | 79.015  | 49.105   |
 | MUSIQ/spaq(ours imported)                           | 17.680                    | 70.653           | 79.036  | 79.318  | 50.452   |
 | NRQM                                                | 1.3894                    | 8.9394           | 8.9735  | 6.8290  | 6.3120   | 10s            |
-| NRQM (ours imported)                                | 1.3931 | 8.9418 | 8.9721 | 6.8309 | 6.3031 | 5s             |
+| NRQM (ours imported)                                | 1.3931 | 8.9418 | 8.9721 | 6.8309 | 6.3031 | 0.4s             |
 | PI<sup>[14](#fn14)</sup>                            | 11.9235                   | 3.0720           | 2.6180  | 2.8074  | 6.7713   |
 | PI (ours imported )                                 | 11.9286 | 3.0730 | 2.6356 | 2.7979 | 6.9545   |
 | Paq2piq                                             | 44.1340                   | 73.6015          | 74.3297 | 76.8748 | 70.9153  |

@@ -71,7 +71,7 @@ def main():
         assert os.path.isdir(args.input), 'input path must be a folder for FID.'
         avg_score = iqa_model(args.input, args.ref)
     
-    print(torch.cuda.memory_summary())
+    # print(torch.cuda.memory_summary())
 
     msg = f'Average {metric_name} score of {args.input} with {test_img_num} images is: {avg_score}'
     print(msg)

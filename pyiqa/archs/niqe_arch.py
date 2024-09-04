@@ -145,8 +145,9 @@ def niqe(img: torch.Tensor,
 def calculate_niqe(img: torch.Tensor,
                    crop_border: int = 0,
                    test_y_channel: bool = True,
-                   pretrained_model_path: str = None,
                    color_space: str = 'yiq',
+                   mu_pris_param: torch.Tensor = None,
+                   cov_pris_param: torch.Tensor = None,
                    **kwargs) -> torch.Tensor:
     """Calculate NIQE (Natural Image Quality Evaluator) metric.
     Args:
@@ -159,15 +160,7 @@ def calculate_niqe(img: torch.Tensor,
         Tensor: NIQE result.
     """
 
-    params = scipy.io.loadmat(pretrained_model_path)
-    mu_pris_param = np.ravel(params['mu_prisparam'])
-    cov_pris_param = params['cov_prisparam']
-    mu_pris_param = torch.from_numpy(mu_pris_param).to(img)
-    cov_pris_param = torch.from_numpy(cov_pris_param).to(img)
-
-    mu_pris_param = mu_pris_param.repeat(img.size(0), 1)
-    cov_pris_param = cov_pris_param.repeat(img.size(0), 1, 1)
-
+    
     # NIQE only support gray image 
     if img.shape[1] == 3:
         img = to_y_channel(img, 255, color_space)
@@ -176,6 +169,9 @@ def calculate_niqe(img: torch.Tensor,
 
     img = diff_round(img)
     img = img.to(torch.float64)
+
+    mu_pris_param = mu_pris_param.to(img).repeat(img.size(0), 1)
+    cov_pris_param = cov_pris_param.to(img).repeat(img.size(0), 1, 1)
 
     if crop_border != 0:
         img = img[..., crop_border:-crop_border, crop_border:-crop_border]
@@ -437,11 +433,18 @@ class NIQE(torch.nn.Module):
         self.color_space = color_space
         self.crop_border = crop_border
         if pretrained_model_path is not None:
-            self.pretrained_model_path = pretrained_model_path
+            pretrained_model_path = pretrained_model_path
         elif version == 'original':
-            self.pretrained_model_path = load_file_from_url(default_model_urls['url'])
+            pretrained_model_path = load_file_from_url(default_model_urls['url'])
         elif version == 'matlab':
-            self.pretrained_model_path = load_file_from_url(default_model_urls['niqe_matlab'])
+            pretrained_model_path = load_file_from_url(default_model_urls['niqe_matlab'])
+
+        # load model parameters
+        params = scipy.io.loadmat(pretrained_model_path)
+        mu_pris_param = np.ravel(params['mu_prisparam'])
+        cov_pris_param = params['cov_prisparam']
+        self.mu_pris_param = torch.from_numpy(mu_pris_param)
+        self.cov_pris_param = torch.from_numpy(cov_pris_param)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""Computation of NIQE metric.
@@ -450,7 +453,7 @@ class NIQE(torch.nn.Module):
         Output:
             score (tensor): results of ilniqe metric, should be a positive real number. Shape :math:`(N, 1)`.
         """
-        score = calculate_niqe(x, self.crop_border, self.test_y_channel, self.pretrained_model_path, self.color_space)
+        score = calculate_niqe(x, self.crop_border, self.test_y_channel, self.color_space, self.mu_pris_param, self.cov_pris_param)
         return score
 
 
