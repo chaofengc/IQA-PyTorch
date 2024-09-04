@@ -364,7 +364,10 @@ def ilniqe(img: torch.Tensor,
 
 def calculate_ilniqe(img: torch.Tensor,
                      crop_border: int = 0,
-                     pretrained_model_path: str = None,
+                     mu_pris_param: torch.Tensor = None,
+                     cov_pris_param: torch.Tensor = None,
+                     principleVectors: torch.Tensor = None,
+                     meanOfSampleData: torch.Tensor = None,
                      **kwargs) -> torch.Tensor:
     """Calculate IL-NIQE metric.
     Args:
@@ -376,26 +379,15 @@ def calculate_ilniqe(img: torch.Tensor,
         Tensor: IL-NIQE result.
     """
 
-    params = scipy.io.loadmat(pretrained_model_path)
     img = img * 255.
     img = diff_round(img)
     # float64 precision is critical to be consistent with matlab codes
     img = img.to(torch.float64)
 
-    mu_pris_param = np.ravel(params['templateModel'][0][0])
-    cov_pris_param = params['templateModel'][0][1]
-    meanOfSampleData = np.ravel(params['templateModel'][0][2])
-    principleVectors = params['templateModel'][0][3]
-
-    mu_pris_param = torch.from_numpy(mu_pris_param).to(img)
-    cov_pris_param = torch.from_numpy(cov_pris_param).to(img)
-    meanOfSampleData = torch.from_numpy(meanOfSampleData).to(img)
-    principleVectors = torch.from_numpy(principleVectors).to(img)
-
-    mu_pris_param = mu_pris_param.repeat(img.size(0), 1)
-    cov_pris_param = cov_pris_param.repeat(img.size(0), 1, 1)
-    meanOfSampleData = meanOfSampleData.repeat(img.size(0), 1)
-    principleVectors = principleVectors.repeat(img.size(0), 1, 1)
+    mu_pris_param = mu_pris_param.to(img).repeat(img.size(0), 1)
+    cov_pris_param = cov_pris_param.to(img).repeat(img.size(0), 1, 1)
+    meanOfSampleData = meanOfSampleData.to(img).repeat(img.size(0), 1)
+    principleVectors = principleVectors.to(img).repeat(img.size(0), 1, 1)
 
     if crop_border != 0:
         img = img[..., crop_border:-crop_border, crop_border:-crop_border]
@@ -480,6 +472,17 @@ class ILNIQE(torch.nn.Module):
             self.pretrained_model_path = pretrained_model_path
         else:
             self.pretrained_model_path = load_file_from_url(default_model_urls['ilniqe'])
+        
+        params = scipy.io.loadmat(self.pretrained_model_path)
+        mu_pris_param = np.ravel(params['templateModel'][0][0])
+        cov_pris_param = params['templateModel'][0][1]
+        meanOfSampleData = np.ravel(params['templateModel'][0][2])
+        principleVectors = params['templateModel'][0][3]
+
+        self.mu_pris_param = torch.from_numpy(mu_pris_param)
+        self.cov_pris_param = torch.from_numpy(cov_pris_param)
+        self.meanOfSampleData = torch.from_numpy(meanOfSampleData)
+        self.principleVectors = torch.from_numpy(principleVectors)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""Computation of NIQE metric.
@@ -489,5 +492,5 @@ class ILNIQE(torch.nn.Module):
             score (tensor): results of ilniqe metric, should be a positive real number. Shape :math:`(N, 1)`.
         """
         assert x.shape[1] == 3, 'ILNIQE only support input image with 3 channels'
-        score = calculate_ilniqe(x, self.crop_border, self.pretrained_model_path)
+        score = calculate_ilniqe(x, self.crop_border, self.mu_pris_param, self.cov_pris_param, self.principleVectors, self.meanOfSampleData)
         return score
