@@ -92,9 +92,9 @@ class InferenceModel(torch.nn.Module):
                         assert ref is not None, 'Please specify reference image for Full Reference metric'
                         ref = imread2tensor(ref, rgb=True)
                         ref = ref.unsqueeze(0)
+                        self.is_valid_input(ref)
                 
                 self.is_valid_input(target)
-                self.is_valid_input(ref)
 
                 if self.metric_mode == 'FR':
                     assert ref is not None, 'Please specify reference image for Full Reference metric'

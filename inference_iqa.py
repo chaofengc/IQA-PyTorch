@@ -13,7 +13,7 @@ def main():
     """Inference demo for pyiqa.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input', type=str, default=None, help='input image/folder path.')
+    parser.add_argument('-t', '--target', type=str, default=None, help='input image/folder path.')
     parser.add_argument('-r', '--ref', type=str, default=None, help='reference image/folder path if needed.')
     parser.add_argument(
         '--metric_mode',
@@ -31,12 +31,12 @@ def main():
     iqa_model = create_metric(metric_name, metric_mode=args.metric_mode)
     metric_mode = iqa_model.metric_mode
 
-    if os.path.isfile(args.input):
-        input_paths = [args.input]
+    if os.path.isfile(args.target):
+        input_paths = [args.target]
         if args.ref is not None:
             ref_paths = [args.ref]
     else:
-        input_paths = sorted(glob.glob(os.path.join(args.input, '*')))
+        input_paths = sorted(glob.glob(os.path.join(args.target, '*')))
         if args.ref is not None:
             ref_paths = sorted(glob.glob(os.path.join(args.ref, '*')))
 
@@ -68,12 +68,13 @@ def main():
         pbar.close()
         avg_score /= test_img_num
     else:
-        assert os.path.isdir(args.input), 'input path must be a folder for FID.'
-        avg_score = iqa_model(args.input, args.ref)
+        assert os.path.isdir(args.target), 'input path must be a folder for FID.'
+        avg_score = iqa_model(args.target, args.ref)
     
-    # print(torch.cuda.memory_summary())
+    if torch.cuda.is_available():
+        print(torch.cuda.memory_summary())
 
-    msg = f'Average {metric_name} score of {args.input} with {test_img_num} images is: {avg_score}'
+    msg = f'Average {metric_name} score of {args.target} with {test_img_num} images is: {avg_score}'
     print(msg)
     if args.save_file:
         sf.close()

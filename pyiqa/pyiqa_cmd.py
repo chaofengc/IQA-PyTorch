@@ -12,8 +12,8 @@ from pprint import pprint
 def main():
     parser = argparse.ArgumentParser(description='Test a metric') 
     parser.add_argument('metric', nargs='*', help='Metric name(s)')
-    parser.add_argument('--target', type=str, help='Target files or folder')
-    parser.add_argument('--ref', type=str, default=None, help='Reference files or folder')
+    parser.add_argument('-t', '--target', type=str, help='Target files or folder')
+    parser.add_argument('-r', '--ref', type=str, default=None, help='Reference files or folder')
 
     # metric specific options
     parser.add_argument('--isc_splits', type=int, default=10, help='Splits for inception score')
