@@ -39,5 +39,5 @@ def time_benchmark(device):
     time_sum.to_csv(save_file)
 
 if __name__ == '__main__':
-    # time_benchmark('cuda')
-    time_benchmark('cpu')
+    time_benchmark('cuda')
+    # time_benchmark('cpu')
