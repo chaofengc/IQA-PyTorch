@@ -11,9 +11,8 @@ import gc
 def time_benchmark(device):
     save_file = './tests/Efficiency_benchmark.csv'
     time_sum = pd.read_csv(save_file, index_col='Method') 
-    time_sum = time_sum.drop('peak GPU memory (GB)', axis=1)
 
-    file_list = scandir_images('./tests/test_img_dir_1080p') 
+    file_list = scandir_images('./tests/test_efficiency_img_dir') 
     exclude_filters = ['fid', 'inception_score', 'clipscore', 'topiq_nr-face']
     if device == 'cpu':
         exclude_filters += ['qalign', 'qalign_4bit', 'qalign_8bit']
