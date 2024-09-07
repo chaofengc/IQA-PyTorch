@@ -8,6 +8,7 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 [![Documentation Status](https://readthedocs.org/projects/iqa-pytorch/badge/?version=latest)](https://iqa-pytorch.readthedocs.io/en/latest/?badge=latest)
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/chaofengc/Awesome-Image-Quality-Assessment)
 [![Citation](https://img.shields.io/badge/Citation-bibtex-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/README.md#bookmark_tabs-citation)
+[![Zhihu](https://img.shields.io/badge/zhihu-white?logo=zhihu)](https://www.zhihu.com/column/c_1565424954811846656)
 
 ## :open_book: Introduction
 
@@ -15,7 +16,7 @@ This is a comprehensive image quality assessment (IQA) toolbox built with **pure
 
 <div align="center">
 
-📦 [Model Cards](docs/ModelCard.md)  |  🗃️ [Dataset Cards](docs/Dataset_Preparation.md) | 🤗 [Datasets](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets/tree/main) | 📚 [Documentation](https://iqa-pytorch.readthedocs.io/en/latest/) 
+📦 [Model Cards](docs/ModelCard.md)  |  🗃️ [Dataset Cards](docs/Dataset_Preparation.md) | 🤗 [Datasets Download](https://huggingface.co/datasets/chaofengc/IQA-Toolbox-Datasets/tree/main) | 📚 [Documentation](https://iqa-pytorch.readthedocs.io/en/latest/) | 📈[Benchmark](https://github.com/chaofengc/IQA-PyTorch/tree/main?tab=readme-ov-file#performance-evaluation-protocol)
 
 </div>
 
