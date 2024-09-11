@@ -4,7 +4,6 @@ import functools
 from typing import Union
 from PIL import Image
 from collections.abc import Sequence
-from imgaug import augmenters as iaa
 import numpy as np
 
 import torch
@@ -36,8 +35,6 @@ def transform_mapping(key, args):
         return [PairedRandomRot90(args)]
     elif key == 'randomerase':
         return [PairedRandomErasing(**args)]
-    elif key == 'changecolor':
-        return [ChangeColorSpace(args)]
     elif key == 'totensor' and args:
         return [PairedToTensor()]
     else:
@@ -64,22 +61,6 @@ class PairedToTensor(tf.ToTensor):
             return imgs 
         else:
             return self.to_tensor(imgs) 
-
-
-class ChangeColorSpace:
-    """Pair version of center crop"""
-    def __init__(self, to_colorspace):
-        self.aug_op = iaa.color.ChangeColorspace(to_colorspace)
-
-    def __call__(self, imgs):
-        if _is_pair(imgs):
-            for i in range(len(imgs)):
-                tmpimg = self.aug_op.augment_image(np.array(imgs[i]))
-                imgs[i] = Image.fromarray(tmpimg)
-            return imgs 
-        else:
-            imgs = self.aug_op.augment_image(np.array(imgs))
-            return Image.fromarray(imgs)
 
 
 class PairedCenterCrop(tf.CenterCrop):

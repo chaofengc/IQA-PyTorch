@@ -16,7 +16,6 @@ torchvision>=0.13
 tqdm
 yapf
 einops
-imgaug
 openai-clip
 facexlib
 transformers==4.37.2
