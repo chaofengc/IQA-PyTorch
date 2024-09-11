@@ -40,6 +40,9 @@ class InferenceModel(torch.nn.Module):
         else:
             self.device = device
         
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        
         self.as_loss = as_loss
         self.loss_weight = loss_weight
         self.loss_reduction = loss_reduction

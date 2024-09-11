@@ -271,8 +271,8 @@ class FID(nn.Module):
                 dataset_name=None,
                 dataset_res=1024,
                 dataset_split='train',
-                num_workers=12,
-                batch_size=32,
+                num_workers=4,
+                batch_size=8,
                 device=torch.device('cuda'),
                 verbose=True,
                 **kwargs
