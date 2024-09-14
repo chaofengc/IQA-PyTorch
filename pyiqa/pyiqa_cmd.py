@@ -18,6 +18,7 @@ def main():
     # metric specific options
     parser.add_argument('--isc_splits', type=int, default=10, help='Splits for inception score')
     parser.add_argument('--fid_mode', type=str, default='clean', help='Image resize mode for FID [clean, legacy_pytorch, legacy_tensorflow]')
+    parser.add_argument('--device', type=str, default=None, help='Print verbose message')
     parser.add_argument('--verbose', action='store_true', help='Print verbose message')
 
     parser.add_argument('-ls', '--list_models', action='store_true', help='Print verbose message')
@@ -31,7 +32,7 @@ def main():
     print(f"{'='*50} Loading metrics {'='*50}")
     metric_func_list = {}
     for metric in args.metric:
-        metric_func = create_metric(metric)
+        metric_func = create_metric(metric, device=args.device)
         metric_func_list[metric] = metric_func
     print(f"{'='*50} Metrics loaded {'='*50}")
 

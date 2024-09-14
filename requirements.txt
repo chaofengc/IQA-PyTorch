@@ -20,5 +20,6 @@ openai-clip
 facexlib
 transformers==4.37.2
 accelerate
+bitsandbytes
 icecream
 sentencepiece

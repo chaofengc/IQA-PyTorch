@@ -55,7 +55,7 @@ python setup.py develop
 ### Basic Usage 
 
 You can simply use the package with commandline interface. 
-```
+```bash
 # list all available metrics
 pyiqa -ls
 
@@ -67,7 +67,7 @@ pyiqa [metric_name(s)] --target [image_path or dir] --ref [image_path or dir]
 
 #### Test metrics 
 
-```
+```python
 import pyiqa
 import torch
 
@@ -99,7 +99,7 @@ score = fid_metric('./ResultsCalibra/dist_dir/', dataset_name="FFHQ", dataset_re
 #### Use as loss functions
 
 Note that gradient propagation is disabled by default. Set `as_loss=True` to enable it as a loss function. **Not all metrics support backpropagation, please refer to [Model Cards](docs/ModelCard.md) and be sure that you are using it in a `lower_better` way.**
-```
+```python
 lpips_loss = pyiqa.create_metric('lpips', device=device, as_loss=True)
 
 ssim_loss = pyiqa.create_metric('ssimc', device=device, as_loss=True)
@@ -110,7 +110,7 @@ loss = 1 - ssim_loss(img_tensor_x, img_tensor_y)   # ssim is not lower better
 
 We also provide a flexible way to use custom settings and weights in case you want to retrain or fine-tune the models. 
 
-```
+```python
 iqa_metric = pyiqa.create_metric('topiq_nr', device=device, **custom_opts)
 
 # Note that if you train the model with this package, the weights will be saved in weight_dict['params']. Otherwise, please set weight_keys=None.
@@ -120,7 +120,7 @@ iqa_metric.load_weights('path/to/weights.pth', weight_keys='params')
 #### Example Test script
 
 Example test script with input directory/images and reference directory/images. 
-```
+```bash
 # example for FR metric with dirs
 python inference_iqa.py -m LPIPS[or lpips] -i ./ResultsCalibra/dist_dir[dist_img] -r ./ResultsCalibra/ref_dir[ref_img]
 
@@ -143,7 +143,7 @@ Here are example codes to download datasets from huggingface:
 > we only collect the datasets for academic, research, and educational purposes. It is important for the users to adhere to the usage guidelines, licensing terms, and conditions set forth by the original creators or owners of each dataset.
 
 
-```
+```python
 import os
 from huggingface_hub import snapshot_download
 
@@ -191,7 +191,7 @@ Basically, we use the largest existing datasets for training, and cross dataset 
 ### Benchmark Performance with Provided Script
 
 Here is an example script to get performance benchmark on different datasets:
-```
+```bash
 # NOTE: this script will test ALL specified metrics on ALL specified datasets
 # Test default metrics on default datasets
 python benchmark_results.py -m psnr ssim -d csiq tid2013 tid2008
@@ -211,7 +211,7 @@ python benchmark_results.py --metric_opt options/example_benchmark_metric_opts.y
 ### Example Train Script
 
 Example to train DBCNN on LIVEChallenge dataset
-```
+```bash
 # train for single experiment
 python pyiqa/train.py -opt options/train/DBCNN/train_DBCNN.yml
 
@@ -220,7 +220,7 @@ python pyiqa/train_nsplits.py -opt options/train/DBCNN/train_DBCNN.yml
 ```
 
 Example for distributed training
-```
+```bash
 torchrun --nproc_per_node=2 --master_port=4321 pyiqa/train.py -opt options/train/CLIPIQA/train_CLIPIQA_koniq10k.yml --launcher pytorch
 ```
 
@@ -238,7 +238,7 @@ This work is licensed under a [NTU S-Lab License](https://github.com/chaofengc/I
 
 If you find our codes helpful to your research, please consider to use the following citation:
 
-```
+```bib
 @misc{pyiqa,
   title={{IQA-PyTorch}: PyTorch Toolbox for Image Quality Assessment},
   author={Chaofeng Chen and Jiadi Mo},
@@ -248,7 +248,7 @@ If you find our codes helpful to your research, please consider to use the follo
 ```
 
 Please also consider to cite our works on image quality assessment if it is useful to you:
-```
+```bib
 @article{chen2023topiq,
   title={TOPIQ: A Top-down Approach from Semantics to Distortions for Image Quality Assessment},
   author={Chen, Chaofeng and Mo, Jiadi and Hou, Jingwen and Wu, Haoning and Liao, Liang and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
@@ -256,7 +256,7 @@ Please also consider to cite our works on image quality assessment if it is usef
   year={2023}
 }
 ``` 
-```
+```bib
 @article{wu2023qalign,
   title={Q-Align: Teaching LMMs for Visual Scoring via Discrete Text-Defined Levels},
   author={Wu, Haoning and Zhang, Zicheng and Zhang, Weixia and Chen, Chaofeng and Li, Chunyi and Liao, Liang and Wang, Annan and Zhang, Erli and Sun, Wenxiu and Yan, Qiong and Min, Xiongkuo and Zhai, Guangtai and Lin, Weisi},
