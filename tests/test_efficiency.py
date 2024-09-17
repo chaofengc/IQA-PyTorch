@@ -52,7 +52,7 @@ def time_benchmark(device, col_name=None):
             time_sum.loc[metric_name, 'Peak GPU Mem (GB)'] = float(f'{peak_memory:.4f}')
 
     pbar.close()
-    time_sum = time_sum.sort_values(by=['cuda'], ascending=True)
+    time_sum = time_sum.sort_values(by=['cuda_v100'], ascending=True)
     time_sum.to_csv(save_file)
 
 if __name__ == '__main__':
