@@ -1,4 +1,4 @@
-Method,cpu,cuda,Peak GPU Mem (GB)
+Method,cpu_xe6150,cuda_v100,Peak GPU Mem (GB)
 nima-vgg16-ava,0.0953,0.0245,0.1253
 entropy,0.239,0.0248,2.2474
 unique,2.2314,0.0274,0.2284
