@@ -15,6 +15,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--target', type=str, default=None, help='input image/folder path.')
     parser.add_argument('-r', '--ref', type=str, default=None, help='reference image/folder path if needed.')
+    parser.add_argument('--device', type=str, default=None, help='reference image/folder path if needed.')
     parser.add_argument(
         '--metric_mode',
         type=str,
@@ -28,7 +29,7 @@ def main():
     metric_name = args.metric_name.lower()
 
     # set up IQA model
-    iqa_model = create_metric(metric_name, metric_mode=args.metric_mode)
+    iqa_model = create_metric(metric_name, metric_mode=args.metric_mode, device=args.device)
     metric_mode = iqa_model.metric_mode
 
     if os.path.isfile(args.target):

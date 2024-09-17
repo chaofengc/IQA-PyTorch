@@ -37,7 +37,7 @@ This is a comprehensive image quality assessment (IQA) toolbox built with **pure
 ## :zap: Quick Start
 
 ### Installation
-```
+```bash
 # Install with pip
 pip install pyiqa
 

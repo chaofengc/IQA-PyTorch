@@ -10,7 +10,7 @@ requests
 scikit-image
 scipy
 tensorboard
-timm
+timm>=0.8
 torch>=1.12
 torchvision>=0.13
 tqdm
