@@ -11,6 +11,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
+from torch.hub import get_dir
+
 
 _MODELS = {
     "RN50": "https://openaipublic.azureedge.net/clip/models/afeb0e10f9e5a86da6080e35cf09123aca3b358a0c3e3b6c78a7b63bc04b6762/RN50.pt",
@@ -82,7 +84,7 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
         A torchvision transform that converts a PIL image into a tensor that the returned model can take as its input
     """
     if name in _MODELS:
-        model_path = _download(_MODELS[name], download_root or os.path.expanduser("~/.cache/clip"))
+        model_path = _download(_MODELS[name], download_root or os.path.join(get_dir(), "clip"))
     elif os.path.isfile(name):
         model_path = name
     else:
