@@ -66,6 +66,14 @@ def save_response_content(response, destination, file_size=None, chunk_size=3276
         if pbar is not None:
             pbar.close()
 
+ENV_PYIQA_HOME = 'PYIQA_HOME'
+DEFAULT_CACHE_DIR = os.path.join(get_dir(), 'checkpoints')
+
+def _get_pyiqa_home():
+    # use env PYIQA_HOME, if not set, use torch hub dir
+    pyiqa_home = os.path.expanduser(os.getenv(ENV_PYIQA_HOME, DEFAULT_CACHE_DIR))
+    return pyiqa_home
+
 
 def load_file_from_url(url, model_dir=None, progress=True, file_name=None):
     """Load file form http url, will download models if necessary.
@@ -82,11 +90,7 @@ def load_file_from_url(url, model_dir=None, progress=True, file_name=None):
     Returns:
         str: The path to the downloaded file.
     """
-    model_dir = model_dir or os.path.expanduser("~/.cache/pyiqa")
-
-    if model_dir is None:  # use the pytorch hub_dir
-        hub_dir = get_dir()
-        model_dir = os.path.join(hub_dir, 'checkpoints')
+    model_dir = model_dir or _get_pyiqa_home()
 
     os.makedirs(model_dir, exist_ok=True)
 
