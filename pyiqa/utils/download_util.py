@@ -8,6 +8,9 @@ from urllib.parse import urlparse
 from .misc import sizeof_fmt
 
 
+DEFAULT_CACHE_DIR = os.path.join(get_dir(), 'pyiqa')
+
+
 def download_file_from_google_drive(file_id, save_path):
     """Download files from google drive.
 
@@ -65,8 +68,6 @@ def save_response_content(response, destination, file_size=None, chunk_size=3276
                 f.write(chunk)
         if pbar is not None:
             pbar.close()
-
-DEFAULT_CACHE_DIR = os.path.join(get_dir(), 'pyiqa')
 
 
 def load_file_from_url(url, model_dir=None, progress=True, file_name=None):

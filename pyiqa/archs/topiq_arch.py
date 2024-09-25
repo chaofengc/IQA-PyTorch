@@ -17,6 +17,7 @@ import torchvision.transforms.functional as TF
 import timm
 from .constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.utils.download_util import DEFAULT_CACHE_DIR
 from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network, uniform_crop 
 
 import copy
@@ -329,7 +330,7 @@ class CFANet(nn.Module):
                 det_model='retinaface_resnet50',
                 save_ext='png',
                 use_parse=True,
-                model_rootpath=os.path.join(os.path.expanduser('~'), '.cache', 'pyiqa'),
+                model_rootpath=DEFAULT_CACHE_DIR,
             )
     
     def _init_linear(self, m):

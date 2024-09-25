@@ -21,6 +21,7 @@ import os
 from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.utils.download_util import DEFAULT_CACHE_DIR
 from pyiqa.archs.arch_util import load_pretrained_network
 
 import clip
@@ -69,10 +70,10 @@ class LIQE(nn.Module):
 
         if pretrained == 'mix':
             self.mtl = True
-            text_feat_cache_path = os.path.expanduser("~/.cache/pyiqa/liqe_text_feat_mix.pt")
+            text_feat_cache_path = os.path.join(DEFAULT_CACHE_DIR, 'liqe_text_feat_mix.pt')
         else:
             self.mtl = mtl
-            text_feat_cache_path = os.path.expanduser("~/.cache/pyiqa/liqe_text_feat.pt")
+            text_feat_cache_path = os.path.join(DEFAULT_CACHE_DIR, 'liqe_text_feat.pt')
 
         if os.path.exists(text_feat_cache_path):
             self.text_features = torch.load(text_feat_cache_path, map_location='cpu', weights_only=False)
