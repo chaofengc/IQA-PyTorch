@@ -30,7 +30,13 @@ def brisque(x: torch.Tensor,
             kernel_size: int = 7,
             kernel_sigma: float = 7 / 6,
             test_y_channel: bool = True,
-            pretrained_model_path: str = None) -> torch.Tensor:
+            sv_coef: torch.Tensor = None,
+            sv: torch.Tensor = None,
+            gamma: float = 0.05,
+            rho: float = -153.591,
+            scale: float = 1,
+            version: str = 'original',
+            ) -> torch.Tensor:
     r"""Interface of BRISQUE index.
 
     Args:
@@ -54,41 +60,26 @@ def brisque(x: torch.Tensor,
         x = to_y_channel(x, 255.)
     else:
         x = x * 255
-    
-    use_matlab_version = 'matlab' in pretrained_model_path
 
     features = []
     num_of_scales = 2
     for _ in range(num_of_scales):
-        if use_matlab_version: 
+        if version == 'matlab': 
             xnorm = normalize_img_with_guass(x, kernel_size, kernel_sigma, padding='replicate')
             features.append(compute_nss_features(xnorm))
-        else:
+        elif version == 'original':
             features.append(natural_scene_statistics(x, kernel_size, kernel_sigma))
         x = imresize(x, scale=0.5, antialiasing=True)
     features = torch.cat(features, dim=-1)
-    scaled_features = scale_features(features)
 
-    if pretrained_model_path and not use_matlab_version:
-        # gamma and rho are SVM model parameters taken from official implementation of BRISQUE on MATLAB
-        # Source: https://live.ece.utexas.edu/research/Quality/index_algorithms.htm
-        sv_coef, sv = torch.load(pretrained_model_path, weights_only=False)
-        sv_coef = sv_coef.to(x)
-        sv = sv.to(x)
-        gamma = 0.05
-        rho = -153.591
-    elif use_matlab_version:
-        params = scipy.io.loadmat(pretrained_model_path)
-        sv = params['sv']
-        sv_coef = np.ravel(params['sv_coef'])
-        sv = torch.from_numpy(sv).to(features)
-        sv_coef = torch.from_numpy(sv_coef).to(features)
-        scale = 0.3210
+    sv_coef = sv_coef.to(x)
+    sv = sv.to(x)
+
+    if version == 'original':
+        scaled_features = scale_features(features)
+    elif version == 'matlab':
         scaled_features = features / scale
-        sv = sv / scale
-        gamma = 1
-        rho = - 43.4582
-
+        
     sv.t_()
     kernel_features = rbf_kernel(features=scaled_features, sv=sv, gamma=gamma)
     score = kernel_features @ sv_coef - rho
@@ -169,12 +160,31 @@ class BRISQUE(torch.nn.Module):
 
         self.kernel_sigma = kernel_sigma
         self.test_y_channel = test_y_channel
+
         if pretrained_model_path is not None:
-            self.pretrained_model_path = pretrained_model_path
+            self.sv_coef, self.sv = torch.load(pretrained_model_path, weights_only=False)
         elif version == 'original':
-            self.pretrained_model_path = load_file_from_url(default_model_urls['url'])
+            # gamma and rho are SVM model parameters taken from official implementation of BRISQUE on MATLAB
+            # Source: https://live.ece.utexas.edu/research/Quality/index_algorithms.htm
+            pretrained_model_path = load_file_from_url(default_model_urls['url'])
+            self.sv_coef, self.sv = torch.load(pretrained_model_path, weights_only=False)
+            self.gamma = 0.05
+            self.rho = -153.591
+            self.scale = 1
         elif version == 'matlab':
-            self.pretrained_model_path = load_file_from_url(default_model_urls['brisque_matlab']) 
+            pretrained_model_path = load_file_from_url(default_model_urls['brisque_matlab']) 
+            self.gamma = 1
+            self.rho = -43.4582
+            self.scale = 0.3210
+
+            params = scipy.io.loadmat(pretrained_model_path)
+            sv = params['sv']
+            sv_coef = np.ravel(params['sv_coef'])
+            sv = torch.from_numpy(sv)
+            self.sv_coef = torch.from_numpy(sv_coef)
+            self.sv = sv / self.scale
+        
+        self.version =version
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""Computation of BRISQUE score as a loss function.
@@ -191,4 +201,10 @@ class BRISQUE(torch.nn.Module):
             kernel_size=self.kernel_size,
             kernel_sigma=self.kernel_sigma,
             test_y_channel=self.test_y_channel,
-            pretrained_model_path=self.pretrained_model_path)
+            sv_coef=self.sv_coef,
+            sv=self.sv,
+            gamma=self.gamma,
+            rho=self.rho,
+            scale=self.scale,
+            version=self.version,
+            )
