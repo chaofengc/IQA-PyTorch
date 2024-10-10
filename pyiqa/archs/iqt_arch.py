@@ -9,7 +9,7 @@ r"""IQA metric introduced by
 }
 
 Ref url: https://github.com/anse3832/IQT
-Re-implmented by: Chaofeng Chen (https://github.com/chaofengc)
+Re-implemented by: Chaofeng Chen (https://github.com/chaofengc)
 
 """
 

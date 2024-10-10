@@ -9,7 +9,7 @@ Reference:
     }
 
 Reference url: https://github.com/jmhessel/clipscore
-Re-implmented by: Chaofeng Chen (https://github.com/chaofengc) 
+Re-implemented by: Chaofeng Chen (https://github.com/chaofengc) 
 """
 import torch
 import torch.nn as nn

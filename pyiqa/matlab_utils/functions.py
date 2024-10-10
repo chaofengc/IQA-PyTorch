@@ -103,7 +103,7 @@ def dct(x, norm=None):
 
 def dct2d(x, norm='ortho'):
     """
-    2-dimentional Discrete Cosine Transform, Type II (a.k.a. the DCT)
+    2-dimensional Discrete Cosine Transform, Type II (a.k.a. the DCT)
     For the meaning of the parameter `norm`, see:
     https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.fftpack.dct.html
     :param x: the input signal

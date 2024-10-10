@@ -8,11 +8,11 @@ Created by:
 Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 Refer to:
-    - Offical SSIM matlab code from https://www.cns.nyu.edu/~lcv/ssim/;
+    - Official SSIM matlab code from https://www.cns.nyu.edu/~lcv/ssim/;
     - PIQ from https://github.com/photosynthesis-team/piq;
     - BasicSR from https://github.com/xinntao/BasicSR/blob/master/basicsr/metrics/psnr_ssim.py;
-    - Offical MS-SSIM matlab code from https://ece.uwaterloo.ca/~z70wang/research/iwssim/msssim.zip;
-    - Offical CW-SSIM matlab code from
+    - Official MS-SSIM matlab code from https://ece.uwaterloo.ca/~z70wang/research/iwssim/msssim.zip;
+    - Official CW-SSIM matlab code from
     https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/43017/versions/1/download/zip;
 
 """
@@ -118,7 +118,7 @@ def ms_ssim(X, Y, win=None, data_range=1., downsample=False, test_y_channel=True
         test_y_channel: Boolean, whether to use y channel on ycbcr.
         is_prod: Boolean, calculate product or sum between mcs and weight.
     Returns:
-        Index of similarity betwen two images. Usually in [0, 1] interval.
+        Index of similarity between two images. Usually in [0, 1] interval.
     """
     if not X.shape == Y.shape:
         raise ValueError('Input images must have the same dimensions.')
@@ -248,7 +248,7 @@ class CW_SSIM(torch.nn.Module):
             y: A target tensor. Shape :math:`(N, C, H, W)`.
             test_y_channel: Boolean, whether to use y channel on ycbcr.
         Returns:
-            Index of similarity betwen two images. Usually in [0, 1] interval.
+            Index of similarity between two images. Usually in [0, 1] interval.
         """
         # Whether calculate on y channel of ycbcr
         if test_y_channel and x.shape[1] == 3:

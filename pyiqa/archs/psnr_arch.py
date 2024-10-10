@@ -28,7 +28,7 @@ def psnr(x, y, test_y_channel=False, data_range=1.0, eps=1e-8, color_space='yiq'
         - data_range: Maximum value range of images (default 1.0).
 
     Returns:
-        PSNR Index of similarity betwen two images.
+        PSNR Index of similarity between two images.
     """
 
     if (x.shape[1] == 3) and test_y_channel:
@@ -50,7 +50,7 @@ class PSNR(nn.Module):
         - test_y_channel (Boolean): Convert RGB image to YCbCr format and computes PSNR
             only on luminance channel if `True`. Compute on all 3 channels otherwise.
         - kwargs: other parameters, including
-            - data_range: maximun numeric value
+            - data_range: maximum numeric value
             - eps: small constant for numeric stability
     Return:
         score (torch.Tensor): (B, 1)

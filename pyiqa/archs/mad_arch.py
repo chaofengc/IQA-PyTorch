@@ -5,7 +5,7 @@ Created by: https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pyto
 Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 Note:
-    Offical matlab code is not available;
+    Official matlab code is not available;
     Pytorch version >= 1.8.0;
 """
 

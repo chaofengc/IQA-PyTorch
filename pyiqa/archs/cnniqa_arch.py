@@ -28,7 +28,7 @@ class CNNIQA(nn.Module):
     r"""CNNIQA model.
     Args:
         - ker_size (int): Kernel size.
-        - n_kers (int): Number of kernals.
+        - n_kers (int): Number of kernels.
         - n1_nodes (int): Number of n1 nodes.
         - n2_nodes (int): Number of n2 nodes.
         - pretrained_model_path (String): Pretrained model path.

@@ -149,7 +149,7 @@ class NLPD(nn.Module):
             x1: An input tensor. Shape :math:`(N, C, H, W)`.
             x2: A target tensor. Shape :math:`(N, C, H, W)`.
         Returns:
-            Index of similarity betwen two images. Usually in [0, 1] interval.
+            Index of similarity between two images. Usually in [0, 1] interval.
         """
         assert (self.test_y_channel and self.channels == 1) or (
             not self.test_y_channel and self.channels == 3), 'Number of channel and convert to YCBCR should be match'
