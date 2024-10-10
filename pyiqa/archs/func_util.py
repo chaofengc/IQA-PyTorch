@@ -83,7 +83,7 @@ def diff_round(x: torch.Tensor) -> torch.Tensor:
     return x - x.detach() + x.round()
 
 
-def normalize_img_with_guass(
+def normalize_img_with_gauss(
     img: torch.Tensor,
     kernel_size: int = 7,
     sigma: float = 7.0 / 6,
@@ -128,7 +128,7 @@ def similarity_map(
         map_x: Tensor with map to be compared
         map_y: Tensor with map to be compared
         constant: Used for numerical stability
-        alpha: Masking coefficient. Substracts - `alpha` * map_x * map_y from denominator and nominator
+        alpha: Masking coefficient. Subtracts - `alpha` * map_x * map_y from denominator and nominator
     """
     return (2.0 * map_x * map_y - alpha * map_x * map_y + constant) / (
         map_x**2 + map_y**2 - alpha * map_x * map_y + constant + EPS

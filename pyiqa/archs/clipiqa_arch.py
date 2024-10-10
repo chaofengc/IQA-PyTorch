@@ -5,7 +5,7 @@ Jianyi Wang Kelvin C.K. Chan Chen Change Loy.
 AAAI 2023.
 
 Ref url: https://github.com/IceClear/CLIP-IQA
-Re-implmented by: Chaofeng Chen (https://github.com/chaofengc) with the following modification:
+Re-implemented by: Chaofeng Chen (https://github.com/chaofengc) with the following modification:
     - We assemble multiple prompts to improve the results of clipiqa model.
 
 """
@@ -60,7 +60,7 @@ class PromptLearner(nn.Module):
         self.register_buffer("token_prefix", init_embedding[:, :1, :])  # SOS
         self.register_buffer("token_suffix", init_embedding[:, 1 + n_ctx:, :])  # CLS, EOS
 
-    def get_prompts_with_middel_class(self,):
+    def get_prompts_with_middle_class(self,):
 
         ctx = self.ctx.to(self.token_prefix)
         if ctx.dim() == 2:
@@ -90,8 +90,8 @@ class PromptLearner(nn.Module):
         return prompts
 
     def forward(self, clip_model):
-        prompts = self.get_prompts_with_middel_class()
-        # self.get_prompts_with_middel_class
+        prompts = self.get_prompts_with_middle_class()
+        # self.get_prompts_with_middle_class
         x = prompts + clip_model.positional_embedding.type(clip_model.dtype)
         x = x.permute(1, 0, 2)  # NLD -> LND
         x = clip_model.transformer(x)

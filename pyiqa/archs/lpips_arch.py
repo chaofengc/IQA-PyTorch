@@ -139,7 +139,7 @@ class LPIPS(nn.Module):
         Args:
             in1: An input tensor. Shape :math:`(N, C, H, W)`.
             in0: A reference tensor. Shape :math:`(N, C, H, W)`.
-            retPerLayer (Boolean): return result contains ressult of
+            retPerLayer (Boolean): return result contains result of
                 each layer or not. Default: False.
             normalize (Boolean): Whether to normalize image data range
                 in [0,1] to [-1,1]. Default: True.

@@ -5,7 +5,7 @@ Created by: https://github.com/tomrunia/PyTorchSteerablePyramid
 Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 Refer to:
-    - Offical Matlab code from https://github.com/LabForComputationalVision/matlabPyrTools/blob/master/buildSCFpyr.m;
+    - Official Matlab code from https://github.com/LabForComputationalVision/matlabPyrTools/blob/master/buildSCFpyr.m;
     - Original Python code from https://github.com/LabForComputationalVision/pyPyrTools/blob/master/pyPyrTools/SCFpyr.py;
 """
 

@@ -55,7 +55,7 @@ class DISTS(torch.nn.Module):
     '''
 
     def __init__(self, pretrained=True, pretrained_model_path=None, **kwargs):
-        """Refer to offical code https://github.com/dingkeyan93/DISTS
+        """Refer to official code https://github.com/dingkeyan93/DISTS
         """
         super(DISTS, self).__init__()
         vgg_pretrained_features = models.vgg16(weights='IMAGENET1K_V1').features

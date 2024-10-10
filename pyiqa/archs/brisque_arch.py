@@ -16,7 +16,7 @@ import torch
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.matlab_utils import imresize
 from pyiqa.matlab_utils.nss_feature import compute_nss_features
-from .func_util import estimate_ggd_param, estimate_aggd_param, normalize_img_with_guass
+from .func_util import estimate_ggd_param, estimate_aggd_param, normalize_img_with_gauss
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -65,7 +65,7 @@ def brisque(x: torch.Tensor,
     num_of_scales = 2
     for _ in range(num_of_scales):
         if version == 'matlab': 
-            xnorm = normalize_img_with_guass(x, kernel_size, kernel_sigma, padding='replicate')
+            xnorm = normalize_img_with_gauss(x, kernel_size, kernel_sigma, padding='replicate')
             features.append(compute_nss_features(xnorm))
         elif version == 'original':
             features.append(natural_scene_statistics(x, kernel_size, kernel_sigma))
@@ -88,7 +88,7 @@ def brisque(x: torch.Tensor,
 
 def natural_scene_statistics(luma: torch.Tensor, kernel_size: int = 7, sigma: float = 7. / 6) -> torch.Tensor:
 
-    luma_nrmlzd = normalize_img_with_guass(luma, kernel_size, sigma, padding='same')
+    luma_nrmlzd = normalize_img_with_gauss(luma, kernel_size, sigma, padding='same')
     alpha, sigma = estimate_ggd_param(luma_nrmlzd)
     features = [alpha, sigma.pow(2)]
 

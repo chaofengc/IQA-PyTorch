@@ -21,7 +21,7 @@ import torch
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.matlab_utils import imresize, fspecial, conv2d, imfilter, fitweibull, nancov, nanmean, blockproc
-from .func_util import estimate_aggd_param, normalize_img_with_guass, diff_round
+from .func_util import estimate_aggd_param, normalize_img_with_gauss, diff_round
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
 
@@ -119,7 +119,7 @@ def niqe(img: torch.Tensor,
 
     distparam = []  # dist param is actually the multiscale features
     for scale in (1, 2):  # perform on two scales (1, 2)
-        img_normalized = normalize_img_with_guass(img, padding='replicate')
+        img_normalized = normalize_img_with_gauss(img, padding='replicate')
 
         distparam.append(blockproc(img_normalized, [block_size_h // scale, block_size_w // scale], fun=compute_feature))
 
@@ -261,7 +261,7 @@ def ilniqe(img: torch.Tensor,
 
     distparam = []  # dist param is actually the multiscale features
     for scale in (1, 2):  # perform on two scales (1, 2)
-        struct_dis = normalize_img_with_guass(O_img[:, [2]], kernel_size=5, sigma=5. / 6, padding='replicate')
+        struct_dis = normalize_img_with_gauss(O_img[:, [2]], kernel_size=5, sigma=5. / 6, padding='replicate')
 
         dx, dy = gauDerivative(sigmaForGauDerivative / (scale**scaleFactorForGaussianDer), device=img)
 

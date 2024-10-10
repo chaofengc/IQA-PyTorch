@@ -45,29 +45,29 @@ def padding_img(img):
 
 
 @torch.no_grad()
-def build_historgram(img):
+def build_histogram(img):
     b, _, _, _ = img.shape
 
     r_his = torch.histc(img[0][0], 64, min=0.0, max=1.0)
     g_his = torch.histc(img[0][1], 64, min=0.0, max=1.0)
     b_his = torch.histc(img[0][2], 64, min=0.0, max=1.0)
 
-    historgram = torch.cat((r_his, g_his, b_his)).unsqueeze(0).unsqueeze(0)
+    histogram = torch.cat((r_his, g_his, b_his)).unsqueeze(0).unsqueeze(0)
 
     for i in range(1, b):
         r_his = torch.histc(img[i][0], 64, min=0.0, max=1.0)
         g_his = torch.histc(img[i][1], 64, min=0.0, max=1.0)
         b_his = torch.histc(img[i][2], 64, min=0.0, max=1.0)
 
-        historgram_temp = torch.cat((r_his, g_his, b_his)).unsqueeze(0).unsqueeze(0)
-        historgram = torch.cat((historgram, historgram_temp), dim=0)
+        histogram_temp = torch.cat((r_his, g_his, b_his)).unsqueeze(0).unsqueeze(0)
+        histogram = torch.cat((histogram, histogram_temp), dim=0)
 
-    return historgram
+    return histogram
 
 
 def preprocessing(d_img_org):     
     d_img_org = padding_img(d_img_org)
-    x_his = build_historgram(d_img_org)
+    x_his = build_histogram(d_img_org)
     return d_img_org, x_his
 
 
@@ -415,7 +415,7 @@ class URanker(nn.Module):
                  num_heads=8, mlp_ratios=[4, 4, 4, 4], qkv_bias=True, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
                  drop_path_rate=0., norm_layer=partial(nn.LayerNorm, eps=1e-6),
                  return_interm_layers=False, out_features=None, crpe_window={3:2, 5:3, 7:3},
-                 add_historgram=True, his_channel=192, connect_type='dynamic',
+                 add_histogram=True, his_channel=192, connect_type='dynamic',
                  pretrained=True,
                  pretrained_model_path=None,
                  **kwargs):
@@ -423,15 +423,15 @@ class URanker(nn.Module):
         self.return_interm_layers = return_interm_layers
         self.out_features = out_features
         self.num_classes = num_classes
-        self.add_historgram = add_historgram
+        self.add_histogram = add_histogram
         self.connect_type = connect_type
 
-        if self.add_historgram:
-            # Historgram embeddings.
-            self.historgram_embed1 = nn.Linear(his_channel, embed_dims[0])
-            self.historgram_embed2 = nn.Linear(his_channel, embed_dims[1])
-            self.historgram_embed3 = nn.Linear(his_channel, embed_dims[2])
-            self.historgram_embed4 = nn.Linear(his_channel, embed_dims[3])
+        if self.add_histogram:
+            # Histogram embeddings.
+            self.histogram_embed1 = nn.Linear(his_channel, embed_dims[0])
+            self.histogram_embed2 = nn.Linear(his_channel, embed_dims[1])
+            self.histogram_embed3 = nn.Linear(his_channel, embed_dims[2])
+            self.histogram_embed4 = nn.Linear(his_channel, embed_dims[3])
 
         # Patch embeddings.
         self.patch_embed1 = PatchEmbed(patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dims[0])
@@ -576,7 +576,7 @@ class URanker(nn.Module):
 
     def remove_token(self, x):
         """ Remove CLS token. """
-        if self.add_historgram:
+        if self.add_histogram:
             return x[:, 2:, :]
         else:
             return x[:, 1:, :]
@@ -586,8 +586,8 @@ class URanker(nn.Module):
 
         # Serial blocks 1.
         x1, (H1, W1) = self.patch_embed1(x0)
-        if self.add_historgram:
-            x1 = self.insert_his(x1, self.historgram_embed1(x_his))
+        if self.add_histogram:
+            x1 = self.insert_his(x1, self.histogram_embed1(x_his))
         x1 = self.insert_cls(x1, self.cls_token1)
         for blk in self.serial_blocks1:
             x1 = blk(x1, size=(H1, W1))
@@ -596,8 +596,8 @@ class URanker(nn.Module):
         
         # Serial blocks 2.
         x2, (H2, W2) = self.patch_embed2(x1_nocls)
-        if self.add_historgram:
-            x2 = self.insert_his(x2, self.historgram_embed2(x_his))
+        if self.add_histogram:
+            x2 = self.insert_his(x2, self.histogram_embed2(x_his))
         x2 = self.insert_cls(x2, self.cls_token2)
         for blk in self.serial_blocks2:
             x2 = blk(x2, size=(H2, W2))
@@ -606,8 +606,8 @@ class URanker(nn.Module):
 
         # Serial blocks 3.
         x3, (H3, W3) = self.patch_embed3(x2_nocls)
-        if self.add_historgram:
-            x3 = self.insert_his(x3, self.historgram_embed3(x_his))
+        if self.add_histogram:
+            x3 = self.insert_his(x3, self.histogram_embed3(x_his))
         x3 = self.insert_cls(x3, self.cls_token3)
         for blk in self.serial_blocks3:
             x3 = blk(x3, size=(H3, W3))
@@ -616,8 +616,8 @@ class URanker(nn.Module):
 
         # Serial blocks 4.
         x4, (H4, W4) = self.patch_embed4(x3_nocls)
-        if self.add_historgram:
-            x4 = self.insert_his(x4, self.historgram_embed4(x_his))
+        if self.add_histogram:
+            x4 = self.insert_his(x4, self.histogram_embed4(x_his))
         x4 = self.insert_cls(x4, self.cls_token4)
         for blk in self.serial_blocks4:
             x4 = blk(x4, size=(H4, W4))

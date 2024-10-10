@@ -87,7 +87,7 @@ class CUDAPrefetcher():
     Ref:
     https://github.com/NVIDIA/apex/issues/304#
 
-    It may consums more GPU memory.
+    It may consumes more GPU memory.
 
     Args:
         loader: Dataloader.

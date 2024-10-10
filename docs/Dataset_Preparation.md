@@ -17,7 +17,7 @@ The following datasets can be loaded with the current codes after downloaded (se
 | BAPPS      | *2AFC*      | SPAQ             | *Mobile*           |
 | PieAPP     | *2AFC*      | AVA              | *Aesthetic*        |
 | KADID-10k  |             | KonIQ-10k(++)    |                    |
-| LIVEM      |             | LIVEChallange    |                    |
+| LIVEM      |             | LIVEChallenge    |                    |
 | LIVE       |             | [PIQ2023](https://github.com/DXOMARK-Research/PIQ2023)| Portrait dataset   |
 | TID2013    |             | [GFIQA](http://database.mmsp-kn.de/gfiqa-20k-database.html)| Face IQA Dataset   |
 | TID2008    |             |                  |                    |

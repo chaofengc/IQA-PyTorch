@@ -26,7 +26,7 @@ from warnings import warn
 default_model_urls = {'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NRQM_model.mat'}
 
 
-def get_guass_pyramid(x: Tensor, scale: int = 2):
+def get_gauss_pyramid(x: Tensor, scale: int = 2):
     r"""Get gaussian pyramid images with gaussian kernel.
     """
     pyr = [x]
@@ -327,7 +327,7 @@ def nrqm(
     # crop image
     b, c, h, w = img.shape
     img = img.double()
-    img_pyr = get_guass_pyramid(img / 255.)
+    img_pyr = get_gauss_pyramid(img / 255.)
 
     # DCT features
     f1 = []

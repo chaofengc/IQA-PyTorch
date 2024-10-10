@@ -65,7 +65,7 @@ def prepare_grid(m, n):
 
 
 def rcosFn(width, position):
-    N = 256  # abritrary
+    N = 256  # arbitrary
     X = np.pi * np.array(range(-N - 1, 2)) / 2 / N
     Y = np.cos(X)**2
     Y[0] = Y[1]
