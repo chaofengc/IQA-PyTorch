@@ -15,7 +15,7 @@ import torch.nn.functional as F
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.matlab_utils import symm_pad
-from pyiqa.archs.func_util import normalize_img_with_guass
+from pyiqa.archs.func_util import normalize_img_with_gauss
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 
@@ -52,7 +52,7 @@ def piqe(
     new_height, new_width = img.shape[2], img.shape[3]
 
     # Normalize image to zero mean and ~unit std
-    img_normalized = normalize_img_with_guass(img, padding='replicate')
+    img_normalized = normalize_img_with_gauss(img, padding='replicate')
 
     # Create blocks
     blocks = img_normalized.unfold(2, block_size, block_size).unfold(3, block_size, block_size)

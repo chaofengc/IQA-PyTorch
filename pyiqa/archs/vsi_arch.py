@@ -17,7 +17,7 @@ Modified by: Jiadi Mo (https://github.com/JiadiMo)
 
 Refer to:
     IQA-Optimization from https://github.com/dingkeyan93/IQA-optimization/blob/master/IQA_pytorch/VSI.py
-    Offical matlab code is not available
+    Official matlab code is not available
 """
 
 import warnings

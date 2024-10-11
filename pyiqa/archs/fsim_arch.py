@@ -58,7 +58,7 @@ def fsim(x: torch.Tensor,
             threshold  point, below which phase congruency values get penalized.
 
     Returns:
-        - Index of similarity betwen two images. Usually in [0, 1] interval.
+        - Index of similarity between two images. Usually in [0, 1] interval.
         Can be bigger than 1 for predicted :math:`x` images with higher contrast than the original ones.
     References:
         L. Zhang, L. Zhang, X. Mou and D. Zhang, "FSIM: A Feature Similarity Index for Image Quality Assessment,"
@@ -369,7 +369,7 @@ def _lowpassfilter(size: Tuple[int, int], cutoff: float, n: int) -> torch.Tensor
     r"""
     Constructs a low-pass Butterworth filter.
     Args:
-        size: Tuple with heigth and width of filter to construct
+        size: Tuple with height and width of filter to construct
         cutoff: Cutoff frequency of the filter in (0, 0.5()
         n: Filter order. Higher `n` means sharper transition.
             Note that `n` is doubled so that it is always an even integer.
