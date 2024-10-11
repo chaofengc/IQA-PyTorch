@@ -24,16 +24,6 @@ repos:
       - id: codespell
         args: ["-w"]
   
-  # - repo: https://github.com/codespell-project/codespell
-  #   rev: v2.1.0  # Specify the version you want to use
-  #   hooks:
-  #     - id: codespell
-  #       name: codespell
-  #       description: Checks for common misspellings in text files.
-  #       entry: codespell --skip="*.js,*.html,*.css,*.svg" --ignore-words=.codespell-ignore.txt
-  #       language: python
-  #       types: [text]
-
   # pre-commit-hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
