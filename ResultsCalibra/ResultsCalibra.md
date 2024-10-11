@@ -65,7 +65,7 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 <a name="fn5">[5]</a> We use rgb2gray function as input of original VIF matlab script.<br>
 <a name="fn6">[6]</a> We use rgb2gray function as input of original GMSD matlab script.<br>
 <a name="fn7">[7]</a> We use rgb2gray function as input of original NLPD matlab script, and try to mimic 'imfilter' and 'conv2' functions in matlab.<br>
-<a name="fn8">[8]</a> Since official matlab code is not available, we use the implement of IQA-Optimization for comparation. The differences are described as follows. After modifying the above implementation, the results are basically the same.
+<a name="fn8">[8]</a> Since official matlab code is not available, we use the implement of IQA-Optimization for comparison. The differences are described as follows. After modifying the above implementation, the results are basically the same.
 
 - we use interpolation to transform the image to 256*256 and then back to the image size after calculating VSMap in the SDSP function
 - rgb2lab's function is slightly different

@@ -1,5 +1,5 @@
-recommonmark
-sphinx_rtd_theme
 furo
+recommonmark
 sphinx-autoapi
 sphinx-markdown-tables
+sphinx_rtd_theme

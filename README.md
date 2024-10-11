@@ -156,7 +156,7 @@ snapshot_download("chaofengc/IQA-Toolbox-Datasets", repo_type="dataset", local_d
 os.system(f"tar -xzvf {save_dir}/{filename} -C {save_dir}")
 ```
 
-Examples to specific dataset options can be found in `./options/default_dataset_opt.yml`. Details of the dataloader inferface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md)
+Examples to specific dataset options can be found in `./options/default_dataset_opt.yml`. Details of the dataloader interface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md)
 
 ### Performance Evaluation Protocol
 
