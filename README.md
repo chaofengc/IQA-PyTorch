@@ -249,19 +249,22 @@ If you find our codes helpful to your research, please consider to use the follo
 
 Please also consider to cite our works on image quality assessment if it is useful to you:
 ```bib
-@article{chen2023topiq,
-  title={TOPIQ: A Top-down Approach from Semantics to Distortions for Image Quality Assessment},
+@article{chen2024topiq,
   author={Chen, Chaofeng and Mo, Jiadi and Hou, Jingwen and Wu, Haoning and Liao, Liang and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
-  journal={arXiv preprint arXiv:2308.03060},
-  year={2023}
+  title={TOPIQ: A Top-Down Approach From Semantics to Distortions for Image Quality Assessment}, 
+  journal={IEEE Transactions on Image Processing}, 
+  year={2024},
+  volume={33},
+  pages={2404-2418},
+  doi={10.1109/TIP.2024.3378466}
 }
 ``` 
 ```bib
-@article{wu2023qalign,
+@article{wu2024qalign,
   title={Q-Align: Teaching LMMs for Visual Scoring via Discrete Text-Defined Levels},
   author={Wu, Haoning and Zhang, Zicheng and Zhang, Weixia and Chen, Chaofeng and Li, Chunyi and Liao, Liang and Wang, Annan and Zhang, Erli and Sun, Wenxiu and Yan, Qiong and Min, Xiongkuo and Zhai, Guangtai and Lin, Weisi},
-  journal={arXiv preprint arXiv:2312.17090},
-  year={2023},
+  journal={International Conference on Machine Learning (ICML)},
+  year={2024},
   institution={Nanyang Technological University and Shanghai Jiao Tong University and Sensetime Research},
   note={Equal Contribution by Wu, Haoning and Zhang, Zicheng. Project Lead by Wu, Haoning. Corresponding Authors: Zhai, Guangtai and Lin, Weisi.}
 }
