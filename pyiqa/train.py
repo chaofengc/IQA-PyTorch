@@ -31,14 +31,6 @@ def init_tb_loggers(opt):
 
 
 def create_train_val_dataloader(opt, logger):
-    # download meta informatioin for datasets if needed
-    if not os.path.exists(f"{opt['root_path']}/datasets/meta_info"):
-        logger.info('Downloading meta information for datasets.')
-        os.makedirs(f"{opt['root_path']}/datasets", exist_ok=True)
-        file_path = load_file_from_url('https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/meta_info.tgz', f"{opt['root_path']}/datasets")
-        metainfo_file = tarfile.open(file_path, mode='r|gz')
-        metainfo_file.extractall(f"{opt['root_path']}/datasets")
-
     # create train and val dataloaders
     train_loader, val_loaders = None, []
     for phase, dataset_opt in opt['datasets'].items():
