@@ -1,9 +1,9 @@
+import pandas as pd
 import pickle
 
 from torch.utils import data as data
 import torchvision.transforms as tf
 
-from pyiqa.data.data_util import read_meta_info_file
 from pyiqa.data.transforms import transform_mapping, PairedToTensor
 from pyiqa.utils import get_root_logger
 
@@ -24,6 +24,7 @@ class BaseIQADataset(data.Dataset):
             self.phase = opt['phase']
         else:
             self.phase = opt['override_phase']
+        assert self.phase in ['train', 'val', 'test'], f'phase should be in [train, val, test], got {self.phase}'
 
         # initialize datasets
         self.init_path_mos(opt)
@@ -38,10 +39,10 @@ class BaseIQADataset(data.Dataset):
         self.get_transforms(opt)
             
     def init_path_mos(self, opt):
-        target_img_folder = opt['dataroot_target']
-        self.paths_mos = read_meta_info_file(target_img_folder, opt['meta_info_file']) 
-
-    def get_split(self, opt):
+        self.meta_info = pd.read_csv(opt['meta_info_file'])
+        self.paths_mos = self.meta_info.values.tolist() 
+    
+    def get_split_with_file(self, opt):
         # read train/val/test splits
         split_file_path = opt.get('split_file', None)
         if split_file_path:
@@ -50,7 +51,35 @@ class BaseIQADataset(data.Dataset):
                 split_dict = pickle.load(f)
                 splits = split_dict[split_index][self.phase]
             self.paths_mos = [self.paths_mos[i] for i in splits] 
-    
+
+    def get_split(self, opt):
+        """Read train/val/test splits
+        """
+        # compatible with previous version using split file
+        if opt.get('split_file', None) is not None:
+            self.get_split_with_file(opt)
+            return
+
+        # get all split column names
+        all_split_lists = [x for x in self.meta_info.columns.tolist() if 'split' in x]
+
+        split_index = opt.get('split_index', None)
+
+        if split_index is not None:
+            if isinstance(split_index, str):
+                split_name = split_index
+            elif isinstance(split_index, int):
+                split_ratio = opt.get('split_ratio', '802')
+                split_name = f'ratio{split_ratio}_seed123_split_{split_index:02d}'
+            
+            assert split_name in all_split_lists, f'The given split [{split_name}] is not available in {all_split_lists}'
+
+            split_paths_mos = []
+            for i in range(len(self.paths_mos)):
+                if self.meta_info[split_name][i] == self.phase:
+                    split_paths_mos.append(self.paths_mos[i])
+            self.paths_mos = split_paths_mos
+            
     def mos_normalize(self, opt):
         mos_range = opt.get('mos_range', None)
         mos_lower_better = opt.get('lower_better', None)

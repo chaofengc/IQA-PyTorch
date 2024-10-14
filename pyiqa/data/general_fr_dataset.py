@@ -1,10 +1,10 @@
 from PIL import Image
+from os import path as osp
 
 import torch
 from torch.utils import data as data
 import torchvision.transforms as tf
 
-from pyiqa.data.data_util import read_meta_info_file 
 from pyiqa.data.transforms import transform_mapping, PairedToTensor
 from pyiqa.utils.registry import DATASET_REGISTRY
 
@@ -16,9 +16,19 @@ class GeneralFRDataset(BaseIQADataset):
     """
     
     def init_path_mos(self, opt):
+        super().init_path_mos(opt)
+
         target_img_folder = opt['dataroot_target']
         ref_img_folder = opt.get('dataroot_ref', None)
-        self.paths_mos = read_meta_info_file(target_img_folder, opt['meta_info_file'], mode='fr', ref_dir=ref_img_folder) 
+        if ref_img_folder is None:
+            ref_img_folder = target_img_folder
+
+        self.paths_mos = []
+        for row in self.meta_info.values:
+            ref_path = osp.join(ref_img_folder, row[0])
+            img_path = osp.join(target_img_folder, row[1])
+            mos_label = float(row[2])
+            self.paths_mos.append([img_path, ref_path, mos_label])
 
     def get_transforms(self, opt):
         # do paired transform first and then do common transform

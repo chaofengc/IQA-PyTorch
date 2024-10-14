@@ -32,19 +32,13 @@ class PieAPPDataset(GeneralFRDataset):
         self.paths_mos = metadata.values.tolist()
 
     def get_split(self, opt):
-        # read train/val/test splits
-        split_file_path = opt.get('split_file', None)
-        if split_file_path:
-            split_index = opt.get('split_index', 1)
-            with open(opt['split_file'], 'rb') as f:
-                split_dict = pickle.load(f)
-                splits = split_dict[split_index][self.phase]
-            self.paths_mos = [self.paths_mos[i] for i in splits] 
-        
+        super().get_split(opt)
         # remove duplicates
         if self.phase == 'test':
             temp = []
-            [temp.append(item) for item in self.paths_mos if not item in temp]
+            for item in self.paths_mos:
+                if not item in temp:
+                    temp.append(item)
             self.paths_mos = temp
         
     def __getitem__(self, index):

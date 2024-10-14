@@ -54,7 +54,7 @@ koniq10k:
   type: GeneralNRDataset
   dataroot_target: './datasets/koniq10k/512x384'
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
-  split_file: './datasets/meta_info/koniq10k_official.pkl'
+  split_index: 'official_split'
   phase: 'test'
   mos_range: [0, 100]
   lower_better: false 
@@ -64,7 +64,7 @@ koniq10k-1024:
   type: GeneralNRDataset
   dataroot_target: './datasets/koniq10k/1024x768'
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
-  split_file: './datasets/meta_info/koniq10k_official.pkl'
+  split_index: 'official_split'
   phase: 'test'
   mos_range: [0, 100]
   lower_better: false 
@@ -74,7 +74,7 @@ koniq10k++:
   type: GeneralNRDataset
   dataroot_target: './datasets/koniq10k/512x384'
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10k++Dataset.csv'
-  split_file: './datasets/meta_info/koniq10k_official.pkl'
+  split_index: 'official_split'
   phase: 'test'
   mos_range: [1, 5]
   lower_better: false
@@ -102,8 +102,7 @@ ava:
   type: AVADataset
   dataroot_target: './datasets/AVA_dataset/ava_images/'
   meta_info_file: './datasets/meta_info/meta_info_AVADataset.csv'
-  split_file: './datasets/meta_info/ava_official_ilgnet.pkl'
-  split_index: 1 # use official split
+  split_index: 'official_split'
   mos_range: [1, 10]
   lower_better: false
 
@@ -113,7 +112,7 @@ pipal:
   dataroot_target: './datasets/PIPAL/Dist_Imgs'
   dataroot_ref: './datasets/PIPAL/Train_Ref'
   meta_info_file: './datasets/meta_info/meta_info_PIPALDataset.csv'
-  split_file: './datasets/meta_info/pipal_official.pkl'
+  split_index: 'official_split'
   mos_range: [0, 1]
   lower_better: false 
 
@@ -122,7 +121,7 @@ flive:
   type: GeneralNRDataset 
   dataroot_target: './datasets/FLIVE_Database/database'
   meta_info_file: './datasets/meta_info/meta_info_FLIVEDataset.csv'
-  split_file: './datasets/meta_info/flive_official.pkl'
+  split_index: 'official_split'
   phase: test
   mos_range: [0, 100]
   lower_better: false
@@ -132,7 +131,7 @@ pieapp:
   type: PieAPPDataset 
   dataroot_target: './datasets/PieAPP_dataset_CVPR_2018/'
   meta_info_file: './datasets/meta_info/meta_info_PieAPPDataset.csv'
-  split_file: './datasets/meta_info/pieapp_official.pkl'
+  split_index: 'official_split'
 
 bapps:
   name: BAPPS
@@ -152,4 +151,4 @@ gfiqa:
   type: GeneralNRDataset
   dataroot_target: ./datasets/GFIQA/image
   meta_info_file: ./datasets/meta_info/meta_info_GFIQADataset.csv
-  split_file: ./datasets/meta_info/gfiqa_seed123.pkl
+  split_index: 1

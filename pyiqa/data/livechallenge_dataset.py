@@ -20,7 +20,6 @@ class LIVEChallengeDataset(GeneralNRDataset):
     """
 
     def init_path_mos(self, opt):
-        target_img_folder = os.path.join(opt['dataroot_target'], 'Images')
-        self.paths_mos = read_meta_info_file(target_img_folder, opt['meta_info_file']) 
+        super().init_path_mos(opt)
         # remove first 7 training images as previous works
         self.paths_mos = self.paths_mos[7:]

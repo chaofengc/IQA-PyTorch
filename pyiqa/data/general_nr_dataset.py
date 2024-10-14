@@ -1,8 +1,9 @@
 from PIL import Image
+from os import path as osp
+
 import torch
 from torch.utils import data as data
 
-from pyiqa.data.data_util import read_meta_info_file 
 from pyiqa.utils.registry import DATASET_REGISTRY
 from .base_iqa_dataset import BaseIQADataset
 
@@ -11,8 +12,15 @@ class GeneralNRDataset(BaseIQADataset):
     """General No Reference dataset with meta info file.
     """
     def init_path_mos(self, opt):
+        super().init_path_mos(opt)
+
         target_img_folder = opt['dataroot_target']
-        self.paths_mos = read_meta_info_file(target_img_folder, opt['meta_info_file']) 
+
+        self.paths_mos = []
+        for row in self.meta_info.values:
+            img_path = osp.join(target_img_folder, row[0])
+            mos_label = float(row[1])
+            self.paths_mos.append([img_path, mos_label])
 
     def __getitem__(self, index):
 

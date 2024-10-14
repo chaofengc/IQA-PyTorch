@@ -42,16 +42,10 @@ class BAPPSDataset(BaseIQADataset):
         self.paths_mos = pd.read_csv(opt['meta_info_file']).values.tolist()
     
     def get_split(self, opt):
-        val_types = opt.get('val_types', None)
-        # read train/val/test splits
-        split_file_path = opt.get('split_file', None)
-        if split_file_path:
-            split_index = opt.get('split_index', 1)
-            with open(opt['split_file'], 'rb') as f:
-                split_dict = pickle.load(f)
-                splits = split_dict[split_index][self.phase]
-            self.paths_mos = [self.paths_mos[i] for i in splits] 
+        super().get_split(opt)
 
+        val_types = opt.get('val_types', None)
+        
         if self.dataset_mode == '2afc':
             self.paths_mos = [x for x in self.paths_mos if x[0] != 'jnd']
         elif self.dataset_mode == 'jnd':

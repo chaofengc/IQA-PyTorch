@@ -29,30 +29,48 @@ class AVADataset(BaseIQADataset):
     """
 
     def init_path_mos(self, opt):
+        super().init_path_mos(opt)
         target_img_folder = opt['dataroot_target']
         self.dataroot = target_img_folder
-        self.paths_mos = pd.read_csv(opt['meta_info_file']).values.tolist()
     
     def get_split(self, opt):
-        # read train/val/test splits
-        split_file_path = opt.get('split_file', None)
-        if split_file_path:
-            split_index = opt.get('split_index', 1)
-            with open(opt['split_file'], 'rb') as f:
-                split_dict = pickle.load(f)
-            
+        split_index = opt.get('split_index', None)
+
+        # compatible with previous version using split file
+        # when using split file, previous version will use official_split or split_index=1
+        if opt.get('split_file', None) is not None:
+            split_index = 'official_split'
+        
+        if split_index is not None:
             # use val_num for validation 
             val_num = opt.get('val_num', 2000)
-            train_split = split_dict[split_index]['train'] 
-            val_split = split_dict[split_index]['val'] 
-            train_split = train_split + val_split[:-val_num]
-            val_split = val_split[-val_num:]
-            split_dict[split_index]['train'] = train_split
-            split_dict[split_index]['val'] = val_split 
 
-            splits = split_dict[split_index][self.phase]
-            self.paths_mos = [self.paths_mos[i] for i in splits] 
+            train_split_paths_mos = []
+            val_split_paths_mos = []
+            test_split_paths_mos = []
+            for i in range(len(self.paths_mos)):
+                if self.meta_info[split_index][i] == 0:   # 0 for train
+                    train_split_paths_mos.append(self.paths_mos[i])
+                elif self.meta_info[split_index][i] == 1:   # 1 for val
+                    val_split_paths_mos.append(self.paths_mos[i])
+                elif self.meta_info[split_index][i] == 2:   # 2 for test
+                    test_split_paths_mos.append(self.paths_mos[i])
 
+            if len(val_split_paths_mos) < val_num:
+                val_num = val_num - len(val_split_paths_mos)
+                val_split_paths_mos = val_split_paths_mos + train_split_paths_mos[-val_num:]
+                train_split_paths_mos = train_split_paths_mos[:-val_num]
+            else:
+                train_split_paths_mos = train_split_paths_mos + val_split_paths_mos[:-val_num]
+                val_split_paths_mos = val_split_paths_mos[-val_num:] 
+
+            if self.phase == 'train':
+                self.paths_mos = train_split_paths_mos
+            elif self.phase == 'val':
+                self.paths_mos = val_split_paths_mos
+            elif self.phase == 'test':
+                self.paths_mos = test_split_paths_mos
+            
         self.mean_mos = np.array([item[1] for item in self.paths_mos]).mean()
 
     def __getitem__(self, index):
