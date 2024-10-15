@@ -61,6 +61,7 @@ print(pyiqa.list_models())
 
 | Task           | Method  | Description                                                                                                                                                                 |
 | -------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Color IQA | `msswd` | Perceptual color difference metric MS-SWD, ECCV2024, [Arxiv](http://arxiv.org/abs/2407.10181), [Github](https://github.com/real-hjq/MS-SWD)
 | Face IQA | `topiq_nr-face` | TOPIQ model trained with face IQA dataset (GFIQA) |
 | Underwater IQA | `uranker` | A ranking-based underwater image quality assessment (UIQA) method, AAAI2023, [Arxiv](https://arxiv.org/abs/2208.06857), [Github](https://github.com/RQ-Wu/UnderwaterRanker) |
 

@@ -707,4 +707,12 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'NR',
         'score_range': '0, 1',
     },
+    'msswd': {
+        'metric_opts': {
+            'type': 'MS_SWD_learned',
+        },
+        'metric_mode': 'FR',
+        'score_range': '0, ~10',
+        'lower_better': True,
+    }
 })

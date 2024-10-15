@@ -24,6 +24,13 @@ def main():
     parser.add_argument('-m', '--metric_name', type=str, default='PSNR', help='IQA metric name, case sensitive.')
     parser.add_argument('--save_file', type=str, default=None, help='path to save results.')
 
+    # Add a --verbose flag
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',  # This makes it a flag (True when used, False otherwise)
+        help='Enable verbose output'
+    )
+
     args = parser.parse_args()
 
     metric_name = args.metric_name.lower()
@@ -72,7 +79,7 @@ def main():
         assert os.path.isdir(args.target), 'input path must be a folder for FID.'
         avg_score = iqa_model(args.target, args.ref)
     
-    if torch.cuda.is_available():
+    if args.verbose and torch.cuda.is_available():
         print(torch.cuda.memory_summary())
 
     msg = f'Average {metric_name} score of {args.target} with {test_img_num} images is: {avg_score}'
