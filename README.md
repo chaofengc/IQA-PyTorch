@@ -4,11 +4,13 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 
 <a href="https://colab.research.google.com/drive/14J3KoyrjJ6R531DsdOy5Bza5xfeMODi6?usp=sharing"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a> 
 [![PyPI](https://img.shields.io/pypi/v/pyiqa)](https://pypi.org/project/pyiqa/)
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=chaofengc/IQA-PyTorch) 
+[![Downloads](https://static.pepy.tech/badge/pyiqa)](https://pepy.tech/project/pyiqa)
 [![Documentation Status](https://readthedocs.org/projects/iqa-pytorch/badge/?version=latest)](https://iqa-pytorch.readthedocs.io/en/latest/?badge=latest)
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/chaofengc/Awesome-Image-Quality-Assessment)
 [![Citation](https://img.shields.io/badge/Citation-bibtex-green)](https://github.com/chaofengc/IQA-PyTorch/blob/main/README.md#bookmark_tabs-citation)
 [![Zhihu](https://img.shields.io/badge/zhihu-white?logo=zhihu)](https://www.zhihu.com/column/c_1565424954811846656)
+
+<!-- [![visitors](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fchaofengc%2FIQA-PyTorch&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visitors&edge_flat=false)](https://hits.seeyoufarm.com) -->
 
 ## :open_book: Introduction
 
