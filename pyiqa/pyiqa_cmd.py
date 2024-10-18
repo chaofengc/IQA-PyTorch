@@ -3,9 +3,9 @@ from pyiqa.api_helpers import create_metric, list_models
 from pyiqa.utils import scandir_images
 
 import os
-import sys
 from tqdm import tqdm
 import numpy as np
+from datetime import datetime
 from pprint import pprint
 
 
@@ -28,13 +28,16 @@ def main():
     if args.list_models:
         pprint(list_models(), compact=True)
         return 
-
-    print(f"{'='*50} Loading metrics {'='*50}")
+    
+    def get_time():
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    print(f"[{get_time()}] ===> Loading metrics: {args.metric}")
     metric_func_list = {}
     for metric in args.metric:
         metric_func = create_metric(metric, device=args.device)
         metric_func_list[metric] = metric_func
-    print(f"{'='*50} Metrics loaded {'='*50}")
+    print(f"[{get_time()}] ===> Metrics loaded: {args.metric}")
 
     results = {}
     # Test fid, inception_score
@@ -70,7 +73,7 @@ def main():
                     all_results[target] = score
 
                 pbar.update(1)
-                pbar.set_description(f'Testing {metric} with input {target:>20}')
+                pbar.set_description(f'[{get_time()}] Testing {metric} with input {target:>20}')
         else:
             tmp_result = []
             for target, ref in zip(target_list, ref_list):
@@ -80,7 +83,7 @@ def main():
                     all_results[f"{target} | {ref}"] = score
 
                 pbar.update(1)
-                pbar.set_description(f'Testing {metric} with input {target:>20}')
+                pbar.set_description(f'[{get_time()}] Testing {metric} with input {target:>20}')
 
         pbar.close()
         all_results['mean'] = np.mean(tmp_result)

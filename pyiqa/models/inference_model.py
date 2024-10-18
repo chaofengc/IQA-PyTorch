@@ -2,7 +2,8 @@ import torch
 
 from collections import OrderedDict
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
-from pyiqa.utils.registry import ARCH_REGISTRY
+# from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs import build_network
 from pyiqa.utils.img_util import imread2tensor
 
 from pyiqa.losses.loss_util import weight_reduce_loss
@@ -57,8 +58,7 @@ class InferenceModel(torch.nn.Module):
             net_opts.update(default_opt)
         # then update with custom setting
         net_opts.update(kwargs)
-        network_type = net_opts.pop('type')
-        self.net = ARCH_REGISTRY.get(network_type)(**net_opts)
+        self.net = build_network(net_opts)
         self.net = self.net.to(self.device)
         self.net.eval()
 
