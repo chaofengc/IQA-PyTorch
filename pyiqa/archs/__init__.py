@@ -1,6 +1,10 @@
-import importlib
-from copy import deepcopy
+import os
 from os import path as osp
+import json
+from typing import Dict, Optional
+from pathlib import Path
+import importlib
+import inspect
 
 from pyiqa.utils import get_root_logger, scandir
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -8,25 +12,131 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 
 __all__ = ['build_network']
 
-# automatically scan and collect arch module filenames for lazy import
-arch_folder = osp.dirname(osp.abspath(__file__))
-arch_filenames = sorted([osp.splitext(osp.basename(v))[0] for v in scandir(arch_folder) if v.endswith('_arch.py')])
 
-def lazy_import_module(module_name):
-    while arch_filenames:
-        if module_name in ARCH_REGISTRY:
-            break
-        importlib.import_module(f'pyiqa.archs.{arch_filenames.pop()}')
+class ClassMapper:
+    def __init__(self, 
+                 cache_file: str = 'class_mapping.json',
+                ):
+        """
+        Initialize the class mapper with caching functionality.
+        
+        Args:
+            arch_folder: Directory containing architecture files
+            cache_file: JSON file to store the mapping
+            cache_expires_days: Days before cache is considered stale
+        """
+        self.arch_folder = Path(osp.dirname(osp.abspath(__file__)))
+        self.cache_file = self.arch_folder / cache_file
+        self._mapping: Optional[Dict] = None
+
+        self._load_cache()
+
+    def _load_cache(self) -> Dict:
+        """Load mapping from cache file."""
+        if not osp.exists(self.cache_file):
+            print(f"Warning: Cache file not found: {self.cache_file}. Refreshing cache...")
+            self.refresh()
+
+        with open(self.cache_file, 'r') as f:
+            self._mapping = json.load(f)
+
+    def _save_cache(self, mapping: Dict) -> None:
+        """Save mapping to cache file."""
+        try:
+            with open(self.cache_file, 'w') as f:
+                json.dump(mapping, f, indent=4)
+        except Exception as e:
+            print(f"Warning: Failed to save cache file: {e}")
+
+    def _find_classes_in_file(self, file_path: Path) -> Dict[str, str]:
+        """
+        Find classes in a Python file that match our criteria.
+        Returns a dict of {class_name: file_path}.
+        """
+        classes = {}
+        
+        try:
+            # Use importlib to load the module
+            module = importlib.import_module(f'pyiqa.archs.{file_path.stem}')
+            # Get all classes in the module
+            classes_in_module = inspect.getmembers(module, inspect.isclass)
+
+            for class_name, class_type in classes_in_module:
+                classes[class_name] = file_path.stem
+            
+        except Exception as e:
+            print(f"Warning: Failed to process {file_path}: {e}")
+        
+        return classes
+
+    def _scan_architecture_files(self) -> Dict:
+        """Scan architecture files and create mapping."""
+        mapping = {}
+        
+        # Scan all architecture files
+        for file_path in self.arch_folder.glob('*_arch.py'):
+            file_classes = self._find_classes_in_file(file_path)
+            mapping.update(file_classes)
+            
+        return mapping
+
+    def get_mapping(self, ) -> Dict:
+        """
+        Get the class to filename mapping.
+        
+        Args:
+            force_rescan: If True, ignore cache and rescan files
+            
+        Returns:
+            Dict mapping class names to relative file paths
+        """
+        # Scan files and create new mapping
+        self._mapping = self._scan_architecture_files()
+        self._save_cache(self._mapping)
+        
+        return self._mapping
+
+    def get_file_for_class(self, class_name: str) -> Optional[str]:
+        """
+        Get the file path for a specific class.
+        
+        Args:
+            class_name: Name of the class to find
+            
+        Returns:
+            Relative path to the file containing the class, or None if not found
+        """
+        return self._mapping.get(class_name)
+
+    def refresh(self) -> Dict:
+        """
+        Force refresh the mapping.
+        
+        Returns:
+            Updated mapping dictionary
+        """
+        return self.get_mapping()
+
+
+class_mapper = ClassMapper()
+
 
 def build_network(opt):
-    opt = deepcopy(opt)
     network_type = opt.pop('type')
     
-    # Lazy import the required module
+    logger = get_root_logger()
+    # Lazy import with class mapper
     if network_type not in ARCH_REGISTRY:
-        lazy_import_module(network_type)
+        file_name = class_mapper.get_file_for_class(network_type)
+        if file_name is None:
+            logger.info(f'Class [{network_type}] not found in cache. Refreshing class mapper file cache.')
+            class_mapper.refresh()
+            file_name = class_mapper.get_file_for_class(network_type)
+
+        importlib.import_module(f'pyiqa.archs.{file_name}')
     
     net = ARCH_REGISTRY.get(network_type)(**opt)
-    logger = get_root_logger()
     logger.info(f'Network [{net.__class__.__name__}] is created.')
     return net
+
+

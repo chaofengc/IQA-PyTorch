@@ -1,2 +1,3 @@
 include VERSION
 include requirements.txt
+include pyiqa/archs/class_mapping.json
