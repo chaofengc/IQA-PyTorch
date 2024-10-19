@@ -22,9 +22,10 @@ import torch.nn.functional as F
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DISTS_weights-f5e65c96.pth'
+    'url': get_url_from_name('DISTS_weights-f5e65c96.pth')
 }
 
 

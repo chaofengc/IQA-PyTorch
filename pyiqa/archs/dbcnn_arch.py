@@ -15,16 +15,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'csiq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_CSIQ-8677d071.pth',
-    'tid2008': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_TID2008-4b47c5d1.pth',
-    'tid2013': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_TID2013-485d021d.pth',
-    'live': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_LIVE-97262bf4.pth',
-    'livec': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_LIVEC-83f6dad3.pth',
-    'livem': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_LIVEM-698474e3.pth',
-    'koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_KonIQ10k-2de81c0a.pth',
-    'scnn': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/DBCNN_scnn-7ea73d75.pth',
+    'csiq': get_url_from_name('DBCNN_CSIQ-8677d071.pth'),
+    'tid2008': get_url_from_name('DBCNN_TID2008-4b47c5d1.pth'),
+    'tid2013': get_url_from_name('DBCNN_TID2013-485d021d.pth'),
+    'live': get_url_from_name('DBCNN_LIVE-97262bf4.pth'),
+    'livec': get_url_from_name('DBCNN_LIVEC-83f6dad3.pth'),
+    'livem': get_url_from_name('DBCNN_LIVEM-698474e3.pth'),
+    'koniq': get_url_from_name('DBCNN_KonIQ10k-2de81c0a.pth'),
+    'scnn': get_url_from_name('DBCNN_scnn-7ea73d75.pth'),
 }
 
 

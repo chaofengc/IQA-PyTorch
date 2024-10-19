@@ -20,11 +20,12 @@ from einops import rearrange
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network, random_crop, uniform_crop 
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'pipal': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/MANIQA_PIPAL-ae6d356b.pth',
-    'koniq': 'https://github.com/IIGROUP/MANIQA/releases/download/Koniq10k/ckpt_koniq10k.pt',
-    'kadid': 'https://github.com/IIGROUP/MANIQA/releases/download/Kadid10k/ckpt_kadid10k.pt',
+    'pipal': get_url_from_name('MANIQA_PIPAL-ae6d356b.pth'),
+    'koniq': get_url_from_name('ckpt_koniq10k.pt'),
+    'kadid': get_url_from_name('ckpt_kadid10k.pt'),
 }
 
 

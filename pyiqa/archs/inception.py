@@ -9,10 +9,9 @@ import torch.nn.functional as F
 import torchvision
 
 from .arch_util import load_pretrained_network
+from .arch_util import get_url_from_name
 
-# Inception weights ported to Pytorch from
-FID_WEIGHTS_URL = 'https://github.com/mseitzer/pytorch-fid/releases/download/fid_weights/pt_inception-2015-12-05-6726825d.pth'  # noqa: E501
-
+FID_WEIGHTS_URL = get_url_from_name('pt_inception-2015-12-05-6726825d.pth')
 
 class InceptionV3(nn.Module):
     """Pretrained InceptionV3 network returning feature maps"""

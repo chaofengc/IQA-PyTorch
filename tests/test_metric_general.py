@@ -174,6 +174,9 @@ def test_forward(metric_name, device):
     x = torch.rand(*size).to(device)
     y = torch.rand(*size).to(device)
 
+    if 'qalign' in metric_name and not torch.cuda.is_available():
+        return
+
     metric = pyiqa.create_metric(metric_name, device=device)
     metric.eval()
     if hasattr(metric.net, 'test_sample'):

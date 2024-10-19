@@ -21,12 +21,12 @@ import torch.nn.functional as F
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    # key "url" is the default
-    "alex_shift_tolerant": "https://github.com/abhijay9/ShiftTolerant-LPIPS/raw/main/stlpips/weights/vST0.0/alex_shift_tolerant.pth",
-    "vgg_shift_tolerant": "https://github.com/abhijay9/ShiftTolerant-LPIPS/raw/main/stlpips/weights/vST0.0/vgg_shift_tolerant.pth",
+    "alex_shift_tolerant": get_url_from_name("alex_shift_tolerant.pth"),
+    "vgg_shift_tolerant": get_url_from_name("vgg_shift_tolerant.pth"),
 }
 
 

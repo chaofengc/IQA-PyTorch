@@ -12,10 +12,11 @@ from pyiqa.archs.arch_util import load_pretrained_network, clip_preprocess_tenso
 
 import torchvision.transforms as T
 from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
+from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    "url": "https://github.com/christophschuhmann/improved-aesthetic-predictor/raw/main/sac%2Blogos%2Bava1-l14-linearMSE.pth"
+    "url": get_url_from_name("sac+logos+ava1-l14-linearMSE.pth")
 }
 
 

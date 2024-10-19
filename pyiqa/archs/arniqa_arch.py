@@ -23,7 +23,7 @@ from collections import OrderedDict
 
 from .constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 # Avoid warning related to loading a jit model from torch.hub
 warnings.filterwarnings("ignore", category=UserWarning, module="torch.serialization")
@@ -50,18 +50,16 @@ available_datasets_mos_types = {
     "spaq": "mos"
 }
 
-base_url = "https://github.com/miccunifi/ARNIQA/releases/download/weights"
-
 default_model_urls = {
-    "ARNIQA": f"{base_url}/ARNIQA.pth",
-    "live": f"{base_url}/regressor_live.pth",
-    "csiq": f"{base_url}/regressor_csiq.pth",
-    "tid": f"{base_url}/regressor_tid2013.pth",
-    "kadid": f"{base_url}/regressor_kadid10k.pth",
-    "koniq": f"{base_url}/regressor_koniq10k.pth",
-    "clive": f"{base_url}/regressor_clive.pth",
-    "flive": f"{base_url}/regressor_flive.pth",
-    "spaq": f"{base_url}/regressor_spaq.pth"
+    "ARNIQA": get_url_from_name(name="ARNIQA.pth"),
+    "live": get_url_from_name(name="regressor_live.pth"),
+    "csiq": get_url_from_name(name="regressor_csiq.pth"),
+    "tid": get_url_from_name(name="regressor_tid2013.pth"),
+    "kadid": get_url_from_name(name="regressor_kadid10k.pth"),
+    "koniq": get_url_from_name(name="regressor_koniq10k.pth"),
+    "clive": get_url_from_name(name="regressor_clive.pth"),
+    "flive": get_url_from_name(name="regressor_flive.pth"),
+    "spaq": get_url_from_name(name="regressor_spaq.pth")
 }
 
 

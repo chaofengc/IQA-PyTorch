@@ -14,14 +14,15 @@ import torch.nn as nn
 import timm
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import dist_to_mos, load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 import torchvision.transforms as T
 
 default_model_urls = {
-    'vgg16-ava': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA_VGG16_ava-dc4e8265.pth',
-    'inception_resnet_v2-ava': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA_InceptionV2_ava-b0c77c00.pth',
-    'inception_resnet_v2-koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA_koniq-250367ae.pth',
-    'inception_resnet_v2-spaq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NIMA-spaq-46a7fcb7.pth',
+    'vgg16-ava': get_url_from_name('NIMA_VGG16_ava-dc4e8265.pth'),
+    'inception_resnet_v2-ava': get_url_from_name('NIMA_InceptionV2_ava-b0c77c00.pth'),
+    'inception_resnet_v2-koniq': get_url_from_name('NIMA_koniq-250367ae.pth'),
+    'inception_resnet_v2-spaq': get_url_from_name('NIMA-spaq-46a7fcb7.pth'),
 }
 
 

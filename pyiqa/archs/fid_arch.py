@@ -28,11 +28,12 @@ from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.img_util import is_image_file 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from .interpolate_compat_tensorflow import interpolate_bilinear_2d_like_tensorflow1x
+from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    'ffhq_clean_trainval70k_512.npz': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/ffhq_clean_trainval70k_512.npz',
-    'ffhq_clean_trainval70k_512_kid.npz': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/ffhq_clean_trainval70k_512_kid.npz',
+    'ffhq_clean_trainval70k_512.npz': get_url_from_name('ffhq_clean_trainval70k_512.npz'),
+    'ffhq_clean_trainval70k_512_kid.npz': get_url_from_name('ffhq_clean_trainval70k_512_kid.npz'),
 }
 
 

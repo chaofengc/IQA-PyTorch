@@ -16,11 +16,10 @@ from torchvision.ops import RoIPool
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'url':
-    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/'
-    'P2P_RoIPoolModel-fit.10.bs.120-ca69882e.pth',
+    'url': get_url_from_name('P2P_RoIPoolModel-fit.10.bs.120-ca69882e.pth')
 }
 
 

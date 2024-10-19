@@ -21,21 +21,15 @@ from collections import namedtuple
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    # key "url" is the default
-    '0.0_alex':
-    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_alex-18720f55.pth',
-    '0.0_vgg':
-    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_vgg-b9e42362.pth',
-    '0.0_squeeze':
-    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.0_squeeze-c27abd3a.pth',
-    '0.1_alex':
-    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_alex-df73285e.pth',
-    '0.1_vgg':
-    'https://github.com/chaofengc/IQA-Toolbox-Python/releases/download/v0.1-weights/LPIPS_v0.1_vgg-a78928a0.pth',
-    '0.1_squeeze':
-    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/LPIPS_v0.1_squeeze-4a5350f2.pth'
+    '0.0_alex': get_url_from_name('LPIPS_v0.0_alex-18720f55.pth'),
+    '0.0_vgg': get_url_from_name('LPIPS_v0.0_vgg-b9e42362.pth'),
+    '0.0_squeeze': get_url_from_name('LPIPS_v0.0_squeeze-c27abd3a.pth'),
+    '0.1_alex': get_url_from_name('LPIPS_v0.1_alex-df73285e.pth'),
+    '0.1_vgg': get_url_from_name('LPIPS_v0.1_vgg-a78928a0.pth'),
+    '0.1_squeeze': get_url_from_name('LPIPS_v0.1_squeeze-4a5350f2.pth')
 }
 
 

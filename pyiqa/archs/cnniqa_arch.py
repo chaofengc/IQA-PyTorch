@@ -16,10 +16,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    'koniq10k': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CNNIQA_koniq10k-e6f14c91.pth'
+    'koniq10k': get_url_from_name('CNNIQA_koniq10k-e6f14c91.pth')
 }
 
 

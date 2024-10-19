@@ -22,10 +22,11 @@ import math
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    'uranker': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/URanker_ckpt-450eb36d.pth',
+    'uranker': get_url_from_name('URanker_ckpt-450eb36d.pth'),
 }
 
 

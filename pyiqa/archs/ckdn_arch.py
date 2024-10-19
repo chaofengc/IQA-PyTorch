@@ -19,9 +19,10 @@ try:
     from torch.hub import load_state_dict_from_url
 except ImportError:
     from torch.utils.model_zoo import load_url as load_state_dict_from_url
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CKDN_model_best-38b27dc6.pth'
+    'url': get_url_from_name('CKDN_model_best-38b27dc6.pth')
 }
 
 model_urls = {

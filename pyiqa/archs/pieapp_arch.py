@@ -19,9 +19,10 @@ import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
 from .func_util import extract_2d_patches
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/PieAPPv0.1-0937b014.pth'
+    'url': get_url_from_name('PieAPPv0.1-0937b014.pth')
 }
 
 

@@ -18,12 +18,12 @@ import torch.nn as nn
 import timm
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network, uniform_crop
+from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    'resnet50-koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/HyperIQA-resnet50-koniq10k-c96c41b1.pth',
+    'resnet50-koniq': get_url_from_name('HyperIQA-resnet50-koniq10k-c96c41b1.pth'),
 }
-
 
 @ARCH_REGISTRY.register()
 class HyperNet(nn.Module):

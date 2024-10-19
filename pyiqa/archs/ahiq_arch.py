@@ -25,13 +25,14 @@ from torchvision.ops.deform_conv import DeformConv2d
 
 from pyiqa.archs.arch_util import (
     load_file_from_url,
+    get_url_from_name,
     load_pretrained_network,
     uniform_crop,
 )
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 default_model_urls = {
-    "pipal": "https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/AHIQ_vit_p8_epoch33-da3ea303.pth"
+    "pipal": get_url_from_name("AHIQ_vit_p8_epoch33-da3ea303.pth")
 }
 
 

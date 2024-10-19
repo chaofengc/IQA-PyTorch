@@ -17,9 +17,8 @@ import torch
 from torch import nn
 import torchvision.transforms.functional as TF
 
-from huggingface_hub import hf_hub_url
 
-from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import load_pretrained_network, get_url_from_name
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 
@@ -190,8 +189,7 @@ class MS_SWD_learned(nn.Module):
         if pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path, weight_keys='params')
         elif pretrained:
-            url = hf_hub_url(repo_id="chaofengc/IQA-Toolbox-Weights", filename="msswd_weights.pth")
-            load_pretrained_network(self, url, weight_keys='net_dict')
+            load_pretrained_network(self, get_url_from_name('msswd_weights.pth'), weight_keys='net_dict')
     
     def preprocess_img(self, x):
         if self.resize_input and min(x.shape[2:]) > 256:

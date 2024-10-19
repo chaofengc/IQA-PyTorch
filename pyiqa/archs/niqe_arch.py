@@ -24,12 +24,13 @@ from pyiqa.matlab_utils import imresize, fspecial, conv2d, imfilter, fitweibull,
 from .func_util import estimate_aggd_param, normalize_img_with_gauss, diff_round
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_modelparameters.mat',
-    'niqe': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_modelparameters.mat',
-    'niqe_matlab': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/niqe_matlab_params.mat',
-    'ilniqe': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/ILNIQE_templateModel.mat',
+    'url': get_url_from_name('niqe_modelparameters.mat'),
+    'niqe': get_url_from_name('niqe_modelparameters.mat'),
+    'niqe_matlab': get_url_from_name('niqe_matlab_params.mat'),
+    'ilniqe': get_url_from_name('ILNIQE_templateModel.mat'),
 }
 
 

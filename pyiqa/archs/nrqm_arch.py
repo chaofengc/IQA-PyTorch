@@ -21,9 +21,9 @@ from pyiqa.matlab_utils import imresize, fspecial, SCFpyr_PyTorch, dct2d, im2col
 from pyiqa.archs.func_util import extract_2d_patches
 from pyiqa.archs.ssim_arch import ssim as ssim_func
 from pyiqa.archs.niqe_arch import NIQE
-from warnings import warn
+from pyiqa.archs.arch_util import get_url_from_name
 
-default_model_urls = {'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/NRQM_model.mat'}
+default_model_urls = {'url': get_url_from_name('NRQM_model.mat')}
 
 
 def get_gauss_pyramid(x: Tensor, scale: int = 2):

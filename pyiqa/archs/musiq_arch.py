@@ -17,18 +17,14 @@ from .arch_util import dist_to_mos, load_pretrained_network
 from pyiqa.matlab_utils import ExactPadding2d, exact_padding_2d 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.data.multiscale_trans_util import get_multiscale_patches
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'ava':
-    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_ava_ckpt-e8d3f067.pth',
-    'koniq10k':
-    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_koniq_ckpt-e95806b9.pth',
-    'spaq':
-    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_spaq_ckpt-358bb6af.pth',
-    'paq2piq':
-    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_paq2piq_ckpt-364c0c84.pth',
-    'imagenet_pretrain':
-    'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/musiq_imagenet_pretrain-51d9b0a5.pth',
+    'ava': get_url_from_name('musiq_ava_ckpt-e8d3f067.pth'),
+    'koniq10k': get_url_from_name('musiq_koniq_ckpt-e95806b9.pth'),
+    'spaq': get_url_from_name('musiq_spaq_ckpt-358bb6af.pth'),
+    'paq2piq': get_url_from_name('musiq_paq2piq_ckpt-364c0c84.pth'),
+    'imagenet_pretrain': get_url_from_name('musiq_imagenet_pretrain-51d9b0a5.pth'),
 }
 
 

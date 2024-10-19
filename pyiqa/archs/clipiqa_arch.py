@@ -20,12 +20,13 @@ from pyiqa.archs.arch_util import load_pretrained_network
 
 import clip
 from .clip_model import load
+from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    'clipiqa+': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CLIP-IQA+_learned_prompts-603f3273.pth',
-    'clipiqa+_rn50_512': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CLIPIQA+_RN50_512-89f5d940.pth',
-    'clipiqa+_vitL14_512': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/CLIPIQA+_ViTL14_512-e66488f2.pth',
+    'clipiqa+': get_url_from_name('CLIP-IQA+_learned_prompts-603f3273.pth'),
+    'clipiqa+_rn50_512': get_url_from_name('CLIPIQA+_RN50_512-89f5d940.pth'),
+    'clipiqa+_vitL14_512': get_url_from_name('CLIPIQA+_ViTL14_512-e66488f2.pth'),
 }
 
 

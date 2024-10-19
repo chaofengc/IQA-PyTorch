@@ -21,9 +21,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'mix': 'https://github.com/zwx8981/IQA-PyTorch/releases/download/Weights/UNIQUE.pt',
+    'mix': get_url_from_name('UNIQUE.pt'),
 }
 
 class Normalize(nn.Module):

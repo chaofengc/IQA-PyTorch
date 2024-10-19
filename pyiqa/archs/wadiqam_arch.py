@@ -19,11 +19,11 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
 
 from typing import Union, List, cast
-
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'wadiqam_fr_kadid': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/WaDIQaM-kadid-f7541ea5.pth', 
-    'wadiqam_nr_koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/WaDIQaM-NR-koniq-aaffea29.pth',
+    'wadiqam_fr_kadid': get_url_from_name('WaDIQaM-kadid-f7541ea5.pth'), 
+    'wadiqam_nr_koniq': get_url_from_name('WaDIQaM-NR-koniq-aaffea29.pth'),
 }
 
 

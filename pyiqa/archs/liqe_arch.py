@@ -28,14 +28,15 @@ import clip
 from .clip_model import load
 import torch.nn.functional as F
 from itertools import product
+from pyiqa.archs.arch_util import get_url_from_name
 
 qualitys = ['bad', 'poor', 'fair', 'good', 'perfect']
 scenes = ['animal', 'cityscape', 'human', 'indoor', 'landscape', 'night', 'plant', 'still_life', 'others']
 dists_map = ['jpeg2000 compression', 'jpeg compression', 'noise', 'blur', 'color', 'contrast', 'overexposure',
             'underexposure', 'spatial', 'quantization', 'other']
 
-default_model_urls = {'koniq': 'https://github.com/zwx8981/IQA-PyTorch/releases/download/Weights/liqe_koniq.pt',
-                      'mix': 'https://github.com/zwx8981/IQA-PyTorch/releases/download/Weights/liqe_mix.pt'}
+default_model_urls = {'koniq': get_url_from_name('liqe_koniq.pt'),
+                      'mix': get_url_from_name('liqe_mix.pt')}
 
 @ARCH_REGISTRY.register()
 class LIQE(nn.Module):

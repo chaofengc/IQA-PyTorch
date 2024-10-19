@@ -21,11 +21,12 @@ import torchvision.models as models
 from .arch_util import load_pretrained_network
 from pyiqa.utils.registry import ARCH_REGISTRY
 from .arch_util import random_crop, uniform_crop
+from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    'koniq': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/tres_koniq-f0502926.pth',
-    'flive': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/tres_flive-09b0de5b.pth',
+    'koniq': get_url_from_name('tres_koniq-f0502926.pth'),
+    'flive': get_url_from_name('tres_flive-09b0de5b.pth'),
 }
 
 

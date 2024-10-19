@@ -25,19 +25,19 @@ from .clip_model import load
 from .topiq_swin import create_swin
 
 from facexlib.utils.face_restoration_helper import FaceRestoreHelper
-import os
 import warnings
+from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    'cfanet_fr_kadid_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_fr_kadid_res50-2c4cc61d.pth',
-    'cfanet_fr_pipal_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_fr_pipal_res50-69bbe5ba.pth',
-    'cfanet_nr_flive_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_nr_flive_res50-ded1c74e.pth',
-    'cfanet_nr_koniq_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_nr_koniq_res50-9a73138b.pth',
-    'cfanet_nr_spaq_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_nr_spaq_res50-a7f799ac.pth',
-    'cfanet_iaa_ava_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_iaa_ava_res50-3cd62bb3.pth',
-    'cfanet_iaa_ava_swin': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/cfanet_iaa_ava_swin-393b41b4.pth',
-    'topiq_nr_gfiqa_res50': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/topiq_nr_gfiqa_res50-d76bf1ae.pth',
+    'cfanet_fr_kadid_res50': get_url_from_name('cfanet_fr_kadid_res50-2c4cc61d.pth'),
+    'cfanet_fr_pipal_res50': get_url_from_name('cfanet_fr_pipal_res50-69bbe5ba.pth'),
+    'cfanet_nr_flive_res50': get_url_from_name('cfanet_nr_flive_res50-ded1c74e.pth'),
+    'cfanet_nr_koniq_res50': get_url_from_name('cfanet_nr_koniq_res50-9a73138b.pth'),
+    'cfanet_nr_spaq_res50': get_url_from_name('cfanet_nr_spaq_res50-a7f799ac.pth'),
+    'cfanet_iaa_ava_res50': get_url_from_name('cfanet_iaa_ava_res50-3cd62bb3.pth'),
+    'cfanet_iaa_ava_swin': get_url_from_name('cfanet_iaa_ava_swin-393b41b4.pth'),
+    'topiq_nr_gfiqa_res50': get_url_from_name('topiq_nr_gfiqa_res50-d76bf1ae.pth'),
 }
 
 

@@ -11,6 +11,8 @@ from pprint import pprint
 
 def main():
     parser = argparse.ArgumentParser(description='Test a metric') 
+
+    # required input arguments
     parser.add_argument('metric', nargs='*', help='Metric name(s)')
     parser.add_argument('-t', '--target', type=str, help='Target files or folder')
     parser.add_argument('-r', '--ref', type=str, default=None, help='Reference files or folder')
@@ -18,9 +20,10 @@ def main():
     # metric specific options
     parser.add_argument('--isc_splits', type=int, default=10, help='Splits for inception score')
     parser.add_argument('--fid_mode', type=str, default='clean', help='Image resize mode for FID [clean, legacy_pytorch, legacy_tensorflow]')
-    parser.add_argument('--device', type=str, default=None, help='Print verbose message')
-    parser.add_argument('--verbose', action='store_true', help='Print verbose message')
 
+    # common options
+    parser.add_argument('--device', type=str, default=None, help='Print verbose message')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print verbose message')
     parser.add_argument('-ls', '--list_models', action='store_true', help='Print verbose message')
 
     args, unknown_args = parser.parse_known_args()

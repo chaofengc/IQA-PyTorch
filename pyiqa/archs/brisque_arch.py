@@ -19,10 +19,11 @@ from pyiqa.matlab_utils.nss_feature import compute_nss_features
 from .func_util import estimate_ggd_param, estimate_aggd_param, normalize_img_with_gauss
 from pyiqa.utils.download_util import load_file_from_url
 from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'url': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/brisque_svm_weights.pth',
-    'brisque_matlab': 'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/brisque_matlab.mat',
+    'url': get_url_from_name('brisque_svm_weights.pth'),
+    'brisque_matlab': get_url_from_name('brisque_matlab.mat'),
 }
 
 
