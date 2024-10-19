@@ -107,14 +107,13 @@ class LIQE(nn.Module):
 
         if x.size(1) < self.num_patch:
             num_patch = x.size(1)
-            self.num_patch = num_patch
         else:
             num_patch = self.num_patch
 
         if self.training:
             sel = torch.randint(low=0, high=x.size(0), size=(num_patch, ))
         else:
-            sel_step = max(1, x.size(1) // self.num_patch)
+            sel_step = max(1, x.size(1) // num_patch)
             sel = torch.zeros(num_patch)
             for i in range(num_patch):
                 sel[i] = sel_step * i
@@ -131,7 +130,7 @@ class LIQE(nn.Module):
         logit_scale = self.clip_model.logit_scale.exp()
         logits_per_image = logit_scale * image_features @ text_features.t()
 
-        logits_per_image = logits_per_image.view(bs, self.num_patch, -1)
+        logits_per_image = logits_per_image.view(bs, num_patch, -1)
         logits_per_image = logits_per_image.mean(1)
         logits_per_image = F.softmax(logits_per_image, dim=1)
 
