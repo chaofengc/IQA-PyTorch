@@ -63,7 +63,7 @@ You can simply use the package with commandline interface.
 pyiqa -ls
 
 # test with default settings
-pyiqa [metric_name(s)] --target [image_path or dir] --ref [image_path or dir]
+pyiqa [metric_name(s)] -t [image_path or dir] -r [image_path or dir] --device [cuda or cpu] --verbose
 ```
 
 ### Advanced Usage with Codes
