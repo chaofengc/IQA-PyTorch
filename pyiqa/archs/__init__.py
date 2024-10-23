@@ -1,10 +1,10 @@
-import os
 from os import path as osp
 import json
 from typing import Dict, Optional
 from pathlib import Path
 import importlib
 import inspect
+import copy
 
 from pyiqa.utils import get_root_logger, scandir
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -122,6 +122,7 @@ class_mapper = ClassMapper()
 
 
 def build_network(opt):
+    opt = copy.deepcopy(opt)
     network_type = opt.pop('type')
     
     logger = get_root_logger()
