@@ -8,16 +8,13 @@ on Computer Vision (ICCV), pp. 10242-10251. 2021.
 Ref url: https://github.com/lidq92/CNNIQA
 Re-implemented by: Chaofeng Chen (https://github.com/chaofengc) with modification:
     - We use 3 channel RGB input.
-
 """
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network
-from pyiqa.archs.arch_util import get_url_from_name
-
+from pyiqa.archs.arch_util import load_pretrained_network, get_url_from_name
 
 default_model_urls = {
     'koniq10k': get_url_from_name('CNNIQA_koniq10k-e6f14c91.pth')
@@ -27,13 +24,14 @@ default_model_urls = {
 @ARCH_REGISTRY.register()
 class CNNIQA(nn.Module):
     r"""CNNIQA model.
-    Args:
-        - ker_size (int): Kernel size.
-        - n_kers (int): Number of kernels.
-        - n1_nodes (int): Number of n1 nodes.
-        - n2_nodes (int): Number of n2 nodes.
-        - pretrained_model_path (String): Pretrained model path.
 
+    Args:
+        ker_size (int): Kernel size.
+        n_kers (int): Number of kernels.
+        n1_nodes (int): Number of n1 nodes.
+        n2_nodes (int): Number of n2 nodes.
+        pretrained (str): Pretrained model name.
+        pretrained_model_path (str): Pretrained model path.
     """
 
     def __init__(
@@ -63,11 +61,10 @@ class CNNIQA(nn.Module):
         r"""Compute IQA using CNNIQA model.
 
         Args:
-            x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            x (torch.Tensor): An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
 
         Returns:
-            Value of CNNIQA model.
-
+            torch.Tensor: Value of CNNIQA model.
         """
         h = self.conv1(x)
 

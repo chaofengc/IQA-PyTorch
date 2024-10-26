@@ -37,6 +37,9 @@ default_model_urls = {
 
 
 class SaveOutput:
+    """
+    SaveOutput class to save intermediate outputs of layers during forward pass.
+    """
     def __init__(self):
         self.outputs = {}
 
@@ -51,6 +54,15 @@ class SaveOutput:
 
 
 class DeformFusion(nn.Module):
+    """
+    Deformable Fusion Network.
+
+    Args:
+        patch_size (int, optional): Size of the patches. Default is 8.
+        in_channels (int, optional): Number of input channels. Default is 768 * 5.
+        cnn_channels (int, optional): Number of CNN channels. Default is 256 * 3.
+        out_channels (int, optional): Number of output channels. Default is 256 * 3.
+    """
     def __init__(
         self,
         patch_size=8,
@@ -59,12 +71,8 @@ class DeformFusion(nn.Module):
         out_channels=256 * 3,
     ):
         super().__init__()
-        # in_channels, out_channels, kernel_size, stride, padding
         self.d_hidn = 512
-        if patch_size == 8:
-            stride = 1
-        else:
-            stride = 2
+        stride = 1 if patch_size == 8 else 2
         self.conv_offset = nn.Conv2d(in_channels, 2 * 3 * 3, 3, 1, 1)
         self.deform = DeformConv2d(cnn_channels, out_channels, 3, 1, 1)
         self.conv1 = nn.Sequential(
@@ -90,11 +98,18 @@ class DeformFusion(nn.Module):
         offset = self.conv_offset(vit_feat)
         deform_feat = self.deform(cnn_feat, offset)
         deform_feat = self.conv1(deform_feat)
-
         return deform_feat
 
 
 class Pixel_Prediction(nn.Module):
+    """
+    Pixel Prediction Network.
+
+    Args:
+        inchannels (int, optional): Number of input channels. Default is 768 * 5 + 256 * 3.
+        outchannels (int, optional): Number of output channels. Default is 256.
+        d_hidn (int, optional): Hidden dimension. Default is 1024.
+    """
     def __init__(self, inchannels=768 * 5 + 256 * 3, outchannels=256, d_hidn=1024):
         super().__init__()
         self.d_hidn = d_hidn
@@ -108,7 +123,6 @@ class Pixel_Prediction(nn.Module):
                 in_channels=self.d_hidn, out_channels=512, kernel_size=3, padding=1
             ),
         )
-
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels=512, out_channels=256, kernel_size=3, padding=1),
             nn.ReLU(),

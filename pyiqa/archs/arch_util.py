@@ -21,7 +21,8 @@ from pyiqa.utils.download_util import load_file_from_url
 # --------------------------------------------
 
 def dist_to_mos(dist_score: torch.Tensor) -> torch.Tensor:
-    """Convert distribution prediction to MOS score.
+    """
+    Convert distribution prediction to MOS score.
     For datasets with detailed score labels, such as AVA.
 
     Args:
@@ -128,9 +129,17 @@ def uniform_crop(input_list, crop_size, crop_num):
 
 
 def clip_preprocess_tensor(x: torch.Tensor, model):
-    """Clip preprocess function with tensor input.
+    """
+    Clip preprocess function with tensor input.
 
     NOTE: Results are slightly different with original preprocess function with PIL image input, because of differences in resize function.
+
+    Args:
+        x (torch.Tensor): Input tensor.
+        model: Model with visual input resolution.
+
+    Returns:
+        torch.Tensor: Preprocessed tensor.
     """
     # Bicubic interpolation
     x = T.functional.resize(
@@ -150,7 +159,15 @@ def clip_preprocess_tensor(x: torch.Tensor, model):
 # --------------------------------------------
 
 def clean_state_dict(state_dict):
-    """Clean checkpoint by removing .module prefix from state dict if it exists from parallel training."""
+    """
+    Clean checkpoint by removing .module prefix from state dict if it exists from parallel training.
+
+    Args:
+        state_dict (dict): State dictionary from a model checkpoint.
+
+    Returns:
+        dict: Cleaned state dictionary.
+    """
     cleaned_state_dict = OrderedDict()
     for k, v in state_dict.items():
         name = k[7:] if k.startswith("module.") else k
@@ -165,6 +182,7 @@ def get_url_from_name(name: str, store_base: str = "hugging_face", base_url: str
     Args:
         name (str): The name of the file.
         store_base (str, optional): The storage base to use. Options are "hugging_face" or "github". Default is "hugging_face".
+        base_url (str, optional): Base URL to use if provided.
 
     Returns:
         str: The URL of the file.
@@ -208,6 +226,15 @@ def load_pretrained_network(
 
 
 def _ntuple(n):
+    """
+    Convert input to a tuple of length n.
+
+    Args:
+        n (int): Length of the tuple.
+
+    Returns:
+        function: Function to convert input to a tuple of length n.
+    """
     def parse(x):
         if isinstance(x, collections.abc.Iterable):
             return x

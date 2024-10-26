@@ -6,7 +6,7 @@ import importlib
 import inspect
 import copy
 
-from pyiqa.utils import get_root_logger, scandir
+from pyiqa.utils import get_root_logger
 from pyiqa.utils.registry import ARCH_REGISTRY
 
 
@@ -14,17 +14,14 @@ __all__ = ['build_network']
 
 
 class ClassMapper:
-    def __init__(self, 
-                 cache_file: str = 'class_mapping.json',
-                ):
-        """
-        Initialize the class mapper with caching functionality.
-        
-        Args:
-            arch_folder: Directory containing architecture files
-            cache_file: JSON file to store the mapping
-            cache_expires_days: Days before cache is considered stale
-        """
+    """
+    ClassMapper is responsible for mapping class names to their corresponding file paths.
+    It uses a cache file to store the mapping and refreshes it if necessary.
+
+    Args:
+        cache_file (str): JSON file to store the mapping. Default is 'class_mapping.json'.
+    """
+    def __init__(self, cache_file: str = 'class_mapping.json'):
         self.arch_folder = Path(osp.dirname(osp.abspath(__file__)))
         self.cache_file = self.arch_folder / cache_file
         self._mapping: Optional[Dict] = None
@@ -52,6 +49,12 @@ class ClassMapper:
         """
         Find classes in a Python file that match our criteria.
         Returns a dict of {class_name: file_path}.
+
+        Args:
+            file_path (Path): Path to the Python file.
+
+        Returns:
+            Dict[str, str]: Mapping of class names to file paths.
         """
         classes = {}
         
@@ -80,15 +83,12 @@ class ClassMapper:
             
         return mapping
 
-    def get_mapping(self, ) -> Dict:
+    def get_mapping(self) -> Dict:
         """
         Get the class to filename mapping.
-        
-        Args:
-            force_rescan: If True, ignore cache and rescan files
-            
+
         Returns:
-            Dict mapping class names to relative file paths
+            Dict: Mapping of class names to relative file paths.
         """
         # Scan files and create new mapping
         self._mapping = self._scan_architecture_files()
@@ -99,21 +99,21 @@ class ClassMapper:
     def get_file_for_class(self, class_name: str) -> Optional[str]:
         """
         Get the file path for a specific class.
-        
+
         Args:
-            class_name: Name of the class to find
-            
+            class_name (str): Name of the class to find.
+
         Returns:
-            Relative path to the file containing the class, or None if not found
+            Optional[str]: Relative path to the file containing the class, or None if not found.
         """
         return self._mapping.get(class_name)
 
     def refresh(self) -> Dict:
         """
         Force refresh the mapping.
-        
+
         Returns:
-            Updated mapping dictionary
+            Dict: Updated mapping dictionary.
         """
         return self.get_mapping()
 
@@ -122,6 +122,19 @@ class_mapper = ClassMapper()
 
 
 def build_network(opt):
+    """
+    Build a network based on the provided options.
+
+    Args:
+        opt (dict): Dictionary containing network options. Must include the 'type' key.
+
+    Returns:
+        nn.Module: The constructed network.
+
+    Example:
+        >>> net = build_network(opt)
+        >>> print(net)
+    """
     opt = copy.deepcopy(opt)
     network_type = opt.pop('type')
     

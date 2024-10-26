@@ -1,27 +1,25 @@
 r"""CLIP-IQA metric, proposed by
 
 Exploring CLIP for Assessing the Look and Feel of Images.
-Jianyi Wang Kelvin C.K. Chan Chen Change Loy.
+Jianyi Wang, Kelvin C.K. Chan, Chen Change Loy.
 AAAI 2023.
 
 Ref url: https://github.com/IceClear/CLIP-IQA
 Re-implemented by: Chaofeng Chen (https://github.com/chaofengc) with the following modification:
     - We assemble multiple prompts to improve the results of clipiqa model.
-
 """
+
 import torch
 import torch.nn as nn
 
 from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_file_from_url
-from pyiqa.archs.arch_util import load_pretrained_network
+from pyiqa.archs.arch_util import load_file_from_url, load_pretrained_network
 
 import clip
 from .clip_model import load
 from pyiqa.archs.arch_util import get_url_from_name
-
 
 default_model_urls = {
     'clipiqa+': get_url_from_name('CLIP-IQA+_learned_prompts-603f3273.pth'),
@@ -32,14 +30,24 @@ default_model_urls = {
 
 class PromptLearner(nn.Module):
     """
+    PromptLearner class for learning prompts for CLIP-IQA.
+
     Disclaimer:
-        This implementation follows exactly the official codes in: https://github.com/IceClear/CLIP-IQA. We have no idea why some tricks are implemented like this, which include
+        This implementation follows exactly the official codes in: https://github.com/IceClear/CLIP-IQA. 
+        We have no idea why some tricks are implemented like this, which include:
             1. Using n_ctx prefix characters "X"
             2. Appending extra "." at the end
             3. Insert the original text embedding at the middle
     """
 
     def __init__(self, clip_model, n_ctx=16) -> None:
+        """
+        Initialize the PromptLearner.
+
+        Args:
+            clip_model (nn.Module): The CLIP model.
+            n_ctx (int): Number of context tokens. Default is 16.
+        """
         super().__init__()
 
         # For the following codes about prompts, we follow the official codes to get the same results
@@ -54,15 +62,19 @@ class PromptLearner(nn.Module):
         self.ctx = nn.Parameter(init_ctx)
 
         self.n_ctx = n_ctx
-
         self.n_cls = len(init_prompts)
         self.name_lens = [3, 3]  # hard coded length, which does not include the extra "." at the end
 
         self.register_buffer("token_prefix", init_embedding[:, :1, :])  # SOS
         self.register_buffer("token_suffix", init_embedding[:, 1 + n_ctx:, :])  # CLS, EOS
 
-    def get_prompts_with_middle_class(self,):
+    def get_prompts_with_middle_class(self):
+        """
+        Get prompts with the original text embedding inserted in the middle.
 
+        Returns:
+            torch.Tensor: The generated prompts.
+        """
         ctx = self.ctx.to(self.token_prefix)
         if ctx.dim() == 2:
             ctx = ctx.unsqueeze(0).expand(self.n_cls, -1, -1)
@@ -91,8 +103,16 @@ class PromptLearner(nn.Module):
         return prompts
 
     def forward(self, clip_model):
+        """
+        Forward pass for the PromptLearner.
+
+        Args:
+            clip_model (nn.Module): The CLIP model.
+
+        Returns:
+            torch.Tensor: The output features.
+        """
         prompts = self.get_prompts_with_middle_class()
-        # self.get_prompts_with_middle_class
         x = prompts + clip_model.positional_embedding.type(clip_model.dtype)
         x = x.permute(1, 0, 2)  # NLD -> LND
         x = clip_model.transformer(x)
@@ -108,12 +128,21 @@ class PromptLearner(nn.Module):
 
 @ARCH_REGISTRY.register()
 class CLIPIQA(nn.Module):
+    """
+    CLIPIQA metric class.
+
+    Args:
+        model_type (str): The type of the model. Default is 'clipiqa'.
+        backbone (str): The backbone model. Default is 'RN50'.
+        pretrained (bool): Whether to load pretrained weights. Default is True.
+        pos_embedding (bool): Whether to use positional embedding. Default is False.
+    """
+
     def __init__(self,
                  model_type='clipiqa',
                  backbone='RN50',
                  pretrained=True,
-                 pos_embedding=False,
-                 ) -> None:
+                 pos_embedding=False) -> None:
         super().__init__()
 
         self.clip_model = [load(backbone, 'cpu')]  # avoid saving clip weights
@@ -143,9 +172,18 @@ class CLIPIQA(nn.Module):
             elif model_type in default_model_urls.keys():
                 load_pretrained_network(self, default_model_urls[model_type], True, 'params')
             else:
-                raise(f'No pretrained model for {model_type}')
+                raise ValueError(f'No pretrained model for {model_type}')
     
     def forward(self, x):
+        """
+        Forward pass for the CLIPIQA model.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape (N, C, H, W).
+
+        Returns:
+            torch.Tensor: The output probabilities.
+        """
         # preprocess image
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         clip_model = self.clip_model[0].to(x)

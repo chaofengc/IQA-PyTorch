@@ -14,8 +14,7 @@ import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network
-from pyiqa.archs.arch_util import get_url_from_name
+from pyiqa.archs.arch_util import load_pretrained_network, get_url_from_name
 
 default_model_urls = {
     'csiq': get_url_from_name('DBCNN_CSIQ-8677d071.pth'),
@@ -31,11 +30,11 @@ default_model_urls = {
 
 class SCNN(nn.Module):
     """Network branch for synthetic distortions.
+
     Args:
-        use_bn (Boolean): Whether to use batch normalization.
+        use_bn (bool): Whether to use batch normalization.
 
     Modified from https://github.com/zwx8981/DBCNN-PyTorch/blob/master/SCNN.py
-
     """
 
     def __init__(self, use_bn=True):
@@ -65,6 +64,7 @@ class SCNN(nn.Module):
         self.classifier = nn.Linear(256, self.num_class)
 
     def _make_layers(self, in_ch, out_ch, ksz, stride, pad):
+        """Helper function to create layers for the network."""
         if self.use_bn:
             layers = [
                 nn.Conv2d(in_ch, out_ch, ksz, stride, pad),
@@ -80,6 +80,15 @@ class SCNN(nn.Module):
         return layers
 
     def forward(self, X):
+        """
+        Forward pass for the SCNN.
+
+        Args:
+            X (torch.Tensor): Input tensor with shape (N, C, H, W).
+
+        Returns:
+            torch.Tensor: Output tensor after processing through the network.
+        """
         X = self.features(X)
         X = self.pooling(X)
         X = self.projection(X)
@@ -92,14 +101,16 @@ class SCNN(nn.Module):
 @ARCH_REGISTRY.register()
 class DBCNN(nn.Module):
     """Full DBCNN network.
-    Args:
-        - fc (Boolean): Whether initialize the fc layers.
-        - use_bn (Boolean): Whether use batch normalization.
-        - pretrained_scnn_path (String): Pretrained scnn path.
-        - default_mean (list): Default mean value.
-        - default_std (list): Default std value.
 
-        """
+    Args:
+        fc (bool): Whether to initialize the fc layers.
+        use_bn (bool): Whether to use batch normalization.
+        pretrained_scnn_path (str): Pretrained SCNN path.
+        pretrained (bool): Whether to load pretrained weights.
+        pretrained_model_path (str): Pretrained model path.
+        default_mean (list): Default mean value.
+        default_std (list): Default std value.
+    """
 
     def __init__(
         self,
@@ -145,18 +156,27 @@ class DBCNN(nn.Module):
             load_pretrained_network(self, pretrained_model_path, True, 'params')
 
     def preprocess(self, x):
+        """
+        Preprocess the input tensor.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape (N, C, H, W).
+
+        Returns:
+            torch.Tensor: Preprocessed tensor.
+        """
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x
 
     def forward(self, X):
-        r"""Compute IQA using DBCNN model.
+        """
+        Compute IQA using DBCNN model.
 
         Args:
-            X: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            X (torch.Tensor): An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
 
         Returns:
-            Value of DBCNN model.
-
+            torch.Tensor: Value of DBCNN model.
         """
         X = self.preprocess(X)
 

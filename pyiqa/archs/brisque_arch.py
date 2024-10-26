@@ -41,21 +41,24 @@ def brisque(x: torch.Tensor,
     r"""Interface of BRISQUE index.
 
     Args:
-        - x: An input tensor. Shape :math:`(N, C, H, W)`.
-        - kernel_size: The side-length of the sliding window used in comparison. Must be an odd value.
-        - kernel_sigma: Sigma of normal distribution.
-        - data_range: Maximum value range of images (usually 1.0 or 255).
-        - to_y_channel: Whether use the y-channel of YCBCR.
-        pretrained_model_path: The model path.
+        x (torch.Tensor): An input tensor. Shape :math:`(N, C, H, W)`.
+        kernel_size (int): The side-length of the sliding window used in comparison. Must be an odd value.
+        kernel_sigma (float): Sigma of normal distribution.
+        test_y_channel (bool): Whether to use the y-channel of YCBCR.
+        sv_coef (torch.Tensor): Support vector coefficients.
+        sv (torch.Tensor): Support vectors.
+        gamma (float): Gamma parameter for the RBF kernel.
+        rho (float): Bias term in the decision function.
+        scale (float): Scaling factor for the features.
+        version (str): Version of the BRISQUE implementation ('original' or 'matlab').
 
     Returns:
-        Value of BRISQUE index.
+        torch.Tensor: Value of BRISQUE index.
 
     References:
         Mittal, Anish, Anush Krishna Moorthy, and Alan Conrad Bovik.
         "No-reference image quality assessment in the spatial domain."
         IEEE Transactions on image processing 21, no. 12 (2012): 4695-4708.
-
     """
     if test_y_channel and x.size(1) == 3:
         x = to_y_channel(x, 255.)
@@ -88,7 +91,17 @@ def brisque(x: torch.Tensor,
 
 
 def natural_scene_statistics(luma: torch.Tensor, kernel_size: int = 7, sigma: float = 7. / 6) -> torch.Tensor:
+    """
+    Compute natural scene statistics (NSS) features for a given luminance image.
 
+    Args:
+        luma (torch.Tensor): Luminance image tensor.
+        kernel_size (int): Size of the Gaussian kernel.
+        sigma (float): Standard deviation of the Gaussian kernel.
+
+    Returns:
+        torch.Tensor: NSS features.
+    """
     luma_nrmlzd = normalize_img_with_gauss(luma, kernel_size, sigma, padding='same')
     alpha, sigma = estimate_ggd_param(luma_nrmlzd)
     features = [alpha, sigma.pow(2)]
@@ -106,6 +119,15 @@ def natural_scene_statistics(luma: torch.Tensor, kernel_size: int = 7, sigma: fl
 
 
 def scale_features(features: torch.Tensor) -> torch.Tensor:
+    """
+    Scale features to the range [-1, 1] based on predefined feature ranges.
+
+    Args:
+        features (torch.Tensor): Input features.
+
+    Returns:
+        torch.Tensor: Scaled features.
+    """
     lower_bound = -1
     upper_bound = 1
     # Feature range is taken from official implementation of BRISQUE on MATLAB.
@@ -128,6 +150,17 @@ def scale_features(features: torch.Tensor) -> torch.Tensor:
 
 
 def rbf_kernel(features: torch.Tensor, sv: torch.Tensor, gamma: float = 0.05) -> torch.Tensor:
+    """
+    Compute the Radial Basis Function (RBF) kernel between features and support vectors.
+
+    Args:
+        features (torch.Tensor): Input features.
+        sv (torch.Tensor): Support vectors.
+        gamma (float): Gamma parameter for the RBF kernel.
+
+    Returns:
+        torch.Tensor: RBF kernel values.
+    """
     dist = (features.unsqueeze(dim=-1) - sv.unsqueeze(dim=0)).pow(2).sum(dim=1)
     return torch.exp(-dist * gamma)
 
@@ -137,12 +170,23 @@ class BRISQUE(torch.nn.Module):
     r"""Creates a criterion that measures the BRISQUE score.
 
     Args:
-        - kernel_size (int): By default, the mean and covariance of a pixel is obtained
-        by convolution with given filter_size. Must be an odd value.
-        - kernel_sigma (float): Standard deviation for Gaussian kernel.
-        - to_y_channel (bool): Whether use the y-channel of YCBCR.
-        - pretrained_model_path (str): The model path.
+        kernel_size (int): By default, the mean and covariance of a pixel is obtained
+                           by convolution with given filter_size. Must be an odd value.
+        kernel_sigma (float): Standard deviation for Gaussian kernel.
+        test_y_channel (bool): Whether to use the y-channel of YCBCR.
+        version (str): Version of the BRISQUE implementation ('original' or 'matlab').
+        pretrained_model_path (str, optional): The model path.
 
+    Attributes:
+        kernel_size (int): The side-length of the sliding window used in comparison.
+        kernel_sigma (float): Sigma of normal distribution.
+        test_y_channel (bool): Whether to use the y-channel of YCBCR.
+        sv_coef (torch.Tensor): Support vector coefficients.
+        sv (torch.Tensor): Support vectors.
+        gamma (float): Gamma parameter for the RBF kernel.
+        rho (float): Bias term in the decision function.
+        scale (float): Scaling factor for the features.
+        version (str): Version of the BRISQUE implementation ('original' or 'matlab').
     """
 
     def __init__(self,
@@ -185,17 +229,16 @@ class BRISQUE(torch.nn.Module):
             self.sv_coef = torch.from_numpy(sv_coef)
             self.sv = sv / self.scale
         
-        self.version =version
+        self.version = version
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""Computation of BRISQUE score as a loss function.
 
         Args:
-            x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            x (torch.Tensor): An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
 
         Returns:
-            Value of BRISQUE metric.
-
+            torch.Tensor: Value of BRISQUE metric.
         """
         return brisque(
             x,
@@ -208,4 +251,4 @@ class BRISQUE(torch.nn.Module):
             rho=self.rho,
             scale=self.scale,
             version=self.version,
-            )
+        )

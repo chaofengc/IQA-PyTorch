@@ -9,7 +9,7 @@ r"""ARNIQA: Learning Distortion Manifold for Image Quality Assessment
 }
 
 Reference:
-    - Arxiv link: https://arxiv.org/abs/2310.14918
+    - Arxiv link: https://www.arxiv.org/abs/2310.14918
     - Official Github: https://github.com/miccunifi/ARNIQA
 """
 
@@ -24,31 +24,11 @@ from collections import OrderedDict
 from .constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import get_url_from_name
+from pyiqa.dataset_info import DATASET_INFO
 
 # Avoid warning related to loading a jit model from torch.hub
 warnings.filterwarnings("ignore", category=UserWarning, module="torch.serialization")
 
-available_datasets_ranges = {
-    "live": (1, 100),
-    "csiq": (0, 1),
-    "tid": (0, 9),
-    "kadid": (1, 5),
-    "koniq": (1, 100),
-    "clive": (1, 100),
-    "flive": (1, 100),
-    "spaq": (1, 100)
-}
-
-available_datasets_mos_types = {
-    "live": "dmos",
-    "csiq": "dmos",
-    "tid": "mos",
-    "kadid": "mos",
-    "koniq": "mos",
-    "clive": "mos",
-    "flive": "mos",
-    "spaq": "mos"
-}
 
 default_model_urls = {
     "ARNIQA": get_url_from_name(name="ARNIQA.pth"),
@@ -65,20 +45,37 @@ default_model_urls = {
 
 @ARCH_REGISTRY.register()
 class ARNIQA(nn.Module):
-    def __init__(self,
-                 regressor_dataset: str = "koniq",
-                 ):
+    """
+    ARNIQA model implementation.
+
+    This class implements the ARNIQA model for image quality assessment, which combines a ResNet50 encoder
+    with a regressor network for predicting image quality scores.
+
+    Args:
+        regressor_dataset (str, optional): The dataset to use for the regressor. Default is "koniq".
+
+    Attributes:
+        regressor_dataset (str): The dataset to use for the regressor.
+        encoder (nn.Module): The ResNet50 encoder.
+        feat_dim (int): The feature dimension of the encoder.
+        regressor (nn.Module): The regressor network.
+        default_mean (torch.Tensor): The mean values for normalization.
+        default_std (torch.Tensor): The standard deviation values for normalization.
+    """
+    def __init__(self, regressor_dataset: str = "koniq"):
         super().__init__()
 
         self.regressor_dataset = regressor_dataset
 
         self.encoder = torchvision.models.resnet50(
-            weights=torchvision.models.ResNet50_Weights.IMAGENET1K_V1)  # V1 weights work better than V2
+            weights=torchvision.models.ResNet50_Weights.IMAGENET1K_V1
+        )  # V1 weights work better than V2
         self.feat_dim = self.encoder.fc.in_features
         self.encoder = nn.Sequential(*list(self.encoder.children())[:-1])
 
-        encoder_state_dict = torch.hub.load_state_dict_from_url(default_model_urls["ARNIQA"], progress=True,
-                                                               map_location="cpu")
+        encoder_state_dict = torch.hub.load_state_dict_from_url(
+            default_model_urls["ARNIQA"], progress=True, map_location="cpu"
+        )
         cleaned_encoder_state_dict = OrderedDict()
         for key, value in encoder_state_dict.items():
             # Remove the prefix
@@ -89,15 +86,24 @@ class ARNIQA(nn.Module):
         self.encoder.load_state_dict(cleaned_encoder_state_dict)
         self.encoder.eval()
 
-        self.regressor: nn.Module = torch.hub.load_state_dict_from_url(default_model_urls[self.regressor_dataset],
-                                                                       progress=True,
-                                                                       map_location="cpu")  # Load regressor from torch.hub as JIT model
+        self.regressor: nn.Module = torch.hub.load_state_dict_from_url(
+            default_model_urls[self.regressor_dataset], progress=True, map_location="cpu"
+        )  # Load regressor from torch.hub as JIT model
         self.regressor.eval()
 
         self.default_mean = torch.Tensor(IMAGENET_DEFAULT_MEAN).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(IMAGENET_DEFAULT_STD).view(1, 3, 1, 1)
 
     def forward(self, x: torch.Tensor) -> float:
+        """
+        Forward pass of the ARNIQA model.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            float: The predicted quality score.
+        """
         x, x_ds = self._preprocess(x)
 
         f = F.normalize(self.encoder(x), dim=1)
@@ -112,6 +118,12 @@ class ARNIQA(nn.Module):
     def _preprocess(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Downsample the input image with a factor of 2 and normalize the original and downsampled images.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: The normalized original and downsampled tensors.
         """
         x_ds = F.interpolate(x, scale_factor=0.5, mode="bilinear", align_corners=False)
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
@@ -121,12 +133,20 @@ class ARNIQA(nn.Module):
     def _scale_score(self, score: torch.Tensor) -> torch.Tensor:
         """
         Scale the score in the range [0, 1], where higher is better.
+
+        Args:
+            score (torch.Tensor): The predicted score.
+
+        Returns:
+            torch.Tensor: The scaled score.
         """
         new_range = (0., 1.)
 
         # Compute scaling factors
         original_range = (
-            available_datasets_ranges[self.regressor_dataset][0], available_datasets_ranges[self.regressor_dataset][1])
+            DATASET_INFO[self.regressor_dataset]["score_range"][0], 
+            DATASET_INFO[self.regressor_dataset]["score_range"][1], 
+        )
         original_width = original_range[1] - original_range[0]
         new_width = new_range[1] - new_range[0]
         scaling_factor = new_width / original_width
@@ -135,7 +155,7 @@ class ARNIQA(nn.Module):
         scaled_score = new_range[0] + (score - original_range[0]) * scaling_factor
 
         # Invert the scale if needed
-        if available_datasets_mos_types[self.regressor_dataset] == "dmos":
+        if DATASET_INFO[self.regressor_dataset]["mos_type"] == "dmos":
             scaled_score = new_range[1] - scaled_score
 
         return scaled_score
