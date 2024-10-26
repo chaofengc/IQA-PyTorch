@@ -3,7 +3,6 @@ import os
 import csv
 from PIL import Image
 
-from pyiqa.data.data_util import read_meta_info_file 
 from pyiqa.utils.registry import DATASET_REGISTRY
 from pyiqa.utils import get_root_logger
 from .general_nr_dataset import GeneralNRDataset

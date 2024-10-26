@@ -10,52 +10,6 @@ from pyiqa.data.transforms import mod_crop
 from pyiqa.utils import img2tensor, scandir
 
 
-def read_meta_info_file(img_dir, meta_info_file, mode='nr', ref_dir=None):
-    """Generate paths and mos labels from an meta information file.
-
-    Each line in the meta information file contains the image names and
-    mos label, separated by a white space.
-
-    Example of an meta information file:
-    - For NR datasets: name, mos(mean), std
-        ```
-        100.bmp   	32.56107532210109   	19.12472638223644
-        ```
-
-    - For FR datasets: ref_name, dist_name, mos(mean), std
-        ```
-        I01.bmp        I01_01_1.bmp   5.51429        0.13013
-        ```
-
-    Args:
-        img_dir (str): directory path containing images
-        meta_info_file (str): Path to the meta information file.
-
-    Returns:
-        list[str, float]: image paths, mos label
-    """
-
-    with open(meta_info_file, 'r') as fin:
-        csvreader = csv.reader(fin)
-        name_mos = list(csvreader)[1:]
-
-    paths_mos = []
-    for item in name_mos:
-        if mode == 'fr':
-            if ref_dir is None:
-                ref_dir = img_dir
-            ref_name, img_name, mos = item[:3]
-            ref_path = osp.join(ref_dir, ref_name)
-            img_path = osp.join(img_dir, img_name)
-            paths_mos.append([ref_path, img_path, float(mos)])
-        elif mode == 'nr':
-            img_name, mos = item[:2]
-            img_path = osp.join(img_dir, img_name)
-            paths_mos.append([img_path, float(mos)])
-
-    return paths_mos
-
-
 def read_img_seq(path, require_mod_crop=False, scale=1, return_imgname=False):
     """Read a sequence of images from a given folder path.
 

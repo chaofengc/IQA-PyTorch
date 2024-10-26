@@ -1,6 +1,5 @@
 import os
 
-from pyiqa.data.data_util import read_meta_info_file
 from pyiqa.utils.registry import DATASET_REGISTRY
 from .general_nr_dataset import GeneralNRDataset
 
