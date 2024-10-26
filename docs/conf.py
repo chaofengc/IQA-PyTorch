@@ -23,7 +23,7 @@ copyright = '2021 - 2024, Chaofeng Chen'
 author = 'Chaofeng Chen'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.12'
+release = '0.1.13'
 
 
 # -- General configuration ---------------------------------------------------
@@ -50,6 +50,7 @@ extensions = [
    'sphinx.ext.viewcode',
    'sphinx.ext.githubpages',
    'sphinx.ext.autosummary',
+   'sphinx.ext.napoleon',
    'recommonmark',
    'sphinx_markdown_tables',
    'autoapi.extension',

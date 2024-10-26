@@ -62,3 +62,10 @@ Results Calibration
 .. csv-table:: Calibration
     :header-rows: 1
     :file: ../ResultsCalibra/calibration_summary.csv
+
+Efficiency Benchmark 
+----------------------------------------
+
+.. csv-table:: Efficiency Benchmark 
+    :header-rows: 1
+    :file: ../tests/Efficiency_benchmark.csv
