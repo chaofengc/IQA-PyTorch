@@ -510,6 +510,17 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_opts': {
             'type': 'CFANet',
             'semantic_model_name': 'resnet50',
+            'model_name': 'topiq_nr_cgfiqa_res50',
+            'use_ref': False,
+            'test_img_size': 512,
+        },
+        'metric_mode': 'NR',
+        'score_range': '~0, ~1',
+    },
+    'topiq_nr-face-v1': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'resnet50',
             'model_name': 'topiq_nr_gfiqa_res50',
             'use_ref': False,
             'test_img_size': 512,
@@ -517,6 +528,7 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'NR',
         'score_range': '~0, ~1',
     },
+
     'topiq_fr': {
         'metric_opts': {
             'type': 'CFANet',

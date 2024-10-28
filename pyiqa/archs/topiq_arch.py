@@ -38,6 +38,7 @@ default_model_urls = {
     'cfanet_iaa_ava_res50': get_url_from_name('cfanet_iaa_ava_res50-3cd62bb3.pth'),
     'cfanet_iaa_ava_swin': get_url_from_name('cfanet_iaa_ava_swin-393b41b4.pth'),
     'topiq_nr_gfiqa_res50': get_url_from_name('topiq_nr_gfiqa_res50-d76bf1ae.pth'),
+    'topiq_nr_cgfiqa_res50': get_url_from_name('topiq_nr_cgfiqa_res50-0a8b8e4f.pth'),
 }
 
 
@@ -193,6 +194,7 @@ class CFANet(nn.Module):
                  out_act=False,
                  block_pool='weighted_avg',
                  test_img_size=None,
+                 align_crop_face=True,
                  default_mean=IMAGENET_DEFAULT_MEAN,
                  default_std=IMAGENET_DEFAULT_STD,
                  ):
@@ -209,6 +211,8 @@ class CFANet(nn.Module):
         self.num_class = num_class 
         self.block_pool = block_pool
         self.test_img_size = test_img_size 
+
+        self.align_crop_face = align_crop_face
 
         # =============================================================
         # define semantic backbone network
@@ -322,7 +326,7 @@ class CFANet(nn.Module):
         self.eps = 1e-8
         self.crops = num_crop 
 
-        if model_name == 'topiq_nr_gfiqa_res50':
+        if 'gfiqa' in model_name:
             self.face_helper = FaceRestoreHelper(
                 1, 
                 face_size=512, 
@@ -466,14 +470,14 @@ class CFANet(nn.Module):
         else:
             assert False, f'No face detected in the input image.'
     
-    def forward(self, x, y=None, return_mos=True, return_dist=False, align_crop_face=True):
+    def forward(self, x, y=None, return_mos=True, return_dist=False):
         if self.use_ref:
             assert y is not None, f'Please input y when use reference is True.'
         else:
             y = None
 
-        if self.model_name == 'topiq_nr_gfiqa_res50':
-            if align_crop_face:
+        if 'gfiqa' in self.model_name:
+            if self.align_crop_face:
                 x = self.preprocess_face(x)
             else:
                 x = nn.functional.interpolate(x, size=(512, 512), mode='bicubic', align_corners=False)

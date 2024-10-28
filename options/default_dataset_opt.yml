@@ -152,3 +152,10 @@ gfiqa:
   dataroot_target: ./datasets/GFIQA/image
   meta_info_file: ./datasets/meta_info/meta_info_GFIQADataset.csv
   split_index: 1
+
+cgfiqa:
+  name: CGFIQA
+  type: GeneralNRDataset
+  dataroot_target: ./datasets/CGFIQA/
+  meta_info_file: ./datasets/meta_info/meta_info_CGFIQADataset.csv
+  split_index: 'official_split'
