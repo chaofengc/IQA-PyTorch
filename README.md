@@ -25,6 +25,7 @@ This is a comprehensive image quality assessment (IQA) toolbox built with **pure
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
+- 🚀**Oct, 2024**. Update `topiq_nr-face` by training with the [GCFIQA](https://github.com/DSL-FIQA/DSL-FIQA) dataset. Thanks to their work! 🤗
 - 🎨**Oct, 2024**. Add perceptual color difference metric `msswd` proposed in [MS-SWD (ECCV2024)](https://github.com/real-hjq/MS-SWD). Thanks to their work! 🤗
 - ⏳**Sep, 2024**. Add [efficiency benchmark](tests/Efficiency_benchmark.csv). With $1080\times800$ image as inputs, all metrics complete **in under 1 second on the GPU** (NVIDIA V100), and most of them, except for `qalign` and `qalign_8bit`, require **less than 6GB of GPU memory**.
 - ⚡**Aug, 2024**. Add `qalign_4bit` and `qalign_8bit` with much less memory requirement and similar performance.
@@ -175,10 +176,10 @@ Examples to specific dataset options can be found in `./options/default_dataset_
 
 | Metric Type   | Train     | Test                                       | Results                                                  | 
 | ------------- | --------- | ------------------------------------------ | -------------------------------------------------------- |
-| FR            | KADID-10k | CSIQ, LIVE, TID2008, TID2013               | [FR benchmark results](tests/FR_benchmark_results.csv)   |
-| NR            | KonIQ-10k | LIVEC, KonIQ-10k (official split), TID2013, SPAQ | [NR benchmark results](tests/NR_benchmark_results.csv)   |
-| Aesthetic IQA | AVA       | AVA (official split)                       | [IAA benchmark results](tests/IAA_benchmark_results.csv) |
-| Face IQA | [CGFIQA](https://github.com/DSL-FIQA/DSL-FIQA) | CGFIQA (official split)                    | [Face IQA benchmark results](tests/Face_benchmark_results.csv) |
+| FR            | KADID-10k | CSIQ, LIVE, TID2008, TID2013               | [FR benchmark](tests/FR_benchmark_results.csv)   |
+| NR            | KonIQ-10k | LIVEC, KonIQ-10k (official split), TID2013, SPAQ | [NR benchmark](tests/NR_benchmark_results.csv)   |
+| Aesthetic IQA | AVA       | AVA (official split)                       | [IAA benchmark](tests/IAA_benchmark_results.csv) |
+| Face IQA | [CGFIQA](https://github.com/DSL-FIQA/DSL-FIQA) | CGFIQA (official split)                    | [Face IQA benchmark](tests/Face_benchmark_results.csv) |
 | Efficiency | CPU/GPU Time, GPU Memory | Average on $1080\times800$ image inputs | [Efficiency benchmark](tests/Efficiency_benchmark.csv) |
 
 Results are calculated with:
