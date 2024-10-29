@@ -178,6 +178,7 @@ Examples to specific dataset options can be found in `./options/default_dataset_
 | FR            | KADID-10k | CSIQ, LIVE, TID2008, TID2013               | [FR benchmark results](tests/FR_benchmark_results.csv)   |
 | NR            | KonIQ-10k | LIVEC, KonIQ-10k (official split), TID2013, SPAQ | [NR benchmark results](tests/NR_benchmark_results.csv)   |
 | Aesthetic IQA | AVA       | AVA (official split)                       | [IAA benchmark results](tests/IAA_benchmark_results.csv) |
+| Face IQA | [CGFIQA](https://github.com/DSL-FIQA/DSL-FIQA) | CGFIQA (official split)                    | [Face IQA benchmark results](tests/Face_benchmark_results.csv) |
 | Efficiency | CPU/GPU Time, GPU Memory | Average on $1080\times800$ image inputs | [Efficiency benchmark](tests/Efficiency_benchmark.csv) |
 
 Results are calculated with:
