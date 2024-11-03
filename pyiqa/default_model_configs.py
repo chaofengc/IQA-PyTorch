@@ -517,6 +517,17 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'NR',
         'score_range': '~0, ~1',
     },
+    'topiq_nr_swin-face': {
+        'metric_opts': {
+            'type': 'CFANet',
+            'semantic_model_name': 'swin_base_patch4_window12_384',
+            'model_name': 'topiq_nr_cgfiqa_swin',
+            'use_ref': False,
+            'test_img_size': 384,
+        },
+        'metric_mode': 'NR',
+        'score_range': '~0, ~1',
+    },
     'topiq_nr-face-v1': {
         'metric_opts': {
             'type': 'CFANet',

@@ -23,6 +23,20 @@ def flatten_list(list_of_list):
     else:
         return [list_of_list]
 
+def str_to_bool(s: str) -> bool:
+    true_values = {"true", "1", "yes", "y", "t", "on"}
+    false_values = {"false", "0", "no", "n", "f", "off"}
+    
+    # Convert the string to lowercase and strip any leading/trailing whitespace
+    s = s.strip().lower()
+    
+    if s in true_values:
+        return True
+    elif s in false_values:
+        return False
+    else:
+        return s
+
 def main():
     """benchmark test demo for pyiqa.
     """
@@ -30,6 +44,7 @@ def main():
     parser.add_argument('-m', type=str, nargs='+', default=None, help='metric name list.')
     parser.add_argument('-d', type=str, nargs='+', default=None, help='dataset name list.')
     parser.add_argument('--metric_opt', type=str, default=None, help='Path to custom metric option YAML file.')
+    parser.add_argument('--extra_metric_opts', nargs='+', type=str, default=None, help='Extra options for all tested metrics.')
     parser.add_argument('--data_opt', type=str, default=None, help='Path to custom data option YAML file.')
     parser.add_argument('--batch_size', type=int, default=None, help='batch size for benchmark.')
     parser.add_argument('--split_file', type=str, default=None, help='split file for test.')
@@ -65,6 +80,13 @@ def main():
             custom_metric_opt = yaml.load(f, Loader=ordered_yaml()[0])
         all_metric_opts.update(custom_metric_opt)
         metrics_to_test += list(custom_metric_opt.keys())
+    
+    extra_opt_dict = {}
+    if args.extra_metric_opts is not None:
+        for extra_opt in args.extra_metric_opts:
+            extra_opt = extra_opt.split('=')
+            if len(extra_opt) == 2:
+                extra_opt_dict[extra_opt[0]] = str_to_bool(extra_opt[1])
 
     if args.data_opt is not None:
         with open(args.data_opt, mode='r') as f:
@@ -90,6 +112,7 @@ def main():
         metric_opts = all_metric_opts[metric_name]['metric_opts']
         metric_mode = all_metric_opts[metric_name]['metric_mode']
         lower_better = all_metric_opts[metric_name].get('lower_better', False)
+        metric_opts.update(extra_opt_dict)
         if metric_name == 'pieapp':
             lower_better = False    # ground truth score is also lower better for pieapp test set
         iqa_model = create_metric(metric_name, device=device, metric_mode=metric_mode, **metric_opts)

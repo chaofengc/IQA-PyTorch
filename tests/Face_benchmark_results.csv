@@ -1,3 +1,5 @@
 Metric name,cgfiqa(PLCC/SRCC/KRCC)
-topiq_nr-face-v1,0.9641/0.9736/0.8619
-topiq_nr-face,0.9857/0.9852/0.8978
+topiq_nr-face-v1,0.9595/0.9758/0.8669
+topiq_nr-face,0.9862/0.9858/0.9004
+DSL-FIQA (not implemented),0.9873/0.9880/--
+topiq_nr_swin-face,0.9881/0.9877/0.907

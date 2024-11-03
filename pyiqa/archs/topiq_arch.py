@@ -39,6 +39,7 @@ default_model_urls = {
     'cfanet_iaa_ava_swin': get_url_from_name('cfanet_iaa_ava_swin-393b41b4.pth'),
     'topiq_nr_gfiqa_res50': get_url_from_name('topiq_nr_gfiqa_res50-d76bf1ae.pth'),
     'topiq_nr_cgfiqa_res50': get_url_from_name('topiq_nr_cgfiqa_res50-0a8b8e4f.pth'),
+    'topiq_nr_cgfiqa_swin': get_url_from_name('topiq_nr_gfiqa_swin-7bb80a60.pth'),
 }
 
 
@@ -380,7 +381,7 @@ class CFANet(nn.Module):
         
         # resize image when testing 
         if not self.training:
-            if self.model_name == 'cfanet_iaa_ava_swin':
+            if 'swin' in self.semantic_model_name:
                 x = TF.resize(x, [384, 384], antialias=True)  # swin require square inputs
             elif self.test_img_size is not None:
                 x = TF.resize(x, self.test_img_size, antialias=True)  
@@ -479,8 +480,6 @@ class CFANet(nn.Module):
         if 'gfiqa' in self.model_name:
             if self.align_crop_face:
                 x = self.preprocess_face(x)
-            else:
-                x = nn.functional.interpolate(x, size=(512, 512), mode='bicubic', align_corners=False)
 
         if self.crops > 1 and not self.training:
             bsz = x.shape[0]
