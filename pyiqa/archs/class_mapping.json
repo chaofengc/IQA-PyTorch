@@ -34,7 +34,7 @@
     "UNIQUE": "unique_arch",
     "MS_SWD_learned": "msswd_arch",
     "ARNIQA": "arniqa_arch",
-    "OrderedDict": "arniqa_arch",
+    "OrderedDict": "deepdc_arch",
     "BRISQUE": "brisque_arch",
     "CLIPIQA": "clipiqa_arch",
     "PromptLearner": "clipiqa_arch",
@@ -66,9 +66,9 @@
     "NRQM": "nrqm_arch",
     "PI": "nrqm_arch",
     "SCFpyr_PyTorch": "ssim_arch",
-    "AutoModelForCausalLM": "qalign_arch",
-    "BitsAndBytesConfig": "qalign_arch",
-    "CLIPImageProcessor": "qalign_arch",
+    "AutoModelForCausalLM": "compare2score_arch",
+    "BitsAndBytesConfig": "compare2score_arch",
+    "CLIPImageProcessor": "compare2score_arch",
     "QAlign": "qalign_arch",
     "LIQE": "liqe_arch",
     "product": "liqe_arch",
@@ -111,5 +111,8 @@
     "NLPD": "nlpd_arch",
     "ILNIQE": "niqe_arch",
     "CompactLinear": "pieapp_arch",
-    "PieAPP": "pieapp_arch"
+    "PieAPP": "pieapp_arch",
+    "DeepDC": "deepdc_arch",
+    "MultiVGGFeaturesExtractor": "deepdc_arch",
+    "Compare2Score": "compare2score_arch"
 }
