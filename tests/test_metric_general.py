@@ -158,18 +158,23 @@ def test_gradient_backward(metric_name, device):
 
 @pytest.mark.parametrize(
     ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['fid', 'inception_score', 'clipscore', 'topiq_nr-face']]
+    [(k) for k in pyiqa.list_models() if k not in ['fid', 'inception_score', 'clipscore']]
 )
 def test_forward(metric_name, device):
     """Test if the metric can be used in a gradient descent process.
     pi, nrqm and fid are not tested because they are not differentiable.
     mad and vsi give NaN with random input.
     """
+    kwargs = {}
     size = (2, 3, 224, 224)
     if 'swin' in metric_name:
         size = (2, 3, 384, 384)
     if 'qalign' in metric_name:
         size = (1, 3, 224, 224)
+    
+    if 'face' in metric_name:
+        size = (1, 3, 224, 224)
+        kwargs['align_crop_face'] = False
 
     x = torch.rand(*size).to(device)
     y = torch.rand(*size).to(device)
@@ -177,7 +182,7 @@ def test_forward(metric_name, device):
     if 'qalign' in metric_name and not torch.cuda.is_available():
         return
 
-    metric = pyiqa.create_metric(metric_name, device=device)
+    metric = pyiqa.create_metric(metric_name, device=device, **kwargs)
     metric.eval()
     if hasattr(metric.net, 'test_sample'):
         metric.net.test_sample = 1
