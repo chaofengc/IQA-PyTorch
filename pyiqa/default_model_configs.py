@@ -88,6 +88,14 @@ DEFAULT_CONFIGS = OrderedDict({
         'lower_better': True,
         'score_range': '0, 1',
     },
+    'deepdc': {
+        'metric_opts': {
+            'type': 'DeepDC',
+        },
+        'metric_mode': 'FR',
+        'lower_better': True,
+        'score_range': '0, 1',
+    },
     'ssim': {
         'metric_opts': {
             'type': 'SSIM',
@@ -650,6 +658,13 @@ DEFAULT_CONFIGS = OrderedDict({
         },
         'metric_mode': 'NR',
         'score_range': '1, 5',
+    },
+    'compare2score': {
+        'metric_opts': {
+            'type': 'Compare2Score',
+        },
+        'metric_mode': 'NR',
+        'score_range': '0, 100',
     },
     'unique': {
         'metric_opts': {
