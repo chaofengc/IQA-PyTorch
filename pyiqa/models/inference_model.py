@@ -47,6 +47,9 @@ class InferenceModel(torch.nn.Module):
         self.as_loss = as_loss
         self.loss_weight = loss_weight
         self.loss_reduction = loss_reduction
+        if metric_name == 'compare2score':
+            self.as_loss=True
+            self.loss_reduction='none'
         # disable input range check when used as loss
         self.check_input_range = check_input_range if not as_loss else False
 
