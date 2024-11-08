@@ -4,3 +4,11 @@ psnr-y:
     type: PSNR
     test_y_channel: true
   metric_mode: FR
+
+custom_metric:
+  metric_opts:
+    type: CustomModel
+    pretrained: false
+    pretrained_model_path: /path/to/pretrained_model.pth
+    [other possible options]
+  metric_mode: FR

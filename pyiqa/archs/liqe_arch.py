@@ -144,4 +144,4 @@ class LIQE(nn.Module):
 
         quality = 1 * logits_quality[:, 0] + 2 * logits_quality[:, 1] + 3 * logits_quality[:, 2] + \
                              4 * logits_quality[:, 3] + 5 * logits_quality[:, 4]
-        return quality
+        return quality.unsqueeze(1)
