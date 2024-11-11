@@ -31,13 +31,19 @@ def expand2square(pil_img):
 
 @ARCH_REGISTRY.register()
 class Compare2Score(nn.Module):
-    def __init__(self, ) -> None:
+    def __init__(self, dtype='fp16') -> None:
         super().__init__()
+
+        assert dtype in ["fp16", "4bit", "8bit"], f"Invalid dtype {dtype}. Choose from 'nf4', 'int8', or 'fp16'."
+
+        dtype = '4bit'
         # load model
         self.model = AutoModelForCausalLM.from_pretrained(
             "q-future/Compare2Score", 
             trust_remote_code=True, 
-            torch_dtype=torch.float16, 
+            load_in_4bit = True if dtype == "4bit" else False,
+            load_in_8bit = True if dtype == "8bit" else False,
+            torch_dtype=torch.float16 if dtype == "fp16" else None,
             )
     
     def preprocess(self, x):
