@@ -36,7 +36,6 @@ class Compare2Score(nn.Module):
 
         assert dtype in ["fp16", "4bit", "8bit"], f"Invalid dtype {dtype}. Choose from 'nf4', 'int8', or 'fp16'."
 
-        dtype = '4bit'
         # load model
         self.model = AutoModelForCausalLM.from_pretrained(
             "q-future/Compare2Score", 
