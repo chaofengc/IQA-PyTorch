@@ -169,7 +169,7 @@ def test_forward(metric_name, device):
     size = (2, 3, 224, 224)
     if 'swin' in metric_name:
         size = (2, 3, 384, 384)
-    if 'qalign' in metric_name:
+    if 'qalign' in metric_name or 'compare2score' in metric_name:
         size = (1, 3, 224, 224)
     
     if 'face' in metric_name:

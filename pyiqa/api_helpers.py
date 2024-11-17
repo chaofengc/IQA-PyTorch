@@ -1,7 +1,8 @@
 import fnmatch
 import re
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
-from pyiqa.dataset_info import DATASET_INFO
+import yaml
+import os
 
 from pyiqa.utils import get_root_logger
 from pyiqa.models.inference_model import InferenceModel
@@ -52,6 +53,10 @@ def list_models(metric_mode=None, filter='', exclude_filters=''):
     return list(sorted(models, key=_natural_key))
 
 
-def get_dataset_info(dataset_name):
-    assert dataset_name in DATASET_INFO.keys(), f'Dataset {dataset_name} not implemented yet.'
-    return DATASET_INFO[dataset_name]
+def get_dataset_info(dataset_name=None):
+    dataset_info = yaml.safe_load(open(f'{os.path.dirname(os.path.abspath(__file__))}/default_dataset_configs.yml', 'r'))
+    if dataset_name == None:
+        return dataset_info
+    else:
+        assert dataset_name in dataset_info.keys(), f'Dataset {dataset_name} not implemented yet.'
+        return dataset_info[dataset_name]

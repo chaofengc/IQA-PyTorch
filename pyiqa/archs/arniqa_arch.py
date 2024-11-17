@@ -24,11 +24,16 @@ from collections import OrderedDict
 from .constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import get_url_from_name
-from pyiqa.dataset_info import DATASET_INFO
+from pyiqa.api_helpers import get_dataset_info
 
 # Avoid warning related to loading a jit model from torch.hub
 warnings.filterwarnings("ignore", category=UserWarning, module="torch.serialization")
 
+DATASET_INFO = get_dataset_info()
+DATASET_INFO["clive"] = DATASET_INFO["livec"]
+DATASET_INFO["tid"] = DATASET_INFO["tid2013"]
+DATASET_INFO["koniq"] = DATASET_INFO["koniq10k"]
+DATASET_INFO["kadid"] = DATASET_INFO["kadid10k"]
 
 default_model_urls = {
     "ARNIQA": get_url_from_name(name="ARNIQA.pth"),
@@ -144,8 +149,8 @@ class ARNIQA(nn.Module):
 
         # Compute scaling factors
         original_range = (
-            DATASET_INFO[self.regressor_dataset]["score_range"][0], 
-            DATASET_INFO[self.regressor_dataset]["score_range"][1], 
+            DATASET_INFO[self.regressor_dataset]["mos_range"][0], 
+            DATASET_INFO[self.regressor_dataset]["mos_range"][1], 
         )
         original_width = original_range[1] - original_range[0]
         new_width = new_range[1] - new_range[0]
@@ -155,7 +160,7 @@ class ARNIQA(nn.Module):
         scaled_score = new_range[0] + (score - original_range[0]) * scaling_factor
 
         # Invert the scale if needed
-        if DATASET_INFO[self.regressor_dataset]["mos_type"] == "dmos":
+        if DATASET_INFO[self.regressor_dataset]["lower_better"]:
             scaled_score = new_range[1] - scaled_score
 
         return scaled_score

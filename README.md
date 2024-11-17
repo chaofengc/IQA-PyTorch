@@ -169,7 +169,7 @@ cd ./datasets/meta_info
 git pull
 ```
 
-Examples to specific dataset options can be found in `./options/default_dataset_opt.yml`. Details of the dataloader interface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md)
+Examples to specific dataset options can be found in `./pyiqa/default_dataset_configs.yml`. Details of the dataloader interface and meta information files can be found in [Dataset Preparation](docs/Dataset_Preparation.md)
 
 ### Performance Evaluation Protocol
 

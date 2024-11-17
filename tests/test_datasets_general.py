@@ -4,7 +4,7 @@ import pytest
 import os
 import yaml
 
-with open('./options/default_dataset_opt.yml') as f:
+with open('./pyiqa/default_dataset_configs.yml') as f:
     options = yaml.safe_load(f)
 
 common_opt = {

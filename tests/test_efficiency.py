@@ -30,8 +30,10 @@ def time_benchmark(device, col_name=None):
         for img_path in file_list:
 
             pbar.set_description(f'Testing {metric_name} on {device}')
+            torch.cuda.synchronize()
             start_time = time()
             metric_func(img_path, img_path)
+            torch.cuda.synchronize()
             process_time.append(time() - start_time)
         
         # Get the peak memory allocated

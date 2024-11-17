@@ -71,7 +71,7 @@ def main():
     # ========== get metric and dataset options ===========
     # load default options first
     all_metric_opts = DEFAULT_CONFIGS
-    with open('./options/default_dataset_opt.yml', mode='r') as f:
+    with open('./pyiqa/default_dataset_configs.yml', mode='r') as f:
         all_data_opts = yaml.load(f, Loader=ordered_yaml()[0])
 
     # load custom options to test

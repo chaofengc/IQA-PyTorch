@@ -56,7 +56,7 @@ koniq10k:
   meta_info_file: './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
   split_index: 'official_split'
   phase: 'test'
-  mos_range: [0, 100]
+  mos_range: [1, 100]
   lower_better: false 
 
 koniq10k-1024:
@@ -94,7 +94,7 @@ spaq:
   meta_info_file: './datasets/meta_info/meta_info_SPAQDataset.csv'
   augment:
     resize: 448
-  mos_range: [0, 100]
+  mos_range: [1, 100]
   lower_better: false
 
 ava:
