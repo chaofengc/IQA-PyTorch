@@ -139,12 +139,12 @@ bapps:
   dataroot_target: './datasets/PerceptualSimilarity/dataset'
   meta_info_file: './datasets/meta_info/meta_info_BAPPSDataset.csv'
 
-piq:
-  name: PIQ2023
-  type: PIQDataset 
-  dataroot_target: ./datasets/PIQ
-  meta_info_file: ./datasets/meta_info/meta_info_PIQDataset.csv
-  split_index: 1 
+# piq:
+#   name: PIQ2023
+#   type: PIQDataset 
+#   dataroot_target: ./datasets/PIQ
+#   meta_info_file: ./datasets/meta_info/meta_info_PIQDataset.csv
+#   split_index: 1 
 
 gfiqa:
   name: GFIQA 

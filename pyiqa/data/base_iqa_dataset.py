@@ -21,9 +21,10 @@ class BaseIQADataset(data.Dataset):
         self.logger = get_root_logger()
 
         if opt.get('override_phase', None) is None:
-            self.phase = opt['phase']
+            self.phase = opt.get('phase', 'train')
         else:
             self.phase = opt['override_phase']
+
         assert self.phase in ['train', 'val', 'test'], f'phase should be in [train, val, test], got {self.phase}'
 
         # initialize datasets

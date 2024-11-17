@@ -25,6 +25,7 @@ This is a comprehensive image quality assessment (IQA) toolbox built with **pure
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
+- 💫**Nov, 2024**. Add `pyiqa.load_dataset` for easy loading of several common datasets. 
 - 🌟**Nov, 2024**. Add `compare2score` and `deepdc`. Thanks to [hanwei](https://github.com/h4nwei) for their great work 🤗, and please refer to their official papers for more details! 
 - 🚀**Oct, 2024**. Update `topiq_nr-face` by training with the [GCFIQA](https://github.com/DSL-FIQA/DSL-FIQA) dataset. Thanks to their work! 🤗
 - 🎨**Oct, 2024**. Add perceptual color difference metric `msswd` proposed in [MS-SWD (ECCV2024)](https://github.com/real-hjq/MS-SWD). Thanks to their work! 🤗
@@ -122,7 +123,7 @@ iqa_metric = pyiqa.create_metric('topiq_nr', device=device, **custom_opts)
 iqa_metric.load_weights('path/to/weights.pth', weight_keys='params')
 ```
 
-#### Example Test script
+#### Example test script
 
 Example test script with input directory/images and reference directory/images. 
 ```bash
@@ -132,6 +133,42 @@ python inference_iqa.py -m LPIPS[or lpips] -i ./ResultsCalibra/dist_dir[dist_img
 # example for NR metric with single image
 python inference_iqa.py -m brisque -i ./ResultsCalibra/dist_dir/I03.bmp
 ```
+
+#### Easy load of popular datasets
+
+We offer an easy way to load popular IQA datasets through the configuration file `pyiqa/default_dataset_configs.yml`. The specified datasets will automatically download from the [huggingface IQA-PyTorch-Dataset](https://huggingface.co/datasets/chaofengc/IQA-PyTorch-Datasets). See example code below:
+```python 
+from pyiqa import get_dataset_info, load_dataset
+
+# list all available datasets
+print(get_dataset_info().keys())
+
+# load dataset with default options and official split
+dataset = load_dataset('koniq10k', data_root='./datasets', force_download=False, split_index='official_split', phase='test')
+print(f'Loaded dataset, len={len(dataset)}, {dataset[0].keys()}')
+print(dataset[0]['img'].shape)
+
+# split_ratio: train/test/val
+dataset = load_dataset('csiq', data_root='./datasets', force_download=False, split_index=1, split_ratio='622', phase='test')
+print(f'Loaded dataset, len={len(dataset)}, {dataset[0].keys()}')
+print(dataset[0]['img'].shape)
+
+# or use dataset options
+dataset_opts = {
+  'split_index': 1,
+  'split_ratio': '622',
+  'phase': 'test',
+  'augment': {
+      'resize': 256,
+      'center_crop': 224,
+  }
+}
+dataset = load_dataset('csiq', data_root='./datasets', force_download=False, dataset_opts=dataset_opts)
+print(f'Loaded dataset, len={len(dataset)}, {dataset[0].keys()}')
+print(dataset[0]['img'].shape)
+```
+**Please refer to [Dataset Cards](docs/Dataset_Preparation.md) for more details about the `dataset_opts`.**
+
 
 ## :1st_place_medal: Benchmark Performances and Model Zoo
 
