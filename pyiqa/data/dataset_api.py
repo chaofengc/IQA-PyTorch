@@ -9,6 +9,7 @@ from huggingface_hub import snapshot_download
 
 from pyiqa import get_dataset_info
 from pyiqa.data import build_dataset
+from typing import Optional, Dict, Any
 
 
 dataset_download_name = {
@@ -33,7 +34,7 @@ dataset_download_name = {
 }
 
 
-def extract_archive(archive_path, extract_path=None):
+def extract_archive(archive_path: str, extract_path: Optional[str] = None) -> bool:
     """
     Extract .zip, .tar, or .tgz files with a progress bar.
     
@@ -88,36 +89,78 @@ def extract_archive(archive_path, extract_path=None):
         return False
 
 
-def load_dataset(name, data_root='./datasets', force_download=False, dataset_opts=None, **kwargs):
-
+def load_dataset(
+    name: str,
+    data_root: str = './datasets',
+    force_download: bool = False,
+    dataset_opts: Optional[Dict[str, Any]] = None,
+    **kwargs: Any
+) -> Any:
+    """
+    Load a dataset from specified location, downloading if necessary.
+    
+    Args:
+        name (str): Name of the dataset to load
+        data_root (str): Root directory for dataset storage
+        force_download (bool): Whether to force download even if files exist
+        dataset_opts (Optional[Dict[str, Any]]): Additional dataset options
+        **kwargs (Any): Additional arguments passed to dataset configuration
+    
+    Returns:
+        Any: Dataset object
+    """
     print(f'Loading dataset {name} from {data_root} ...')
-
+    
+    # Get and update dataset configuration
     dataset_info = get_dataset_info(name)
     if dataset_opts is not None:
         dataset_info.update(dataset_opts or {})
     dataset_info.update(kwargs)
-
-    dataset_info['dataroot_target'] = data_root / Path(*Path(dataset_info['dataroot_target']).parts[1:])
+    
+    # Update paths relative to data root
+    dataset_info['dataroot_target'] = data_root / Path(
+        *Path(dataset_info['dataroot_target']).parts[1:]
+    )
+    
     if 'dataroot_ref' in dataset_info:
-        dataset_info['dataroot_ref'] = data_root / Path(*Path(dataset_info['dataroot_ref']).parts[1:])
-    dataset_info['meta_info_file'] = data_root / Path(*Path(dataset_info['meta_info_file']).parts[1:])
-
-    # Download metadata file
+        dataset_info['dataroot_ref'] = data_root / Path(
+            *Path(dataset_info['dataroot_ref']).parts[1:]
+        )
+    
+    dataset_info['meta_info_file'] = data_root / Path(
+        *Path(dataset_info['meta_info_file']).parts[1:]
+    )
+    
+    # Download metadata file if needed
     if not osp.exists(dataset_info['meta_info_file']):
         print(f"Downloading all metadata files to {data_root}/meta_info.")
-        snapshot_download("chaofengc/IQA-PyTorch-Datasets-metainfo", repo_type="dataset", local_dir=os.path.join(data_root, 'meta_info'))
-
-    # Check if the dataset is already downloaded, if not, download it
+        snapshot_download(
+            "chaofengc/IQA-PyTorch-Datasets-metainfo",
+            repo_type="dataset",
+            local_dir=os.path.join(data_root, 'meta_info')
+        )
+    
+    # Check if dataset needs to be downloaded
     if force_download or not osp.exists(dataset_info['dataroot_target']):
-        assert name in dataset_download_name, f"Dataset {name} is not available for download. Currently available datasets are {list(get_dataset_info().keys())}"
+        # Verify dataset availability
+        assert name in dataset_download_name, (
+            f"Dataset {name} is not available for download. "
+            f"Currently available datasets are {list(get_dataset_info().keys())}"
+        )
         
-        download_file_path = osp.join(data_root, dataset_download_name[name]) 
+        # Download and extract dataset
+        download_file_path = osp.join(data_root, dataset_download_name[name])
         print(f"Downloading dataset {name} to {download_file_path}")
-
-        snapshot_download("chaofengc/IQA-Toolbox-Datasets", repo_type="dataset", local_dir=data_root, allow_patterns=dataset_download_name[name])
-
+        
+        snapshot_download(
+            "chaofengc/IQA-PyTorch-Datasets",
+            repo_type="dataset",
+            local_dir=data_root,
+            allow_patterns=dataset_download_name[name]
+        )
+        
         extract_archive(download_file_path, data_root)
     
+    # Build and return dataset
     dataset = build_dataset(dataset_info)
-
     return dataset
