@@ -86,7 +86,7 @@ class InferenceModel(torch.nn.Module):
 
         with torch.set_grad_enabled(self.as_loss):
 
-            if self.metric_name == 'fid':
+            if 'fid' in self.metric_name:
                 output = self.net(target, ref, device=device, **kwargs)
             elif self.metric_name == 'inception_score':
                 output = self.net(target, device=device, **kwargs)

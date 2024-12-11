@@ -54,7 +54,7 @@ def main():
 
     avg_score = 0
     test_img_num = len(input_paths)
-    if metric_name != 'fid':
+    if not 'fid' in metric_name:
         pbar = tqdm(total=test_img_num, unit='image')
         for idx, img_path in enumerate(input_paths):
             img_name = os.path.basename(img_path)
@@ -76,7 +76,7 @@ def main():
         pbar.close()
         avg_score /= test_img_num
     else:
-        assert os.path.isdir(args.target), 'input path must be a folder for FID.'
+        assert os.path.isdir(args.target) and os.path.isdir(args.ref), 'input path must be a folder for FID.'
         avg_score = iqa_model(args.target, args.ref)
     
     if args.verbose and torch.cuda.is_available():

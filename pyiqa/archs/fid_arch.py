@@ -14,18 +14,16 @@ Ref:
 
 import os
 from tqdm import tqdm
-from glob import glob
 import numpy as np
 from scipy import linalg
 from PIL import Image
 
 import torch
 from torch import nn
-import torchvision
 
 from .inception import InceptionV3
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.utils.img_util import is_image_file 
+from pyiqa.utils.img_util import is_image_file, scandir_images
 from pyiqa.utils.registry import ARCH_REGISTRY
 from .interpolate_compat_tensorflow import interpolate_bilinear_2d_like_tensorflow1x
 from pyiqa.archs.arch_util import get_url_from_name
@@ -35,19 +33,6 @@ default_model_urls = {
     'ffhq_clean_trainval70k_512.npz': get_url_from_name('ffhq_clean_trainval70k_512.npz'),
     'ffhq_clean_trainval70k_512_kid.npz': get_url_from_name('ffhq_clean_trainval70k_512_kid.npz'),
 }
-
-
-def get_file_paths(dir, max_dataset_size=float("inf"), followlinks=True):
-    images = []
-    assert os.path.isdir(dir), '%s is not a valid directory' % dir
-
-    for root, _, fnames in sorted(os.walk(dir, followlinks=followlinks)):
-        for fname in fnames:
-            if is_image_file(fname):
-                path = os.path.join(root, fname)
-                images.append(path)
-    return images[:min(max_dataset_size, len(images))]
-
 
 class ResizeDataset(torch.utils.data.Dataset):
     """
@@ -61,7 +46,6 @@ class ResizeDataset(torch.utils.data.Dataset):
 
     def __init__(self, files, mode, size=(299, 299)):
         self.files = files
-        self.transforms = torchvision.transforms.ToTensor()
         self.size = size
         self.mode = mode
 
@@ -81,7 +65,6 @@ class ResizeDataset(torch.utils.data.Dataset):
             img_np = np.array(img_pil)
             img_np = [resize_single_channel(img_np[:, :, idx]) for idx in range(3)]
             img_np = np.concatenate(img_np, axis=2).astype(np.float32)
-            img_np = (img_np - 128) / 128
             img_t = torch.tensor(img_np).permute(2, 0, 1)
         elif self.mode == 'legacy_tensorflow':
             img_np = np.array(img_pil).clip(0, 255)
@@ -89,10 +72,8 @@ class ResizeDataset(torch.utils.data.Dataset):
             img_t = interpolate_bilinear_2d_like_tensorflow1x(img_t.unsqueeze(0),
                               size=self.size,
                               align_corners=False)
-            img_t = (img_t.squeeze(0) - 128) / 128
         else:
             img_np = np.array(img_pil).clip(0, 255)
-            img_t = self.transforms(img_np)
             img_t = nn.functional.interpolate(img_t.unsqueeze(0),
                               size=self.size,
                               mode='bilinear',
@@ -203,6 +184,7 @@ def kernel_distance(feats1, feats2, num_subsets=100, max_subset_size=1000):
 
 def get_folder_features(fdir, model=None, num_workers=12,
                         batch_size=32,
+                        test_img_size=(299, 299),
                         device=torch.device("cuda"),
                         mode="clean",
                         description="",
@@ -211,12 +193,12 @@ def get_folder_features(fdir, model=None, num_workers=12,
     r"""
     Compute the inception features for a folder of image files
     """
-    files = get_file_paths(fdir)
+    files = scandir_images(fdir)
 
     if verbose:
         print(f"Found {len(files)} images in the folder {fdir}")
 
-    dataset = ResizeDataset(files, mode=mode)
+    dataset = ResizeDataset(files, mode=mode, size=test_img_size)
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size, shuffle=False,
                                              drop_last=False, num_workers=num_workers)
@@ -227,20 +209,44 @@ def get_folder_features(fdir, model=None, num_workers=12,
     else:
         pbar = dataloader
 
-    if mode == 'clean' or mode == 'legacy_tensorflow':
-        normalize_input = False
-    else:
-        normalize_input = True
-
     l_feats = []
     with torch.no_grad():
         for batch in pbar:
-            feat = model(batch.to(device), False, normalize_input)
-            feat = feat[0].squeeze(-1).squeeze(-1).detach().cpu().numpy()
+            if 'Inception' in model.__class__.__name__:
+                if mode == 'clean' or mode == 'legacy_tensorflow':
+                    batch = (batch - 128) / 128
+                    normalize_input = False
+                else:
+                    batch = batch / 255
+                    normalize_input = True
+
+                feat = model(batch.to(device), False, normalize_input)
+                feat = feat[0].squeeze(-1).squeeze(-1).detach().cpu().numpy()
+            else:
+                feat = model(batch.to(device))
+                feat = feat.detach().cpu().numpy()
+
             l_feats.append(feat)
     np_feats = np.concatenate(l_feats)
     return np_feats
 
+
+class DINOv2:
+    def __init__(self):
+        super().__init__()
+        import warnings
+        warnings.filterwarnings('ignore', 'xFormers is not available')
+        self.model = torch.hub.load('facebookresearch/dinov2:main', 'dinov2_vitl14', trust_repo=True, verbose=False, skip_validation=True)
+        self.model.eval().requires_grad_(False)
+
+    def __call__(self, x):
+        # Adjust dynamic range.
+        x = x.to(torch.float32) / 255
+        x = x - torch.tensor([0.485, 0.456, 0.406]).reshape(1, -1, 1, 1).to(x)
+        x = x / torch.tensor([0.229, 0.224, 0.225]).reshape(1, -1, 1, 1).to(x)
+
+        # Run DINOv2 model.
+        return self.model.to(x.device)(x)
 
 @ARCH_REGISTRY.register()
 class FID(nn.Module):
@@ -258,12 +264,17 @@ class FID(nn.Module):
         model (nn.Module): The Inception-v3 network used to extract features.
     """
 
-    def __init__(self, dims=2048) -> None:
+    def __init__(self, dims=2048, backbone='inceptionv3') -> None:
         super().__init__()
 
-        block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
-        self.model = InceptionV3(output_blocks=[block_idx])
-        self.model.eval()
+        if backbone == 'inceptionv3':
+            block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
+            self.model = InceptionV3(output_blocks=[block_idx])
+            self.model.eval()
+            self.test_img_size = (299, 299)
+        elif backbone == 'dinov2':
+            self.model = DINOv2()
+            self.test_img_size = (224, 224)
 
     def forward(self,
                 fdir1=None,
@@ -305,10 +316,12 @@ class FID(nn.Module):
                 print("compute FID between two folders")
             fbname1 = os.path.basename(fdir1)
             np_feats1 = get_folder_features(fdir1, self.model, num_workers=num_workers, batch_size=batch_size,
+            test_img_size=self.test_img_size,
                                             device=device, mode=mode, description=f"FID {fbname1}: ", verbose=verbose)
 
             fbname2 = os.path.basename(fdir2)
             np_feats2 = get_folder_features(fdir2, self.model, num_workers=num_workers, batch_size=batch_size,
+            test_img_size=self.test_img_size,
                                             device=device, mode=mode, description=f"FID {fbname2}: ", verbose=verbose)
 
             mu1, sig1 = np.mean(np_feats1, axis=0), np.cov(np_feats1, rowvar=False)
@@ -322,6 +335,7 @@ class FID(nn.Module):
                 print(f"compute FID of a folder with {dataset_name}-{mode}-{dataset_split}-{dataset_res} statistics")
             fbname1 = os.path.basename(fdir1)
             np_feats1 = get_folder_features(fdir1, self.model, num_workers=num_workers, batch_size=batch_size,
+            test_img_size=self.test_img_size,
                                             device=device, mode=mode, description=f"FID {fbname1}: ", verbose=verbose)
 
             # Load reference FID statistics (download if needed)

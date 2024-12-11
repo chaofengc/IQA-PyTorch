@@ -379,6 +379,15 @@ DEFAULT_CONFIGS = OrderedDict({
         'lower_better': True,
         'score_range': '0, ~',
     },
+    'fid_dinov2': {
+        'metric_opts': {
+            'type': 'FID',
+            'backbone': 'dinov2',
+        },
+        'metric_mode': 'NR',
+        'lower_better': True,
+        'score_range': '0, ~',
+    },
     'maniqa': {
         'metric_opts': {
             'type': 'MANIQA',
