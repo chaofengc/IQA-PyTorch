@@ -192,6 +192,9 @@ def mmd_polynomial_kernel(feats1, feats2, num_subsets=100, max_subset_size=1000)
 
 
 def mmd_rbf_kernel(x, y, sigma: float = 10.0, scale: int = 1000):
+    r"""
+        Compute MMD with RBF kernel, ref to https://github.com/google-research/google-research/blob/master/cmmd/distance.py
+    """
     x = torch.tensor(x)
     y = torch.tensor(y)
 
