@@ -165,7 +165,16 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     return (diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * tr_covmean)
 
 
-def kernel_distance(feats1, feats2, num_subsets=100, max_subset_size=1000):
+def maximum_mean_discrepancy(feats1, feats2, kernel_type='polynomial', num_subsets=100, max_subset_size=1000):
+    if kernel_type == 'polynomial':
+        return mmd_polynomial_kernel(feats1, feats2, num_subsets=num_subsets, max_subset_size=max_subset_size)
+    elif kernel_type == 'rbf':
+        return mmd_rbf_kernel(feats1, feats2)
+    else:
+        raise ValueError(f"Invalid kernel type: {kernel_type}")
+
+
+def mmd_polynomial_kernel(feats1, feats2, num_subsets=100, max_subset_size=1000):
     r"""
         Compute the KID score given the sets of features
     """
@@ -181,6 +190,47 @@ def kernel_distance(feats1, feats2, num_subsets=100, max_subset_size=1000):
     kid = t / num_subsets / m
     return float(kid)
 
+
+def mmd_rbf_kernel(x, y, sigma: float = 10.0, scale: int = 1000):
+    x = torch.tensor(x)
+    y = torch.tensor(y)
+
+    x_sqnorms = torch.diag(torch.matmul(x, x.T)) 
+    y_sqnorms = torch.diag(torch.matmul(y, y.T))
+
+    gamma = 1 / (2 * sigma**2)
+    k_xx = torch.mean(
+        torch.exp(
+            -gamma 
+            * (
+                -2 * torch.matmul(x, x.T)
+                + x_sqnorms.unsqueeze(1) 
+                + x_sqnorms.unsqueeze(0)
+            )
+        )
+    )
+    k_xy = torch.mean(
+        torch.exp(
+            -gamma
+            * (
+                -2 * torch.matmul(x, y.T)
+                + x_sqnorms.unsqueeze(1)
+                + y_sqnorms.unsqueeze(0)
+            )
+        )
+    )
+    k_yy = torch.mean(
+        torch.exp(
+            -gamma
+            * (
+                -2 * torch.matmul(y, y.T)
+                + y_sqnorms.unsqueeze(1)
+                + y_sqnorms.unsqueeze(0)
+            )
+        )
+    )
+
+    return scale * (k_xx + k_yy - 2 * k_xy)
 
 def get_folder_features(fdir, model=None, num_workers=12,
                         batch_size=32,
@@ -280,6 +330,8 @@ class FID(nn.Module):
                 fdir1=None,
                 fdir2=None,
                 mode='clean',
+                distance_type='frechet',
+                kernel_type='polynomial',
                 dataset_name=None,
                 dataset_res=1024,
                 dataset_split='train',
@@ -324,9 +376,14 @@ class FID(nn.Module):
             test_img_size=self.test_img_size,
                                             device=device, mode=mode, description=f"FID {fbname2}: ", verbose=verbose)
 
-            mu1, sig1 = np.mean(np_feats1, axis=0), np.cov(np_feats1, rowvar=False)
-            mu2, sig2 = np.mean(np_feats2, axis=0), np.cov(np_feats2, rowvar=False)
-            return frechet_distance(mu1, sig1, mu2, sig2)
+            if distance_type == 'frechet':
+                mu1, sig1 = np.mean(np_feats1, axis=0), np.cov(np_feats1, rowvar=False)
+                mu2, sig2 = np.mean(np_feats2, axis=0), np.cov(np_feats2, rowvar=False)
+                return frechet_distance(mu1, sig1, mu2, sig2)
+            elif distance_type == 'mmd':
+                return maximum_mean_discrepancy(np_feats1, np_feats2, kernel_type=kernel_type)
+            else:
+                raise ValueError(f"Invalid distance type: {distance_type}")
 
         # compute fid of a folder
         elif fdir1 is not None and fdir2 is None:
@@ -341,9 +398,11 @@ class FID(nn.Module):
             # Load reference FID statistics (download if needed)
             ref_mu, ref_sigma = get_reference_statistics(
                 dataset_name, dataset_res, mode=mode, split=dataset_split)
-
-            mu1, sig1 = np.mean(np_feats1, axis=0), np.cov(np_feats1, rowvar=False)
-            score = frechet_distance(mu1, sig1, ref_mu, ref_sigma)
+            if distance_type == 'frechet':
+                mu1, sig1 = np.mean(np_feats1, axis=0), np.cov(np_feats1, rowvar=False)
+                score = frechet_distance(mu1, sig1, ref_mu, ref_sigma)
+            else:
+                raise ValueError(f"Invalid distance type: {distance_type}")
             return score
         else:
             raise ValueError("invalid combination of arguments entered")
