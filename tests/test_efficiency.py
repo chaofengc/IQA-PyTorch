@@ -14,7 +14,7 @@ def time_benchmark(device, col_name=None):
     time_sum = pd.read_csv(save_file, index_col='Method') 
 
     file_list = scandir_images('./tests/test_efficiency_img_dir') 
-    exclude_filters = ['fid', 'inception_score', 'clipscore', 'topiq_nr-face']
+    exclude_filters = ['fid', 'fid_dinov2', 'inception_score', 'clipscore', 'topiq_nr-face', 'topiq_nr-face-v1', 'topiq_nr_swin-face']
     if device == 'cpu':
         exclude_filters += ['qalign', 'qalign_4bit', 'qalign_8bit']
     metric_list = pyiqa.list_models(exclude_filters=exclude_filters)
