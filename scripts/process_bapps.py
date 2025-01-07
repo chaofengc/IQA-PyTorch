@@ -1,10 +1,7 @@
 import os
-import scipy.io as sio
-import random
 import numpy as np
 import pickle
 import csv
-import pandas as pd
 from tqdm import tqdm
 from glob import glob
 from pyiqa.utils.img_util import is_image_file
@@ -25,21 +22,21 @@ def make_dataset(dir, max_dataset_size=float('inf')):
 def get_meta_info():
 
     # 2afc triplets
-    root_dir = '../datasets/PerceptualSimilarity/dataset/2afc'
+    root_dir = './datasets/PerceptualSimilarity/dataset/2afc'
 
-    ref_dir = '../datasets/PerceptualSimilarity/dataset/2afc/*/*/ref/*.png'
-    p0_dir = '../datasets/PerceptualSimilarity/dataset/2afc/*/*/p0/*.png'
-    p1_dir = '../datasets/PerceptualSimilarity/dataset/2afc/*/*/p1/*.png'
-    judge_dir = '../datasets/PerceptualSimilarity/dataset/2afc/*/*/judge/*.npy'
+    ref_dir = './datasets/PerceptualSimilarity/dataset/2afc/*/*/ref/*.png'
+    p0_dir = './datasets/PerceptualSimilarity/dataset/2afc/*/*/p0/*.png'
+    p1_dir = './datasets/PerceptualSimilarity/dataset/2afc/*/*/p1/*.png'
+    judge_dir = './datasets/PerceptualSimilarity/dataset/2afc/*/*/judge/*.npy'
     ref_path_list = sorted(list(glob(ref_dir)))
     p0_path_list = sorted(list(glob(p0_dir)))
     p1_path_list = sorted(list(glob(p1_dir)))
     judge_path_list = sorted(list(glob(judge_dir)))
 
     # jnd pairs
-    p0_dir = '../datasets/PerceptualSimilarity/dataset/jnd/val/*/p0/*.png'
-    p1_dir = '../datasets/PerceptualSimilarity/dataset/jnd/val/*/p1/*.png'
-    judge_dir = '../datasets/PerceptualSimilarity/dataset/jnd/val/*/same/*.npy'
+    p0_dir = './datasets/PerceptualSimilarity/dataset/jnd/val/*/p0/*.png'
+    p1_dir = './datasets/PerceptualSimilarity/dataset/jnd/val/*/p1/*.png'
+    judge_dir = './datasets/PerceptualSimilarity/dataset/jnd/val/*/same/*.npy'
     jnd_p0_path_list = sorted(list(glob(p0_dir)))
     jnd_p1_path_list = sorted(list(glob(p1_dir)))
     jnd_judge_path_list = sorted(list(glob(judge_dir)))

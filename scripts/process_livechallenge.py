@@ -1,13 +1,12 @@
 import os
 import scipy.io as sio
 import random
-import numpy
 import pickle
 import csv
 
 
 def get_meta_info():
-    root_dir = '../datasets/LIVEC/'
+    root_dir = './datasets/LIVEC/'
     names = sio.loadmat(os.path.join(root_dir, 'Data', 'AllImages_release.mat'))
     mos_labels = sio.loadmat(os.path.join(root_dir, 'Data', 'AllMOS_release.mat'))
     mos_std = sio.loadmat(os.path.join(root_dir, 'Data', 'AllStdDev_release.mat'))
@@ -36,7 +35,7 @@ def get_random_splits(seed=123):
     ratio = [0.8, 0.2]  # train/val/test
     sep_index = int(round(0.8 * 1162))
 
-    save_path = f'./datasets/meta_info/livechallenge_{seed}.pkl'
+    save_path = f'./datasets/meta_info/livechallenge_seed{seed}.pkl'
     split_info = {}
     for i in range(num_splits):
         random.shuffle(all_img_index)
@@ -47,4 +46,4 @@ def get_random_splits(seed=123):
 
 if __name__ == '__main__':
     get_meta_info()
-    #  get_random_splits()
+    get_random_splits()

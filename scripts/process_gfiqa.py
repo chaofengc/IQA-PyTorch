@@ -9,9 +9,8 @@ import pandas as pd
 
 def get_random_splits(seed=123):
     random.seed(seed)
-    
 
-    meta_info_file = '../datasets/meta_info/meta_info_GFIQADataset.csv'
+    meta_info_file = './datasets/meta_info/meta_info_GFIQADataset.csv'
     meta_info = pd.read_csv(meta_info_file)
     img_list = meta_info['img_name'].tolist()
 
@@ -19,7 +18,7 @@ def get_random_splits(seed=123):
 
     all_img_index = list(range(total_num))
     num_splits = 10
-    save_path = '../datasets/meta_info/gfiqa_seed123.pkl'
+    save_path = './datasets/meta_info/gfiqa_seed123.pkl'
 
     ratio = [0.7, 0.1, 0.2]  # train/val/test
 

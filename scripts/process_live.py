@@ -1,14 +1,13 @@
 import os
 import scipy.io as sio
 import random
-import numpy
 import pickle
 import csv
 import pandas as pd
 
 
 def get_meta_info():
-    root_dir = '../datasets/LIVEIQA_release2/'
+    root_dir = './datasets/LIVEIQA_release2/'
 
     dmos = sio.loadmat(os.path.join(root_dir, 'dmos.mat'))  # difference of mos: test - ref. lower is better
     mos = dmos['dmos'][0]
@@ -36,7 +35,7 @@ def get_meta_info():
 def get_random_splits(seed=123):
     random.seed(seed)
     meta_info_file = './datasets/meta_info/meta_info_LIVEIQADataset.csv'
-    save_path = f'./datasets/meta_info/live_{seed}.pkl'
+    save_path = f'./datasets/meta_info/live_seed{seed}.pkl'
     ratio = 0.8
 
     meta_info = pd.read_csv(meta_info_file)
@@ -65,5 +64,5 @@ def get_random_splits(seed=123):
 
 
 if __name__ == '__main__':
-    # get_meta_info()
+    get_meta_info()
     get_random_splits()

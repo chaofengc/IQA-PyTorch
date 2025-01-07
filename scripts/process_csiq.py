@@ -1,15 +1,11 @@
-import os
-import scipy.io as sio
 import random
-import numpy
 import pickle
 import csv
 import pandas as pd
 
 
 def get_meta_info():
-    root_dir = '../datasets/CSIQ/'
-    label_file = '../datasets/CSIQ/csiq_label.txt'
+    label_file = './datasets/CSIQ/csiq_label.txt'
 
     name_dmos = [x.strip().split() for x in open(label_file).readlines()]
 
@@ -26,7 +22,7 @@ def get_meta_info():
 def get_random_splits(seed=123):
     random.seed(seed)
     meta_info_file = './datasets/meta_info/meta_info_CSIQDataset.csv'
-    save_path = f'./datasets/meta_info/csiq_{seed}.pkl'
+    save_path = f'./datasets/meta_info/csiq_seed{seed}.pkl'
     ratio = 0.8
 
     meta_info = pd.read_csv(meta_info_file)
@@ -55,5 +51,5 @@ def get_random_splits(seed=123):
 
 
 if __name__ == '__main__':
-    # get_meta_info()
+    get_meta_info()
     get_random_splits()

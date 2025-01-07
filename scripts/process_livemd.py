@@ -1,14 +1,13 @@
 import os
 import scipy.io as sio
 import random
-import numpy
 import pickle
 import csv
 import pandas as pd
 
 
 def get_meta_info():
-    root_dir = '../datasets/LIVEmultidistortiondatabase/'
+    root_dir = './datasets/LIVEmultidistortiondatabase/'
 
     parts = ['Part 1', 'Part 2']
     sub_img_folders = ['blurjpeg', 'blurnoise']
@@ -69,5 +68,5 @@ def get_random_splits(seed=123):
 
 
 if __name__ == '__main__':
-    # get_meta_info()
+    get_meta_info()
     get_random_splits()

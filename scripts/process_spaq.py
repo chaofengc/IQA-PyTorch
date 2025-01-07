@@ -1,17 +1,13 @@
-import os
-import scipy.io as sio
 import random
-import numpy
 import pickle
 import csv
 import pandas as pd
-from tqdm import tqdm
 
 
 def get_meta_info():
-    mos_label_file = '../datasets/SPAQ/Annotations/MOS and Image attribute scores.xlsx'
-    scene_label_file = '../datasets/SPAQ/Annotations/Scene category labels.xlsx'
-    exif_label_file = '../datasets/SPAQ/Annotations/EXIF_tags.xlsx'
+    mos_label_file = './datasets/SPAQ/Annotations/MOS and Image attribute scores.xlsx'
+    scene_label_file = './datasets/SPAQ/Annotations/Scene category labels.xlsx'
+    exif_label_file = './datasets/SPAQ/Annotations/EXIF_tags.xlsx'
 
     mos_label = pd.read_excel(mos_label_file)
     scene_label = pd.read_excel(scene_label_file)
@@ -54,5 +50,5 @@ def get_random_splits(seed=123):
 
 
 if __name__ == '__main__':
-    # get_meta_info()
+    get_meta_info()
     get_random_splits()

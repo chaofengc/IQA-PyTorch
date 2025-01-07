@@ -1,9 +1,4 @@
-import os
-import random
-import numpy
-import pickle
 import csv
-import pandas as pd
 
 
 def get_meta_info(root_dir, save_meta_path):
@@ -55,4 +50,4 @@ def get_meta_info(root_dir, save_meta_path):
 
 
 if __name__ == '__main__':
-    get_meta_info('../datasets/PIQ', '../datasets/meta_info/meta_info_PIQDataset.csv')
+    get_meta_info('./datasets/PIQ', './datasets/meta_info/meta_info_PIQDataset.csv')

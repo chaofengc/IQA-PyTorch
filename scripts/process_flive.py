@@ -29,11 +29,11 @@ from tqdm import tqdm
 
 
 def get_meta_info():
-    patch_label_file = '../../PaQ-2-PiQ/database/labels_patch.csv'
-    img_label_file = '../../PaQ-2-PiQ/database/labels_image.csv'
+    patch_label_file = './datasets/FLIVE_Database/database/labels_patch.csv'
+    img_label_file = './datasets/FLIVE_Database/database/labels_image.csv'
 
-    test_label_file = '../../PaQ-2-PiQ/database/labels640.csv'
-    train_label_file = '../../PaQ-2-PiQ/database/labels=640_padded.csv'
+    test_label_file = './datasets/FLIVE_Database/database/labels640.csv'
+    train_label_file = './datasets/FLIVE_Database/database/labels=640_padded.csv'
 
     all_patch_label = pd.read_csv(patch_label_file)
     all_img_label = pd.read_csv(img_label_file)
@@ -119,4 +119,3 @@ def get_meta_info():
 
 if __name__ == '__main__':
     get_meta_info()
-    #  get_random_splits()
