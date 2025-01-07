@@ -1,19 +1,15 @@
 import os
-import scipy.io as sio
-import random
-import numpy
 import pickle
 import csv
 import pandas as pd
-from tqdm import tqdm
 
 
 def get_meta_info():
 
-    root_path = '../datasets/PieAPP_dataset_CVPR_2018/'
-    train_list_file = '../datasets/PieAPP_dataset_CVPR_2018/train_reference_list.txt'
-    val_list_file = '../datasets/PieAPP_dataset_CVPR_2018/val_reference_list.txt'
-    test_list_file = '../datasets/PieAPP_dataset_CVPR_2018/test_reference_list.txt'
+    root_path = './datasets/PieAPP_dataset_CVPR_2018/'
+    train_list_file = './datasets/PieAPP_dataset_CVPR_2018/train_reference_list.txt'
+    val_list_file = './datasets/PieAPP_dataset_CVPR_2018/val_reference_list.txt'
+    test_list_file = './datasets/PieAPP_dataset_CVPR_2018/test_reference_list.txt'
 
     train_ref_list = [x.strip() for x in open(train_list_file).readlines()]
     val_ref_list = [x.strip() for x in open(val_list_file).readlines()]
@@ -37,8 +33,6 @@ def get_meta_info():
         csvwriter.writerow(head)
 
         count = 0
-
-        split = 'train'
 
         splits_str = ['train', 'val', 'test']
         split_lists = [train_ref_list, val_ref_list, test_ref_list]

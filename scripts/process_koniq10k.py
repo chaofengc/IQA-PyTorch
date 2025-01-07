@@ -1,10 +1,5 @@
-import os
-import scipy.io as sio
-import random
-import numpy
 import pickle
 import csv
-from tqdm import tqdm
 
 
 def get_meta_info():
@@ -12,13 +7,12 @@ def get_meta_info():
     Train/Val/Test split file from official github:
         https://github.com/subpic/koniq/blob/master/metadata/koniq10k_distributions_sets.csv
     """
-    info_file = '../datasets/koniq10k/koniq10k_distributions_sets.csv'
+    info_file = './datasets/koniq10k/koniq10k_distributions_sets.csv'
 
     save_meta_path = './datasets/meta_info/meta_info_KonIQ10kDataset.csv'
     split_info = {'train': [], 'val': [], 'test': []}
     with open(info_file, 'r') as f, open(save_meta_path, 'w+') as sf:
         csvreader = csv.reader(f)
-        head = next(csvreader)
 
         csvwriter = csv.writer(sf)
         new_head = ['img_name', 'mos', 'std', 'split', 'c1', 'c2', 'c3', 'c4', 'c5', 'c_total']
@@ -46,4 +40,3 @@ def get_meta_info():
 
 if __name__ == '__main__':
     get_meta_info()
-    #  get_random_splits()
