@@ -47,7 +47,7 @@ def _is_pair(x):
 
 
 class PairedToTensor(tf.ToTensor):
-    """Pair version of center crop"""
+    """Pair version of to tensor"""
     def to_tensor(self, x):
         if isinstance(x, torch.Tensor):
             return x
@@ -105,7 +105,6 @@ class PairedRandomCrop(tf.RandomCrop):
 
 class PairedRandomErasing(tf.RandomErasing):
     """Pair version of random erasing"""
-
     def forward(self, imgs):
         if _is_pair(imgs):
             if torch.rand(1) < self.p:
@@ -146,7 +145,7 @@ class PairedRandomHorizontalFlip(tf.RandomHorizontalFlip):
 
 
 class PairedRandomVerticalFlip(tf.RandomVerticalFlip):
-    """Pair version of random hflip"""
+    """Pair version of random vflip"""
     def forward(self, imgs):
         if _is_pair(imgs):
             if torch.rand(1) < self.p:
@@ -157,9 +156,8 @@ class PairedRandomVerticalFlip(tf.RandomVerticalFlip):
             return super().forward(imgs)
 
 
-
 class PairedRandomRot90(torch.nn.Module):
-    """Pair version of random hflip"""
+    """Pair version of random 90 rotation"""
     def __init__(self, p=0.5):
         super().__init__()
         self.p = p
@@ -296,7 +294,6 @@ def mod_crop(img, scale):
     else:
         raise ValueError(f'Wrong img ndim: {img.ndim}.')
     return img
-
 
 
 def augment(imgs, hflip=True, rotation=True, flows=None, return_status=False):
