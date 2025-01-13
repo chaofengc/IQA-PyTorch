@@ -761,5 +761,53 @@ DEFAULT_CONFIGS = OrderedDict({
         'metric_mode': 'FR',
         'score_range': '0, ~10',
         'lower_better': True,
-    }
+    },
+    'qualiclip': {
+        'metric_opts': {
+            'type': 'QualiCLIP',
+            'model_type': 'qualiclip',
+        },
+        'metric_mode': 'NR',
+        'score_range': '0, 1',
+    },
+
+    'qualiclip+': {
+        'metric_opts': {
+            'type': 'QualiCLIP',
+            'model_type': 'qualiclip+',
+            'pretrained': True,
+        },
+        'metric_mode': 'NR',
+        'score_range': '0, 1',
+    },
+
+    'qualiclip+-clive': {
+        'metric_opts': {
+            'type': 'QualiCLIP',
+            'model_type': 'qualiclip+-clive',
+            'pretrained': True,
+        },
+        'metric_mode': 'NR',
+        'score_range': '0, 1',
+    },
+
+    'qualiclip+-flive': {
+        'metric_opts': {
+            'type': 'QualiCLIP',
+            'model_type': 'qualiclip+-flive',
+            'pretrained': True,
+        },
+        'metric_mode': 'NR',
+        'score_range': '0, 1',
+    },
+
+    'qualiclip+-spaq': {
+        'metric_opts': {
+            'type': 'QualiCLIP',
+            'model_type': 'qualiclip+-spaq',
+            'pretrained': True,
+        },
+        'metric_mode': 'NR',
+        'score_range': '0, 1',
+    },
 })

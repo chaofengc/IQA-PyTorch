@@ -28,29 +28,30 @@ print(pyiqa.list_models())
 | VSI                      | `vsi`                                                                                                                               |
 | MAD                      | `mad`                                                                                                                               |
 
-| NR Method                    | Model names | Description                                                                         |
-| ---------------------------- | ------------------------ |-------------------------------------------------------------------------------------|
-| Q-Align                  | `qalign` (with quality[default], aesthetic options)                                                                                                                            | Large vision-language models |
-| LIQE | `liqe`, `liqe_mix` | CLIP based method  |
-| ARNIQA                   | `arniqa`, `arniqa-live`, `arniqa-csiq`, `arniqa-tid`, `arniqa-kadid`, `arniqa-clive`, `arniqa-flive`, `arniqa-spaq` | [ARNIQA](https://arxiv.org/abs/2310.14918) with different datasets, `koniq` by default |
-| TOPIQ | `topiq_nr`, `topiq_nr-flive`, `topiq_nr-spaq` | [TOPIQ](https://arxiv.org/abs/2308.03060) with different datasets, `koniq` by default |
-| TReS | `tres`, `tres-flive` | TReS with different datasets, `koniq` by default                                    |
-| FID                          | `fid` | Statistic distance between two datasets                                             |
-| CLIPIQA(+)                   |  `clipiqa`, `clipiqa+`, `clipiqa+_vitL14_512`,`clipiqa+_rn50_512`  | CLIPIQA(+) with different backbone, RN50 by default                                 |
-| MANIQA                       | `maniqa`, `maniqa-kadid`, `maniqa-pipal` | MUSIQ with different datasets, `koniq` by default                                   |
-| MUSIQ                        | `musiq`, `musiq-spaq`, `musiq-paq2piq`, `musiq-ava` | MUSIQ with different datasets, `koniq` by default                                   |
-| DBCNN                        | `dbcnn` |
-| PaQ-2-PiQ                    | `paq2piq` |
-| HyperIQA                     |  `hyperiqa` |
-| NIMA                         |  `nima`, `nima-vgg16-ava` | Aesthetic metric trained with AVA dataset                                           |
-| WaDIQaM                      | `wadiqam_nr` | |                                                                
-| CNNIQA                       |  `cnniqa` |
-| NRQM(Ma)<sup>[2](#fn2)</sup> |  `nrqm` | No backward                                                                         |
-| PI(Perceptual Index)         |  `pi` | No backward                                                                         |
-| BRISQUE                      | `brisque`, `brisque_matlab` | No backward                                                                         |
-| ILNIQE                       | `ilniqe` | No backward                                                                         |
-| NIQE                         | `niqe`, `niqe_matlab` | No backward                                                                         |
-| PIQE                         | `piqe` | No backward                                                                         |
+| NR Method                   | Model names                                                                                                         | Description                                                                                 |
+| --------------------------- |---------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| Q-Align                 | `qalign` (with quality[default], aesthetic options)                                                                 | Large vision-language models                                                                |
+ | QualiCLIP(+)            | `qualiclip`, `qualiclip+`, `qualiclip+-clive`, `qualiclip+-flive`, `qualiclip+-spaq`                                 | [QualiCLIP(+)](https://arxiv.org/abs/2403.11176) with different datasets, `koniq` by default |
+| LIQE | `liqe`, `liqe_mix`                                                                                                  | CLIP based method                                                                           |
+| ARNIQA                  | `arniqa`, `arniqa-live`, `arniqa-csiq`, `arniqa-tid`, `arniqa-kadid`, `arniqa-clive`, `arniqa-flive`, `arniqa-spaq` | [ARNIQA](https://arxiv.org/abs/2310.14918) with different datasets, `koniq` by default      |
+| TOPIQ | `topiq_nr`, `topiq_nr-flive`, `topiq_nr-spaq`                                                                       | [TOPIQ](https://arxiv.org/abs/2308.03060) with different datasets, `koniq` by default       |
+| TReS | `tres`, `tres-flive`                                                                                                | TReS with different datasets, `koniq` by default                                            |
+| FID                         | `fid`                                                                                                               | Statistic distance between two datasets                                                     |
+| CLIPIQA(+)                  | `clipiqa`, `clipiqa+`, `clipiqa+_vitL14_512`,`clipiqa+_rn50_512`                                                    | CLIPIQA(+) with different backbone, RN50 by default                                         |
+| MANIQA                      | `maniqa`, `maniqa-kadid`, `maniqa-pipal`                                                                            | MUSIQ with different datasets, `koniq` by default                                           |
+| MUSIQ                       | `musiq`, `musiq-spaq`, `musiq-paq2piq`, `musiq-ava`                                                                 | MUSIQ with different datasets, `koniq` by default                                           |
+| DBCNN                       | `dbcnn`                                                                                                             |
+| PaQ-2-PiQ                   | `paq2piq`                                                                                                           |
+| HyperIQA                    | `hyperiqa`                                                                                                          |
+| NIMA                        | `nima`, `nima-vgg16-ava`                                                                                            | Aesthetic metric trained with AVA dataset                                                   |
+| WaDIQaM                     | `wadiqam_nr`                                                                                                        |                                                                                             |                                                                
+| CNNIQA                      | `cnniqa`                                                                                                            |
+| NRQM(Ma)<sup>[2](#fn2)</sup> | `nrqm`                                                                                                              | No backward                                                                                 |
+| PI(Perceptual Index)        | `pi`                                                                                                                | No backward                                                                                 |
+| BRISQUE                     | `brisque`, `brisque_matlab`                                                                                         | No backward                                                                                 |
+| ILNIQE                      | `ilniqe`                                                                                                            | No backward                                                                                 |
+| NIQE                        | `niqe`, `niqe_matlab`                                                                                               | No backward                                                                                 |
+| PIQE                        | `piqe`                                                                                                              | No backward                                                                                 |
 <!-- </tr>
 </table> -->
 
