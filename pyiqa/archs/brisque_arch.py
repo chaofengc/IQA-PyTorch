@@ -84,7 +84,7 @@ def brisque(x: torch.Tensor,
     elif version == 'matlab':
         scaled_features = features / scale
         
-    sv.t_()
+    sv = sv.t()
     kernel_features = rbf_kernel(features=scaled_features, sv=sv, gamma=gamma)
     score = kernel_features @ sv_coef - rho
     return score 
