@@ -509,6 +509,7 @@ DEFAULT_CONFIGS = OrderedDict({
             'semantic_model_name': 'resnet50',
             'model_name': 'cfanet_nr_flive_res50',
             'use_ref': False,
+            'test_img_size': 384,
         },
         'metric_mode': 'NR',
         'score_range': '~0, ~1',
