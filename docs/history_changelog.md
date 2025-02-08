@@ -1,5 +1,14 @@
 # History of Changelog
 
+- 🚀**Oct, 2024**. Update `topiq_nr-face` by training with the [GCFIQA](https://github.com/DSL-FIQA/DSL-FIQA) dataset. Thanks to their work! 🤗
+- 🎨**Oct, 2024**. Add perceptual color difference metric `msswd` proposed in [MS-SWD (ECCV2024)](https://github.com/real-hjq/MS-SWD). Thanks to their work! 🤗
+- ⏳**Sep, 2024**. Add [efficiency benchmark](tests/Efficiency_benchmark.csv). With $1080\times800$ image as inputs, all metrics complete **in under 1 second on the GPU** (NVIDIA V100), and most of them, except for `qalign` and `qalign_8bit`, require **less than 6GB of GPU memory**.
+- ⚡**Aug, 2024**. Add `qalign_4bit` and `qalign_8bit` with much less memory requirement and similar performance.
+- ✨**Aug, 2024**. Add `piqe` metric, and `niqe_matlab, brisque_matlab` with default matlab parameters (results have been calibrated with MATLAB R2021b).
+- 💥**Aug, 2024**. Add `lpips+` and `lpips-vgg+` proposed in our paper [TOPIQ](https://arxiv.org/abs/2308.03060). 
+- 🔥**June, 2024**. Add `arniqa` and its variances trained on different datasets, refer to official repo [here](https://github.com/miccunifi/ARNIQA). Thanks for the contribution from [Lorenzo Agnolucci](https://github.com/LorenzoAgnolucci) 🤗.
+- **Apr 24, 2024**. Add `inception_score` and console entry point with `pyiqa` command.
+- **Mar 11, 2024**. Add `unique`, refer to official repo [here](https://github.com/zwx8981/UNIQUE). Thanks for the contribution from [Weixia Zhang](https://github.com/zwx8981) 🤗.
 - :boom: **Jan 31, 2024**. Add `qalign` for both NR and IAA. It is our most powerful unified metric based on large vision-language models, and shows remarkable performance and robustness. Refer [Q-Align](https://github.com/Q-Future/Q-Align) for more details. Use it with the following codes:
   ```
   qalign = create_metric('qalign').cuda()
