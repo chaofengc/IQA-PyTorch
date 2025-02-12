@@ -79,7 +79,7 @@ class InferenceModel(torch.nn.Module):
             assert x.shape[1] in [1, 3], 'Input must be RGB or gray image'
         
             if self.check_input_range:
-                assert x.min() >= 0 and x.max() <= 1, f'Input must be normalized to [0, 1], but got min={x.min():.4f}, max={x.max():.4f}'
+                assert torch.isclose(x.min(), 0) and torch.isclose(x.max(), 1), f'Input must be normalized to [0, 1], but got min={x.min():.4f}, max={x.max():.4f}'
     
     def forward(self, target, ref=None, **kwargs):
         device = self.dummy_param.device
