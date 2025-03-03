@@ -13,29 +13,27 @@ from pyiqa.archs.arch_util import to_2tuple
 
 
 def transform_mapping(key, args):
-    if key == 'hflip' and args:
+
+    transform_classes = {
+        'random_crop': PairedRandomCrop,
+        'center_crop': PairedCenterCrop,
+        'resize': PairedResize,
+        'adaptive_resize': PairedAdaptiveResize,
+        'random_square_resize': PairedRandomSquareResize,
+        'random_arp_resize': PairedRandomARPResize,
+        'ada_pad': PairedAdaptivePadding,
+        'rot90': PairedRandomRot90,
+        'randomerase': PairedRandomErasing,
+    }
+
+    if key in transform_classes:
+        transform = transform_classes[key]
+        return [transform(**args) if isinstance(args, dict) else transform(args)]
+    elif key == 'hflip' and args:
         return [PairedRandomHorizontalFlip()] 
-    if key == 'vflip' and args:
+    elif key == 'vflip' and args:
         return [PairedRandomVerticalFlip()] 
-    elif key == 'random_crop':
-        return [PairedRandomCrop(args)]
-    elif key == 'center_crop':
-        return [PairedCenterCrop(args)]
-    elif key == 'resize':
-        return [PairedResize(args)]
-    elif key == 'adaptive_resize':
-        return [PairedAdaptiveResize(args)]
-    elif key == 'random_square_resize':
-        return [PairedRandomSquareResize(args)]
-    elif key == 'random_arp_resize':
-        return [PairedRandomARPResize(args)]
-    elif key == 'ada_pad':
-        return [PairedAdaptivePadding(args)]
-    elif key == 'rot90' and args:
-        return [PairedRandomRot90(args)]
-    elif key == 'randomerase':
-        return [PairedRandomErasing(**args)]
-    elif key == 'totensor' and args:
+    elif key == 'totensor':
         return [PairedToTensor()]
     else:
         return []
