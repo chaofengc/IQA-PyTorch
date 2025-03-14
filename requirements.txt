@@ -1,6 +1,6 @@
 accelerate
 addict
-bitsandbytes
+bitsandbytes; sys_platform != 'darwin'
 einops
 facexlib
 future
