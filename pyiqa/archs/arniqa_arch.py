@@ -27,24 +27,24 @@ from pyiqa.archs.arch_util import get_url_from_name
 from pyiqa.api_helpers import get_dataset_info
 
 # Avoid warning related to loading a jit model from torch.hub
-warnings.filterwarnings("ignore", category=UserWarning, module="torch.serialization")
+warnings.filterwarnings('ignore', category=UserWarning, module='torch.serialization')
 
 DATASET_INFO = get_dataset_info()
-DATASET_INFO["clive"] = DATASET_INFO["livec"]
-DATASET_INFO["tid"] = DATASET_INFO["tid2013"]
-DATASET_INFO["koniq"] = DATASET_INFO["koniq10k"]
-DATASET_INFO["kadid"] = DATASET_INFO["kadid10k"]
+DATASET_INFO['clive'] = DATASET_INFO['livec']
+DATASET_INFO['tid'] = DATASET_INFO['tid2013']
+DATASET_INFO['koniq'] = DATASET_INFO['koniq10k']
+DATASET_INFO['kadid'] = DATASET_INFO['kadid10k']
 
 default_model_urls = {
-    "ARNIQA": get_url_from_name(name="ARNIQA.pth"),
-    "live": get_url_from_name(name="regressor_live.pth"),
-    "csiq": get_url_from_name(name="regressor_csiq.pth"),
-    "tid": get_url_from_name(name="regressor_tid2013.pth"),
-    "kadid": get_url_from_name(name="regressor_kadid10k.pth"),
-    "koniq": get_url_from_name(name="regressor_koniq10k.pth"),
-    "clive": get_url_from_name(name="regressor_clive.pth"),
-    "flive": get_url_from_name(name="regressor_flive.pth"),
-    "spaq": get_url_from_name(name="regressor_spaq.pth")
+    'ARNIQA': get_url_from_name(name='ARNIQA.pth'),
+    'live': get_url_from_name(name='regressor_live.pth'),
+    'csiq': get_url_from_name(name='regressor_csiq.pth'),
+    'tid': get_url_from_name(name='regressor_tid2013.pth'),
+    'kadid': get_url_from_name(name='regressor_kadid10k.pth'),
+    'koniq': get_url_from_name(name='regressor_koniq10k.pth'),
+    'clive': get_url_from_name(name='regressor_clive.pth'),
+    'flive': get_url_from_name(name='regressor_flive.pth'),
+    'spaq': get_url_from_name(name='regressor_spaq.pth'),
 }
 
 
@@ -67,7 +67,8 @@ class ARNIQA(nn.Module):
         default_mean (torch.Tensor): The mean values for normalization.
         default_std (torch.Tensor): The standard deviation values for normalization.
     """
-    def __init__(self, regressor_dataset: str = "koniq"):
+
+    def __init__(self, regressor_dataset: str = 'koniq'):
         super().__init__()
 
         self.regressor_dataset = regressor_dataset
@@ -79,12 +80,12 @@ class ARNIQA(nn.Module):
         self.encoder = nn.Sequential(*list(self.encoder.children())[:-1])
 
         encoder_state_dict = torch.hub.load_state_dict_from_url(
-            default_model_urls["ARNIQA"], progress=True, map_location="cpu"
+            default_model_urls['ARNIQA'], progress=True, map_location='cpu'
         )
         cleaned_encoder_state_dict = OrderedDict()
         for key, value in encoder_state_dict.items():
             # Remove the prefix
-            if key.startswith("model."):
+            if key.startswith('model.'):
                 new_key = key[6:]
                 cleaned_encoder_state_dict[new_key] = value
 
@@ -92,7 +93,9 @@ class ARNIQA(nn.Module):
         self.encoder.eval()
 
         self.regressor: nn.Module = torch.hub.load_state_dict_from_url(
-            default_model_urls[self.regressor_dataset], progress=True, map_location="cpu"
+            default_model_urls[self.regressor_dataset],
+            progress=True,
+            map_location='cpu',
         )  # Load regressor from torch.hub as JIT model
         self.regressor.eval()
 
@@ -130,7 +133,7 @@ class ARNIQA(nn.Module):
         Returns:
             Tuple[torch.Tensor, torch.Tensor]: The normalized original and downsampled tensors.
         """
-        x_ds = F.interpolate(x, scale_factor=0.5, mode="bilinear", align_corners=False)
+        x_ds = F.interpolate(x, scale_factor=0.5, mode='bilinear', align_corners=False)
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         x_ds = (x_ds - self.default_mean.to(x_ds)) / self.default_std.to(x_ds)
         return x, x_ds
@@ -145,12 +148,12 @@ class ARNIQA(nn.Module):
         Returns:
             torch.Tensor: The scaled score.
         """
-        new_range = (0., 1.)
+        new_range = (0.0, 1.0)
 
         # Compute scaling factors
         original_range = (
-            DATASET_INFO[self.regressor_dataset]["mos_range"][0], 
-            DATASET_INFO[self.regressor_dataset]["mos_range"][1], 
+            DATASET_INFO[self.regressor_dataset]['mos_range'][0],
+            DATASET_INFO[self.regressor_dataset]['mos_range'][1],
         )
         original_width = original_range[1] - original_range[0]
         new_width = new_range[1] - new_range[0]
@@ -160,7 +163,7 @@ class ARNIQA(nn.Module):
         scaled_score = new_range[0] + (score - original_range[0]) * scaling_factor
 
         # Invert the scale if needed
-        if DATASET_INFO[self.regressor_dataset]["lower_better"]:
+        if DATASET_INFO[self.regressor_dataset]['lower_better']:
             scaled_score = new_range[1] - scaled_score
 
         return scaled_score

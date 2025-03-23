@@ -31,16 +31,18 @@ from pyiqa.utils.color_util import rgb2yiq
 from .func_util import gradient_map, similarity_map, ifftshift, get_meshgrid
 
 
-def fsim(x: torch.Tensor,
-         y: torch.Tensor,
-         chromatic: bool = True,
-         scales: int = 4,
-         orientations: int = 4,
-         min_length: int = 6,
-         mult: int = 2,
-         sigma_f: float = 0.55,
-         delta_theta: float = 1.2,
-         k: float = 2.0) -> torch.Tensor:
+def fsim(
+    x: torch.Tensor,
+    y: torch.Tensor,
+    chromatic: bool = True,
+    scales: int = 4,
+    orientations: int = 4,
+    min_length: int = 6,
+    mult: int = 2,
+    sigma_f: float = 0.55,
+    delta_theta: float = 1.2,
+    k: float = 2.0,
+) -> torch.Tensor:
     r"""Compute Feature Similarity Index Measure for a batch of images.
     Args:
         - x: An input tensor. Shape :math:`(N, C, H, W)`.
@@ -104,7 +106,8 @@ def fsim(x: torch.Tensor,
         mult=mult,
         sigma_f=sigma_f,
         delta_theta=delta_theta,
-        k=k)
+        k=k,
+    )
     pc_y = _phase_congruency(
         y_lum,
         scales=scales,
@@ -113,10 +116,13 @@ def fsim(x: torch.Tensor,
         mult=mult,
         sigma_f=sigma_f,
         delta_theta=delta_theta,
-        k=k)
+        k=k,
+    )
 
     # Gradient maps
-    scharr_filter = torch.tensor([[[-3., 0., 3.], [-10., 0., 10.], [-3., 0., 3.]]]) / 16
+    scharr_filter = (
+        torch.tensor([[[-3.0, 0.0, 3.0], [-10.0, 0.0, 10.0], [-3.0, 0.0, 3.0]]]) / 16
+    )
 
     kernels = torch.stack([scharr_filter, scharr_filter.transpose(-1, -2)])
     grad_map_x = gradient_map(x_lum, kernels)
@@ -132,10 +138,12 @@ def fsim(x: torch.Tensor,
     score = GM * PC * pc_max  # torch.sum(score)/torch.sum(pc_max)
 
     if chromatic:
-        assert num_channels == 3, 'Chromatic component can be computed only for RGB images!'
+        assert num_channels == 3, (
+            'Chromatic component can be computed only for RGB images!'
+        )
         S_I = similarity_map(x_i, y_i, T3)
         S_Q = similarity_map(x_q, y_q, T4)
-        score = score * torch.abs(S_I * S_Q)**lmbda
+        score = score * torch.abs(S_I * S_Q) ** lmbda
         # Complex gradients will work in PyTorch 1.6.0
         # score = score * torch.real((S_I * S_Q).to(torch.complex64) ** lmbda)
 
@@ -144,15 +152,17 @@ def fsim(x: torch.Tensor,
     return result
 
 
-def _construct_filters(x: torch.Tensor,
-                       scales: int = 4,
-                       orientations: int = 4,
-                       min_length: int = 6,
-                       mult: int = 2,
-                       sigma_f: float = 0.55,
-                       delta_theta: float = 1.2,
-                       k: float = 2.0,
-                       use_lowpass_filter=True):
+def _construct_filters(
+    x: torch.Tensor,
+    scales: int = 4,
+    orientations: int = 4,
+    min_length: int = 6,
+    mult: int = 2,
+    sigma_f: float = 0.55,
+    delta_theta: float = 1.2,
+    k: float = 2.0,
+    use_lowpass_filter=True,
+):
     """Creates a stack of filters used for computation of phase congruensy maps
 
     Args:
@@ -170,7 +180,7 @@ def _construct_filters(x: torch.Tensor,
         - k: No of standard deviations of the noise energy beyond the mean
             at which we set the noise threshold point, below which phase
             congruency values get penalized.
-        """
+    """
     N, _, H, W = x.shape
 
     # Calculate the standard deviation of the angular Gaussian function
@@ -201,14 +211,16 @@ def _construct_filters(x: torch.Tensor,
     # away to zero at the boundaries.  All log Gabor filters are multiplied by
     # this to ensure no extra frequencies at the 'corners' of the FFT are
     # incorporated as this seems to upset the normalisation process when
-    lp = _lowpassfilter(size=(H, W), cutoff=.45, n=15)
+    lp = _lowpassfilter(size=(H, W), cutoff=0.45, n=15)
 
     # Construct the radial filter components...
     log_gabor = []
     for s in range(scales):
         wavelength = min_length * mult**s
         omega_0 = 1.0 / wavelength
-        gabor_filter = torch.exp((-torch.log(radius / omega_0)**2) / (2 * math.log(sigma_f)**2))
+        gabor_filter = torch.exp(
+            (-(torch.log(radius / omega_0) ** 2)) / (2 * math.log(sigma_f) ** 2)
+        )
         if use_lowpass_filter:
             gabor_filter = gabor_filter * lp
         gabor_filter[0, 0] = 0
@@ -223,27 +235,37 @@ def _construct_filters(x: torch.Tensor,
         # the specified filter orientation.  To overcome the angular wrap-around
         # problem sine difference and cosine difference values are first computed
         # and then the atan2 function is used to determine angular distance.
-        ds = sintheta * math.cos(angl) - costheta * math.sin(angl)  # Difference in sine.
-        dc = costheta * math.cos(angl) + sintheta * math.sin(angl)  # Difference in cosine.
+        ds = sintheta * math.cos(angl) - costheta * math.sin(
+            angl
+        )  # Difference in sine.
+        dc = costheta * math.cos(angl) + sintheta * math.sin(
+            angl
+        )  # Difference in cosine.
         dtheta = torch.abs(torch.atan2(ds, dc))
-        spread.append(torch.exp((-dtheta**2) / (2 * theta_sigma**2)))
+        spread.append(torch.exp((-(dtheta**2)) / (2 * theta_sigma**2)))
 
     spread = torch.stack(spread)
     log_gabor = torch.stack(log_gabor)
 
     # Multiply, add batch dimension and transfer to correct device.
-    filters = (spread.repeat_interleave(scales, dim=0) * log_gabor.repeat(orientations, 1, 1)).unsqueeze(0).to(x)
+    filters = (
+        (spread.repeat_interleave(scales, dim=0) * log_gabor.repeat(orientations, 1, 1))
+        .unsqueeze(0)
+        .to(x)
+    )
     return filters
 
 
-def _phase_congruency(x: torch.Tensor,
-                      scales: int = 4,
-                      orientations: int = 4,
-                      min_length: int = 6,
-                      mult: int = 2,
-                      sigma_f: float = 0.55,
-                      delta_theta: float = 1.2,
-                      k: float = 2.0) -> torch.Tensor:
+def _phase_congruency(
+    x: torch.Tensor,
+    scales: int = 4,
+    orientations: int = 4,
+    min_length: int = 6,
+    mult: int = 2,
+    sigma_f: float = 0.55,
+    delta_theta: float = 1.2,
+    k: float = 2.0,
+) -> torch.Tensor:
     r"""Compute Phase Congruence for a batch of greyscale images
     Args:
         x: Tensor. Shape :math:`(N, 1, H, W)`.
@@ -268,12 +290,16 @@ def _phase_congruency(x: torch.Tensor,
     N, _, H, W = x.shape
 
     # Fourier transform
-    filters = _construct_filters(x, scales, orientations, min_length, mult, sigma_f, delta_theta, k)
+    filters = _construct_filters(
+        x, scales, orientations, min_length, mult, sigma_f, delta_theta, k
+    )
 
     imagefft = torch.fft.fft2(x)
     filters_ifft = torch.fft.ifft2(filters)
     filters_ifft = filters_ifft.real * math.sqrt(H * W)
-    even_odd = torch.view_as_real(torch.fft.ifft2(imagefft * filters)).view(N, orientations, scales, H, W, 2)
+    even_odd = torch.view_as_real(torch.fft.ifft2(imagefft * filters)).view(
+        N, orientations, scales, H, W, 2
+    )
 
     # Amplitude of even & odd filter response. An = sqrt(real^2 + imag^2)
     an = torch.sqrt(torch.sum(even_odd**2, dim=-1))
@@ -281,7 +307,9 @@ def _phase_congruency(x: torch.Tensor,
     # Take filter at scale 0 and sum spatially
     # Record mean squared filter value at smallest scale.
     # This is used for noise estimation.
-    em_n = (filters.view(1, orientations, scales, H, W)[:, :, :1, ...]**2).sum(dim=[-2, -1], keepdims=True)
+    em_n = (filters.view(1, orientations, scales, H, W)[:, :, :1, ...] ** 2).sum(
+        dim=[-2, -1], keepdims=True
+    )
 
     # Sum of even filter convolution results.
     sum_e = even_odd[..., 0].sum(dim=2, keepdims=True)
@@ -304,7 +332,9 @@ def _phase_congruency(x: torch.Tensor,
     even = even_odd[..., 0]
     odd = even_odd[..., 1]
 
-    energy = (even * mean_e + odd * mean_o - torch.abs(even * mean_o - odd * mean_e)).sum(dim=2, keepdim=True)
+    energy = (
+        even * mean_e + odd * mean_o - torch.abs(even * mean_o - odd * mean_e)
+    ).sum(dim=2, keepdim=True)
 
     # Compensate for noise
     # We estimate the noise power from the energy squared response at the
@@ -314,7 +344,9 @@ def _phase_congruency(x: torch.Tensor,
     # The estimate of noise power is obtained by dividing the mean squared
     # energy value by the mean squared filter value
 
-    abs_eo = torch.sqrt(torch.sum(even_odd[:, :, :1, ...]**2, dim=-1)).reshape(N, orientations, 1, 1, H * W)
+    abs_eo = torch.sqrt(torch.sum(even_odd[:, :, :1, ...] ** 2, dim=-1)).reshape(
+        N, orientations, 1, 1, H * W
+    )
     median_e2n = torch.median(abs_eo**2, dim=-1, keepdim=True).values
 
     mean_e2n = -median_e2n / math.log(0.5)
@@ -330,7 +362,9 @@ def _phase_congruency(x: torch.Tensor,
 
     sum_ai_aj = torch.zeros(N, orientations, 1, H, W).to(x)
     for s in range(scales - 1):
-        sum_ai_aj = sum_ai_aj + (filters_ifft[:, :, s:s + 1] * filters_ifft[:, :, s + 1:]).sum(dim=-3, keepdim=True)
+        sum_ai_aj = sum_ai_aj + (
+            filters_ifft[:, :, s : s + 1] * filters_ifft[:, :, s + 1 :]
+        ).sum(dim=-3, keepdim=True)
 
     sum_an2 = torch.sum(sum_an2, dim=[-1, -2], keepdim=True)
     sum_ai_aj = torch.sum(sum_ai_aj, dim=[-1, -2], keepdim=True)
@@ -386,7 +420,7 @@ def _lowpassfilter(size: Tuple[int, int], cutoff: float, n: int) -> torch.Tensor
     # A matrix with every pixel = radius relative to centre.
     radius = torch.sqrt(grid_x**2 + grid_y**2)
 
-    return ifftshift(1. / (1.0 + (radius / cutoff)**(2 * n)))
+    return ifftshift(1.0 / (1.0 + (radius / cutoff) ** (2 * n)))
 
 
 @ARCH_REGISTRY.register()
@@ -409,15 +443,17 @@ class FSIM(nn.Module):
         https://ieeexplore.ieee.org/document/5705575
     """
 
-    def __init__(self,
-                 chromatic: bool = True,
-                 scales: int = 4,
-                 orientations: int = 4,
-                 min_length: int = 6,
-                 mult: int = 2,
-                 sigma_f: float = 0.55,
-                 delta_theta: float = 1.2,
-                 k: float = 2.0) -> None:
+    def __init__(
+        self,
+        chromatic: bool = True,
+        scales: int = 4,
+        orientations: int = 4,
+        min_length: int = 6,
+        mult: int = 2,
+        sigma_f: float = 0.55,
+        delta_theta: float = 1.2,
+        k: float = 2.0,
+    ) -> None:
         super().__init__()
 
         # Save function with predefined parameters, rather than parameters themself
@@ -446,6 +482,8 @@ class FSIM(nn.Module):
             - Value of FSIM loss to be minimized in [0, 1] range.
         """
 
-        assert X.shape == Y.shape, f'Input and reference images should have the same shape, but got {X.shape} and {Y.shape}'
+        assert X.shape == Y.shape, (
+            f'Input and reference images should have the same shape, but got {X.shape} and {Y.shape}'
+        )
         score = self.fsim(X, Y)
         return score

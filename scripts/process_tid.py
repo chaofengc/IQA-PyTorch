@@ -49,7 +49,11 @@ def get_random_splits(meta_info_file, save_path, seed=123):
                 split_info[i + 1]['train'].append(j)
             else:
                 split_info[i + 1]['val'].append(j)
-        print(meta_info.shape[0], len(split_info[i + 1]['train']), len(split_info[i + 1]['val']))
+        print(
+            meta_info.shape[0],
+            len(split_info[i + 1]['train']),
+            len(split_info[i + 1]['val']),
+        )
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

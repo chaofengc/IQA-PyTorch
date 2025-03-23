@@ -33,7 +33,9 @@ def download_file_from_google_drive(file_id, save_path):
         response = session.get(URL, params=params, stream=True)
 
     # get file size
-    response_file_size = session.get(URL, params=params, stream=True, headers={'Range': 'bytes=0-2'})
+    response_file_size = session.get(
+        URL, params=params, stream=True, headers={'Range': 'bytes=0-2'}
+    )
     if 'Content-Range' in response_file_size.headers:
         file_size = int(response_file_size.headers['Content-Range'].split('/')[1])
     else:
@@ -63,7 +65,9 @@ def save_response_content(response, destination, file_size=None, chunk_size=3276
             downloaded_size += chunk_size
             if pbar is not None:
                 pbar.update(1)
-                pbar.set_description(f'Download {sizeof_fmt(downloaded_size)} / {readable_file_size}')
+                pbar.set_description(
+                    f'Download {sizeof_fmt(downloaded_size)} / {readable_file_size}'
+                )
             if chunk:  # filter out keep-alive new chunks
                 f.write(chunk)
         if pbar is not None:

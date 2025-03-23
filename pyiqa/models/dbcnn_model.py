@@ -30,7 +30,9 @@ class DBCNNModel(GeneralIQAModel):
             optim_params.append(v)
 
         optim_type = train_opt['optim_finetune'].pop('type')
-        self.optimizer = self.get_optimizer(optim_type, optim_params, **train_opt['optim_finetune'])
+        self.optimizer = self.get_optimizer(
+            optim_type, optim_params, **train_opt['optim_finetune']
+        )
         self.optimizers = [self.optimizer]
 
         # reset schedulers
@@ -38,7 +40,10 @@ class DBCNNModel(GeneralIQAModel):
         self.setup_schedulers('scheduler_finetune')
 
     def optimize_parameters(self, current_iter):
-        if current_iter >= self.opt['train']['finetune_start_iter'] and self.train_stage != 'finetune':
+        if (
+            current_iter >= self.opt['train']['finetune_start_iter']
+            and self.train_stage != 'finetune'
+        ):
             # copy best model from coarse training stage and reset optimizers
             self.copy_model(self.net_best, self.net)
             self.reset_optimizers_finetune()

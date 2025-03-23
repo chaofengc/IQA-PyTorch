@@ -15,7 +15,7 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import to_y_channel
 
 
-def entropy(x, data_range=255., eps=1e-8, color_space='yiq'):
+def entropy(x, data_range=255.0, eps=1e-8, color_space='yiq'):
     r"""Compute entropy of a gray scale image.
     Args:
         x: An input tensor. Shape :math:`(N, C, H, W)`.
@@ -23,12 +23,14 @@ def entropy(x, data_range=255., eps=1e-8, color_space='yiq'):
         Entropy of the image.
     """
 
-    if (x.shape[1] == 3):
+    if x.shape[1] == 3:
         # Convert RGB image to gray scale and use Y-channel
         x = to_y_channel(x, data_range, color_space)
 
     # Compute histogram
-    hist = nn.functional.one_hot(x.long(), num_classes=int(data_range + 1)).sum(dim=[1, 2, 3])
+    hist = nn.functional.one_hot(x.long(), num_classes=int(data_range + 1)).sum(
+        dim=[1, 2, 3]
+    )
     hist = hist / hist.sum(dim=1, keepdim=True)
 
     # Compute entropy
@@ -51,6 +53,5 @@ class Entropy(nn.Module):
         self.kwargs = kwargs
 
     def forward(self, x):
-
         score = entropy(x, **self.kwargs)
         return score

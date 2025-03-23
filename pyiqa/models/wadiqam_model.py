@@ -19,7 +19,9 @@ class WaDIQaMModel(GeneralIQAModel):
                 'lr': optim_opt.pop('lr_basemodel'),
             },
             {
-                'params': [p for k, p in bare_net.named_parameters() if 'features' not in k],
+                'params': [
+                    p for k, p in bare_net.named_parameters() if 'features' not in k
+                ],
                 'lr': optim_opt.pop('lr_fc_layers'),
             },
         ]

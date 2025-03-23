@@ -33,9 +33,14 @@ from .interpolate_compat_tensorflow import interpolate_bilinear_2d_like_tensorfl
 
 
 default_model_urls = {
-    'ffhq_clean_trainval70k_512.npz': get_url_from_name('ffhq_clean_trainval70k_512.npz'),
-    'ffhq_clean_trainval70k_512_kid.npz': get_url_from_name('ffhq_clean_trainval70k_512_kid.npz'),
+    'ffhq_clean_trainval70k_512.npz': get_url_from_name(
+        'ffhq_clean_trainval70k_512.npz'
+    ),
+    'ffhq_clean_trainval70k_512_kid.npz': get_url_from_name(
+        'ffhq_clean_trainval70k_512_kid.npz'
+    ),
 }
+
 
 class ResizeDataset(torch.utils.data.Dataset):
     """
@@ -60,6 +65,7 @@ class ResizeDataset(torch.utils.data.Dataset):
         img_pil = Image.open(path).convert('RGB')
 
         if self.mode == 'clean':
+
             def resize_single_channel(x_np):
                 img = Image.fromarray(x_np.astype(np.float32), mode='F')
                 img = img.resize(self.size, resample=Image.BICUBIC)
@@ -72,30 +78,29 @@ class ResizeDataset(torch.utils.data.Dataset):
         elif self.mode == 'legacy_tensorflow':
             img_np = np.array(img_pil).clip(0, 255)
             img_t = torch.from_numpy(img_np).permute(2, 0, 1).float()
-            img_t = interpolate_bilinear_2d_like_tensorflow1x(img_t.unsqueeze(0),
-                              size=self.size,
-                              align_corners=False)
+            img_t = interpolate_bilinear_2d_like_tensorflow1x(
+                img_t.unsqueeze(0), size=self.size, align_corners=False
+            )
         else:
             img_np = np.array(img_pil).clip(0, 255)
-            img_t = nn.functional.interpolate(img_t.unsqueeze(0),
-                              size=self.size,
-                              mode='bilinear',
-                              align_corners=False)
+            img_t = nn.functional.interpolate(
+                img_t.unsqueeze(0), size=self.size, mode='bilinear', align_corners=False
+            )
             img_t = img_t.squeeze(0)
 
         return img_t
 
 
-def get_reference_statistics(name, res, mode="clean", split="test", metric="FID"):
+def get_reference_statistics(name, res, mode='clean', split='test', metric='FID'):
     r"""
-        Load precomputed reference statistics for commonly used datasets
+    Load precomputed reference statistics for commonly used datasets
     """
-    base_url = "https://www.cs.cmu.edu/~clean-fid/stats"
-    if split == "custom":
-        res = "na"
-    if metric == "FID":
-        rel_path = (f"{name}_{mode}_{split}_{res}.npz").lower()
-        url = f"{base_url}/{rel_path}"
+    base_url = 'https://www.cs.cmu.edu/~clean-fid/stats'
+    if split == 'custom':
+        res = 'na'
+    if metric == 'FID':
+        rel_path = (f'{name}_{mode}_{split}_{res}.npz').lower()
+        url = f'{base_url}/{rel_path}'
 
         if rel_path in default_model_urls.keys():
             fpath = load_file_from_url(default_model_urls[rel_path])
@@ -103,11 +108,11 @@ def get_reference_statistics(name, res, mode="clean", split="test", metric="FID"
             fpath = load_file_from_url(url)
 
         stats = np.load(fpath)
-        mu, sigma = stats["mu"], stats["sigma"]
+        mu, sigma = stats['mu'], stats['sigma']
         return mu, sigma
-    elif metric == "KID":
-        rel_path = (f"{name}_{mode}_{split}_{res}_kid.npz").lower()
-        url = f"{base_url}/{rel_path}"
+    elif metric == 'KID':
+        rel_path = (f'{name}_{mode}_{split}_{res}_kid.npz').lower()
+        url = f'{base_url}/{rel_path}'
 
         if rel_path in default_model_urls.keys():
             fpath = load_file_from_url(default_model_urls[rel_path])
@@ -115,7 +120,7 @@ def get_reference_statistics(name, res, mode="clean", split="test", metric="FID"
             fpath = load_file_from_url(url)
 
         stats = np.load(fpath)
-        return stats["feats"]
+        return stats['feats']
 
 
 def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
@@ -140,18 +145,22 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     sigma1 = np.atleast_2d(sigma1)
     sigma2 = np.atleast_2d(sigma2)
 
-    assert mu1.shape == mu2.shape, \
+    assert mu1.shape == mu2.shape, (
         'Training and test mean vectors have different lengths'
-    assert sigma1.shape == sigma2.shape, \
+    )
+    assert sigma1.shape == sigma2.shape, (
         'Training and test covariances have different dimensions'
+    )
 
     diff = mu1 - mu2
 
     # Product might be almost singular
     covmean, _ = linalg.sqrtm(sigma1.dot(sigma2), disp=False)
     if not np.isfinite(covmean).all():
-        msg = ('fid calculation produces singular product; '
-               'adding %s to diagonal of cov estimates') % eps
+        msg = (
+            'fid calculation produces singular product; '
+            'adding %s to diagonal of cov estimates'
+        ) % eps
         print(msg)
         offset = np.eye(sigma1.shape[0]) * eps
         covmean = linalg.sqrtm((sigma1 + offset).dot(sigma2 + offset))
@@ -165,21 +174,25 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
 
     tr_covmean = np.trace(covmean)
 
-    return (diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * tr_covmean)
+    return diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * tr_covmean
 
 
-def maximum_mean_discrepancy(feats1, feats2, kernel_type='polynomial', num_subsets=100, max_subset_size=1000):
+def maximum_mean_discrepancy(
+    feats1, feats2, kernel_type='polynomial', num_subsets=100, max_subset_size=1000
+):
     if kernel_type == 'polynomial':
-        return mmd_polynomial_kernel(feats1, feats2, num_subsets=num_subsets, max_subset_size=max_subset_size)
+        return mmd_polynomial_kernel(
+            feats1, feats2, num_subsets=num_subsets, max_subset_size=max_subset_size
+        )
     elif kernel_type == 'rbf':
         return mmd_rbf_kernel(feats1, feats2)
     else:
-        raise ValueError(f"Invalid kernel type: {kernel_type}")
+        raise ValueError(f'Invalid kernel type: {kernel_type}')
 
 
 def mmd_polynomial_kernel(feats1, feats2, num_subsets=100, max_subset_size=1000):
     r"""
-        Compute the KID score given the sets of features
+    Compute the KID score given the sets of features
     """
     n = feats1.shape[1]
     m = min(min(feats1.shape[0], feats2.shape[0]), max_subset_size)
@@ -196,21 +209,21 @@ def mmd_polynomial_kernel(feats1, feats2, num_subsets=100, max_subset_size=1000)
 
 def mmd_rbf_kernel(x, y, sigma: float = 10.0, scale: int = 1000):
     r"""
-        Compute MMD with RBF kernel, ref to https://github.com/google-research/google-research/blob/master/cmmd/distance.py
+    Compute MMD with RBF kernel, ref to https://github.com/google-research/google-research/blob/master/cmmd/distance.py
     """
     x = torch.tensor(x)
     y = torch.tensor(y)
 
-    x_sqnorms = torch.diag(torch.matmul(x, x.T)) 
+    x_sqnorms = torch.diag(torch.matmul(x, x.T))
     y_sqnorms = torch.diag(torch.matmul(y, y.T))
 
     gamma = 1 / (2 * sigma**2)
     k_xx = torch.mean(
         torch.exp(
-            -gamma 
+            -gamma
             * (
                 -2 * torch.matmul(x, x.T)
-                + x_sqnorms.unsqueeze(1) 
+                + x_sqnorms.unsqueeze(1)
                 + x_sqnorms.unsqueeze(0)
             )
         )
@@ -238,26 +251,34 @@ def mmd_rbf_kernel(x, y, sigma: float = 10.0, scale: int = 1000):
 
     return scale * (k_xx + k_yy - 2 * k_xy)
 
-def get_folder_features(fdir, model=None, num_workers=12,
-                        batch_size=32,
-                        test_img_size=(299, 299),
-                        device=torch.device("cuda"),
-                        mode="clean",
-                        description="",
-                        verbose=True,
-                        ):
+
+def get_folder_features(
+    fdir,
+    model=None,
+    num_workers=12,
+    batch_size=32,
+    test_img_size=(299, 299),
+    device=torch.device('cuda'),
+    mode='clean',
+    description='',
+    verbose=True,
+):
     r"""
     Compute the inception features for a folder of image files
     """
     files = scandir_images(fdir)
 
     if verbose:
-        print(f"Found {len(files)} images in the folder {fdir}")
+        print(f'Found {len(files)} images in the folder {fdir}')
 
     dataset = ResizeDataset(files, mode=mode, size=test_img_size)
-    dataloader = torch.utils.data.DataLoader(dataset,
-                                             batch_size=batch_size, shuffle=False,
-                                             drop_last=False, num_workers=num_workers)
+    dataloader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        drop_last=False,
+        num_workers=num_workers,
+    )
 
     # collect all inception features
     if verbose:
@@ -287,8 +308,6 @@ def get_folder_features(fdir, model=None, num_workers=12,
     return np_feats
 
 
-
-
 class DINOv2:
     """DINOv2 model for feature extraction.
 
@@ -298,13 +317,14 @@ class DINOv2:
     def __init__(self):
         """Initialize the DINOv2 model with suppressed warnings."""
         import warnings
+
         warnings.filterwarnings('ignore', 'xFormers is not available')
         self.model = torch.hub.load(
-            'facebookresearch/dinov2:main', 
-            'dinov2_vitl14', 
-            trust_repo=True, 
-            verbose=False, 
-            skip_validation=True
+            'facebookresearch/dinov2:main',
+            'dinov2_vitl14',
+            trust_repo=True,
+            verbose=False,
+            skip_validation=True,
         )
         self.model.eval().requires_grad_(False)
 
@@ -338,11 +358,7 @@ class FID(nn.Module):
         test_img_size (Tuple[int, int]): Default image size for feature extraction.
     """
 
-    def __init__(
-        self, 
-        dims: int = 2048, 
-        backbone: str = 'inceptionv3'
-    ) -> None:
+    def __init__(self, dims: int = 2048, backbone: str = 'inceptionv3') -> None:
         """Initialize the FID metric.
 
         Args:
@@ -360,7 +376,7 @@ class FID(nn.Module):
             self.model = DINOv2()
             self.test_img_size = (224, 224)
         else:
-            raise ValueError(f"Unsupported backbone: {backbone}")
+            raise ValueError(f'Unsupported backbone: {backbone}')
 
     def forward(
         self,
@@ -376,7 +392,7 @@ class FID(nn.Module):
         batch_size: int = 8,
         device: torch.device = torch.device('cuda'),
         verbose: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> float:
         """Compute the FID or Clean-FID score between two sets of images.
 
@@ -409,83 +425,80 @@ class FID(nn.Module):
         # Compare two folders
         if fdir1 is not None and fdir2 is not None:
             if verbose:
-                print("Computing FID between two folders")
-            
+                print('Computing FID between two folders')
+
             np_feats1 = get_folder_features(
-                fdir1, 
-                self.model, 
-                num_workers=num_workers, 
+                fdir1,
+                self.model,
+                num_workers=num_workers,
                 batch_size=batch_size,
                 test_img_size=self.test_img_size,
-                device=device, 
-                mode=mode, 
-                description=f"FID {os.path.basename(fdir1)}: ", 
-                verbose=verbose
+                device=device,
+                mode=mode,
+                description=f'FID {os.path.basename(fdir1)}: ',
+                verbose=verbose,
             )
 
             np_feats2 = get_folder_features(
-                fdir2, 
-                self.model, 
-                num_workers=num_workers, 
+                fdir2,
+                self.model,
+                num_workers=num_workers,
                 batch_size=batch_size,
                 test_img_size=self.test_img_size,
-                device=device, 
-                mode=mode, 
-                description=f"FID {os.path.basename(fdir2)}: ", 
-                verbose=verbose
+                device=device,
+                mode=mode,
+                description=f'FID {os.path.basename(fdir2)}: ',
+                verbose=verbose,
             )
 
             if distance_type == 'frechet':
                 mu1, sig1 = np.mean(np_feats1, axis=0), np.cov(np_feats1, rowvar=False)
                 mu2, sig2 = np.mean(np_feats2, axis=0), np.cov(np_feats2, rowvar=False)
                 return frechet_distance(mu1, sig1, mu2, sig2)
-            
+
             elif distance_type == 'mmd':
                 return maximum_mean_discrepancy(
-                    np_feats1, 
-                    np_feats2, 
-                    kernel_type=kernel_type
+                    np_feats1, np_feats2, kernel_type=kernel_type
                 )
-            
+
             else:
-                raise ValueError(f"Invalid distance type: {distance_type}")
+                raise ValueError(f'Invalid distance type: {distance_type}')
 
         # Compute FID of a folder against a reference dataset
         elif fdir1 is not None and fdir2 is None:
             if dataset_name is None:
                 raise ValueError(
-                    "When fdir2 is not provided, the reference dataset_name must be specified."
+                    'When fdir2 is not provided, the reference dataset_name must be specified.'
                 )
-            
+
             if verbose:
-                print(f"Computing FID of a folder with {dataset_name}-{mode}-{dataset_split}-{dataset_res} statistics")
-            
+                print(
+                    f'Computing FID of a folder with {dataset_name}-{mode}-{dataset_split}-{dataset_res} statistics'
+                )
+
             np_feats1 = get_folder_features(
-                fdir1, 
-                self.model, 
-                num_workers=num_workers, 
+                fdir1,
+                self.model,
+                num_workers=num_workers,
                 batch_size=batch_size,
                 test_img_size=self.test_img_size,
-                device=device, 
-                mode=mode, 
-                description=f"FID {os.path.basename(fdir1)}: ", 
-                verbose=verbose
+                device=device,
+                mode=mode,
+                description=f'FID {os.path.basename(fdir1)}: ',
+                verbose=verbose,
             )
 
             # Load reference FID statistics
             if distance_type == 'frechet':
                 ref_mu, ref_sigma = get_reference_statistics(
-                    dataset_name, 
-                    dataset_res, 
-                    mode=mode, 
-                    split=dataset_split
+                    dataset_name, dataset_res, mode=mode, split=dataset_split
                 )
                 mu1, sig1 = np.mean(np_feats1, axis=0), np.cov(np_feats1, rowvar=False)
                 score = frechet_distance(mu1, sig1, ref_mu, ref_sigma)
                 return score
-            
+
             else:
-                raise ValueError(f"Invalid distance type: {distance_type}")
-        
+                raise ValueError(f'Invalid distance type: {distance_type}')
+
         else:
-            raise ValueError("Invalid combination of arguments entered")
+            raise ValueError('Invalid combination of arguments entered')

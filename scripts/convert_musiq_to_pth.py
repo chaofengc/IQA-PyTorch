@@ -38,7 +38,6 @@ th_keys = th_params.keys()
 
 
 class TmpHead(torch.nn.Module):
-
     def __init__(self) -> None:
         super().__init__()
         self.imagenet_head = torch.nn.Linear(384, 1000)
@@ -74,8 +73,9 @@ def convert_module(tf_same_key_strs, th_same_key_strs=None):
         if keep_flag:
             th_filter_keys.append(thk)
 
-    assert len(tf_filter_keys) == len(
-        th_filter_keys), f'{tf_filter_keys}, {th_filter_keys}, {len(tf_filter_keys)}, {len(th_filter_keys)}'
+    assert len(tf_filter_keys) == len(th_filter_keys), (
+        f'{tf_filter_keys}, {th_filter_keys}, {len(tf_filter_keys)}, {len(th_filter_keys)}'
+    )
     for tfk, thk in zip(sorted(tf_filter_keys), sorted(th_filter_keys)):
         print(f'Assign {tfk} to {thk}')
         tfw = tf_params[tfk]

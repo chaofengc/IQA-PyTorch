@@ -21,13 +21,10 @@ from pyiqa.archs.arch_util import load_pretrained_network
 from .func_util import extract_2d_patches
 from pyiqa.archs.arch_util import get_url_from_name
 
-default_model_urls = {
-    'url': get_url_from_name('PieAPPv0.1-0937b014.pth')
-}
+default_model_urls = {'url': get_url_from_name('PieAPPv0.1-0937b014.pth')}
 
 
 class CompactLinear(nn.Module):
-
     def __init__(self):
         super().__init__()
         self.weight = nn.parameter.Parameter(torch.randn(1))
@@ -41,20 +38,23 @@ class CompactLinear(nn.Module):
 class PieAPP(nn.Module):
     r"""
     PieAPP model implementation.
-    
+
     Args:
         - patch_size (int): Size of the patches to extract from the images.
         - stride (int): Stride to use when extracting patches.
         - pretrained (bool): Whether to use a pretrained model or not.
         - pretrained_model_path (str): Path to the pretrained model.
-    
+
     Methods:
         - flatten(matrix): Takes NxCxHxW input and outputs NxHWC.
         compute_features(input): Computes the features of the input image.
         - preprocess(x): Preprocesses the input image.
         forward(dist, ref): Computes the PieAPP score between the distorted and reference images.
     """
-    def __init__(self, patch_size=64, stride=27, pretrained=True, pretrained_model_path=None):
+
+    def __init__(
+        self, patch_size=64, stride=27, pretrained=True, pretrained_model_path=None
+    ):
         super(PieAPP, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, 3, padding=1)
         self.conv2 = nn.Conv2d(64, 64, 3, padding=1)
@@ -93,7 +93,9 @@ class PieAPP(nn.Module):
 
     def compute_features(self, input):
         # conv1 -> relu -> conv2 -> relu -> pool2 -> conv3 -> relu
-        x3 = F.relu(self.conv3(self.pool2(F.relu(self.conv2(F.relu(self.conv1(input)))))))
+        x3 = F.relu(
+            self.conv3(self.pool2(F.relu(self.conv2(F.relu(self.conv1(input))))))
+        )
         # conv4 -> relu -> pool4 -> conv5 -> relu
         x5 = F.relu(self.conv5(self.pool4(F.relu(self.conv4(x3)))))
         # conv6 -> relu -> pool6 -> conv7 -> relu
@@ -103,25 +105,39 @@ class PieAPP(nn.Module):
         # conv10 -> relu -> pool10 -> conv11 -> relU
         x11 = self.flatten(F.relu(self.conv11(self.pool10(F.relu(self.conv10(x9))))))
         # flatten and concatenate
-        feature_ms = torch.cat((self.flatten(x3), self.flatten(x5), self.flatten(x7), self.flatten(x9), x11), 1)
+        feature_ms = torch.cat(
+            (
+                self.flatten(x3),
+                self.flatten(x5),
+                self.flatten(x7),
+                self.flatten(x9),
+                x11,
+            ),
+            1,
+        )
         return feature_ms, x11
 
     def preprocess(self, x):
-        """Default BGR in [0, 255] in original codes
-        """
-        x = x[:, [2, 1, 0]] * 255.
+        """Default BGR in [0, 255] in original codes"""
+        x = x[:, [2, 1, 0]] * 255.0
         return x
 
     def forward(self, dist, ref):
-        assert dist.shape == ref.shape, f'Input and reference images should have the same shape, but got {dist.shape}'
+        assert dist.shape == ref.shape, (
+            f'Input and reference images should have the same shape, but got {dist.shape}'
+        )
         f' and {ref.shape}'
 
         dist = self.preprocess(dist)
         ref = self.preprocess(ref)
 
         if not self.training:
-            image_A_patches = extract_2d_patches(dist, self.patch_size, self.stride, padding='none')
-            image_ref_patches = extract_2d_patches(ref, self.patch_size, self.stride, padding='none')
+            image_A_patches = extract_2d_patches(
+                dist, self.patch_size, self.stride, padding='none'
+            )
+            image_ref_patches = extract_2d_patches(
+                ref, self.patch_size, self.stride, padding='none'
+            )
         else:
             image_A_patches, image_ref_patches = dist, ref
             image_A_patches = image_A_patches.unsqueeze(1)
@@ -136,11 +152,15 @@ class PieAPP(nn.Module):
         diff_ms = ref_multi_scale - A_multi_scale
         diff_coarse = ref_coarse - A_coarse
         # per patch score: fc1_score -> relu -> fc2_score
-        per_patch_score = self.ref_score_subtract(0.01 * self.fc2_score(F.relu(self.fc1_score(diff_ms))))
+        per_patch_score = self.ref_score_subtract(
+            0.01 * self.fc2_score(F.relu(self.fc1_score(diff_ms)))
+        )
         per_patch_score = per_patch_score.view((-1, num_patches))
         # per patch weight: fc1_weight -> relu -> fc2_weight
         per_patch_weight = self.fc2_weight(F.relu(self.fc1_weight(diff_coarse))) + 1e-6
         per_patch_weight = per_patch_weight.view((-1, num_patches))
 
-        score = (per_patch_weight * per_patch_score).sum(dim=-1) / per_patch_weight.sum(dim=-1)
+        score = (per_patch_weight * per_patch_score).sum(dim=-1) / per_patch_weight.sum(
+            dim=-1
+        )
         return score.reshape(bsz, 1)

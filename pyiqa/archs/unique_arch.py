@@ -27,13 +27,18 @@ default_model_urls = {
     'mix': get_url_from_name('UNIQUE.pt'),
 }
 
+
 class Normalize(nn.Module):
     def __init__(self, mean, std):
         super(Normalize, self).__init__()
         self.mean = torch.Tensor(mean)
         self.std = torch.Tensor(std)
+
     def forward(self, x):
-        return (x - self.mean.type_as(x)[None ,: ,None ,None]) / self.std.type_as(x)[None ,: ,None ,None]
+        return (x - self.mean.type_as(x)[None, :, None, None]) / self.std.type_as(x)[
+            None, :, None, None
+        ]
+
 
 class BCNN(nn.Module):
     def __init__(self, thresh=1e-8, is_vec=True, input_dim=512):
@@ -45,7 +50,7 @@ class BCNN(nn.Module):
     def _bilinearpool(self, x):
         batchSize, dim, h, w = x.data.shape
         x = x.reshape(batchSize, dim, h * w)
-        x = 1. / (h * w) * x.bmm(x.transpose(1, 2))
+        x = 1.0 / (h * w) * x.bmm(x.transpose(1, 2))
         return x
 
     def _signed_sqrt(self, x):
@@ -63,6 +68,8 @@ class BCNN(nn.Module):
             x = x.view(x.size(0), -1)
         x = self._l2norm(x)
         return x
+
+
 @ARCH_REGISTRY.register()
 class UNIQUE(nn.Module):
     """Full UNIQUE network.
@@ -70,7 +77,7 @@ class UNIQUE(nn.Module):
         - default_mean (list): Default mean value.
         - default_std (list): Default std value.
 
-        """
+    """
 
     def __init__(self):
         super(UNIQUE, self).__init__()
@@ -79,7 +86,9 @@ class UNIQUE(nn.Module):
         outdim = 2
         self.representation = BCNN()
         self.fc = nn.Linear(512 * 512, outdim)
-        self.preprocess = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        self.preprocess = Normalize(
+            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+        )
 
         pretrained_model_path = default_model_urls['mix']
         load_pretrained_network(self, pretrained_model_path, True)

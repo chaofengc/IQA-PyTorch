@@ -53,7 +53,6 @@ def estimate_aggd_param(
 
 
 def compute_nss_features(luma_nrmlzd: torch.Tensor) -> torch.Tensor:
-
     alpha, betal, betar = estimate_aggd_param(luma_nrmlzd, return_sigma=False)
     features = [alpha, (betal + betar) / 2]
 
@@ -61,9 +60,12 @@ def compute_nss_features(luma_nrmlzd: torch.Tensor) -> torch.Tensor:
 
     for shift in shifts:
         shifted_luma_nrmlzd = torch.roll(luma_nrmlzd, shifts=shift, dims=(-2, -1))
-        alpha, betal, betar = estimate_aggd_param(luma_nrmlzd * shifted_luma_nrmlzd, return_sigma=False)
-        distmean = (betar - betal) * torch.exp(torch.lgamma(2/alpha) - torch.lgamma(1/alpha))
+        alpha, betal, betar = estimate_aggd_param(
+            luma_nrmlzd * shifted_luma_nrmlzd, return_sigma=False
+        )
+        distmean = (betar - betal) * torch.exp(
+            torch.lgamma(2 / alpha) - torch.lgamma(1 / alpha)
+        )
         features.extend((alpha, distmean, betal, betar))
 
     return torch.stack(features, dim=-1)
-

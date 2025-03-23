@@ -6,7 +6,7 @@ from .padding import ExactPadding2d, to_2tuple, symm_pad
 
 
 def fspecial(size=None, sigma=None, channels=1, filter_type='gaussian'):
-    r""" Function same as 'fspecial' in MATLAB, only support gaussian now.
+    r"""Function same as 'fspecial' in MATLAB, only support gaussian now.
     Args:
         size (int or tuple): size of window
         sigma (float): sigma of gaussian
@@ -14,9 +14,9 @@ def fspecial(size=None, sigma=None, channels=1, filter_type='gaussian'):
     """
     if filter_type == 'gaussian':
         shape = to_2tuple(size)
-        m, n = [(ss - 1.) / 2. for ss in shape]
-        y, x = np.ogrid[-m:m + 1, -n:n + 1]
-        h = np.exp(-(x * x + y * y) / (2. * sigma * sigma))
+        m, n = [(ss - 1.0) / 2.0 for ss in shape]
+        y, x = np.ogrid[-m : m + 1, -n : n + 1]
+        h = np.exp(-(x * x + y * y) / (2.0 * sigma * sigma))
         h[h < np.finfo(h.dtype).eps * h.max()] = 0
         sumh = h.sum()
         if sumh != 0:
@@ -24,7 +24,9 @@ def fspecial(size=None, sigma=None, channels=1, filter_type='gaussian'):
         h = torch.from_numpy(h).float().repeat(channels, 1, 1, 1)
         return h
     else:
-        raise NotImplementedError(f'Only support gaussian filter now, got {filter_type}')
+        raise NotImplementedError(
+            f'Only support gaussian filter now, got {filter_type}'
+        )
 
 
 def conv2d(input, weight, bias=None, stride=1, padding='same', dilation=1, groups=1):
@@ -40,7 +42,9 @@ def conv2d(input, weight, bias=None, stride=1, padding='same', dilation=1, group
     kernel_size = weight.shape[2:]
     pad_func = ExactPadding2d(kernel_size, stride, dilation, mode=padding)
     weight = torch.flip(weight, dims=(-1, -2))
-    return F.conv2d(pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
+    return F.conv2d(
+        pad_func(input), weight, bias, stride, dilation=dilation, groups=groups
+    )
 
 
 def imfilter(input, weight, bias=None, stride=1, padding='same', dilation=1, groups=1):
@@ -55,7 +59,9 @@ def imfilter(input, weight, bias=None, stride=1, padding='same', dilation=1, gro
     kernel_size = weight.shape[2:]
     pad_func = ExactPadding2d(kernel_size, stride, dilation, mode=padding)
 
-    return F.conv2d(pad_func(input), weight, bias, stride, dilation=dilation, groups=groups)
+    return F.conv2d(
+        pad_func(input), weight, bias, stride, dilation=dilation, groups=groups
+    )
 
 
 def filter2(input, weight, shape='same'):
@@ -134,7 +140,7 @@ def fitweibull(x, iters=50, eps=1e-2):
 
     for t in range(iters):
         # Partial derivative df/dk
-        x_k = x**k.repeat(1, x.shape[1])
+        x_k = x ** k.repeat(1, x.shape[1])
         x_k_ln_x = x_k * ln_x
         ff = torch.sum(x_k_ln_x, dim=-1, keepdim=True)
         fg = torch.sum(x_k, dim=-1, keepdim=True)
@@ -143,7 +149,7 @@ def fitweibull(x, iters=50, eps=1e-2):
 
         ff_prime = torch.sum(x_k_ln_x * ln_x, dim=-1, keepdim=True)
         fg_prime = ff
-        f_prime = (ff_prime / fg - (ff / fg * fg_prime / fg)) + (1. / (k * k))
+        f_prime = (ff_prime / fg - (ff / fg * fg_prime / fg)) + (1.0 / (k * k))
 
         # Newton-Raphson method k = k - f(k;x)/f'(k;x)
         k = k - f / f_prime
@@ -153,7 +159,7 @@ def fitweibull(x, iters=50, eps=1e-2):
         k_t_1 = k
 
     # Lambda (scale) can be calculated directly
-    lam = torch.mean(x**k.repeat(1, x.shape[1]), dim=-1, keepdim=True)**(1.0 / k)
+    lam = torch.mean(x ** k.repeat(1, x.shape[1]), dim=-1, keepdim=True) ** (1.0 / k)
 
     return torch.cat((k, lam), dim=1)  # Shape (SC), Scale (FE)
 
@@ -168,16 +174,18 @@ def cov(tensor, rowvar=True, bias=False):
 
 
 def nancov(x):
-    r"""Calculate nancov for batched tensor, rows that contains nan value 
+    r"""Calculate nancov for batched tensor, rows that contains nan value
     will be removed.
 
     Args:
-        x (tensor): (B, row_num, feat_dim)  
+        x (tensor): (B, row_num, feat_dim)
 
     Return:
         cov (tensor): (B, feat_dim, feat_dim)
     """
-    assert len(x.shape) == 3, f'Shape of input should be (batch_size, row_num, feat_dim), but got {x.shape}'
+    assert len(x.shape) == 3, (
+        f'Shape of input should be (batch_size, row_num, feat_dim), but got {x.shape}'
+    )
     b, rownum, feat_dim = x.shape
     nan_mask = torch.isnan(x).any(dim=2, keepdim=True)
     cov_x = []
@@ -188,8 +196,7 @@ def nancov(x):
 
 
 def nanmean(v, *args, inplace=False, **kwargs):
-    r"""nanmean same as matlab function: calculate mean values by removing all nan.
-    """
+    r"""nanmean same as matlab function: calculate mean values by removing all nan."""
     if not inplace:
         v = v.clone()
     is_nan = torch.isnan(v)
@@ -203,7 +210,7 @@ def im2col(x, kernel, mode='sliding'):
     Args:
         x (Tensor): shape (b, c, h, w)
         kernel (int): kernel size
-        mode (string): 
+        mode (string):
             - sliding (default): rearranges sliding image neighborhoods of kernel size into columns with no zero-padding
             - distinct: rearranges discrete image blocks of kernel size into columns, zero pad right and bottom if necessary
     Return:
@@ -230,7 +237,9 @@ def im2col(x, kernel, mode='sliding'):
     return patches
 
 
-def blockproc(x, kernel, fun, border_size=None, pad_partial=False, pad_method='zero', **func_args):
+def blockproc(
+    x, kernel, fun, border_size=None, pad_partial=False, pad_method='zero', **func_args
+):
     r"""blockproc function like matlab
 
     Difference:
@@ -275,8 +284,12 @@ def blockproc(x, kernel, fun, border_size=None, pad_partial=False, pad_method='z
         # extract blocks in (row, column) manner, i.e., stored with column first
         blocks = F.unfold(x, kernel, stride=kernel)
         blocks = blocks.reshape(b, c, *kernel, num_block_h, num_block_w)
-        blocks = blocks.permute(5, 4, 0, 1, 2, 3).reshape(num_block_h * num_block_w * b, c, *kernel)
+        blocks = blocks.permute(5, 4, 0, 1, 2, 3).reshape(
+            num_block_h * num_block_w * b, c, *kernel
+        )
 
         results = fun(blocks, func_args)
-        results = results.reshape(num_block_h * num_block_w, b, *results.shape[1:]).transpose(0, 1)
+        results = results.reshape(
+            num_block_h * num_block_w, b, *results.shape[1:]
+        ).transpose(0, 1)
         return results

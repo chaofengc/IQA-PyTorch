@@ -9,14 +9,22 @@ import pandas as pd
 def get_meta_info():
     root_dir = './datasets/LIVEIQA_release2/'
 
-    dmos = sio.loadmat(os.path.join(root_dir, 'dmos.mat'))  # difference of mos: test - ref. lower is better
+    dmos = sio.loadmat(
+        os.path.join(root_dir, 'dmos.mat')
+    )  # difference of mos: test - ref. lower is better
     mos = dmos['dmos'][0]
     org_flag = dmos['orgs'][0]
 
     refnames = sio.loadmat(os.path.join(root_dir, 'refnames_all.mat'))
     refnames = refnames['refnames_all'][0]
 
-    sub_folders = ['jp2k'] * 227 + ['jpeg'] * 233 + ['wn'] * 174 + ['gblur'] * 174 + ['fastfading'] * 174
+    sub_folders = (
+        ['jp2k'] * 227
+        + ['jpeg'] * 233
+        + ['wn'] * 174
+        + ['gblur'] * 174
+        + ['fastfading'] * 174
+    )
     sub_indexes = list(range(1, 228)) + list(range(1, 234)) + list(range(1, 175)) * 3
 
     save_meta_path = './datasets/meta_info/meta_info_LIVEIQADataset.csv'
@@ -58,7 +66,11 @@ def get_random_splits(seed=123):
                 split_info[i + 1]['train'].append(j)
             else:
                 split_info[i + 1]['val'].append(j)
-        print(meta_info.shape[0], len(split_info[i + 1]['train']), len(split_info[i + 1]['val']))
+        print(
+            meta_info.shape[0],
+            len(split_info[i + 1]['train']),
+            len(split_info[i + 1]['val']),
+        )
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

@@ -28,7 +28,7 @@ def get_meta_info():
 
         for i in range(len(dist_names)):
             dis_name = f'{p}/{subf}/{dist_names[i]}'
-            ref_name = f"{p}/{subf}/{dist_names[i].split('_')[0]}.bmp"
+            ref_name = f'{p}/{subf}/{dist_names[i].split("_")[0]}.bmp'
             dmos = alldmos[i]
             msg = f'{ref_name:<15}\t{dis_name:<15}\t{dmos:<15}\n'
             csvwriter.writerow([ref_name, dis_name, dmos])
@@ -62,7 +62,11 @@ def get_random_splits(seed=123):
                 split_info[i + 1]['train'].append(j)
             else:
                 split_info[i + 1]['val'].append(j)
-        print(meta_info.shape[0], len(split_info[i + 1]['train']), len(split_info[i + 1]['val']))
+        print(
+            meta_info.shape[0],
+            len(split_info[i + 1]['train']),
+            len(split_info[i + 1]['val']),
+        )
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

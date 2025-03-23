@@ -24,7 +24,6 @@ default_model_urls = {
 
 
 class AdaptiveConcatPool2d(nn.Module):
-
     def __init__(self, sz=None):
         super().__init__()
         sz = sz or (1, 1)
@@ -37,7 +36,9 @@ class AdaptiveConcatPool2d(nn.Module):
 
 @ARCH_REGISTRY.register()
 class PAQ2PIQ(nn.Module):
-    def __init__(self, backbone='resnet18', pretrained=True, pretrained_model_path=None):
+    def __init__(
+        self, backbone='resnet18', pretrained=True, pretrained_model_path=None
+    ):
         super(PAQ2PIQ, self).__init__()
 
         if backbone == 'resnet18':
@@ -49,13 +50,21 @@ class PAQ2PIQ(nn.Module):
 
         self.model_type = self.__class__.__name__
         self.body = nn.Sequential(*list(model.children())[:cut])
-        self.head = nn.Sequential(AdaptiveConcatPool2d(), nn.Flatten(),
-                                  nn.BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
-                                  nn.Dropout(p=0.25, inplace=False),
-                                  nn.Linear(in_features=1024, out_features=512, bias=True), nn.ReLU(inplace=True),
-                                  nn.BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
-                                  nn.Dropout(p=0.5, inplace=False),
-                                  nn.Linear(in_features=512, out_features=1, bias=True))
+        self.head = nn.Sequential(
+            AdaptiveConcatPool2d(),
+            nn.Flatten(),
+            nn.BatchNorm1d(
+                1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True
+            ),
+            nn.Dropout(p=0.25, inplace=False),
+            nn.Linear(in_features=1024, out_features=512, bias=True),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm1d(
+                512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True
+            ),
+            nn.Dropout(p=0.5, inplace=False),
+            nn.Linear(in_features=512, out_features=1, bias=True),
+        )
 
         self.roi_pool = RoIPool((2, 2), spatial_scale)
 

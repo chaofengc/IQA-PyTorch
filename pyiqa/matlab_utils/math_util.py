@@ -14,22 +14,28 @@ import torch
 
 
 def abs(x):
-    return torch.sqrt(x[..., 0]**2 + x[..., 1]**2 + 1e-12)
+    return torch.sqrt(x[..., 0] ** 2 + x[..., 1] ** 2 + 1e-12)
 
 
 def roll_n(X, axis, n):
-    f_idx = tuple(slice(None, None, None) if i != axis else slice(0, n, None) for i in range(X.dim()))
-    b_idx = tuple(slice(None, None, None) if i != axis else slice(n, None, None) for i in range(X.dim()))
+    f_idx = tuple(
+        slice(None, None, None) if i != axis else slice(0, n, None)
+        for i in range(X.dim())
+    )
+    b_idx = tuple(
+        slice(None, None, None) if i != axis else slice(n, None, None)
+        for i in range(X.dim())
+    )
     front = X[f_idx]
     back = X[b_idx]
     return torch.cat([back, front], axis)
 
 
 def batch_fftshift2d(x):
-    '''Args:
-        x: An complex tensor. Shape :math:`(N, C, H, W)`.
-        Pytroch version >= 1.8.0
-    '''
+    """Args:
+    x: An complex tensor. Shape :math:`(N, C, H, W)`.
+    Pytroch version >= 1.8.0
+    """
     real, imag = x.real, x.imag
     for dim in range(1, len(real.size())):
         n_shift = real.size(dim) // 2
@@ -41,11 +47,11 @@ def batch_fftshift2d(x):
 
 
 def batch_ifftshift2d(x):
-    '''Args:
+    """Args:
         x: An input tensor. Shape :math:`(N, C, H, W, 2)`.
     Return:
         An complex tensor. Shape :math:`(N, C, H, W)`.
-    '''
+    """
     real, imag = torch.unbind(x, -1)
     for dim in range(len(real.size()) - 1, 0, -1):
         real = roll_n(real, axis=dim, n=real.size(dim) // 2)
@@ -54,8 +60,12 @@ def batch_ifftshift2d(x):
 
 
 def prepare_grid(m, n):
-    x = np.linspace(-(m // 2) / (m / 2), (m // 2) / (m / 2) - (1 - m % 2) * 2 / m, num=m)
-    y = np.linspace(-(n // 2) / (n / 2), (n // 2) / (n / 2) - (1 - n % 2) * 2 / n, num=n)
+    x = np.linspace(
+        -(m // 2) / (m / 2), (m // 2) / (m / 2) - (1 - m % 2) * 2 / m, num=m
+    )
+    y = np.linspace(
+        -(n // 2) / (n / 2), (n // 2) / (n / 2) - (1 - n % 2) * 2 / n, num=n
+    )
     xv, yv = np.meshgrid(y, x)
     angle = np.arctan2(yv, xv)
     rad = np.sqrt(xv**2 + yv**2)
@@ -67,7 +77,7 @@ def prepare_grid(m, n):
 def rcosFn(width, position):
     N = 256  # arbitrary
     X = np.pi * np.array(range(-N - 1, 2)) / 2 / N
-    Y = np.cos(X)**2
+    Y = np.cos(X) ** 2
     Y[0] = Y[1]
     Y[N + 2] = Y[N + 1]
     X = position + 2 * width / np.pi * (X + np.pi / 4)

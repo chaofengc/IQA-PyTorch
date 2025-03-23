@@ -6,6 +6,7 @@ import pickle
 import csv
 import pandas as pd
 from tqdm import tqdm
+
 """
     The FLIVE dataset introduced by:
 
@@ -55,11 +56,7 @@ def get_meta_info():
 
     save_meta_path = './datasets/meta_info/meta_info_FLIVEDataset.csv'
     split_info = {
-        1: {
-            'train': [],
-            'val': [],
-            'test': []
-        },
+        1: {'train': [], 'val': [], 'test': []},
     }
 
     with open(save_meta_path, 'w') as sf:
@@ -87,8 +84,20 @@ def get_meta_info():
             csvwriter.writerow(row)
             count += 1
 
-        print(len(split_info[1]['train']), len(split_info[1]['val']), len(split_info[1]['test']))
-        print(sum([len(split_info[1]['train']), len(split_info[1]['val']), len(split_info[1]['test'])]))
+        print(
+            len(split_info[1]['train']),
+            len(split_info[1]['val']),
+            len(split_info[1]['test']),
+        )
+        print(
+            sum(
+                [
+                    len(split_info[1]['train']),
+                    len(split_info[1]['val']),
+                    len(split_info[1]['test']),
+                ]
+            )
+        )
 
         # get patch info
         for i in tqdm(range(all_patch_label.shape[0])):
@@ -110,8 +119,20 @@ def get_meta_info():
 
     print(all_img_label.shape[0], all_patch_label.shape[0])
     print(all_img_label.shape[0] + all_patch_label.shape[0])
-    print(len(split_info[1]['train']), len(split_info[1]['val']), len(split_info[1]['test']))
-    print(sum([len(split_info[1]['train']), len(split_info[1]['val']), len(split_info[1]['test'])]))
+    print(
+        len(split_info[1]['train']),
+        len(split_info[1]['val']),
+        len(split_info[1]['test']),
+    )
+    print(
+        sum(
+            [
+                len(split_info[1]['train']),
+                len(split_info[1]['val']),
+                len(split_info[1]['test']),
+            ]
+        )
+    )
     save_split_path = './datasets/meta_info/flive_official.pkl'
     with open(save_split_path, 'wb') as sf:
         pickle.dump(split_info, sf)

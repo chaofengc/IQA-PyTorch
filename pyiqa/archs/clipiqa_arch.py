@@ -33,7 +33,7 @@ class PromptLearner(nn.Module):
     PromptLearner class for learning prompts for CLIP-IQA.
 
     Disclaimer:
-        This implementation follows exactly the official codes in: https://github.com/IceClear/CLIP-IQA. 
+        This implementation follows exactly the official codes in: https://github.com/IceClear/CLIP-IQA.
         We have no idea why some tricks are implemented like this, which include:
             1. Using n_ctx prefix characters "X"
             2. Appending extra "." at the end
@@ -51,22 +51,27 @@ class PromptLearner(nn.Module):
         super().__init__()
 
         # For the following codes about prompts, we follow the official codes to get the same results
-        prompt_prefix = " ".join(["X"] * n_ctx) + ' '
+        prompt_prefix = ' '.join(['X'] * n_ctx) + ' '
         init_prompts = [prompt_prefix + 'Good photo..', prompt_prefix + 'Bad photo..']
         with torch.no_grad():
             txt_token = clip.tokenize(init_prompts)
             self.tokenized_prompts = txt_token
             init_embedding = clip_model.token_embedding(txt_token)
 
-        init_ctx = init_embedding[:, 1: 1 + n_ctx]
+        init_ctx = init_embedding[:, 1 : 1 + n_ctx]
         self.ctx = nn.Parameter(init_ctx)
 
         self.n_ctx = n_ctx
         self.n_cls = len(init_prompts)
-        self.name_lens = [3, 3]  # hard coded length, which does not include the extra "." at the end
+        self.name_lens = [
+            3,
+            3,
+        ]  # hard coded length, which does not include the extra "." at the end
 
-        self.register_buffer("token_prefix", init_embedding[:, :1, :])  # SOS
-        self.register_buffer("token_suffix", init_embedding[:, 1 + n_ctx:, :])  # CLS, EOS
+        self.register_buffer('token_prefix', init_embedding[:, :1, :])  # SOS
+        self.register_buffer(
+            'token_suffix', init_embedding[:, 1 + n_ctx :, :]
+        )  # CLS, EOS
 
     def get_prompts_with_middle_class(self):
         """
@@ -83,18 +88,18 @@ class PromptLearner(nn.Module):
         prompts = []
         for i in range(self.n_cls):
             name_len = self.name_lens[i]
-            prefix_i = self.token_prefix[i: i + 1, :, :]
-            class_i = self.token_suffix[i: i + 1, :name_len, :]
-            suffix_i = self.token_suffix[i: i + 1, name_len:, :]
-            ctx_i_half1 = ctx[i: i + 1, :half_n_ctx, :]
-            ctx_i_half2 = ctx[i: i + 1, half_n_ctx:, :]
+            prefix_i = self.token_prefix[i : i + 1, :, :]
+            class_i = self.token_suffix[i : i + 1, :name_len, :]
+            suffix_i = self.token_suffix[i : i + 1, name_len:, :]
+            ctx_i_half1 = ctx[i : i + 1, :half_n_ctx, :]
+            ctx_i_half2 = ctx[i : i + 1, half_n_ctx:, :]
             prompt = torch.cat(
                 [
-                    prefix_i,     # (1, 1, dim)
+                    prefix_i,  # (1, 1, dim)
                     ctx_i_half1,  # (1, n_ctx//2, dim)
-                    class_i,      # (1, name_len, dim)
+                    class_i,  # (1, name_len, dim)
                     ctx_i_half2,  # (1, n_ctx//2, dim)
-                    suffix_i,     # (1, *, dim)
+                    suffix_i,  # (1, *, dim)
                 ],
                 dim=1,
             )
@@ -121,7 +126,10 @@ class PromptLearner(nn.Module):
 
         # x.shape = [batch_size, n_ctx, transformer.width]
         # take features from the eot embedding (eot_token is the highest number in each sequence)
-        x = x[torch.arange(x.shape[0]), self.tokenized_prompts.argmax(dim=-1)] @ clip_model.text_projection
+        x = (
+            x[torch.arange(x.shape[0]), self.tokenized_prompts.argmax(dim=-1)]
+            @ clip_model.text_projection
+        )
 
         return x
 
@@ -138,22 +146,31 @@ class CLIPIQA(nn.Module):
         pos_embedding (bool): Whether to use positional embedding. Default is False.
     """
 
-    def __init__(self,
-                 model_type='clipiqa',
-                 backbone='RN50',
-                 pretrained=True,
-                 pos_embedding=False) -> None:
+    def __init__(
+        self,
+        model_type='clipiqa',
+        backbone='RN50',
+        pretrained=True,
+        pos_embedding=False,
+    ) -> None:
         super().__init__()
 
         self.clip_model = [load(backbone, 'cpu')]  # avoid saving clip weights
         # Different from original paper, we assemble multiple prompts to improve performance
-        self.prompt_pairs = clip.tokenize([
-            'Good image', 'bad image',
-            'Sharp image', 'blurry image',
-            'sharp edges', 'blurry edges',
-            'High resolution image', 'low resolution image',
-            'Noise-free image', 'noisy image',
-        ])
+        self.prompt_pairs = clip.tokenize(
+            [
+                'Good image',
+                'bad image',
+                'Sharp image',
+                'blurry image',
+                'sharp edges',
+                'blurry edges',
+                'High resolution image',
+                'low resolution image',
+                'Noise-free image',
+                'noisy image',
+            ]
+        )
 
         self.model_type = model_type
         self.pos_embedding = pos_embedding
@@ -165,15 +182,20 @@ class CLIPIQA(nn.Module):
 
         for p in self.clip_model[0].parameters():
             p.requires_grad = False
-        
+
         if pretrained and 'clipiqa+' in model_type:
             if model_type == 'clipiqa+' and backbone == 'RN50':
-                self.prompt_learner.ctx.data = torch.load(load_file_from_url(default_model_urls['clipiqa+']), weights_only=False)
+                self.prompt_learner.ctx.data = torch.load(
+                    load_file_from_url(default_model_urls['clipiqa+']),
+                    weights_only=False,
+                )
             elif model_type in default_model_urls.keys():
-                load_pretrained_network(self, default_model_urls[model_type], True, 'params')
+                load_pretrained_network(
+                    self, default_model_urls[model_type], True, 'params'
+                )
             else:
                 raise ValueError(f'No pretrained model for {model_type}')
-    
+
     def forward(self, x):
         """
         Forward pass for the CLIPIQA model.
@@ -190,12 +212,20 @@ class CLIPIQA(nn.Module):
 
         if self.model_type == 'clipiqa':
             prompts = self.prompt_pairs.to(x.device)
-            logits_per_image, logits_per_text = clip_model(x, prompts, pos_embedding=self.pos_embedding)
+            logits_per_image, logits_per_text = clip_model(
+                x, prompts, pos_embedding=self.pos_embedding
+            )
         elif 'clipiqa+' in self.model_type:
             learned_prompt_feature = self.prompt_learner(clip_model)
             logits_per_image, logits_per_text = clip_model(
-                x, None, text_features=learned_prompt_feature, pos_embedding=self.pos_embedding)
+                x,
+                None,
+                text_features=learned_prompt_feature,
+                pos_embedding=self.pos_embedding,
+            )
 
-        probs = logits_per_image.reshape(logits_per_image.shape[0], -1, 2).softmax(dim=-1)
+        probs = logits_per_image.reshape(logits_per_image.shape[0], -1, 2).softmax(
+            dim=-1
+        )
 
         return probs[..., 0].mean(dim=1, keepdim=True)

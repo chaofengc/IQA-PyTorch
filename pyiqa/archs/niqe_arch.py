@@ -20,7 +20,16 @@ import torch
 
 from pyiqa.utils.color_util import to_y_channel
 from pyiqa.utils.download_util import load_file_from_url
-from pyiqa.matlab_utils import imresize, fspecial, conv2d, imfilter, fitweibull, nancov, nanmean, blockproc
+from pyiqa.matlab_utils import (
+    imresize,
+    fspecial,
+    conv2d,
+    imfilter,
+    fitweibull,
+    nancov,
+    nanmean,
+    blockproc,
+)
 from .func_util import estimate_aggd_param, normalize_img_with_gauss, diff_round
 from pyiqa.archs.fsim_arch import _construct_filters
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -58,7 +67,9 @@ def compute_feature(
         shifted_block = torch.roll(aggd_block, shifts[i], dims=(2, 3))
         alpha, beta_l, beta_r = estimate_aggd_param(aggd_block * shifted_block)
         # Eq. 8
-        mean = (beta_r - beta_l) * (torch.lgamma(2 / alpha) - torch.lgamma(1 / alpha)).exp()
+        mean = (beta_r - beta_l) * (
+            torch.lgamma(2 / alpha) - torch.lgamma(1 / alpha)
+        ).exp()
         feat.extend((alpha, mean, beta_l, beta_r))
     feat = [x.reshape(bsz, 1) for x in feat]
 
@@ -80,7 +91,9 @@ def compute_feature(
         alpha_data = alpha_data.reshape(bsz, channels)
         beta_l_data = beta_l_data.reshape(bsz, channels)
         beta_r_data = beta_r_data.reshape(bsz, channels)
-        alpha_beta = torch.stack([alpha_data, (beta_l_data + beta_r_data) / 2], dim=-1).reshape(bsz, -1)
+        alpha_beta = torch.stack(
+            [alpha_data, (beta_l_data + beta_r_data) / 2], dim=-1
+        ).reshape(bsz, -1)
         feat.append(alpha_beta)
 
         tmp_block = block[:, 85:109]
@@ -93,11 +106,13 @@ def compute_feature(
     return feat
 
 
-def niqe(img: torch.Tensor,
-         mu_pris_param: torch.Tensor,
-         cov_pris_param: torch.Tensor,
-         block_size_h: int = 96,
-         block_size_w: int = 96) -> torch.Tensor:
+def niqe(
+    img: torch.Tensor,
+    mu_pris_param: torch.Tensor,
+    cov_pris_param: torch.Tensor,
+    block_size_h: int = 96,
+    block_size_w: int = 96,
+) -> torch.Tensor:
     """Calculate NIQE (Natural Image Quality Evaluator) metric.
     Args:
         img (Tensor): Input image.
@@ -111,22 +126,30 @@ def niqe(img: torch.Tensor,
         block_size_w (int): Width of the blocks in to which image is divided.
             Default: 96 (the official recommended value).
     """
-    assert img.ndim == 4, ('Input image must be a gray or Y (of YCbCr) image with shape (b, c, h, w).')
+    assert img.ndim == 4, (
+        'Input image must be a gray or Y (of YCbCr) image with shape (b, c, h, w).'
+    )
     # crop image
     b, c, h, w = img.shape
     num_block_h = math.floor(h / block_size_h)
     num_block_w = math.floor(w / block_size_w)
-    img = img[..., 0:num_block_h * block_size_h, 0:num_block_w * block_size_w]
+    img = img[..., 0 : num_block_h * block_size_h, 0 : num_block_w * block_size_w]
 
     distparam = []  # dist param is actually the multiscale features
     for scale in (1, 2):  # perform on two scales (1, 2)
         img_normalized = normalize_img_with_gauss(img, padding='replicate')
 
-        distparam.append(blockproc(img_normalized, [block_size_h // scale, block_size_w // scale], fun=compute_feature))
+        distparam.append(
+            blockproc(
+                img_normalized,
+                [block_size_h // scale, block_size_w // scale],
+                fun=compute_feature,
+            )
+        )
 
         if scale == 1:
-            img = imresize(img / 255., scale=0.5, antialiasing=True)
-            img = img * 255.
+            img = imresize(img / 255.0, scale=0.5, antialiasing=True)
+            img = img * 255.0
 
     distparam = torch.cat(distparam, -1)
 
@@ -143,13 +166,15 @@ def niqe(img: torch.Tensor,
     return quality
 
 
-def calculate_niqe(img: torch.Tensor,
-                   crop_border: int = 0,
-                   test_y_channel: bool = True,
-                   color_space: str = 'yiq',
-                   mu_pris_param: torch.Tensor = None,
-                   cov_pris_param: torch.Tensor = None,
-                   **kwargs) -> torch.Tensor:
+def calculate_niqe(
+    img: torch.Tensor,
+    crop_border: int = 0,
+    test_y_channel: bool = True,
+    color_space: str = 'yiq',
+    mu_pris_param: torch.Tensor = None,
+    cov_pris_param: torch.Tensor = None,
+    **kwargs,
+) -> torch.Tensor:
     """Calculate NIQE (Natural Image Quality Evaluator) metric.
     Args:
         img (Tensor): Input image whose quality needs to be computed.
@@ -161,8 +186,7 @@ def calculate_niqe(img: torch.Tensor,
         Tensor: NIQE result.
     """
 
-    
-    # NIQE only support gray image 
+    # NIQE only support gray image
     if img.shape[1] == 3:
         img = to_y_channel(img, 255, color_space)
     elif img.shape[1] == 1:
@@ -187,7 +211,8 @@ def gauDerivative(sigma, in_ch=1, out_ch=1, device=None):
 
     x, y = np.meshgrid(
         np.linspace(-halfLength, halfLength, 2 * halfLength + 1),
-        np.linspace(-halfLength, halfLength, 2 * halfLength + 1))
+        np.linspace(-halfLength, halfLength, 2 * halfLength + 1),
+    )
 
     gauDerX = x * np.exp(-(x**2 + y**2) / 2 / sigma / sigma)
     gauDerY = y * np.exp(-(x**2 + y**2) / 2 / sigma / sigma)
@@ -200,14 +225,16 @@ def gauDerivative(sigma, in_ch=1, out_ch=1, device=None):
     return dx, dy
 
 
-def ilniqe(img: torch.Tensor,
-           mu_pris_param: torch.Tensor,
-           cov_pris_param: torch.Tensor,
-           principleVectors: torch.Tensor,
-           meanOfSampleData: torch.Tensor,
-           resize: bool = True,
-           block_size_h: int = 84,
-           block_size_w: int = 84) -> torch.Tensor:
+def ilniqe(
+    img: torch.Tensor,
+    mu_pris_param: torch.Tensor,
+    cov_pris_param: torch.Tensor,
+    principleVectors: torch.Tensor,
+    meanOfSampleData: torch.Tensor,
+    resize: bool = True,
+    block_size_h: int = 84,
+    block_size_w: int = 84,
+) -> torch.Tensor:
     """Calculate IL-NIQE (Integrated Local Natural Image Quality Evaluator) metric.
     Args:
         img (Tensor): Input image.
@@ -223,7 +250,9 @@ def ilniqe(img: torch.Tensor,
         block_size_w (int): Width of the blocks in to which image is divided.
             Default: 84 (the official recommended value).
     """
-    assert img.ndim == 4, ('Input image must be a gray or Y (of YCbCr) image with shape (b, c, h, w).')
+    assert img.ndim == 4, (
+        'Input image must be a gray or Y (of YCbCr) image with shape (b, c, h, w).'
+    )
 
     sigmaForGauDerivative = 1.66
     KforLog = 0.00001
@@ -250,27 +279,34 @@ def ilniqe(img: torch.Tensor,
     b, c, h, w = img.shape
     num_block_h = math.floor(h / block_size_h)
     num_block_w = math.floor(w / block_size_w)
-    img = img[..., 0:num_block_h * block_size_h, 0:num_block_w * block_size_w]
-    ospace_weight = torch.tensor([
-        [0.3, 0.04, -0.35],
-        [0.34, -0.6, 0.17],
-        [0.06, 0.63, 0.27],
-    ]).to(img)
+    img = img[..., 0 : num_block_h * block_size_h, 0 : num_block_w * block_size_w]
+    ospace_weight = torch.tensor(
+        [
+            [0.3, 0.04, -0.35],
+            [0.34, -0.6, 0.17],
+            [0.06, 0.63, 0.27],
+        ]
+    ).to(img)
 
     O_img = img.permute(0, 2, 3, 1) @ ospace_weight.T
     O_img = O_img.permute(0, 3, 1, 2)
 
     distparam = []  # dist param is actually the multiscale features
     for scale in (1, 2):  # perform on two scales (1, 2)
-        struct_dis = normalize_img_with_gauss(O_img[:, [2]], kernel_size=5, sigma=5. / 6, padding='replicate')
+        struct_dis = normalize_img_with_gauss(
+            O_img[:, [2]], kernel_size=5, sigma=5.0 / 6, padding='replicate'
+        )
 
-        dx, dy = gauDerivative(sigmaForGauDerivative / (scale**scaleFactorForGaussianDer), device=img)
+        dx, dy = gauDerivative(
+            sigmaForGauDerivative / (scale**scaleFactorForGaussianDer), device=img
+        )
 
         Ix = conv2d(O_img, dx.repeat(3, 1, 1, 1), groups=3)
         Iy = conv2d(O_img, dy.repeat(3, 1, 1, 1), groups=3)
         GM = torch.sqrt(Ix**2 + Iy**2 + EPS)
-        Ixy = torch.stack((Ix, Iy), dim=2).reshape(Ix.shape[0], Ix.shape[1] * 2,
-                                                   *Ix.shape[2:])  # reshape to (IxO1, IxO1, IxO2, IyO2, IxO3, IyO3)
+        Ixy = torch.stack((Ix, Iy), dim=2).reshape(
+            Ix.shape[0], Ix.shape[1] * 2, *Ix.shape[2:]
+        )  # reshape to (IxO1, IxO1, IxO2, IyO2, IxO3, IyO3)
 
         logRGB = torch.log(img + KforLog)
         logRGBMS = logRGB - logRGB.mean(dim=(2, 3), keepdim=True)
@@ -291,10 +327,15 @@ def ilniqe(img: torch.Tensor,
             sigma_f=sigmaOnf,
             mult=mult,
             delta_theta=dThetaOnSigma,
-            use_lowpass_filter=False)
+            use_lowpass_filter=False,
+        )
         # reformat to scale * ori
         b, _, h, w = LGFilters.shape
-        LGFilters = LGFilters.reshape(b, orientations, scales, h, w).transpose(1, 2).reshape(b, -1, h, w)
+        LGFilters = (
+            LGFilters.reshape(b, orientations, scales, h, w)
+            .transpose(1, 2)
+            .reshape(b, -1, h, w)
+        )
         # TODO: current filters needs to be transposed to get same results as matlab, find the bug
         LGFilters = LGFilters.transpose(-1, -2)
         fftIm = torch.fft.fft2(O3)
@@ -329,13 +370,25 @@ def ilniqe(img: torch.Tensor,
         GM = torch.cat(GM, dim=1)
         compositeMat = torch.cat((compositeMat, logResponse, partialDer, GM), dim=1)
 
-        distparam.append(blockproc(compositeMat, [block_size_h // scale,
-                         block_size_w // scale], fun=compute_feature, ilniqe=True))
+        distparam.append(
+            blockproc(
+                compositeMat,
+                [block_size_h // scale, block_size_w // scale],
+                fun=compute_feature,
+                ilniqe=True,
+            )
+        )
 
-        gauForDS = fspecial(math.ceil(6 * sigmaForDownsample), sigmaForDownsample).to(img)
-        filterResult = imfilter(O_img, gauForDS.repeat(3, 1, 1, 1), padding='replicate', groups=3)
+        gauForDS = fspecial(math.ceil(6 * sigmaForDownsample), sigmaForDownsample).to(
+            img
+        )
+        filterResult = imfilter(
+            O_img, gauForDS.repeat(3, 1, 1, 1), padding='replicate', groups=3
+        )
         O_img = filterResult[..., ::2, ::2]
-        filterResult = imfilter(img, gauForDS.repeat(3, 1, 1, 1), padding='replicate', groups=3)
+        filterResult = imfilter(
+            img, gauForDS.repeat(3, 1, 1, 1), padding='replicate', groups=3
+        )
         img = filterResult[..., ::2, ::2]
 
     distparam = torch.cat(distparam, dim=-1)  # b, block_num, feature_num
@@ -343,7 +396,9 @@ def ilniqe(img: torch.Tensor,
 
     # fit a MVG (multivariate Gaussian) model to distorted patch features
     coefficientsViaPCA = torch.bmm(
-        principleVectors.transpose(1, 2), (distparam - meanOfSampleData.unsqueeze(1)).transpose(1, 2))
+        principleVectors.transpose(1, 2),
+        (distparam - meanOfSampleData.unsqueeze(1)).transpose(1, 2),
+    )
     final_features = coefficientsViaPCA.transpose(1, 2)
     b, blk_num, feat_num = final_features.shape
 
@@ -352,7 +407,9 @@ def ilniqe(img: torch.Tensor,
 
     # replace nan in final features with mu
     mu_final_features = nanmean(final_features, dim=1, keepdim=True)
-    final_features_withmu = torch.where(torch.isnan(final_features), mu_final_features, final_features)
+    final_features_withmu = torch.where(
+        torch.isnan(final_features), mu_final_features, final_features
+    )
 
     # compute ilniqe quality
     invcov_param = torch.linalg.pinv((cov_pris_param + cov_distparam) / 2)
@@ -363,13 +420,15 @@ def ilniqe(img: torch.Tensor,
     return quality
 
 
-def calculate_ilniqe(img: torch.Tensor,
-                     crop_border: int = 0,
-                     mu_pris_param: torch.Tensor = None,
-                     cov_pris_param: torch.Tensor = None,
-                     principleVectors: torch.Tensor = None,
-                     meanOfSampleData: torch.Tensor = None,
-                     **kwargs) -> torch.Tensor:
+def calculate_ilniqe(
+    img: torch.Tensor,
+    crop_border: int = 0,
+    mu_pris_param: torch.Tensor = None,
+    cov_pris_param: torch.Tensor = None,
+    principleVectors: torch.Tensor = None,
+    meanOfSampleData: torch.Tensor = None,
+    **kwargs,
+) -> torch.Tensor:
     """Calculate IL-NIQE metric.
     Args:
         img (Tensor): Input image whose quality needs to be computed.
@@ -380,7 +439,7 @@ def calculate_ilniqe(img: torch.Tensor,
         Tensor: IL-NIQE result.
     """
 
-    img = img * 255.
+    img = img * 255.0
     img = diff_round(img)
     # float64 precision is critical to be consistent with matlab codes
     img = img.to(torch.float64)
@@ -393,7 +452,9 @@ def calculate_ilniqe(img: torch.Tensor,
     if crop_border != 0:
         img = img[..., crop_border:-crop_border, crop_border:-crop_border]
 
-    ilniqe_result = ilniqe(img, mu_pris_param, cov_pris_param, principleVectors, meanOfSampleData)
+    ilniqe_result = ilniqe(
+        img, mu_pris_param, cov_pris_param, principleVectors, meanOfSampleData
+    )
 
     return ilniqe_result
 
@@ -412,14 +473,15 @@ class NIQE(torch.nn.Module):
         IEEE Signal Processing Letters (SPL) 20.3 (2012): 209-212.
     """
 
-    def __init__(self,
-                 channels: int = 1,
-                 test_y_channel: bool = True,
-                 color_space: str = 'yiq',
-                 crop_border: int = 0,
-                 version: str = 'original',
-                 pretrained_model_path: str = None) -> None:
-
+    def __init__(
+        self,
+        channels: int = 1,
+        test_y_channel: bool = True,
+        color_space: str = 'yiq',
+        crop_border: int = 0,
+        version: str = 'original',
+        pretrained_model_path: str = None,
+    ) -> None:
         super(NIQE, self).__init__()
         self.channels = channels
         self.test_y_channel = test_y_channel
@@ -430,7 +492,9 @@ class NIQE(torch.nn.Module):
         elif version == 'original':
             pretrained_model_path = load_file_from_url(default_model_urls['url'])
         elif version == 'matlab':
-            pretrained_model_path = load_file_from_url(default_model_urls['niqe_matlab'])
+            pretrained_model_path = load_file_from_url(
+                default_model_urls['niqe_matlab']
+            )
 
         # load model parameters
         params = scipy.io.loadmat(pretrained_model_path)
@@ -446,7 +510,14 @@ class NIQE(torch.nn.Module):
         Output:
             score (tensor): results of ilniqe metric, should be a positive real number. Shape :math:`(N, 1)`.
         """
-        score = calculate_niqe(x, self.crop_border, self.test_y_channel, self.color_space, self.mu_pris_param, self.cov_pris_param)
+        score = calculate_niqe(
+            x,
+            self.crop_border,
+            self.test_y_channel,
+            self.color_space,
+            self.mu_pris_param,
+            self.cov_pris_param,
+        )
         return score
 
 
@@ -464,16 +535,19 @@ class ILNIQE(torch.nn.Module):
         on Image Processing 24.8 (2015): 2579-2591.
     """
 
-    def __init__(self, channels: int = 3, crop_border: int = 0, pretrained_model_path: str = None) -> None:
-
+    def __init__(
+        self, channels: int = 3, crop_border: int = 0, pretrained_model_path: str = None
+    ) -> None:
         super(ILNIQE, self).__init__()
         self.channels = channels
         self.crop_border = crop_border
         if pretrained_model_path is not None:
             self.pretrained_model_path = pretrained_model_path
         else:
-            self.pretrained_model_path = load_file_from_url(default_model_urls['ilniqe'])
-        
+            self.pretrained_model_path = load_file_from_url(
+                default_model_urls['ilniqe']
+            )
+
         params = scipy.io.loadmat(self.pretrained_model_path)
         mu_pris_param = np.ravel(params['templateModel'][0][0])
         cov_pris_param = params['templateModel'][0][1]
@@ -493,5 +567,12 @@ class ILNIQE(torch.nn.Module):
             score (tensor): results of ilniqe metric, should be a positive real number. Shape :math:`(N, 1)`.
         """
         assert x.shape[1] == 3, 'ILNIQE only support input image with 3 channels'
-        score = calculate_ilniqe(x, self.crop_border, self.mu_pris_param, self.cov_pris_param, self.principleVectors, self.meanOfSampleData)
+        score = calculate_ilniqe(
+            x,
+            self.crop_border,
+            self.mu_pris_param,
+            self.cov_pris_param,
+            self.principleVectors,
+            self.meanOfSampleData,
+        )
         return score

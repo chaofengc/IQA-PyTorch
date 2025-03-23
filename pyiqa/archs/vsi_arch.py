@@ -29,21 +29,30 @@ from torch.nn.functional import avg_pool2d, interpolate, pad
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.utils.color_util import rgb2lmn, rgb2lab
-from .func_util import ifftshift, gradient_map, get_meshgrid, similarity_map, scharr_filter, safe_sqrt
+from .func_util import (
+    ifftshift,
+    gradient_map,
+    get_meshgrid,
+    similarity_map,
+    scharr_filter,
+    safe_sqrt,
+)
 
 
-def vsi(x: torch.Tensor,
-        y: torch.Tensor,
-        data_range: Union[int, float] = 1.,
-        c1: float = 1.27,
-        c2: float = 386.,
-        c3: float = 130.,
-        alpha: float = 0.4,
-        beta: float = 0.02,
-        omega_0: float = 0.021,
-        sigma_f: float = 1.34,
-        sigma_d: float = 145.,
-        sigma_c: float = 0.001) -> torch.Tensor:
+def vsi(
+    x: torch.Tensor,
+    y: torch.Tensor,
+    data_range: Union[int, float] = 1.0,
+    c1: float = 1.27,
+    c2: float = 386.0,
+    c3: float = 130.0,
+    alpha: float = 0.4,
+    beta: float = 0.02,
+    omega_0: float = 0.021,
+    sigma_f: float = 1.34,
+    sigma_d: float = 145.0,
+    sigma_c: float = 0.001,
+) -> torch.Tensor:
     r"""Compute Visual Saliency-induced Index for a batch of images.
     Args:
         x: An input tensor. Shape :math:`(N, C, H, W)`.
@@ -75,15 +84,31 @@ def vsi(x: torch.Tensor,
     if x.size(1) == 1:
         x = x.repeat(1, 3, 1, 1)
         y = y.repeat(1, 3, 1, 1)
-        warnings.warn('The original VSI supports only RGB images. The input images were converted to RGB by copying '
-                      'the grey channel 3 times.')
+        warnings.warn(
+            'The original VSI supports only RGB images. The input images were converted to RGB by copying '
+            'the grey channel 3 times.'
+        )
 
     # Scale to [0, 255] range to match scale of constant
-    x = x * 255. / data_range
-    y = y * 255. / data_range
+    x = x * 255.0 / data_range
+    y = y * 255.0 / data_range
 
-    vs_x = sdsp(x, data_range=255, omega_0=omega_0, sigma_f=sigma_f, sigma_d=sigma_d, sigma_c=sigma_c)
-    vs_y = sdsp(y, data_range=255, omega_0=omega_0, sigma_f=sigma_f, sigma_d=sigma_d, sigma_c=sigma_c)
+    vs_x = sdsp(
+        x,
+        data_range=255,
+        omega_0=omega_0,
+        sigma_f=sigma_f,
+        sigma_d=sigma_d,
+        sigma_c=sigma_c,
+    )
+    vs_y = sdsp(
+        y,
+        data_range=255,
+        omega_0=omega_0,
+        sigma_f=sigma_f,
+        sigma_d=sigma_d,
+        sigma_c=sigma_c,
+    )
 
     # Convert to LMN colour space
     x_lmn = rgb2lmn(x)
@@ -122,7 +147,7 @@ def vsi(x: torch.Tensor,
     s_c = s_m * s_n
 
     s_c_complex = [s_c.abs(), torch.atan2(torch.zeros_like(s_c), s_c)]
-    s_c_complex_pow = [s_c_complex[0]**beta, s_c_complex[1] * beta]
+    s_c_complex_pow = [s_c_complex[0] ** beta, s_c_complex[1] * beta]
     s_c_real_pow = s_c_complex_pow[0] * torch.cos(s_c_complex_pow[1])
 
     s = s_vs * s_gm.pow(alpha) * s_c_real_pow
@@ -130,17 +155,21 @@ def vsi(x: torch.Tensor,
 
     eps = torch.finfo(vs_max.dtype).eps
     output = s * vs_max
-    output = ((output.sum(dim=(-1, -2)) + eps) / (vs_max.sum(dim=(-1, -2)) + eps)).squeeze(-1)
+    output = (
+        (output.sum(dim=(-1, -2)) + eps) / (vs_max.sum(dim=(-1, -2)) + eps)
+    ).squeeze(-1)
 
     return output
 
 
-def sdsp(x: torch.Tensor,
-         data_range: Union[int, float] = 255,
-         omega_0: float = 0.021,
-         sigma_f: float = 1.34,
-         sigma_d: float = 145.,
-         sigma_c: float = 0.001) -> torch.Tensor:
+def sdsp(
+    x: torch.Tensor,
+    data_range: Union[int, float] = 255,
+    omega_0: float = 0.021,
+    sigma_f: float = 1.34,
+    sigma_d: float = 145.0,
+    sigma_c: float = 0.001,
+) -> torch.Tensor:
     r"""SDSP algorithm for salient region detection from a given image.
     Supports only colour images with RGB channel order.
     Args:
@@ -171,7 +200,9 @@ def sdsp(x: torch.Tensor,
 
     coordinates = torch.stack(get_meshgrid(size_to_use), dim=0).to(x)
     coordinates = coordinates * size_to_use[0] + 1
-    s_d = torch.exp(-torch.sum(coordinates**2, dim=0) / sigma_d**2).view(1, 1, *size_to_use)
+    s_d = torch.exp(-torch.sum(coordinates**2, dim=0) / sigma_d**2).view(
+        1, 1, *size_to_use
+    )
 
     eps = torch.finfo(x_lab.dtype).eps
     min_x = x_lab.min(dim=-1, keepdim=True).values.min(dim=-2, keepdim=True).values
@@ -235,17 +266,19 @@ class VSI(nn.Module):
         https://ieeexplore.ieee.org/document/6873260
     """
 
-    def __init__(self,
-                 c1: float = 1.27,
-                 c2: float = 386.,
-                 c3: float = 130.,
-                 alpha: float = 0.4,
-                 beta: float = 0.02,
-                 data_range: Union[int, float] = 1.,
-                 omega_0: float = 0.021,
-                 sigma_f: float = 1.34,
-                 sigma_d: float = 145.,
-                 sigma_c: float = 0.001) -> None:
+    def __init__(
+        self,
+        c1: float = 1.27,
+        c2: float = 386.0,
+        c3: float = 130.0,
+        alpha: float = 0.4,
+        beta: float = 0.02,
+        data_range: Union[int, float] = 1.0,
+        omega_0: float = 0.021,
+        sigma_f: float = 1.34,
+        sigma_d: float = 145.0,
+        sigma_c: float = 0.001,
+    ) -> None:
         super().__init__()
         self.data_range = data_range
 
@@ -260,7 +293,8 @@ class VSI(nn.Module):
             sigma_f=sigma_f,
             sigma_d=sigma_d,
             sigma_c=sigma_c,
-            data_range=data_range)
+            data_range=data_range,
+        )
 
     def forward(self, x, y):
         r"""Computation of VSI as a loss function.

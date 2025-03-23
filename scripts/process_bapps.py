@@ -16,11 +16,10 @@ def make_dataset(dir, max_dataset_size=float('inf')):
             if is_image_file(fname):
                 path = os.path.join(root, fname)
                 images.append(path)
-    return images[:min(max_dataset_size, len(images))]
+    return images[: min(max_dataset_size, len(images))]
 
 
 def get_meta_info():
-
     # 2afc triplets
     root_dir = './datasets/PerceptualSimilarity/dataset/2afc'
 
@@ -43,11 +42,7 @@ def get_meta_info():
 
     save_meta_path = './datasets/meta_info/meta_info_BAPPSDataset.csv'
     split_info = {
-        1: {
-            'train': [],
-            'val': [],
-            'test': []
-        },
+        1: {'train': [], 'val': [], 'test': []},
     }
 
     with open(save_meta_path, 'w') as sf:
@@ -57,7 +52,9 @@ def get_meta_info():
 
         count = 0
         for ref_path, p0_path, p1_path, jd_path in tqdm(
-                zip(ref_path_list, p0_path_list, p1_path_list, judge_path_list), total=len(ref_path_list)):
+            zip(ref_path_list, p0_path_list, p1_path_list, judge_path_list),
+            total=len(ref_path_list),
+        ):
             ref_path = ref_path.split('dataset/')[-1]
             p0_path = p0_path.split('dataset/')[-1]
             p1_path = p1_path.split('dataset/')[-1]
@@ -76,7 +73,9 @@ def get_meta_info():
             count += 1
 
         for p0_path, p1_path, jd_path in tqdm(
-                zip(jnd_p0_path_list, jnd_p1_path_list, jnd_judge_path_list), total=len(p0_path)):
+            zip(jnd_p0_path_list, jnd_p1_path_list, jnd_judge_path_list),
+            total=len(p0_path),
+        ):
             p0_path = p0_path.split('dataset/')[-1]
             p1_path = p1_path.split('dataset/')[-1]
 

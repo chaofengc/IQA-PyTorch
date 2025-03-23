@@ -48,21 +48,24 @@ class NIMA(nn.Module):
         base_model_name='vgg16',
         train_dataset='ava',
         num_classes=10,
-        dropout_rate=0.,
+        dropout_rate=0.0,
         pretrained=True,
         pretrained_model_path=None,
     ):
         super(NIMA, self).__init__()
-        self.base_model = timm.create_model(base_model_name, pretrained=True, features_only=True)
-        
+        self.base_model = timm.create_model(
+            base_model_name, pretrained=True, features_only=True
+        )
+
         self.global_pool = nn.AdaptiveAvgPool2d(1)
         in_ch = self.base_model.feature_info.channels()[-1]
         self.num_classes = num_classes
 
-        self.classifier = [nn.Flatten(),
-                           nn.Dropout(p=dropout_rate),
-                           nn.Linear(in_features=in_ch, out_features=num_classes),
-                           ]
+        self.classifier = [
+            nn.Flatten(),
+            nn.Dropout(p=dropout_rate),
+            nn.Linear(in_features=in_ch, out_features=num_classes),
+        ]
         if num_classes > 1:
             self.classifier.append(nn.Softmax(dim=-1))
         self.classifier = nn.Sequential(*self.classifier)
@@ -71,17 +74,23 @@ class NIMA(nn.Module):
         default_std = self.base_model.pretrained_cfg['std']
         self.default_mean = torch.Tensor(default_mean).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(default_std).view(1, 3, 1, 1)
-        
+
         if pretrained and pretrained_model_path is None:
             url_key = f'{base_model_name}-{train_dataset}'
-            load_pretrained_network(self, default_model_urls[url_key], True, weight_keys='params')
+            load_pretrained_network(
+                self, default_model_urls[url_key], True, weight_keys='params'
+            )
         elif pretrained_model_path is not None:
-            load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
-    
+            load_pretrained_network(
+                self, pretrained_model_path, True, weight_keys='params'
+            )
+
     def preprocess(self, x):
         if not self.training:
             x = T.functional.resize(x, self.base_model.default_cfg['input_size'][-1])
-            x = T.functional.center_crop(x, self.base_model.default_cfg['input_size'][-1])
+            x = T.functional.center_crop(
+                x, self.base_model.default_cfg['input_size'][-1]
+            )
 
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x

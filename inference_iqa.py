@@ -10,33 +10,57 @@ import torch
 
 
 def main():
-    """Inference demo for pyiqa.
-    """
+    """Inference demo for pyiqa."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--target', type=str, default=None, help='input image/folder path.')
-    parser.add_argument('-r', '--ref', type=str, default=None, help='reference image/folder path if needed.')
-    parser.add_argument('--device', type=str, default=None, help='reference image/folder path if needed.')
+    parser.add_argument(
+        '-t', '--target', type=str, default=None, help='input image/folder path.'
+    )
+    parser.add_argument(
+        '-r',
+        '--ref',
+        type=str,
+        default=None,
+        help='reference image/folder path if needed.',
+    )
+    parser.add_argument(
+        '--device',
+        type=str,
+        default=None,
+        help='reference image/folder path if needed.',
+    )
     parser.add_argument(
         '--metric_mode',
         type=str,
         default='FR',
-        help='metric mode Full Reference or No Reference. options: FR|NR.')
-    parser.add_argument('-m', '--metric_name', type=str, default='PSNR', help='IQA metric name, case sensitive.')
-    parser.add_argument('--save_file', type=str, default=None, help='path to save results.')
+        help='metric mode Full Reference or No Reference. options: FR|NR.',
+    )
+    parser.add_argument(
+        '-m',
+        '--metric_name',
+        type=str,
+        default='PSNR',
+        help='IQA metric name, case sensitive.',
+    )
+    parser.add_argument(
+        '--save_file', type=str, default=None, help='path to save results.'
+    )
 
     # Add a --verbose flag
     parser.add_argument(
-        '-v', '--verbose',
+        '-v',
+        '--verbose',
         action='store_true',  # This makes it a flag (True when used, False otherwise)
-        help='Enable verbose output'
+        help='Enable verbose output',
     )
 
     args = parser.parse_args()
 
-    metric_name = args.metric_name.lower()
+    metric_name = args.metric_name
 
     # set up IQA model
-    iqa_model = create_metric(metric_name, metric_mode=args.metric_mode, device=args.device)
+    iqa_model = create_metric(
+        metric_name, metric_mode=args.metric_mode, device=args.device
+    )
     metric_mode = iqa_model.metric_mode
 
     if os.path.isfile(args.target):
@@ -69,16 +93,20 @@ def main():
             avg_score += score
             pbar.update(1)
             pbar.set_description(f'{metric_name} of {img_name}: {score}')
-            pbar.write(f'{metric_name} of {img_name}: {score}\tTime: {end_time - start_time:.2f}s')
+            pbar.write(
+                f'{metric_name} of {img_name}: {score}\tTime: {end_time - start_time:.2f}s'
+            )
             if args.save_file:
                 sfwriter.writerow([img_name, score])
-            
+
         pbar.close()
         avg_score /= test_img_num
     else:
-        assert os.path.isdir(args.target) and os.path.isdir(args.ref), 'input path must be a folder for FID.'
+        assert os.path.isdir(args.target) and os.path.isdir(args.ref), (
+            'input path must be a folder for FID.'
+        )
         avg_score = iqa_model(args.target, args.ref)
-    
+
     if args.verbose and torch.cuda.is_available():
         print(torch.cuda.memory_summary())
 

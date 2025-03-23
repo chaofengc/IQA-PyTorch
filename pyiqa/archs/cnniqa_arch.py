@@ -16,9 +16,7 @@ import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network, get_url_from_name
 
-default_model_urls = {
-    'koniq10k': get_url_from_name('CNNIQA_koniq10k-e6f14c91.pth')
-}
+default_model_urls = {'koniq10k': get_url_from_name('CNNIQA_koniq10k-e6f14c91.pth')}
 
 
 @ARCH_REGISTRY.register()

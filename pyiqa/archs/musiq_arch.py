@@ -14,7 +14,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .arch_util import dist_to_mos, load_pretrained_network
-from pyiqa.matlab_utils import ExactPadding2d, exact_padding_2d 
+from pyiqa.matlab_utils import ExactPadding2d, exact_padding_2d
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.data.multiscale_trans_util import get_multiscale_patches
 from pyiqa.archs.arch_util import get_url_from_name
@@ -43,7 +43,6 @@ class StdConv(nn.Conv2d):
 
 
 class Bottleneck(nn.Module):
-
     def __init__(self, inplanes, outplanes, stride=1):
         super().__init__()
 
@@ -76,11 +75,13 @@ class Bottleneck(nn.Module):
         return out
 
 
-def drop_path(x, drop_prob: float = 0., training: bool = False):
-    if drop_prob == 0. or not training:
+def drop_path(x, drop_prob: float = 0.0, training: bool = False):
+    if drop_prob == 0.0 or not training:
         return x
     keep_prob = 1 - drop_prob
-    shape = (x.shape[0], ) + (1, ) * (x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
+    shape = (x.shape[0],) + (1,) * (
+        x.ndim - 1
+    )  # work with diff dim tensors, not just 2D ConvNets
     random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
     random_tensor.floor_()  # binarize
     output = x.div(keep_prob) * random_tensor
@@ -88,8 +89,7 @@ def drop_path(x, drop_prob: float = 0., training: bool = False):
 
 
 class DropPath(nn.Module):
-    """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks).
-    """
+    """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
 
     def __init__(self, drop_prob=None):
         super(DropPath, self).__init__()
@@ -100,8 +100,14 @@ class DropPath(nn.Module):
 
 
 class Mlp(nn.Module):
-
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+    def __init__(
+        self,
+        in_features,
+        hidden_features=None,
+        out_features=None,
+        act_layer=nn.GELU,
+        drop=0.0,
+    ):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -120,8 +126,7 @@ class Mlp(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-
-    def __init__(self, dim, num_heads=6, bias=False, attn_drop=0., out_drop=0.):
+    def __init__(self, dim, num_heads=6, bias=False, attn_drop=0.0, out_drop=0.0):
         super().__init__()
         assert dim % num_heads == 0, 'dim should be divisible by num_heads'
         self.num_heads = num_heads
@@ -163,22 +168,27 @@ class MultiHeadAttention(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-
-    def __init__(self,
-                 dim,
-                 mlp_dim,
-                 num_heads,
-                 drop=0.,
-                 attn_drop=0.,
-                 drop_path=0.,
-                 act_layer=nn.GELU,
-                 norm_layer=nn.LayerNorm):
+    def __init__(
+        self,
+        dim,
+        mlp_dim,
+        num_heads,
+        drop=0.0,
+        attn_drop=0.0,
+        drop_path=0.0,
+        act_layer=nn.GELU,
+        norm_layer=nn.LayerNorm,
+    ):
         super().__init__()
         self.norm1 = norm_layer(dim, eps=1e-6)
-        self.attention = MultiHeadAttention(dim, num_heads, bias=True, attn_drop=attn_drop)
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+        self.attention = MultiHeadAttention(
+            dim, num_heads, bias=True, attn_drop=attn_drop
+        )
+        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = norm_layer(dim, eps=1e-6)
-        self.mlp = Mlp(in_features=dim, hidden_features=mlp_dim, act_layer=act_layer, drop=drop)
+        self.mlp = Mlp(
+            in_features=dim, hidden_features=mlp_dim, act_layer=act_layer, drop=drop
+        )
 
     def forward(self, x, inputs_masks):
         y = self.norm1(x)
@@ -193,7 +203,9 @@ class AddHashSpatialPositionEmbs(nn.Module):
 
     def __init__(self, spatial_pos_grid_size, dim):
         super().__init__()
-        self.position_emb = nn.parameter.Parameter(torch.randn(1, spatial_pos_grid_size * spatial_pos_grid_size, dim))
+        self.position_emb = nn.parameter.Parameter(
+            torch.randn(1, spatial_pos_grid_size * spatial_pos_grid_size, dim)
+        )
         nn.init.normal_(self.position_emb, std=0.02)
 
     def forward(self, inputs, inputs_positions):
@@ -213,12 +225,11 @@ class AddScaleEmbs(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
-
     def __init__(
         self,
         input_dim,
         mlp_dim=1152,
-        attention_dropout_rate=0.,
+        attention_dropout_rate=0.0,
         dropout_rate=0,
         num_heads=6,
         num_layers=14,
@@ -229,7 +240,9 @@ class TransformerEncoder(nn.Module):
     ):
         super().__init__()
         self.use_scale_emb = use_scale_emb
-        self.posembed_input = AddHashSpatialPositionEmbs(spatial_pos_grid_size, input_dim)
+        self.posembed_input = AddHashSpatialPositionEmbs(
+            spatial_pos_grid_size, input_dim
+        )
         self.scaleembed_input = AddScaleEmbs(num_scales, input_dim)
 
         self.cls = nn.parameter.Parameter(torch.zeros(1, 1, input_dim))
@@ -238,10 +251,13 @@ class TransformerEncoder(nn.Module):
 
         self.transformer = nn.ModuleDict()
         for i in range(num_layers):
-            self.transformer[f'encoderblock_{i}'] = TransformerBlock(input_dim, mlp_dim, num_heads, dropout_rate,
-                                                                     attention_dropout_rate)
+            self.transformer[f'encoderblock_{i}'] = TransformerBlock(
+                input_dim, mlp_dim, num_heads, dropout_rate, attention_dropout_rate
+            )
 
-    def forward(self, x, inputs_spatial_positions, inputs_scale_positions, inputs_masks):
+    def forward(
+        self, x, inputs_spatial_positions, inputs_scale_positions, inputs_masks
+    ):
         n, _, c = x.shape
 
         x = self.posembed_input(x, inputs_spatial_positions)
@@ -305,7 +321,7 @@ class MUSIQ(nn.Module):
         num_class=1,
         hidden_size=384,
         mlp_dim=1152,
-        attention_dropout_rate=0.,
+        attention_dropout_rate=0.0,
         dropout_rate=0,
         num_heads=6,
         num_layers=14,
@@ -329,7 +345,7 @@ class MUSIQ(nn.Module):
             'patch_stride': patch_size,
             'hse_grid_size': spatial_pos_grid_size,
             'longer_side_lengths': longer_side_lengths,
-            'max_seq_len_from_original_res': max_seq_len_from_original_res
+            'max_seq_len_from_original_res': max_seq_len_from_original_res,
         }
 
         # set num_class to 10 if pretrained model used AVA dataset
@@ -350,10 +366,21 @@ class MUSIQ(nn.Module):
         token_patch_size = patch_size // 4
         self.block1 = Bottleneck(resnet_token_dim, resnet_token_dim * 4)
 
-        self.embedding = nn.Linear(resnet_token_dim * 4 * token_patch_size**2, hidden_size)
-        self.transformer_encoder = TransformerEncoder(hidden_size, mlp_dim, attention_dropout_rate, dropout_rate,
-                                                      num_heads, num_layers, num_scales, spatial_pos_grid_size,
-                                                      use_scale_emb, use_sinusoid_pos_emb)
+        self.embedding = nn.Linear(
+            resnet_token_dim * 4 * token_patch_size**2, hidden_size
+        )
+        self.transformer_encoder = TransformerEncoder(
+            hidden_size,
+            mlp_dim,
+            attention_dropout_rate,
+            dropout_rate,
+            num_heads,
+            num_layers,
+            num_scales,
+            spatial_pos_grid_size,
+            use_scale_emb,
+            use_sinusoid_pos_emb,
+        )
 
         if num_class > 1:
             self.head = nn.Sequential(
@@ -407,7 +434,9 @@ class MUSIQ(nn.Module):
         x = x.permute(0, 2, 3, 1)
         x = x.reshape(b, seq_len, -1)
         x = self.embedding(x)
-        x = self.transformer_encoder(x, inputs_spatial_positions, inputs_scale_positions, inputs_masks)
+        x = self.transformer_encoder(
+            x, inputs_spatial_positions, inputs_scale_positions, inputs_masks
+        )
         q = self.head(x[:, 0])
 
         q = q.reshape(b, num_crops, -1)

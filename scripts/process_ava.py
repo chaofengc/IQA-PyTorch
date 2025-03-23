@@ -18,34 +18,36 @@ def get_meta_info(seed=123):
 
     # read ILGnet split
     ILGnet_train_list = [
-        x.strip().split()[0] for x in open('./datasets/AVA_dataset/train_splits/ILGnet_train.txt').readlines()
+        x.strip().split()[0]
+        for x in open(
+            './datasets/AVA_dataset/train_splits/ILGnet_train.txt'
+        ).readlines()
     ]
     ILGnet_test_list = [
-        x.strip().split()[0] for x in open('./datasets/AVA_dataset/train_splits/ILGnet_val.txt').readlines()
+        x.strip().split()[0]
+        for x in open('./datasets/AVA_dataset/train_splits/ILGnet_val.txt').readlines()
     ]
 
     official_test_list = [
-        x.strip().split()[0] + '.jpg' for x in open('./datasets/AVA_dataset/aesthetics_image_lists/generic_test.jpgl')
+        x.strip().split()[0] + '.jpg'
+        for x in open('./datasets/AVA_dataset/aesthetics_image_lists/generic_test.jpgl')
     ]
 
     save_meta_path = './datasets/meta_info/meta_info_AVADataset.csv'
     split_info = {
-        1: {
-            'train': [],
-            'val': [],
-            'test': []
-        },
-        2: {
-            'train': [],
-            'val': [],
-            'test': []
-        },
+        1: {'train': [], 'val': [], 'test': []},
+        2: {'train': [], 'val': [], 'test': []},
     }
 
     with open(all_label_file) as f, open(save_meta_path, 'w') as sf:
         csvwriter = csv.writer(sf)
-        header = ['img_name'] + ['MOS'] + [f'c{i}' for i in range(1, 11)] + ['semantic_tag1', 'semantic_tag2'
-                                                                             ] + ['official split', 'ILGnet split']
+        header = (
+            ['img_name']
+            + ['MOS']
+            + [f'c{i}' for i in range(1, 11)]
+            + ['semantic_tag1', 'semantic_tag2']
+            + ['official split', 'ILGnet split']
+        )
         csvwriter.writerow(header)
         count = 0
         for row in tqdm(f.readlines()):

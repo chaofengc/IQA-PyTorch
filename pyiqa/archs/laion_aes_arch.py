@@ -2,6 +2,7 @@ r"""LAION-Aesthetics Predictor
 
 Introduced by: https://github.com/christophschuhmann/improved-aesthetic-predictor
 """
+
 import torch
 import torch.nn as nn
 
@@ -15,13 +16,11 @@ from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 from pyiqa.archs.arch_util import get_url_from_name
 
 
-default_model_urls = {
-    "url": get_url_from_name("sac+logos+ava1-l14-linearMSE.pth")
-}
+default_model_urls = {'url': get_url_from_name('sac+logos+ava1-l14-linearMSE.pth')}
 
 
 class MLP(nn.Module):
-    def __init__(self, input_size, xcol="emb", ycol="avg_rating"):
+    def __init__(self, input_size, xcol='emb', ycol='avg_rating'):
         super().__init__()
         self.input_size = input_size
         self.xcol = xcol
@@ -58,20 +57,24 @@ class LAIONAes(nn.Module):
     Returns:
         A tensor representing the predicted image quality scores.
     """
-    def __init__(self, 
-                pretrained=True, 
-                pretrained_model_path=None,
-                ) -> None:
+
+    def __init__(
+        self,
+        pretrained=True,
+        pretrained_model_path=None,
+    ) -> None:
         super().__init__()
 
-        clip_model, _ = clip.load("ViT-L/14")
+        clip_model, _ = clip.load('ViT-L/14')
         self.mlp = MLP(clip_model.visual.output_dim)
         self.clip_model = [clip_model]
 
         if pretrained_model_path is not None:
-            load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
+            load_pretrained_network(
+                self, pretrained_model_path, True, weight_keys='params'
+            )
         elif pretrained:
-            load_pretrained_network(self.mlp, default_model_urls["url"])
+            load_pretrained_network(self.mlp, default_model_urls['url'])
 
     def forward(self, x):
         clip_model = self.clip_model[0].to(x)

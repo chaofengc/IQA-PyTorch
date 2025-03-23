@@ -11,7 +11,6 @@ from torch.nn import init as init
 
 
 def _ntuple(n):
-
     def parse(x):
         if isinstance(x, collections.abc.Iterable):
             return x
@@ -38,8 +37,8 @@ def symm_pad(im: torch.Tensor, padding: Tuple[int, int, int, int]):
     y_idx = np.arange(-top, h + bottom)
 
     def reflect(x, minx, maxx):
-        """ Reflects an array around two points making a triangular waveform that ramps up
-        and down,  allowing for pad lengths greater than the input length """
+        """Reflects an array around two points making a triangular waveform that ramps up
+        and down,  allowing for pad lengths greater than the input length"""
         rng = maxx - minx
         double_rng = 2 * rng
         mod = np.fmod(x - minx, double_rng)
@@ -63,7 +62,12 @@ def exact_padding_2d(x, kernel, stride=1, dilation=1, mode='same'):
     w2 = math.ceil(w / stride[1])
     pad_row = (h2 - 1) * stride[0] + (kernel[0] - 1) * dilation[0] + 1 - h
     pad_col = (w2 - 1) * stride[1] + (kernel[1] - 1) * dilation[1] + 1 - w
-    pad_l, pad_r, pad_t, pad_b = (pad_col // 2, pad_col - pad_col // 2, pad_row // 2, pad_row - pad_row // 2)
+    pad_l, pad_r, pad_t, pad_b = (
+        pad_col // 2,
+        pad_col - pad_col // 2,
+        pad_row // 2,
+        pad_row - pad_row // 2,
+    )
 
     mode = mode if mode != 'same' else 'constant'
     if mode != 'symmetric':
@@ -97,4 +101,6 @@ class ExactPadding2d(nn.Module):
         if self.mode is None:
             return x
         else:
-            return exact_padding_2d(x, self.kernel, self.stride, self.dilation, self.mode)
+            return exact_padding_2d(
+                x, self.kernel, self.stride, self.dilation, self.mode
+            )

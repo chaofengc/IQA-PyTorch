@@ -10,7 +10,7 @@ from pyiqa.utils import get_root_logger
 
 class BaseIQADataset(data.Dataset):
     """General No Reference dataset with meta info file.
-    
+
     Args:
         opt (dict): Config for train datasets with the following keys:
             phase (str): 'train' or 'val'.
@@ -25,7 +25,9 @@ class BaseIQADataset(data.Dataset):
         else:
             self.phase = opt['override_phase']
 
-        assert self.phase in ['train', 'val', 'test'], f'phase should be in [train, val, test], got {self.phase}'
+        assert self.phase in ['train', 'val', 'test'], (
+            f'phase should be in [train, val, test], got {self.phase}'
+        )
 
         # initialize datasets
         self.init_path_mos(opt)
@@ -36,13 +38,13 @@ class BaseIQADataset(data.Dataset):
         # read train/val/test splits
         self.get_split(opt)
 
-        # get transforms       
+        # get transforms
         self.get_transforms(opt)
-            
+
     def init_path_mos(self, opt):
         self.meta_info = pd.read_csv(opt['meta_info_file'])
-        self.paths_mos = self.meta_info.values.tolist() 
-    
+        self.paths_mos = self.meta_info.values.tolist()
+
     def get_split_with_file(self, opt):
         # read train/val/test splits
         split_file_path = opt.get('split_file', None)
@@ -51,11 +53,10 @@ class BaseIQADataset(data.Dataset):
             with open(opt['split_file'], 'rb') as f:
                 split_dict = pickle.load(f)
                 splits = split_dict[split_index][self.phase]
-            self.paths_mos = [self.paths_mos[i] for i in splits] 
+            self.paths_mos = [self.paths_mos[i] for i in splits]
 
     def get_split(self, opt):
-        """Read train/val/test splits
-        """
+        """Read train/val/test splits"""
         # compatible with previous version using split file
         if opt.get('split_file', None) is not None:
             self.get_split_with_file(opt)
@@ -72,22 +73,26 @@ class BaseIQADataset(data.Dataset):
             elif isinstance(split_index, int):
                 split_ratio = opt.get('split_ratio', '802')
                 split_name = f'ratio{split_ratio}_seed123_split_{split_index:02d}'
-            
-            assert split_name in all_split_lists, f'The given split [{split_name}] is not available in {all_split_lists}'
+
+            assert split_name in all_split_lists, (
+                f'The given split [{split_name}] is not available in {all_split_lists}'
+            )
 
             split_paths_mos = []
             for i in range(len(self.paths_mos)):
                 if self.meta_info[split_name][i] == self.phase:
                     split_paths_mos.append(self.paths_mos[i])
             self.paths_mos = split_paths_mos
-            
+
     def mos_normalize(self, opt):
         mos_range = opt.get('mos_range', None)
         mos_lower_better = opt.get('lower_better', None)
         mos_normalize = opt.get('mos_normalize', False)
 
         if mos_normalize:
-            assert mos_range is not None and mos_lower_better is not None, 'mos_range and mos_lower_better should be provided when mos_normalize is True'
+            assert mos_range is not None and mos_lower_better is not None, (
+                'mos_range and mos_lower_better should be provided when mos_normalize is True'
+            )
 
             def normalize(mos_label):
                 mos_label = (mos_label - mos_range[0]) / (mos_range[1] - mos_range[0])
@@ -98,7 +103,9 @@ class BaseIQADataset(data.Dataset):
 
             for item in self.paths_mos:
                 item[1] = normalize(float(item[1]))
-            self.logger.info(f'mos_label is normalized from {mos_range}, lower_better[{mos_lower_better}] to [0, 1], lower_better[False(higher better)].')
+            self.logger.info(
+                f'mos_label is normalized from {mos_range}, lower_better[{mos_lower_better}] to [0, 1], lower_better[False(higher better)].'
+            )
 
     def get_transforms(self, opt):
         transform_list = []
@@ -109,8 +116,8 @@ class BaseIQADataset(data.Dataset):
 
         self.img_range = opt.get('img_range', 1.0)
         transform_list += [
-                PairedToTensor(),
-                ]
+            PairedToTensor(),
+        ]
         self.trans = tf.Compose(transform_list)
 
     def __getitem__(self, index):

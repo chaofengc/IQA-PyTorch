@@ -20,6 +20,7 @@ from pyiqa.utils.download_util import load_file_from_url
 # IQA utils
 # --------------------------------------------
 
+
 def dist_to_mos(dist_score: torch.Tensor) -> torch.Tensor:
     """
     Convert distribution prediction to MOS score.
@@ -60,7 +61,7 @@ def random_crop(input_list, crop_size, crop_num):
     if min(h, w) <= crop_size:
         scale_factor = (crop_size + 1) / min(h, w)
         input_list = [
-            F.interpolate(x, scale_factor=scale_factor, mode="bilinear")
+            F.interpolate(x, scale_factor=scale_factor, mode='bilinear')
             for x in input_list
         ]
         b, c, h, w = input_list[0].shape
@@ -70,10 +71,12 @@ def random_crop(input_list, crop_size, crop_num):
         sh = np.random.randint(0, h - ch + 1)
         sw = np.random.randint(0, w - cw + 1)
         for j in range(len(input_list)):
-            crops_list[j].append(input_list[j][..., sh:sh + ch, sw:sw + cw])
+            crops_list[j].append(input_list[j][..., sh : sh + ch, sw : sw + cw])
 
     for i in range(len(crops_list)):
-        crops_list[i] = torch.stack(crops_list[i], dim=1).reshape(b * crop_num, c, ch, cw)
+        crops_list[i] = torch.stack(crops_list[i], dim=1).reshape(
+            b * crop_num, c, ch, cw
+        )
 
     if len(crops_list) == 1:
         crops_list = crops_list[0]
@@ -103,7 +106,7 @@ def uniform_crop(input_list, crop_size, crop_num):
     if min(h, w) <= crop_size:
         scale_factor = (crop_size + 1) / min(h, w)
         input_list = [
-            F.interpolate(x, scale_factor=scale_factor, mode="bilinear")
+            F.interpolate(x, scale_factor=scale_factor, mode='bilinear')
             for x in input_list
         ]
         b, c, h, w = input_list[0].shape
@@ -118,7 +121,7 @@ def uniform_crop(input_list, crop_size, crop_num):
             for j in range(int(np.ceil(np.sqrt(crop_num)))):
                 sh = i * step_h
                 sw = j * step_w
-                tmp_list.append(inp[..., sh:sh + ch, sw:sw + cw])
+                tmp_list.append(inp[..., sh : sh + ch, sw : sw + cw])
         crops_list.append(
             torch.stack(tmp_list[:crop_num], dim=1).reshape(b * crop_num, c, ch, cw)
         )
@@ -158,6 +161,7 @@ def clip_preprocess_tensor(x: torch.Tensor, model):
 # Common utils
 # --------------------------------------------
 
+
 def clean_state_dict(state_dict):
     """
     Clean checkpoint by removing .module prefix from state dict if it exists from parallel training.
@@ -170,12 +174,14 @@ def clean_state_dict(state_dict):
     """
     cleaned_state_dict = OrderedDict()
     for k, v in state_dict.items():
-        name = k[7:] if k.startswith("module.") else k
+        name = k[7:] if k.startswith('module.') else k
         cleaned_state_dict[name] = v
     return cleaned_state_dict
 
 
-def get_url_from_name(name: str, store_base: str = "hugging_face", base_url: str = None) -> str:
+def get_url_from_name(
+    name: str, store_base: str = 'hugging_face', base_url: str = None
+) -> str:
     """
     Get the URL for a given file name from a specified storage base.
 
@@ -188,18 +194,18 @@ def get_url_from_name(name: str, store_base: str = "hugging_face", base_url: str
         str: The URL of the file.
     """
     if base_url is not None:
-        url = f"{base_url}/{name}"
-    elif store_base == "hugging_face":
-        url = hf_hub_url(repo_id="chaofengc/IQA-PyTorch-Weights", filename=name)
-    elif store_base == "github":
-        url = f"https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/{name}"
+        url = f'{base_url}/{name}'
+    elif store_base == 'hugging_face':
+        url = hf_hub_url(repo_id='chaofengc/IQA-PyTorch-Weights', filename=name)
+    elif store_base == 'github':
+        url = f'https://github.com/chaofengc/IQA-PyTorch/releases/download/v0.1-weights/{name}'
     return url
 
 
 def load_pretrained_network(
-    net: torch.nn.Module, 
-    model_path: str, 
-    strict: bool = True, 
+    net: torch.nn.Module,
+    model_path: str,
+    strict: bool = True,
     weight_keys: str = None,
 ) -> None:
     """
@@ -214,11 +220,13 @@ def load_pretrained_network(
     Returns:
         None
     """
-    if model_path.startswith("https://") or model_path.startswith("http://"):
+    if model_path.startswith('https://') or model_path.startswith('http://'):
         model_path = load_file_from_url(model_path)
 
-    print(f"Loading pretrained model {net.__class__.__name__} from {model_path}")
-    state_dict = torch.load(model_path, map_location=torch.device("cpu"), weights_only=False)
+    print(f'Loading pretrained model {net.__class__.__name__} from {model_path}')
+    state_dict = torch.load(
+        model_path, map_location=torch.device('cpu'), weights_only=False
+    )
     if weight_keys is not None:
         state_dict = state_dict[weight_keys]
     state_dict = clean_state_dict(state_dict)
@@ -235,6 +243,7 @@ def _ntuple(n):
     Returns:
         function: Function to convert input to a tuple of length n.
     """
+
     def parse(x):
         if isinstance(x, collections.abc.Iterable):
             return x

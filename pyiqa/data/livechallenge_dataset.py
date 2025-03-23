@@ -8,11 +8,11 @@ from .general_nr_dataset import GeneralNRDataset
 class LIVEChallengeDataset(GeneralNRDataset):
     """The LIVE Challenge Dataset introduced by
 
-    D. Ghadiyaram and A.C. Bovik, 
-    "Massive Online Crowdsourced Study of Subjective and Objective Picture Quality," 
+    D. Ghadiyaram and A.C. Bovik,
+    "Massive Online Crowdsourced Study of Subjective and Objective Picture Quality,"
     IEEE Transactions on Image Processing, 2016
-    url: https://live.ece.utexas.edu/research/ChallengeDB/index.html 
-    
+    url: https://live.ece.utexas.edu/research/ChallengeDB/index.html
+
     Args:
         opt (dict): Config for train datasets with the following keys:
             phase (str): 'train' or 'val'.

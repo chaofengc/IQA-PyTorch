@@ -41,4 +41,3 @@ def create_cfgiqa_meta_info():
 
 if __name__ == '__main__':
     create_cfgiqa_meta_info()
-    

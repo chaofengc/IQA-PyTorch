@@ -13,7 +13,11 @@ def get_meta_info():
     scene_label = pd.read_excel(scene_label_file)
     exif_label = pd.read_excel(exif_label_file)
 
-    new_head = mos_label.keys().tolist() + scene_label.keys().tolist()[1:] + exif_label.keys().tolist()[1:]
+    new_head = (
+        mos_label.keys().tolist()
+        + scene_label.keys().tolist()[1:]
+        + exif_label.keys().tolist()[1:]
+    )
     new_head[-2] = 'Time0'
     new_head[-1] = 'Time1'
 
@@ -44,7 +48,10 @@ def get_random_splits(seed=123):
     split_info = {}
     for i in range(num_splits):
         random.shuffle(all_img_index)
-        split_info[i + 1] = {'train': all_img_index[:sep_index], 'val': all_img_index[sep_index:]}
+        split_info[i + 1] = {
+            'train': all_img_index[:sep_index],
+            'val': all_img_index[sep_index:],
+        }
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

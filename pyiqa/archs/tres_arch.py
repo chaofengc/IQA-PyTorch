@@ -7,6 +7,7 @@ Reference:
 
 Official code: https://github.com/isalirezag/TReS
 """
+
 import math
 import copy
 from typing import Optional, List
@@ -32,13 +33,13 @@ default_model_urls = {
 
 def _get_activation_fn(activation):
     """Return an activation function given a string"""
-    if activation == "relu":
+    if activation == 'relu':
         return F.relu
-    if activation == "gelu":
+    if activation == 'gelu':
         return F.gelu
-    if activation == "glu":
+    if activation == 'glu':
         return F.glu
-    raise RuntimeError(F"activation should be relu/gelu, not {activation}.")
+    raise RuntimeError(f'activation should be relu/gelu, not {activation}.')
 
 
 def _get_clones(module, N):
@@ -46,17 +47,27 @@ def _get_clones(module, N):
 
 
 class Transformer(nn.Module):
-
-    def __init__(self, d_model=256, nhead=8, num_encoder_layers=6,
-                 num_decoder_layers=6, dim_feedforward=2048, dropout=0.1,
-                 activation="relu", normalize_before=False,
-                 return_intermediate_dec=False):
+    def __init__(
+        self,
+        d_model=256,
+        nhead=8,
+        num_encoder_layers=6,
+        num_decoder_layers=6,
+        dim_feedforward=2048,
+        dropout=0.1,
+        activation='relu',
+        normalize_before=False,
+        return_intermediate_dec=False,
+    ):
         super().__init__()
 
-        encoder_layer = TransformerEncoderLayer(d_model, nhead, dim_feedforward,
-                                                dropout, activation, normalize_before)
+        encoder_layer = TransformerEncoderLayer(
+            d_model, nhead, dim_feedforward, dropout, activation, normalize_before
+        )
         encoder_norm = nn.LayerNorm(d_model) if normalize_before else None
-        self.encoder = TransformerEncoder(encoder_layer, num_encoder_layers, encoder_norm)
+        self.encoder = TransformerEncoder(
+            encoder_layer, num_encoder_layers, encoder_norm
+        )
 
         self._reset_parameters()
 
@@ -82,22 +93,28 @@ class Transformer(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
-
     def __init__(self, encoder_layer, num_layers, norm=None):
         super().__init__()
         self.layers = _get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
         self.norm = norm
 
-    def forward(self, src,
-                mask: Optional[Tensor] = None,
-                src_key_padding_mask: Optional[Tensor] = None,
-                pos: Optional[Tensor] = None):
+    def forward(
+        self,
+        src,
+        mask: Optional[Tensor] = None,
+        src_key_padding_mask: Optional[Tensor] = None,
+        pos: Optional[Tensor] = None,
+    ):
         output = src
 
         for layer in self.layers:
-            output = layer(output, src_mask=mask,
-                           src_key_padding_mask=src_key_padding_mask, pos=pos)
+            output = layer(
+                output,
+                src_mask=mask,
+                src_key_padding_mask=src_key_padding_mask,
+                pos=pos,
+            )
 
         if self.norm is not None:
             output = self.norm(output)
@@ -106,9 +123,15 @@ class TransformerEncoder(nn.Module):
 
 
 class TransformerEncoderLayer(nn.Module):
-
-    def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1,
-                 activation="relu", normalize_before=False):
+    def __init__(
+        self,
+        d_model,
+        nhead,
+        dim_feedforward=2048,
+        dropout=0.1,
+        activation='relu',
+        normalize_before=False,
+    ):
         super().__init__()
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         # Implementation of Feedforward model
@@ -127,14 +150,17 @@ class TransformerEncoderLayer(nn.Module):
     def with_pos_embed(self, tensor, pos: Optional[Tensor]):
         return tensor if pos is None else tensor + pos
 
-    def forward_post(self,
-                     src,
-                     src_mask: Optional[Tensor] = None,
-                     src_key_padding_mask: Optional[Tensor] = None,
-                     pos: Optional[Tensor] = None):
+    def forward_post(
+        self,
+        src,
+        src_mask: Optional[Tensor] = None,
+        src_key_padding_mask: Optional[Tensor] = None,
+        pos: Optional[Tensor] = None,
+    ):
         q = k = self.with_pos_embed(src, pos)
-        src2 = self.self_attn(q, k, value=src, attn_mask=src_mask,
-                              key_padding_mask=src_key_padding_mask)[0]
+        src2 = self.self_attn(
+            q, k, value=src, attn_mask=src_mask, key_padding_mask=src_key_padding_mask
+        )[0]
         src = src + self.dropout1(src2)
         src = self.norm1(src)
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
@@ -142,24 +168,31 @@ class TransformerEncoderLayer(nn.Module):
         src = self.norm2(src)
         return src
 
-    def forward_pre(self, src,
-                    src_mask: Optional[Tensor] = None,
-                    src_key_padding_mask: Optional[Tensor] = None,
-                    pos: Optional[Tensor] = None):
+    def forward_pre(
+        self,
+        src,
+        src_mask: Optional[Tensor] = None,
+        src_key_padding_mask: Optional[Tensor] = None,
+        pos: Optional[Tensor] = None,
+    ):
         src2 = self.norm1(src)
         q = k = self.with_pos_embed(src2, pos)
-        src2 = self.self_attn(q, k, value=src2, attn_mask=src_mask,
-                              key_padding_mask=src_key_padding_mask)[0]
+        src2 = self.self_attn(
+            q, k, value=src2, attn_mask=src_mask, key_padding_mask=src_key_padding_mask
+        )[0]
         src = src + self.dropout1(src2)
         src2 = self.norm2(src)
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src2))))
         src = src + self.dropout2(src2)
         return src
 
-    def forward(self, src,
-                src_mask: Optional[Tensor] = None,
-                src_key_padding_mask: Optional[Tensor] = None,
-                pos: Optional[Tensor] = None):
+    def forward(
+        self,
+        src,
+        src_mask: Optional[Tensor] = None,
+        src_key_padding_mask: Optional[Tensor] = None,
+        pos: Optional[Tensor] = None,
+    ):
         if self.normalize_before:
             return self.forward_pre(src, src_mask, src_key_padding_mask, pos)
         return self.forward_post(src, src_mask, src_key_padding_mask, pos)
@@ -171,13 +204,15 @@ class PositionEmbeddingSine(nn.Module):
     used by the Attention is all you need paper, generalized to work on images.
     """
 
-    def __init__(self, num_pos_feats=64, temperature=10000, normalize=False, scale=None):
+    def __init__(
+        self, num_pos_feats=64, temperature=10000, normalize=False, scale=None
+    ):
         super().__init__()
         self.num_pos_feats = num_pos_feats  # 128 in dert
         self.temperature = temperature
         self.normalize = normalize
         if scale is not None and normalize is False:
-            raise ValueError("normalize should be True if scale is passed")
+            raise ValueError('normalize should be True if scale is passed')
         if scale is None:
             scale = 2 * math.pi
         self.scale = scale
@@ -197,31 +232,45 @@ class PositionEmbeddingSine(nn.Module):
             x_embed = x_embed / (x_embed[:, :, -1:] + eps) * self.scale
 
         dim_t = torch.arange(self.num_pos_feats, dtype=torch.float32, device=x.device)
-        dim_t = self.temperature ** (2 * (torch.div(dim_t, 2, rounding_mode='trunc')) / self.num_pos_feats)
+        dim_t = self.temperature ** (
+            2 * (torch.div(dim_t, 2, rounding_mode='trunc')) / self.num_pos_feats
+        )
 
         pos_x = x_embed[:, :, :, None] / dim_t
         pos_y = y_embed[:, :, :, None] / dim_t
-        pos_x = torch.stack((pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()), dim=4).flatten(3)
-        pos_y = torch.stack((pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()), dim=4).flatten(3)
+        pos_x = torch.stack(
+            (pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()), dim=4
+        ).flatten(3)
+        pos_y = torch.stack(
+            (pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()), dim=4
+        ).flatten(3)
         pos = torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)
         return pos
 
 
 class L2pooling(nn.Module):
-	def __init__(self, filter_size=5, stride=1, channels=None, pad_off=0):
-		super(L2pooling, self).__init__()
-		self.padding = (filter_size - 2) // 2
-		self.stride = stride
-		self.channels = channels
-		a = np.hanning(filter_size)[1:-1]
-		g = torch.Tensor(a[:, None] * a[None, :])
-		g = g / torch.sum(g)
-		self.register_buffer('filter', g[None, None, :, :].repeat((self.channels, 1, 1, 1)))
+    def __init__(self, filter_size=5, stride=1, channels=None, pad_off=0):
+        super(L2pooling, self).__init__()
+        self.padding = (filter_size - 2) // 2
+        self.stride = stride
+        self.channels = channels
+        a = np.hanning(filter_size)[1:-1]
+        g = torch.Tensor(a[:, None] * a[None, :])
+        g = g / torch.sum(g)
+        self.register_buffer(
+            'filter', g[None, None, :, :].repeat((self.channels, 1, 1, 1))
+        )
 
-	def forward(self, input):
-		input = input**2
-		out = F.conv2d(input, self.filter, stride=self.stride, padding=self.padding, groups=input.shape[1])
-		return (out + 1e-12).sqrt()
+    def forward(self, input):
+        input = input**2
+        out = F.conv2d(
+            input,
+            self.filter,
+            stride=self.stride,
+            padding=self.padding,
+            groups=input.shape[1],
+        )
+        return (out + 1e-12).sqrt()
 
 
 @ARCH_REGISTRY.register()
@@ -274,8 +323,14 @@ class TReS(nn.Module):
         ddropout = 0.5
         normalize = True
 
-        self.transformer = Transformer(d_model=dim_modelt, nhead=nheadt, num_encoder_layers=num_encoder_layerst,
-                                       dim_feedforward=dim_feedforwardt, normalize_before=normalize, dropout=ddropout)
+        self.transformer = Transformer(
+            d_model=dim_modelt,
+            nhead=nheadt,
+            num_encoder_layers=num_encoder_layerst,
+            dim_feedforward=dim_feedforwardt,
+            normalize_before=normalize,
+            dropout=ddropout,
+        )
 
         self.position_embedding = PositionEmbeddingSine(dim_modelt // 2, normalize=True)
 
@@ -331,14 +386,22 @@ class TReS(nn.Module):
             x = uniform_crop(x, 224, self.test_sample)
             num_patches = self.test_sample
 
-        self.pos_enc_1 = self.position_embedding(torch.ones(1, self.dim_modelt, 7, 7).to(x))
+        self.pos_enc_1 = self.position_embedding(
+            torch.ones(1, self.dim_modelt, 7, 7).to(x)
+        )
         self.pos_enc = self.pos_enc_1.repeat(x.shape[0], 1, 1, 1).contiguous()
 
         out, layer1, layer2, layer3, layer4 = self.forward_backbone(self.model, x)
 
-        layer1_t = self.avg8(self.drop2d(self.L2pooling_l1(F.normalize(layer1, dim=1, p=2))))
-        layer2_t = self.avg4(self.drop2d(self.L2pooling_l2(F.normalize(layer2, dim=1, p=2))))
-        layer3_t = self.avg2(self.drop2d(self.L2pooling_l3(F.normalize(layer3, dim=1, p=2))))
+        layer1_t = self.avg8(
+            self.drop2d(self.L2pooling_l1(F.normalize(layer1, dim=1, p=2)))
+        )
+        layer2_t = self.avg4(
+            self.drop2d(self.L2pooling_l2(F.normalize(layer2, dim=1, p=2)))
+        )
+        layer3_t = self.avg2(
+            self.drop2d(self.L2pooling_l3(F.normalize(layer3, dim=1, p=2)))
+        )
         layer4_t = self.drop2d(self.L2pooling_l4(F.normalize(layer4, dim=1, p=2)))
         layers = torch.cat((layer1_t, layer2_t, layer3_t, layer4_t), dim=1)
 
@@ -347,9 +410,13 @@ class TReS(nn.Module):
         out_t_o = self.fc2(out_t_o)
         layer4_o = self.avg7(layer4)
         layer4_o = torch.flatten(layer4_o, start_dim=1)
-        predictionQA = self.fc(torch.flatten(torch.cat((out_t_o, layer4_o), dim=1), start_dim=1))
+        predictionQA = self.fc(
+            torch.flatten(torch.cat((out_t_o, layer4_o), dim=1), start_dim=1)
+        )
 
-        fout, flayer1, flayer2, flayer3, flayer4 = self.forward_backbone(self.model, torch.flip(x, [3]))
+        fout, flayer1, flayer2, flayer3, flayer4 = self.forward_backbone(
+            self.model, torch.flip(x, [3])
+        )
         flayer1_t = self.avg8(self.L2pooling_l1(F.normalize(flayer1, dim=1, p=2)))
         flayer2_t = self.avg4(self.L2pooling_l2(F.normalize(flayer2, dim=1, p=2)))
         flayer3_t = self.avg2(self.L2pooling_l3(F.normalize(flayer3, dim=1, p=2)))
@@ -357,10 +424,12 @@ class TReS(nn.Module):
         flayers = torch.cat((flayer1_t, flayer2_t, flayer3_t, flayer4_t), dim=1)
         fout_t_c = self.transformer(flayers, self.pos_enc)
         fout_t_o = torch.flatten(self.avg7(fout_t_c), start_dim=1)
-        fout_t_o = (self.fc2(fout_t_o))
+        fout_t_o = self.fc2(fout_t_o)
         flayer4_o = self.avg7(flayer4)
         flayer4_o = torch.flatten(flayer4_o, start_dim=1)
-        fpredictionQA = (self.fc(torch.flatten(torch.cat((fout_t_o, flayer4_o), dim=1), start_dim=1)))
+        fpredictionQA = self.fc(
+            torch.flatten(torch.cat((fout_t_o, flayer4_o), dim=1), start_dim=1)
+        )
 
         consistloss1 = self.consistency(out_t_c, fout_t_c.detach())
         consistloss2 = self.consistency(layer4, flayer4.detach())

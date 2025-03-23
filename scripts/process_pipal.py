@@ -3,7 +3,6 @@ from glob import glob
 
 
 def get_meta_info():
-
     train_label_folder = './datasets/PIPAL/Train_Label/'
 
     name_labels = []

@@ -25,8 +25,8 @@ from pyiqa.archs.arch_util import get_url_from_name
 
 
 default_model_urls = {
-    "alex_shift_tolerant": get_url_from_name("alex_shift_tolerant.pth"),
-    "vgg_shift_tolerant": get_url_from_name("vgg_shift_tolerant.pth"),
+    'alex_shift_tolerant': get_url_from_name('alex_shift_tolerant.pth'),
+    'vgg_shift_tolerant': get_url_from_name('vgg_shift_tolerant.pth'),
 }
 
 
@@ -36,7 +36,7 @@ def spatial_average(in_tens, keepdim=True):
 
 def upsample(in_tens, out_HW=(64, 64)):  # assumes scale factor is same for H and W
     in_H, in_W = in_tens.shape[2], in_tens.shape[3]
-    return nn.Upsample(size=out_HW, mode="bilinear", align_corners=False)(in_tens)
+    return nn.Upsample(size=out_HW, mode='bilinear', align_corners=False)(in_tens)
 
 
 def normalize_tensor(in_feat, eps=1e-10):
@@ -64,8 +64,8 @@ class STLPIPS(nn.Module):
     def __init__(
         self,
         pretrained=True,
-        net="alex",
-        variant="shift_tolerant",
+        net='alex',
+        variant='shift_tolerant',
         lpips=True,
         spatial=False,
         pnet_tune=False,
@@ -82,10 +82,10 @@ class STLPIPS(nn.Module):
         self.lpips = lpips  # false means baseline of just averaging all layers
         self.scaling_layer = ScalingLayer()
 
-        if self.pnet_type in ["vgg"]:
+        if self.pnet_type in ['vgg']:
             net_type = vggnet
             self.chns = [64, 128, 256, 512, 512]
-        elif self.pnet_type == "alex":
+        elif self.pnet_type == 'alex':
             net_type = alexnet
             self.chns = [64, 192, 384, 256, 256]
 
@@ -102,7 +102,7 @@ class STLPIPS(nn.Module):
             self.lin3 = NetLinLayer(self.chns[3], use_dropout=use_dropout)
             self.lin4 = NetLinLayer(self.chns[4], use_dropout=use_dropout)
             self.lins = [self.lin0, self.lin1, self.lin2, self.lin3, self.lin4]
-            if self.pnet_type == "squeeze":  # 7 layers for squeezenet
+            if self.pnet_type == 'squeeze':  # 7 layers for squeezenet
                 self.lin5 = NetLinLayer(self.chns[5], use_dropout=use_dropout)
                 self.lin6 = NetLinLayer(self.chns[6], use_dropout=use_dropout)
                 self.lins += [self.lin5, self.lin6]
@@ -112,7 +112,7 @@ class STLPIPS(nn.Module):
                 load_pretrained_network(self, pretrained_model_path, False)
             elif pretrained:
                 load_pretrained_network(
-                    self, default_model_urls[f"{net}_{variant}"], False
+                    self, default_model_urls[f'{net}_{variant}'], False
                 )
 
         if eval_mode:
@@ -133,7 +133,9 @@ class STLPIPS(nn.Module):
 
         """
 
-        if (normalize):  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
+        if (
+            normalize
+        ):  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1
 
@@ -142,8 +144,9 @@ class STLPIPS(nn.Module):
         feats0, feats1, diffs = {}, {}, {}
 
         for kk in range(self.L):
-            feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(
-                outs1[kk]
+            feats0[kk], feats1[kk] = (
+                normalize_tensor(outs0[kk]),
+                normalize_tensor(outs1[kk]),
             )
             diffs[kk] = (feats0[kk] - feats1[kk]) ** 2
 
@@ -184,10 +187,10 @@ class ScalingLayer(nn.Module):
     def __init__(self):
         super(ScalingLayer, self).__init__()
         self.register_buffer(
-            "shift", torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None]
+            'shift', torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None]
         )
         self.register_buffer(
-            "scale", torch.Tensor([0.458, 0.448, 0.450])[None, :, None, None]
+            'scale', torch.Tensor([0.458, 0.448, 0.450])[None, :, None, None]
         )
 
     def forward(self, inp):
@@ -217,7 +220,7 @@ class NetLinLayer(nn.Module):
 
 
 class alexnet(nn.Module):
-    def __init__(self, requires_grad=False, variant="shift_tolerant", filter_size=3):
+    def __init__(self, requires_grad=False, variant='shift_tolerant', filter_size=3):
         super(alexnet, self).__init__()
 
         self.slice1 = nn.Sequential()
@@ -226,7 +229,7 @@ class alexnet(nn.Module):
         self.slice4 = nn.Sequential()
         self.slice5 = nn.Sequential()
 
-        if variant == "vanilla":
+        if variant == 'vanilla':
             features = nn.Sequential(
                 nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
                 nn.ReLU(inplace=True),  # 1
@@ -253,7 +256,7 @@ class alexnet(nn.Module):
             for x in range(10, 12):
                 self.slice5.add_module(str(x), features[x])
 
-        elif variant == "antialiased":
+        elif variant == 'antialiased':
             features = nn.Sequential(
                 nn.Conv2d(3, 64, kernel_size=11, stride=2, padding=2),
                 nn.ReLU(inplace=True),  # 1
@@ -285,7 +288,7 @@ class alexnet(nn.Module):
                 self.slice5.add_module(str(x), features[x])
 
         elif (
-            variant == "shift_tolerant"
+            variant == 'shift_tolerant'
         ):  # antialiased_blurpoolReflectionPad2_conv1stride1_blurAfter
             features = nn.Sequential(
                 nn.Conv2d(3, 64, kernel_size=11, stride=1, padding=2),
@@ -336,7 +339,7 @@ class alexnet(nn.Module):
         h = self.slice5(h)
         h_relu5 = h
         alexnet_outputs = namedtuple(
-            "AlexnetOutputs", ["relu1", "relu2", "relu3", "relu4", "relu5"]
+            'AlexnetOutputs', ['relu1', 'relu2', 'relu3', 'relu4', 'relu5']
         )
         out = alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
 
@@ -344,7 +347,7 @@ class alexnet(nn.Module):
 
 
 class vggnet(nn.Module):
-    def __init__(self, requires_grad=False, variant="shift_tolerant", filter_size=3):
+    def __init__(self, requires_grad=False, variant='shift_tolerant', filter_size=3):
         super(vggnet, self).__init__()
 
         filter_size = 3
@@ -355,7 +358,7 @@ class vggnet(nn.Module):
         self.slice5 = nn.Sequential()
         self.N_slices = 5
 
-        if variant == "vanilla":
+        if variant == 'vanilla':
             vgg_features = tv.vgg16(pretrained=False).features
             for x in range(4):
                 self.slice1.add_module(str(x), vgg_features[x])
@@ -368,7 +371,7 @@ class vggnet(nn.Module):
             for x in range(23, 30):
                 self.slice5.add_module(str(x), vgg_features[x])
 
-        elif variant == "shift_tolerant":
+        elif variant == 'shift_tolerant':
             vgg_features = vgg16(filter_size=filter_size, pad_more=True).features
             for x in range(4):
                 self.slice1.add_module(str(x), vgg_features[x])
@@ -396,7 +399,7 @@ class vggnet(nn.Module):
         h = self.slice5(h)
         h_relu5_3 = h
         vgg_outputs = namedtuple(
-            "VggOutputs", ["relu1_2", "relu2_2", "relu3_3", "relu4_3", "relu5_3"]
+            'VggOutputs', ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3', 'relu5_3']
         )
         out = vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
@@ -413,25 +416,25 @@ class vggnet(nn.Module):
 class Downsample(nn.Module):
     def __init__(
         self,
-        pad_type="reflect",
+        pad_type='reflect',
         filt_size=3,
         stride=2,
         channels=None,
         pad_off=0,
-        pad_size="",
+        pad_size='',
         pad_more=False,
     ):
         super(Downsample, self).__init__()
         self.filt_size = filt_size
         self.pad_off = pad_off
-        if pad_size == "2k" or pad_more == True:
+        if pad_size == '2k' or pad_more == True:
             self.pad_sizes = [
                 int(1.0 * (filt_size - 1)),
                 int(np.ceil(1.0 * (filt_size - 1))),
                 int(1.0 * (filt_size - 1)),
                 int(np.ceil(1.0 * (filt_size - 1))),
             ]
-        elif pad_size == "none":
+        elif pad_size == 'none':
             self.pad_sizes = [0, 0, 0, 0]
         else:
             self.pad_sizes = [
@@ -467,7 +470,7 @@ class Downsample(nn.Module):
         filt = torch.Tensor(a[:, None] * a[None, :])
         filt = filt / torch.sum(filt)
         self.register_buffer(
-            "filt", filt[None, None, :, :].repeat((self.channels, 1, 1, 1))
+            'filt', filt[None, None, :, :].repeat((self.channels, 1, 1, 1))
         )
 
         self.pad = get_pad_layer(pad_type)(self.pad_sizes)
@@ -485,14 +488,14 @@ class Downsample(nn.Module):
 
 
 def get_pad_layer(pad_type):
-    if pad_type in ["refl", "reflect"]:
+    if pad_type in ['refl', 'reflect']:
         PadLayer = nn.ReflectionPad2d
-    elif pad_type in ["repl", "replicate"]:
+    elif pad_type in ['repl', 'replicate']:
         PadLayer = nn.ReplicationPad2d
-    elif pad_type == "zero":
+    elif pad_type == 'zero':
         PadLayer = nn.ZeroPad2d
     else:
-        print("Pad type [%s] not recognized" % pad_type)
+        print('Pad type [%s] not recognized' % pad_type)
     return PadLayer
 
 
@@ -571,12 +574,12 @@ class VGG(nn.Module):
                 ):
                     # don't want to reinitialize downsample layers, code assuming normal conv layers will not have these characteristics
                     nn.init.kaiming_normal_(
-                        m.weight, mode="fan_out", nonlinearity="relu"
+                        m.weight, mode='fan_out', nonlinearity='relu'
                     )
                     if m.bias is not None:
                         nn.init.constant_(m.bias, 0)
                 else:
-                    print("Not initializing")
+                    print('Not initializing')
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
@@ -589,7 +592,7 @@ def make_layers(cfg, batch_norm=False, filter_size=1, pad_more=False, fconv=Fals
     layers = []
     in_channels = 3
     for v in cfg:
-        if v == "M":
+        if v == 'M':
             # layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
             layers += [
                 nn.MaxPool2d(kernel_size=2, stride=1),
@@ -614,10 +617,51 @@ def make_layers(cfg, batch_norm=False, filter_size=1, pad_more=False, fconv=Fals
 
 
 cfg = {
-    "A": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
-    "B": [64, 64, "M", 128, 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
-    "D": [64, 64, "M", 128, 128, "M", 256, 256, 256, "M", 512, 512, 512, "M", 512, 512, 512, "M",],
-    "E": [64, 64, "M", 128, 128, "M", 256, 256, 256, 256, "M", 512, 512, 512, 512, "M", 512, 512, 512, 512, "M",],
+    'A': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    'D': [
+        64,
+        64,
+        'M',
+        128,
+        128,
+        'M',
+        256,
+        256,
+        256,
+        'M',
+        512,
+        512,
+        512,
+        'M',
+        512,
+        512,
+        512,
+        'M',
+    ],
+    'E': [
+        64,
+        64,
+        'M',
+        128,
+        128,
+        'M',
+        256,
+        256,
+        256,
+        256,
+        'M',
+        512,
+        512,
+        512,
+        512,
+        'M',
+        512,
+        512,
+        512,
+        512,
+        'M',
+    ],
 }
 
 
@@ -628,9 +672,9 @@ def vgg16(pretrained=False, filter_size=1, pad_more=False, fconv=False, **kwargs
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
     if pretrained:
-        kwargs["init_weights"] = False
+        kwargs['init_weights'] = False
     model = VGG(
-        make_layers(cfg["D"], filter_size=filter_size, pad_more=pad_more, fconv=fconv),
+        make_layers(cfg['D'], filter_size=filter_size, pad_more=pad_more, fconv=fconv),
         **kwargs,
     )
     # if pretrained:

@@ -2,6 +2,7 @@
 r"""Setup file for python package
 Taken from: https://github.com/xinntao/BasicSR/blob/master/setup.py
 """
+
 from setuptools import find_packages, setup
 import os
 import subprocess
@@ -17,7 +18,6 @@ def readme():
 
 
 def get_git_hash():
-
     def _minimal_ext_cmd(cmd):
         # construct minimal environment
         env = {}
@@ -60,7 +60,9 @@ version_info = ({})
     sha = get_hash()
     with open('VERSION', 'r') as f:
         SHORT_VERSION = f.read().strip()
-    VERSION_INFO = ', '.join([x if x.isdigit() else f'"{x}"' for x in SHORT_VERSION.split('.')])
+    VERSION_INFO = ', '.join(
+        [x if x.isdigit() else f'"{x}"' for x in SHORT_VERSION.split('.')]
+    )
 
     version_file_str = content.format(time.asctime(), SHORT_VERSION, sha, VERSION_INFO)
     with open(version_file, 'w') as f:
@@ -94,8 +96,18 @@ if __name__ == '__main__':
         url='https://github.com/chaofengc/IQA-PyTorch',
         include_package_data=True,
         packages=find_packages(
-            exclude=('options', 'datasets', 'experiments', 'results', 'tb_logger', 'wandb', 'tests', 'ResultsCalibra',
-                     'scripts')),
+            exclude=(
+                'options',
+                'datasets',
+                'experiments',
+                'results',
+                'tb_logger',
+                'wandb',
+                'tests',
+                'ResultsCalibra',
+                'scripts',
+            )
+        ),
         classifiers=[
             # How mature is this project? Common values are
             #   3 - Alpha
@@ -112,8 +124,8 @@ if __name__ == '__main__':
             'Topic :: Scientific/Engineering :: Image Processing',
         ],
         entry_points={
-            "console_scripts": [
-                "pyiqa=pyiqa.pyiqa_cmd:main",
+            'console_scripts': [
+                'pyiqa=pyiqa.pyiqa_cmd:main',
             ],
         },
         install_requires=get_requirements(),

@@ -18,15 +18,23 @@ class PieAPPDataset(GeneralFRDataset):
     PieAPP: Perceptual Image-Error Assessment Through Pairwise Preference
     CVPR2018
     url: http://civc.ucsb.edu/graphics/Papers/CVPR2018_PieAPP/
-    
+
     Args:
         opt (dict): Config for train datasets with the following keys:
             phase (str): 'train' or 'val'.
     """
+
     def init_path_mos(self, opt):
         self.dataroot = opt['dataroot_target']
-        if self.phase == "test":
-            metadata = pd.read_csv(opt['meta_info_file'], usecols=['ref_img_path', 'dist_imgB_path', 'per_img score for dist_imgB'])
+        if self.phase == 'test':
+            metadata = pd.read_csv(
+                opt['meta_info_file'],
+                usecols=[
+                    'ref_img_path',
+                    'dist_imgB_path',
+                    'per_img score for dist_imgB',
+                ],
+            )
         else:
             metadata = pd.read_csv(opt['meta_info_file'])
         self.paths_mos = metadata.values.tolist()
@@ -40,25 +48,28 @@ class PieAPPDataset(GeneralFRDataset):
                 if not item in temp:
                     temp.append(item)
             self.paths_mos = temp
-        
-    def __getitem__(self, index):
 
+    def __getitem__(self, index):
         ref_path = os.path.join(self.dataroot, self.paths_mos[index][0])
-        if self.phase == "test":
+        if self.phase == 'test':
             distB_path = os.path.join(self.dataroot, self.paths_mos[index][1])
         else:
             distA_path = os.path.join(self.dataroot, self.paths_mos[index][1])
             distB_path = os.path.join(self.dataroot, self.paths_mos[index][2])
-        
+
         distB_pil = Image.open(distB_path).convert('RGB')
         ref_img_pil = Image.open(ref_path).convert('RGB')
 
         if self.phase != 'test':
             distA_pil = Image.open(distA_path).convert('RGB')
 
-            distA_pil, distB_pil, ref_img_pil = self.paired_trans([distA_pil, distB_pil, ref_img_pil])
+            distA_pil, distB_pil, ref_img_pil = self.paired_trans(
+                [distA_pil, distB_pil, ref_img_pil]
+            )
 
-            distA_tensor, distB_tensor, ref_tensor = self.common_trans([distA_pil, distB_pil, ref_img_pil])
+            distA_tensor, distB_tensor, ref_tensor = self.common_trans(
+                [distA_pil, distB_pil, ref_img_pil]
+            )
         else:
             distB_pil, ref_img_pil = self.paired_trans([distB_pil, ref_img_pil])
             distB_tensor, ref_tensor = self.common_trans([distB_pil, ref_img_pil])
@@ -74,11 +85,23 @@ class PieAPPDataset(GeneralFRDataset):
         elif self.phase == 'test':
             per_img_score = self.paths_mos[index][2]
             distB_score = torch.Tensor([per_img_score])
-        
+
         if self.phase == 'test':
-            return {'img': distB_tensor, 'ref_img': ref_tensor, 'mos_label': distB_score, 
-                    'img_path': distB_path, 'ref_img_path': ref_path}
+            return {
+                'img': distB_tensor,
+                'ref_img': ref_tensor,
+                'mos_label': distB_score,
+                'img_path': distB_path,
+                'ref_img_path': ref_path,
+            }
         else:
-            return {'distB_img': distB_tensor, 'ref_img': ref_tensor, 'distA_img': distA_tensor, 
-                    'mos_label': mos_label_tensor, 'distB_per_img_score': distB_score, 
-                    'distB_path': distB_path, 'ref_img_path': ref_path, 'distA_path': distA_path}
+            return {
+                'distB_img': distB_tensor,
+                'ref_img': ref_tensor,
+                'distA_img': distA_tensor,
+                'mos_label': mos_label_tensor,
+                'distB_per_img_score': distB_score,
+                'distB_path': distB_path,
+                'ref_img_path': ref_path,
+                'distA_path': distA_path,
+            }

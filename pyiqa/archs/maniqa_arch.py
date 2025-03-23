@@ -19,7 +19,7 @@ from torch import nn
 from einops import rearrange
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network, random_crop, uniform_crop 
+from pyiqa.archs.arch_util import load_pretrained_network, random_crop, uniform_crop
 from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
@@ -29,14 +29,13 @@ default_model_urls = {
 }
 
 
-
 class TABlock(nn.Module):
     def __init__(self, dim, drop=0.1):
         super().__init__()
         self.c_q = nn.Linear(dim, dim)
         self.c_k = nn.Linear(dim, dim)
         self.c_v = nn.Linear(dim, dim)
-        self.norm_fact = dim ** -0.5
+        self.norm_fact = dim**-0.5
         self.softmax = nn.Softmax(dim=-1)
         self.proj_drop = nn.Dropout(drop)
 
@@ -93,15 +92,28 @@ class MANIQA(nn.Module):
     Returns:
         torch.Tensor: Predicted quality score for the input image.
     """
-    def __init__(self, embed_dim=768, num_outputs=1, patch_size=8, drop=0.1,
-                 depths=[2, 2], window_size=4, dim_mlp=768, num_heads=[4, 4],
-                 img_size=224, num_tab=2, scale=0.13, test_sample=20,
-                 pretrained=True,
-                 pretrained_model_path=None,
-                 train_dataset='pipal',
-                 default_mean=None,
-                 default_std=None,
-                 **kwargs):
+
+    def __init__(
+        self,
+        embed_dim=768,
+        num_outputs=1,
+        patch_size=8,
+        drop=0.1,
+        depths=[2, 2],
+        window_size=4,
+        dim_mlp=768,
+        num_heads=[4, 4],
+        img_size=224,
+        num_tab=2,
+        scale=0.13,
+        test_sample=20,
+        pretrained=True,
+        pretrained_model_path=None,
+        train_dataset='pipal',
+        default_mean=None,
+        default_std=None,
+        **kwargs,
+    ):
         super().__init__()
         self.img_size = img_size
         self.patch_size = patch_size
@@ -119,7 +131,7 @@ class MANIQA(nn.Module):
 
         self.tablock1 = nn.ModuleList()
         for i in range(num_tab):
-            tab = TABlock(self.input_size ** 2)
+            tab = TABlock(self.input_size**2)
             self.tablock1.append(tab)
 
         self.conv1 = nn.Conv2d(embed_dim * 4, embed_dim, 1, 1, 0)
@@ -130,12 +142,12 @@ class MANIQA(nn.Module):
             embed_dim=embed_dim,
             window_size=window_size,
             dim_mlp=dim_mlp,
-            scale=scale
+            scale=scale,
         )
 
         self.tablock2 = nn.ModuleList()
         for i in range(num_tab):
-            tab = TABlock(self.input_size ** 2)
+            tab = TABlock(self.input_size**2)
             self.tablock2.append(tab)
 
         self.conv2 = nn.Conv2d(embed_dim, embed_dim // 2, 1, 1, 0)
@@ -146,7 +158,7 @@ class MANIQA(nn.Module):
             embed_dim=embed_dim // 2,
             window_size=window_size,
             dim_mlp=dim_mlp,
-            scale=scale
+            scale=scale,
         )
 
         self.fc_score = nn.Sequential(
@@ -154,14 +166,14 @@ class MANIQA(nn.Module):
             nn.ReLU(),
             nn.Dropout(drop),
             nn.Linear(embed_dim // 2, num_outputs),
-            nn.ReLU()
+            nn.ReLU(),
         )
         self.fc_weight = nn.Sequential(
             nn.Linear(embed_dim // 2, embed_dim // 2),
             nn.ReLU(),
             nn.Dropout(drop),
             nn.Linear(embed_dim // 2, num_outputs),
-            nn.Sigmoid()
+            nn.Sigmoid(),
         )
 
         if default_mean is None and default_std is None:
@@ -169,7 +181,9 @@ class MANIQA(nn.Module):
             self.default_std = torch.Tensor(IMAGENET_INCEPTION_STD).view(1, 3, 1, 1)
 
         if pretrained_model_path is not None:
-            load_pretrained_network(self, pretrained_model_path, True, weight_keys='params')
+            load_pretrained_network(
+                self, pretrained_model_path, True, weight_keys='params'
+            )
             # load_pretrained_network(self, pretrained_model_path, True, )
         elif pretrained:
             load_pretrained_network(self, default_model_urls[train_dataset], True)
@@ -227,5 +241,7 @@ class MANIQA(nn.Module):
         per_patch_weight = self.fc_weight(x)
         per_patch_weight = per_patch_weight.reshape(bsz, -1)
 
-        score = (per_patch_weight * per_patch_score).sum(dim=-1) / (per_patch_weight.sum(dim=-1) + 1e-8)
+        score = (per_patch_weight * per_patch_score).sum(dim=-1) / (
+            per_patch_weight.sum(dim=-1) + 1e-8
+        )
         return score.unsqueeze(1)

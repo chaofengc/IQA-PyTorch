@@ -18,6 +18,7 @@ release:
 # 	flake8 pyiqa/ --count --max-line-length=127 --ignore=W293,W503,W504,E126,E741
 
 # test calibration and forward inference
+test_main: test_forward test_cal
 test: test_forward test_cal test_cs test_grad test_dataset 
 
 test_cal:

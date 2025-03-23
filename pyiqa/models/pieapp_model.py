@@ -14,7 +14,7 @@ class PieAPPModel(GeneralIQAModel):
     """General module to train an IQA network."""
 
     def feed_data(self, data):
-        is_test = 'img' in data.keys() 
+        is_test = 'img' in data.keys()
 
         if 'use_ref' in self.opt['train']:
             self.use_ref = self.opt['train']['use_ref']
@@ -36,13 +36,12 @@ class PieAPPModel(GeneralIQAModel):
             # exit()
 
     def optimize_parameters(self, current_iter):
-        
         self.optimizer.zero_grad()
-        
+
         score_A = self.net(self.img_A_input, self.img_ref_input)
         score_B = self.net(self.img_B_input, self.img_ref_input)
-        train_output_score = (1 / (1 + torch.exp(score_A - score_B)))
-        
+        train_output_score = 1 / (1 + torch.exp(score_A - score_B))
+
         l_total = 0
         loss_dict = OrderedDict()
         # pixel loss
@@ -59,5 +58,5 @@ class PieAPPModel(GeneralIQAModel):
         # log metrics in training batch
         pred_score = train_output_score.squeeze(-1).cpu().detach().numpy()
         gt_prob = self.gt_prob.squeeze(-1).cpu().detach().numpy()
-        
+
         self.log_dict[f'train_metrics/rmse'] = calculate_rmse(pred_score, gt_prob)

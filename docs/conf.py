@@ -13,6 +13,7 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../'))
 
@@ -30,6 +31,7 @@ release = '0.1.13'
 
 # Markdown support
 from recommonmark.parser import CommonMarkParser
+
 source_parsers = {
     '.md': CommonMarkParser,
 }
@@ -40,48 +42,51 @@ source_suffix = ['.rst', '.md']
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-   'sphinx.ext.autodoc',
-   'sphinx.ext.doctest',
-   'sphinx.ext.intersphinx',
-   'sphinx.ext.todo',
-   'sphinx.ext.coverage',
-   'sphinx.ext.mathjax',
-   'sphinx.ext.ifconfig',
-   'sphinx.ext.viewcode',
-   'sphinx.ext.githubpages',
-   'sphinx.ext.autosummary',
-   'sphinx.ext.napoleon',
-   'recommonmark',
-   'sphinx_markdown_tables',
-   'autoapi.extension',
- ]
+    'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.napoleon',
+    'recommonmark',
+    'sphinx_markdown_tables',
+    'autoapi.extension',
+]
 
-# Config autoapi 
+# Config autoapi
 autoapi_dirs = ['../pyiqa/']
-autoapi_type = "python"
+autoapi_type = 'python'
 autoapi_add_toctree_entry = False
 
 autoapi_options = [
-    "members",
-    "undoc-members",
-    "show-inheritance",
+    'members',
+    'undoc-members',
+    'show-inheritance',
     # "show-module-summary",
-    "imported-members",
+    'imported-members',
 ]
-autodoc_typehints = "signature"
+autodoc_typehints = 'signature'
 
 # def skip_submodules(app, what, name, obj, skip, options):
 #     if what == "module":
 #         skip = True
 #     return skip
 
+
 def skip_attributes(app, what, name, obj, skip, options):
-    if what == "attribute":
+    if what == 'attribute':
         return True  # Skip all attributes
     return None  # Use default behavior for other members
 
+
 def setup(sphinx):
-    sphinx.connect("autoapi-skip-member", skip_attributes)
+    sphinx.connect('autoapi-skip-member', skip_attributes)
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

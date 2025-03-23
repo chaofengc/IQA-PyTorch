@@ -1,6 +1,6 @@
 from collections import OrderedDict
 import torch
-from pyiqa.metrics import calculate_metric 
+from pyiqa.metrics import calculate_metric
 from pyiqa.utils.registry import MODEL_REGISTRY
 from .general_iqa_model import GeneralIQAModel
 from tqdm import tqdm
@@ -15,7 +15,6 @@ class BAPPSModel(GeneralIQAModel):
     """General module to train an IQA network."""
 
     def feed_data(self, data):
-
         if 'use_ref' in self.opt['train']:
             self.use_ref = self.opt['train']['use_ref']
 
@@ -29,7 +28,7 @@ class BAPPSModel(GeneralIQAModel):
         # print(self.img_ref_input.shape)
         # save_image(torch.cat([self.img_ref_input, self.img_A_input, self.img_B_input], dim=0), 'tmp_test_bappsdataset.jpg')
         # exit()
-    
+
     def compute_accuracy(self, d0, d1, judge):
         d1_lt_d0 = (d1 < d0).cpu().data.numpy().flatten()
         judge_per = judge.cpu().numpy().flatten()
@@ -37,14 +36,13 @@ class BAPPSModel(GeneralIQAModel):
         return acc.mean()
 
     def optimize_parameters(self, current_iter):
-        
         self.optimizer.zero_grad()
-        
+
         score_A = self.net(self.img_A_input, self.img_ref_input)
         score_B = self.net(self.img_B_input, self.img_ref_input)
-        # For BAPPS, 
-        train_output_score = (1 / (1 + torch.exp(score_B - score_A)))
-        
+        # For BAPPS,
+        train_output_score = 1 / (1 + torch.exp(score_B - score_A))
+
         l_total = 0
         loss_dict = OrderedDict()
         # pixel loss
@@ -59,8 +57,10 @@ class BAPPSModel(GeneralIQAModel):
         self.log_dict = self.reduce_loss_dict(loss_dict)
 
         # log metrics in training batch
-        
-        self.log_dict[f'train_metrics/acc'] = self.compute_accuracy(score_A, score_B, self.gt_mos)
+
+        self.log_dict[f'train_metrics/acc'] = self.compute_accuracy(
+            score_A, score_B, self.gt_mos
+        )
 
     @torch.no_grad()
     def test(self):
@@ -78,7 +78,9 @@ class BAPPSModel(GeneralIQAModel):
 
         if with_metrics:
             if not hasattr(self, 'metric_results'):  # only execute in the first run
-                self.metric_results = {metric: 0 for metric in self.opt['val']['metrics'].keys()}
+                self.metric_results = {
+                    metric: 0 for metric in self.opt['val']['metrics'].keys()
+                }
             # initialize the best metric results for each dataset_name (supporting multiple validation datasets)
             self._initialize_best_metric_results(dataset_name)
         # zero self.metric_results
@@ -112,28 +114,39 @@ class BAPPSModel(GeneralIQAModel):
         gt_mos = torch.cat(gt_mos, dim=0).squeeze(1).cpu().numpy()
 
         if with_metrics:
-            # calculate all metrics 
+            # calculate all metrics
             for name, opt_ in self.opt['val']['metrics'].items():
-                self.metric_results[name] = calculate_metric([pred_score_A, pred_score_B, gt_mos], opt_)
-            
+                self.metric_results[name] = calculate_metric(
+                    [pred_score_A, pred_score_B, gt_mos], opt_
+                )
+
             if self.key_metric is not None:
                 # If the best metric is updated, update and save best model
-                to_update = self._update_best_metric_result(dataset_name, self.key_metric, self.metric_results[self.key_metric], current_iter)
-            
+                to_update = self._update_best_metric_result(
+                    dataset_name,
+                    self.key_metric,
+                    self.metric_results[self.key_metric],
+                    current_iter,
+                )
+
                 if to_update:
                     for name, opt_ in self.opt['val']['metrics'].items():
-                        self._update_metric_result(dataset_name, name, self.metric_results[name], current_iter)
+                        self._update_metric_result(
+                            dataset_name, name, self.metric_results[name], current_iter
+                        )
                     self.copy_model(self.net, self.net_best)
                     self.save_network(self.net_best, 'net_best')
             else:
-                # update each metric separately 
+                # update each metric separately
                 updated = []
                 for name, opt_ in self.opt['val']['metrics'].items():
-                    tmp_updated = self._update_best_metric_result(dataset_name, name, self.metric_results[name], current_iter)
+                    tmp_updated = self._update_best_metric_result(
+                        dataset_name, name, self.metric_results[name], current_iter
+                    )
                     updated.append(tmp_updated)
-                # save best model if any metric is updated 
-                if sum(updated): 
+                # save best model if any metric is updated
+                if sum(updated):
                     self.copy_model(self.net, self.net_best)
                     self.save_network(self.net_best, 'net_best')
-            
+
             self._log_validation_metric_values(current_iter, dataset_name, tb_logger)

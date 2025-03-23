@@ -39,7 +39,10 @@ def get_random_splits(seed=123):
     split_info = {}
     for i in range(num_splits):
         random.shuffle(all_img_index)
-        split_info[i + 1] = {'train': all_img_index[:sep_index], 'val': all_img_index[sep_index:]}
+        split_info[i + 1] = {
+            'train': all_img_index[:sep_index],
+            'val': all_img_index[sep_index:],
+        }
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

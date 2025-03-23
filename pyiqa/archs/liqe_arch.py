@@ -13,7 +13,6 @@ Cite as:
 
 """
 
-
 import torch
 import torch.nn as nn
 import os
@@ -31,24 +30,49 @@ from itertools import product
 from pyiqa.archs.arch_util import get_url_from_name
 
 qualitys = ['bad', 'poor', 'fair', 'good', 'perfect']
-scenes = ['animal', 'cityscape', 'human', 'indoor', 'landscape', 'night', 'plant', 'still_life', 'others']
-dists_map = ['jpeg2000 compression', 'jpeg compression', 'noise', 'blur', 'color', 'contrast', 'overexposure',
-            'underexposure', 'spatial', 'quantization', 'other']
+scenes = [
+    'animal',
+    'cityscape',
+    'human',
+    'indoor',
+    'landscape',
+    'night',
+    'plant',
+    'still_life',
+    'others',
+]
+dists_map = [
+    'jpeg2000 compression',
+    'jpeg compression',
+    'noise',
+    'blur',
+    'color',
+    'contrast',
+    'overexposure',
+    'underexposure',
+    'spatial',
+    'quantization',
+    'other',
+]
 
-default_model_urls = {'koniq': get_url_from_name('liqe_koniq.pt'),
-                      'mix': get_url_from_name('liqe_mix.pt')}
+default_model_urls = {
+    'koniq': get_url_from_name('liqe_koniq.pt'),
+    'mix': get_url_from_name('liqe_mix.pt'),
+}
+
 
 @ARCH_REGISTRY.register()
 class LIQE(nn.Module):
-    def __init__(self,
-                 model_type='liqe',
-                 backbone = 'ViT-B/32',
-                 step = 32,
-                 num_patch = 15,
-                 pretrained=True,
-                 pretrained_model_path=None,
-                 mtl = False,
-                 ) -> None:
+    def __init__(
+        self,
+        model_type='liqe',
+        backbone='ViT-B/32',
+        step=32,
+        num_patch=15,
+        pretrained=True,
+        pretrained_model_path=None,
+        mtl=False,
+    ) -> None:
         super().__init__()
         assert backbone == 'ViT-B/32', 'Only support ViT-B/32 now'
         self.backbone = backbone
@@ -71,25 +95,38 @@ class LIQE(nn.Module):
 
         if pretrained == 'mix':
             self.mtl = True
-            text_feat_cache_path = os.path.join(DEFAULT_CACHE_DIR, 'liqe_text_feat_mix.pt')
+            text_feat_cache_path = os.path.join(
+                DEFAULT_CACHE_DIR, 'liqe_text_feat_mix.pt'
+            )
         else:
             self.mtl = mtl
             text_feat_cache_path = os.path.join(DEFAULT_CACHE_DIR, 'liqe_text_feat.pt')
 
         if os.path.exists(text_feat_cache_path):
-            self.text_features = torch.load(text_feat_cache_path, map_location='cpu', weights_only=False)
+            self.text_features = torch.load(
+                text_feat_cache_path, map_location='cpu', weights_only=False
+            )
         else:
-            print(f'Generating text features for LIQE model, will be cached at {text_feat_cache_path}.')
+            print(
+                f'Generating text features for LIQE model, will be cached at {text_feat_cache_path}.'
+            )
             if self.mtl:
                 self.joint_texts = torch.cat(
-                    [clip.tokenize(f"a photo of a {c} with {d} artifacts, which is of {q} quality") for q, c, d
-                     in product(qualitys, scenes, dists_map)])
+                    [
+                        clip.tokenize(
+                            f'a photo of a {c} with {d} artifacts, which is of {q} quality'
+                        )
+                        for q, c, d in product(qualitys, scenes, dists_map)
+                    ]
+                )
             else:
-                self.joint_texts = torch.cat([clip.tokenize(f"a photo with {c} quality") for c in qualitys])
+                self.joint_texts = torch.cat(
+                    [clip.tokenize(f'a photo with {c} quality') for c in qualitys]
+                )
 
             self.text_features = self.get_text_features(self.joint_texts)
             torch.save(self.text_features.to('cpu'), text_feat_cache_path)
-    
+
     def get_text_features(self, x):
         text_features = self.clip_model.encode_text(self.joint_texts.to(x.device))
         text_features = text_features / text_features.norm(dim=1, keepdim=True)
@@ -100,11 +137,18 @@ class LIQE(nn.Module):
         h = x.size(2)
         w = x.size(3)
 
-        assert (h >= 224) & (w >= 224), 'Short side is less than 224, try upsampling the original image'
+        assert (h >= 224) & (w >= 224), (
+            'Short side is less than 224, try upsampling the original image'
+        )
         # preprocess image
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
 
-        x = x.unfold(2, 224, self.step).unfold(3, 224, self.step).permute(0, 2, 3, 1, 4, 5).reshape(bs, -1, 3, 224, 224)
+        x = (
+            x.unfold(2, 224, self.step)
+            .unfold(3, 224, self.step)
+            .permute(0, 2, 3, 1, 4, 5)
+            .reshape(bs, -1, 3, 224, 224)
+        )
 
         if x.size(1) < self.num_patch:
             num_patch = x.size(1)
@@ -112,7 +156,7 @@ class LIQE(nn.Module):
             num_patch = self.num_patch
 
         if self.training:
-            sel = torch.randint(low=0, high=x.size(0), size=(num_patch, ))
+            sel = torch.randint(low=0, high=x.size(0), size=(num_patch,))
         else:
             sel_step = max(1, x.size(1) // num_patch)
             sel = torch.zeros(num_patch)
@@ -123,7 +167,7 @@ class LIQE(nn.Module):
         x = x.reshape(bs, num_patch, x.shape[2], x.shape[3], x.shape[4])
 
         text_features = self.text_features.to(x)
-        x = x.view(bs*x.size(1), x.size(2), x.size(3), x.size(4))
+        x = x.view(bs * x.size(1), x.size(2), x.size(3), x.size(4))
         image_features = self.clip_model.encode_image(x, pos_embedding=True)
         # normalized features
         image_features = image_features / image_features.norm(dim=1, keepdim=True)
@@ -136,12 +180,19 @@ class LIQE(nn.Module):
         logits_per_image = F.softmax(logits_per_image, dim=1)
 
         if self.mtl:
-            logits_per_image = logits_per_image.view(-1, len(qualitys), len(scenes), len(dists_map))
+            logits_per_image = logits_per_image.view(
+                -1, len(qualitys), len(scenes), len(dists_map)
+            )
             logits_quality = logits_per_image.sum(3).sum(2)
         else:
             logits_per_image = logits_per_image.view(-1, len(qualitys))
             logits_quality = logits_per_image
 
-        quality = 1 * logits_quality[:, 0] + 2 * logits_quality[:, 1] + 3 * logits_quality[:, 2] + \
-                             4 * logits_quality[:, 3] + 5 * logits_quality[:, 4]
+        quality = (
+            1 * logits_quality[:, 0]
+            + 2 * logits_quality[:, 1]
+            + 3 * logits_quality[:, 2]
+            + 4 * logits_quality[:, 3]
+            + 5 * logits_quality[:, 4]
+        )
         return quality.unsqueeze(1)

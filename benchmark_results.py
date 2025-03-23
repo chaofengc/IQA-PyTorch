@@ -23,13 +23,14 @@ def flatten_list(list_of_list):
     else:
         return [list_of_list]
 
+
 def str_to_bool(s: str) -> bool:
-    true_values = {"true", "1", "yes", "y", "t", "on"}
-    false_values = {"false", "0", "no", "n", "f", "off"}
-    
+    true_values = {'true', '1', 'yes', 'y', 't', 'on'}
+    false_values = {'false', '0', 'no', 'n', 'f', 'off'}
+
     # Convert the string to lowercase and strip any leading/trailing whitespace
     s = s.strip().lower()
-    
+
     if s in true_values:
         return True
     elif s in false_values:
@@ -37,21 +38,53 @@ def str_to_bool(s: str) -> bool:
     else:
         return s
 
+
 def main():
-    """benchmark test demo for pyiqa.
-    """
+    """benchmark test demo for pyiqa."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', type=str, nargs='+', default=None, help='metric name list.')
-    parser.add_argument('-d', type=str, nargs='+', default=None, help='dataset name list.')
-    parser.add_argument('--metric_opt', type=str, default=None, help='Path to custom metric option YAML file.')
-    parser.add_argument('--extra_metric_opts', nargs='+', type=str, default=None, help='Extra options for all tested metrics.')
-    parser.add_argument('--data_opt', type=str, default=None, help='Path to custom data option YAML file.')
-    parser.add_argument('--batch_size', type=int, default=None, help='batch size for benchmark.')
-    parser.add_argument('--split_file', type=str, default=None, help='split file for test.')
-    parser.add_argument('--test_phase', type=str, default=None, help='phase for benchmark: val/test.')
-    parser.add_argument('--save_result_path', type=str, default=None, help='file to save results.')
-    parser.add_argument('--update_benchmark', type=str, default=None, help='update benchmark results.')
-    parser.add_argument('--use_gpu', action='store_true', default=False, help='use gpu or not')
+    parser.add_argument(
+        '-m', type=str, nargs='+', default=None, help='metric name list.'
+    )
+    parser.add_argument(
+        '-d', type=str, nargs='+', default=None, help='dataset name list.'
+    )
+    parser.add_argument(
+        '--metric_opt',
+        type=str,
+        default=None,
+        help='Path to custom metric option YAML file.',
+    )
+    parser.add_argument(
+        '--extra_metric_opts',
+        nargs='+',
+        type=str,
+        default=None,
+        help='Extra options for all tested metrics.',
+    )
+    parser.add_argument(
+        '--data_opt',
+        type=str,
+        default=None,
+        help='Path to custom data option YAML file.',
+    )
+    parser.add_argument(
+        '--batch_size', type=int, default=None, help='batch size for benchmark.'
+    )
+    parser.add_argument(
+        '--split_file', type=str, default=None, help='split file for test.'
+    )
+    parser.add_argument(
+        '--test_phase', type=str, default=None, help='phase for benchmark: val/test.'
+    )
+    parser.add_argument(
+        '--save_result_path', type=str, default=None, help='file to save results.'
+    )
+    parser.add_argument(
+        '--update_benchmark', type=str, default=None, help='update benchmark results.'
+    )
+    parser.add_argument(
+        '--use_gpu', action='store_true', default=False, help='use gpu or not'
+    )
     args = parser.parse_args()
 
     metrics_to_test = []
@@ -80,7 +113,7 @@ def main():
             custom_metric_opt = yaml.load(f, Loader=ordered_yaml()[0])
         all_metric_opts.update(custom_metric_opt)
         metrics_to_test += list(custom_metric_opt.keys())
-    
+
     extra_opt_dict = {}
     if args.extra_metric_opts is not None:
         for extra_opt in args.extra_metric_opts:
@@ -101,11 +134,13 @@ def main():
     if save_result_path is not None:
         csv_file = open(save_result_path, 'w')
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['Metric name'] + [name + '(PLCC/SRCC/KRCC)' for name in datasets_to_test])
-    
+        csv_writer.writerow(
+            ['Metric name'] + [name + '(PLCC/SRCC/KRCC)' for name in datasets_to_test]
+        )
+
     update_benchmark_file = args.update_benchmark
     if update_benchmark_file is not None:
-        benchmark = pd.read_csv(update_benchmark_file, index_col='Metric name') 
+        benchmark = pd.read_csv(update_benchmark_file, index_col='Metric name')
 
     for metric_name in metrics_to_test:
         # if metric_name exist in default config, load default config first
@@ -114,29 +149,41 @@ def main():
         lower_better = all_metric_opts[metric_name].get('lower_better', False)
         metric_opts.update(extra_opt_dict)
         if metric_name == 'pieapp':
-            lower_better = False    # ground truth score is also lower better for pieapp test set
-        iqa_model = create_metric(metric_name, device=device, metric_mode=metric_mode, **metric_opts)
+            lower_better = (
+                False  # ground truth score is also lower better for pieapp test set
+            )
+        iqa_model = create_metric(
+            metric_name, device=device, metric_mode=metric_mode, **metric_opts
+        )
 
         results_row = [metric_name]
         for dataset_name in datasets_to_test:
             data_opts = all_data_opts[dataset_name]
-            data_opts.update({
-                'num_worker_per_gpu': 8,
-                'prefetch_mode': 'cpu',
-                'num_prefetch_queue': 8,
-            })
+            data_opts.update(
+                {
+                    'num_worker_per_gpu': 8,
+                    'prefetch_mode': 'cpu',
+                    'num_prefetch_queue': 8,
+                }
+            )
             if args.batch_size is not None:
-                data_opts.update({
-                    'batch_size_per_gpu': args.batch_size,
-                })
+                data_opts.update(
+                    {
+                        'batch_size_per_gpu': args.batch_size,
+                    }
+                )
             if args.split_file is not None:
-                data_opts.update({
-                    'split_file': args.split_file,
-                })
+                data_opts.update(
+                    {
+                        'split_file': args.split_file,
+                    }
+                )
             if args.split_file is not None and args.test_phase is not None:
-                data_opts.update({
-                    'phase': args.test_phase,
-                })
+                data_opts.update(
+                    {
+                        'phase': args.test_phase,
+                    }
+                )
 
             if 'phase' not in data_opts:
                 data_opts['phase'] = 'test'
@@ -158,7 +205,9 @@ def main():
                         gt_labels += flatten_list(data['mos_label'].cpu().tolist())
                         result_scores += flatten_list(iqa_score)
                 except:
-                    print(f'Error in testing {metric_name} on {dataset_name}: {data["img_path"]}')
+                    print(
+                        f'Error in testing {metric_name} on {dataset_name}: {data["img_path"]}'
+                    )
                 pbar.update(1)
             pbar.close()
 
@@ -175,17 +224,22 @@ def main():
                 f'Results of *{metric_name}* on ({dataset_name}) is [PLCC|SRCC|KRCC]: {plcc_score}, {srcc_score}, {krcc_score}'
             )
             if update_benchmark_file is not None:
-                benchmark.loc[metric_name, f'{dataset_name}(PLCC/SRCC/KRCC)'] = f'{plcc_score}/{srcc_score}/{krcc_score}'
+                benchmark.loc[metric_name, f'{dataset_name}(PLCC/SRCC/KRCC)'] = (
+                    f'{plcc_score}/{srcc_score}/{krcc_score}'
+                )
 
         if save_result_path is not None:
             csv_writer.writerow(results_row)
-        
+
     if save_result_path is not None:
         csv_file.close()
 
     if update_benchmark_file is not None:
-        benchmark = benchmark.sort_values(by=benchmark.columns[0], key=lambda x: x.str.split('/').str[0].astype(float))
+        benchmark = benchmark.sort_values(
+            by=benchmark.columns[0], key=lambda x: x.str.split('/').str[0].astype(float)
+        )
         benchmark.to_csv(update_benchmark_file)
+
 
 if __name__ == '__main__':
     main()

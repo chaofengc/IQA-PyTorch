@@ -5,6 +5,7 @@ Note: to enable GPU acceleration, all functions take batched tensors as inputs,
 and return batched results.
 
 """
+
 from .resize import imresize
 from .functions import *
 from .scfpyr_util import SCFpyr_PyTorch

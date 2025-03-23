@@ -22,7 +22,7 @@ from typing import Union, List, cast
 from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
-    'wadiqam_fr_kadid': get_url_from_name('WaDIQaM-kadid-f7541ea5.pth'), 
+    'wadiqam_fr_kadid': get_url_from_name('WaDIQaM-kadid-f7541ea5.pth'),
     'wadiqam_nr_koniq': get_url_from_name('WaDIQaM-NR-koniq-aaffea29.pth'),
 }
 
@@ -67,7 +67,23 @@ class WaDIQaM(nn.Module):
     ):
         super(WaDIQaM, self).__init__()
 
-        backbone_cfg = [32, 32, 'M', 64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M']
+        backbone_cfg = [
+            32,
+            32,
+            'M',
+            64,
+            64,
+            'M',
+            128,
+            128,
+            'M',
+            256,
+            256,
+            'M',
+            512,
+            512,
+            'M',
+        ]
         self.features = make_layers(backbone_cfg)
 
         self.train_patch_num = train_patch_num
@@ -94,10 +110,14 @@ class WaDIQaM(nn.Module):
             )
 
         if pretrained_model_path is not None:
-            self.load_pretrained_network(pretrained_model_path, load_feature_weight_only)
+            self.load_pretrained_network(
+                pretrained_model_path, load_feature_weight_only
+            )
         elif pretrained:
             self.metric_type = model_name.split('_')[1].upper()
-            load_pretrained_network(self, default_model_urls[model_name], True, weight_keys='params')
+            load_pretrained_network(
+                self, default_model_urls[model_name], True, weight_keys='params'
+            )
 
     def load_pretrained_network(self, model_path, load_feature_weight_only=False):
         print(f'Loading pretrained model from {model_path}')
@@ -121,11 +141,11 @@ class WaDIQaM(nn.Module):
         cropped_x = []
         cropped_y = []
         for s in range(self.train_patch_num):
-            i = torch.randint(0, h - th + 1, size=(1, )).item()
-            j = torch.randint(0, w - tw + 1, size=(1, )).item()
-            cropped_x.append(x[:, :, i:i + th, j:j + tw])
+            i = torch.randint(0, h - th + 1, size=(1,)).item()
+            j = torch.randint(0, w - tw + 1, size=(1,)).item()
+            cropped_x.append(x[:, :, i : i + th, j : j + tw])
             if y is not None:
-                cropped_y.append(y[:, :, i:i + th, j:j + tw])
+                cropped_y.append(y[:, :, i : i + th, j : j + tw])
 
         if y is not None:
             cropped_x = torch.stack(cropped_x, dim=1).reshape(-1, c, th, tw)
@@ -146,9 +166,9 @@ class WaDIQaM(nn.Module):
 
         for i in range(0, h - th, th):
             for j in range(0, w - tw, tw):
-                cropped_x.append(x[:, :, i:i + th, j:j + tw])
+                cropped_x.append(x[:, :, i : i + th, j : j + tw])
                 if y is not None:
-                    cropped_y.append(y[:, :, i:i + th, j:j + tw])
+                    cropped_y.append(y[:, :, i : i + th, j : j + tw])
 
                 self.patch_num += 1
 

@@ -18,7 +18,11 @@ import clip
 from clip.simple_tokenizer import SimpleTokenizer
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import get_url_from_name, load_pretrained_network, load_file_from_url
+from pyiqa.archs.arch_util import (
+    get_url_from_name,
+    load_pretrained_network,
+    load_file_from_url,
+)
 from pyiqa.archs.constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 from pyiqa.archs.clip_model import load
 
@@ -27,15 +31,18 @@ default_model_urls = {
     'qualiclip+': get_url_from_name('QualiCLIP+_koniq.pth'),
     'qualiclip+-clive': get_url_from_name('QualiCLIP+_clive.pth'),
     'qualiclip+-flive': get_url_from_name('QualiCLIP+_flive.pth'),
-    'qualiclip+-spaq': get_url_from_name('QualiCLIP+_spaq.pth')
+    'qualiclip+-spaq': get_url_from_name('QualiCLIP+_spaq.pth'),
 }
+
 
 class PromptLearner(nn.Module):
     """
     PromptLearner class for learning prompts for QualiCLIP+. See https://github.com/IceClear/CLIP-IQA for reference.
     """
 
-    def __init__(self, clip_model, prompt_pairs, n_ctx=16, ctx_init='', prompt_specific_ctx=False) -> None:
+    def __init__(
+        self, clip_model, prompt_pairs, n_ctx=16, ctx_init='', prompt_specific_ctx=False
+    ) -> None:
         """
         Initialize the PromptLearner.
 
@@ -60,9 +67,11 @@ class PromptLearner(nn.Module):
             with torch.no_grad():
                 init_embedding = clip_model.token_embedding(prompt).type(dtype)
             if prompt_specific_ctx:
-                init_ctx = init_embedding[:, 1: 1 + n_ctx].repeat(len(prompt_pairs), 1, 1)
+                init_ctx = init_embedding[:, 1 : 1 + n_ctx].repeat(
+                    len(prompt_pairs), 1, 1
+                )
             else:
-                init_ctx = init_embedding[0, 1: 1 + n_ctx]
+                init_ctx = init_embedding[0, 1 : 1 + n_ctx]
             prompt_prefix = ctx_init
         else:
             if prompt_specific_ctx:
@@ -72,20 +81,24 @@ class PromptLearner(nn.Module):
             nn.init.normal_(init_ctx, std=0.02)
             prompt_prefix = ' '.join(['X'] * n_ctx) + ' '
 
-        self.ctx = nn.Parameter(init_ctx)   # to be optimized
+        self.ctx = nn.Parameter(init_ctx)  # to be optimized
 
         name_lens = [len(tokenizer.encode(prompt)) for prompt in prompt_pairs]
         prompts = [prompt_prefix + prompt for prompt in prompt_pairs]
         with torch.no_grad():
             self.tokenized_prompts = clip.tokenize(prompts)
-            init_embedding = clip_model.token_embedding(self.tokenized_prompts).type(dtype)
+            init_embedding = clip_model.token_embedding(self.tokenized_prompts).type(
+                dtype
+            )
 
         self.n_ctx = n_ctx
         self.n_cls = len(prompt_pairs)
         self.name_lens = name_lens
 
         self.register_buffer('token_prefix', init_embedding[:, :1, :])  # SOS
-        self.register_buffer('token_suffix', init_embedding[:, 1 + n_ctx:, :])  # CLS, EOS
+        self.register_buffer(
+            'token_suffix', init_embedding[:, 1 + n_ctx :, :]
+        )  # CLS, EOS
 
     def get_prompts_with_middle_class(self):
         """
@@ -102,18 +115,18 @@ class PromptLearner(nn.Module):
         prompts = []
         for i in range(self.n_cls):
             name_len = self.name_lens[i]
-            prefix_i = self.token_prefix[i: i + 1, :, :]
-            class_i = self.token_suffix[i: i + 1, :name_len, :]
-            suffix_i = self.token_suffix[i: i + 1, name_len:, :]
-            ctx_i_half1 = ctx[i: i + 1, :half_n_ctx, :]
-            ctx_i_half2 = ctx[i: i + 1, half_n_ctx:, :]
+            prefix_i = self.token_prefix[i : i + 1, :, :]
+            class_i = self.token_suffix[i : i + 1, :name_len, :]
+            suffix_i = self.token_suffix[i : i + 1, name_len:, :]
+            ctx_i_half1 = ctx[i : i + 1, :half_n_ctx, :]
+            ctx_i_half2 = ctx[i : i + 1, half_n_ctx:, :]
             prompt = torch.cat(
                 [
-                    prefix_i,     # (1, 1, dim)
+                    prefix_i,  # (1, 1, dim)
                     ctx_i_half1,  # (1, n_ctx//2, dim)
-                    class_i,      # (1, name_len, dim)
+                    class_i,  # (1, name_len, dim)
                     ctx_i_half2,  # (1, n_ctx//2, dim)
-                    suffix_i,     # (1, *, dim)
+                    suffix_i,  # (1, *, dim)
                 ],
                 dim=1,
             )
@@ -140,7 +153,10 @@ class PromptLearner(nn.Module):
 
         # x.shape = [batch_size, n_ctx, transformer.width]
         # take features from the eot embedding (eot_token is the highest number in each sequence)
-        x = x[torch.arange(x.shape[0]), self.tokenized_prompts.argmax(dim=-1)] @ clip_model.text_projection
+        x = (
+            x[torch.arange(x.shape[0]), self.tokenized_prompts.argmax(dim=-1)]
+            @ clip_model.text_projection
+        )
 
         return x
 
@@ -152,42 +168,62 @@ class QualiCLIP(nn.Module):
     learning, similar to CLIP-IQA+ (https://arxiv.org/abs/2207.12396).
     """
 
-    def __init__(self,
-                 model_type='qualiclip+',
-                 backbone='RN50',
-                 temperature=2,
-                 n_ctx=16,
-                 ctx_init='',
-                 prompt_specific_ctx=True,
-                 pretrained=True,
-                 pos_embedding=False) -> None:
+    def __init__(
+        self,
+        model_type='qualiclip+',
+        backbone='RN50',
+        temperature=2,
+        n_ctx=16,
+        ctx_init='',
+        prompt_specific_ctx=True,
+        pretrained=True,
+        pos_embedding=False,
+    ) -> None:
         super().__init__()
 
         self.clip_model = [load(backbone, 'cpu')]  # avoid saving clip weights
 
         # antonym prompts used during training
         self.prompt_pairs = [
-            'Good photo.', 'Bad photo.',
-            'Sharp image.', 'Blurry image.',
-            'Sharp edges.', 'Blurry edges.',
-            'High-resolution image.', 'Low-resolution image.',
-            'Noise-free image.', 'Noisy image.',
-            'High-quality image.', 'Low-quality image.',
-            'Good picture.', 'Bad picture.'
+            'Good photo.',
+            'Bad photo.',
+            'Sharp image.',
+            'Blurry image.',
+            'Sharp edges.',
+            'Blurry edges.',
+            'High-resolution image.',
+            'Low-resolution image.',
+            'Noise-free image.',
+            'Noisy image.',
+            'High-quality image.',
+            'Low-quality image.',
+            'Good picture.',
+            'Bad picture.',
         ]
 
         self.model_type = model_type
         self.temperature = temperature
         self.pos_embedding = pos_embedding
         if 'qualiclip+' in model_type:
-            self.prompt_learner = PromptLearner(self.clip_model[0], self.prompt_pairs, n_ctx=n_ctx,
-                                                ctx_init=ctx_init, prompt_specific_ctx=prompt_specific_ctx)
+            self.prompt_learner = PromptLearner(
+                self.clip_model[0],
+                self.prompt_pairs,
+                n_ctx=n_ctx,
+                ctx_init=ctx_init,
+                prompt_specific_ctx=prompt_specific_ctx,
+            )
 
         self.default_mean = torch.Tensor(OPENAI_CLIP_MEAN).view(1, 3, 1, 1)
         self.default_std = torch.Tensor(OPENAI_CLIP_STD).view(1, 3, 1, 1)
 
-        checkpoint = torch.load(load_file_from_url(default_model_urls['qualiclip']), map_location='cpu', weights_only=True)
-        self.prompts_features = checkpoint['prompts_features']  # Load the pre-computed normalized text features of the prompts
+        checkpoint = torch.load(
+            load_file_from_url(default_model_urls['qualiclip']),
+            map_location='cpu',
+            weights_only=True,
+        )
+        self.prompts_features = checkpoint[
+            'prompts_features'
+        ]  # Load the pre-computed normalized text features of the prompts
         del checkpoint['prompts_features']
         checkpoint = {k.replace('clip_model.', ''): v for k, v in checkpoint.items()}
         self.clip_model[0].load_state_dict(checkpoint)
@@ -195,7 +231,9 @@ class QualiCLIP(nn.Module):
         if pretrained and 'qualiclip+' in model_type:
             assert backbone == 'RN50', 'Only RN50 backbone is supported for QualiCLIP+'
             if model_type in default_model_urls.keys():
-                load_pretrained_network(self, default_model_urls[model_type], True, 'params')
+                load_pretrained_network(
+                    self, default_model_urls[model_type], True, 'params'
+                )
             else:
                 raise ValueError(f'No pretrained model for {model_type}')
 
@@ -217,7 +255,9 @@ class QualiCLIP(nn.Module):
             raise ValueError(f'Invalid model type: {self.model_type}')
 
         # compute logits
-        logits, _ = clip_model(x, None, text_features=text_features, pos_embedding=self.pos_embedding)
+        logits, _ = clip_model(
+            x, None, text_features=text_features, pos_embedding=self.pos_embedding
+        )
         logits = logits.reshape(logits.shape[0], -1, 2)
         exp_logits = torch.exp(logits / self.temperature)
         probs = exp_logits / exp_logits.sum(dim=-1, keepdim=True)

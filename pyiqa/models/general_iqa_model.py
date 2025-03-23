@@ -27,7 +27,12 @@ class GeneralIQAModel(BaseModel):
         load_path = self.opt['path'].get('pretrain_network', None)
         if load_path is not None:
             param_key = self.opt['path'].get('param_key_g', 'params')
-            self.load_network(self.net, load_path, self.opt['path'].get('strict_load', True), param_key)
+            self.load_network(
+                self.net,
+                load_path,
+                self.opt['path'].get('strict_load', True),
+                param_key,
+            )
 
         if self.is_train:
             self.init_training_settings()
@@ -68,39 +73,55 @@ class GeneralIQAModel(BaseModel):
             if key.startswith('lr_'):
                 module_key = key.replace('lr_', '')
                 logger = get_root_logger()
-                logger.info(f'Set optimizer for {module_key} with lr: {optim_opt[key]}, weight_decay: {optim_opt.get(f"weight_decay_{module_key}", 0.)}')
+                logger.info(
+                    f'Set optimizer for {module_key} with lr: {optim_opt[key]}, weight_decay: {optim_opt.get(f"weight_decay_{module_key}", 0.0)}'
+                )
 
-                optim_params.append({
-                    'params': [param_dict[k] for k in param_keys if module_key in k and param_dict[k].requires_grad],
-                    'lr': optim_opt.pop(key, 0.),
-                    'weight_decay': optim_opt.pop(f'weight_decay_{module_key}', 0.),
-                })
+                optim_params.append(
+                    {
+                        'params': [
+                            param_dict[k]
+                            for k in param_keys
+                            if module_key in k and param_dict[k].requires_grad
+                        ],
+                        'lr': optim_opt.pop(key, 0.0),
+                        'weight_decay': optim_opt.pop(
+                            f'weight_decay_{module_key}', 0.0
+                        ),
+                    }
+                )
 
                 # should use param_keys[:] to avoid iteration error
                 for k in param_keys[:]:
                     if module_key in k:
                         param_keys.remove(k)
-        
+
         # append the rest of the parameters
-        optim_params.append({
-            'params': [param_dict[k] for k in param_keys if param_dict[k].requires_grad],
-        })
+        optim_params.append(
+            {
+                'params': [
+                    param_dict[k] for k in param_keys if param_dict[k].requires_grad
+                ],
+            }
+        )
 
         # log params that will not be optimized
         for k, v in param_dict.items():
             if not v.requires_grad:
                 logger = get_root_logger()
                 logger.warning(f'Params {k} will not be optimized.')
-        
+
         # remove blank param list
         for k in optim_params:
             if len(k['params']) == 0:
                 optim_params.remove(k)
 
         optim_type = train_opt['optim'].pop('type')
-        self.optimizer = self.get_optimizer(optim_type, optim_params, **train_opt['optim'])
+        self.optimizer = self.get_optimizer(
+            optim_type, optim_params, **train_opt['optim']
+        )
         self.optimizers.append(self.optimizer)
-    
+
     def feed_data(self, data):
         self.img_input = data['img'].to(self.device)
 
@@ -148,7 +169,9 @@ class GeneralIQAModel(BaseModel):
         pred_score = self.output_score.squeeze(1).cpu().detach().numpy()
         gt_mos = self.gt_mos.squeeze(1).cpu().detach().numpy()
         for name, opt_ in self.opt['val']['metrics'].items():
-            self.log_dict[f'train_metrics/{name}'] = calculate_metric([pred_score, gt_mos], opt_)
+            self.log_dict[f'train_metrics/{name}'] = calculate_metric(
+                [pred_score, gt_mos], opt_
+            )
 
     def test(self):
         self.net.eval()
@@ -167,7 +190,9 @@ class GeneralIQAModel(BaseModel):
 
         if with_metrics:
             if not hasattr(self, 'metric_results'):  # only execute in the first run
-                self.metric_results = {metric: 0 for metric in self.opt['val']['metrics'].keys()}
+                self.metric_results = {
+                    metric: 0 for metric in self.opt['val']['metrics'].keys()
+                }
             # initialize the best metric results for each dataset_name (supporting multiple validation datasets)
             self._initialize_best_metric_results(dataset_name)
         # zero self.metric_results
@@ -201,20 +226,27 @@ class GeneralIQAModel(BaseModel):
 
             if self.key_metric is not None:
                 # If the best metric is updated, update and save best model
-                to_update = self._update_best_metric_result(dataset_name, self.key_metric,
-                                                            self.metric_results[self.key_metric], current_iter)
+                to_update = self._update_best_metric_result(
+                    dataset_name,
+                    self.key_metric,
+                    self.metric_results[self.key_metric],
+                    current_iter,
+                )
 
                 if to_update:
                     for name, opt_ in self.opt['val']['metrics'].items():
-                        self._update_metric_result(dataset_name, name, self.metric_results[name], current_iter)
+                        self._update_metric_result(
+                            dataset_name, name, self.metric_results[name], current_iter
+                        )
                     self.copy_model(self.net, self.net_best)
                     self.save_network(self.net_best, 'net_best')
             else:
                 # update each metric separately
                 updated = []
                 for name, opt_ in self.opt['val']['metrics'].items():
-                    tmp_updated = self._update_best_metric_result(dataset_name, name, self.metric_results[name],
-                                                                  current_iter)
+                    tmp_updated = self._update_best_metric_result(
+                        dataset_name, name, self.metric_results[name], current_iter
+                    )
                     updated.append(tmp_updated)
                 # save best model if any metric is updated
                 if sum(updated):
@@ -228,15 +260,19 @@ class GeneralIQAModel(BaseModel):
         for metric, value in self.metric_results.items():
             log_str += f'\t # {metric}: {value:.4f}'
             if hasattr(self, 'best_metric_results'):
-                log_str += (f'\tBest: {self.best_metric_results[dataset_name][metric]["val"]:.4f} @ '
-                            f'{self.best_metric_results[dataset_name][metric]["iter"]} iter')
+                log_str += (
+                    f'\tBest: {self.best_metric_results[dataset_name][metric]["val"]:.4f} @ '
+                    f'{self.best_metric_results[dataset_name][metric]["iter"]} iter'
+                )
             log_str += '\n'
 
         logger = get_root_logger()
         logger.info(log_str)
         if tb_logger:
             for metric, value in self.metric_results.items():
-                tb_logger.add_scalar(f'val_metrics/{dataset_name}/{metric}', value, current_iter)
+                tb_logger.add_scalar(
+                    f'val_metrics/{dataset_name}/{metric}', value, current_iter
+                )
 
     def save(self, epoch, current_iter, save_net_label='net'):
         self.save_network(self.net, save_net_label, current_iter)

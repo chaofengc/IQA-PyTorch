@@ -15,7 +15,18 @@ def get_meta_info():
         csvreader = csv.reader(f)
 
         csvwriter = csv.writer(sf)
-        new_head = ['img_name', 'mos', 'std', 'split', 'c1', 'c2', 'c3', 'c4', 'c5', 'c_total']
+        new_head = [
+            'img_name',
+            'mos',
+            'std',
+            'split',
+            'c1',
+            'c2',
+            'c3',
+            'c4',
+            'c5',
+            'c_total',
+        ]
         csvwriter.writerow(new_head)
         for idx, row in enumerate(csvreader):
             print(row)

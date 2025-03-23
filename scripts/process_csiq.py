@@ -15,7 +15,7 @@ def get_meta_info():
         header = ['ref_name', 'dist_name', 'dmos']
         writer.writerow(header)
         for dis_name, dmos in name_dmos:
-            ref_name = f"{dis_name.split('.')[0]}.png"
+            ref_name = f'{dis_name.split(".")[0]}.png'
             writer.writerow([ref_name, dis_name, dmos])
 
 
@@ -45,7 +45,11 @@ def get_random_splits(seed=123):
                 split_info[i + 1]['train'].append(j)
             else:
                 split_info[i + 1]['val'].append(j)
-        print(meta_info.shape[0], len(split_info[i + 1]['train']), len(split_info[i + 1]['val']))
+        print(
+            meta_info.shape[0],
+            len(split_info[i + 1]['train']),
+            len(split_info[i + 1]['val']),
+        )
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
 

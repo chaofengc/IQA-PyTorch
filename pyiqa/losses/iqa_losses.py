@@ -18,27 +18,29 @@ def emd_loss(pred, target, r=2):
         target (Tensor): of shape (N, C). Ground truth tensor.
         r (float): norm level, default l2 norm.
     """
-    loss = torch.abs(torch.cumsum(pred, dim=-1) - torch.cumsum(target, dim=-1))**r
-    loss = loss.mean(dim=-1)**(1. / r)
+    loss = torch.abs(torch.cumsum(pred, dim=-1) - torch.cumsum(target, dim=-1)) ** r
+    loss = loss.mean(dim=-1) ** (1.0 / r)
     return loss
 
 
 @LOSS_REGISTRY.register()
 class EMDLoss(nn.Module):
-    """EMD (earth mover distance) loss.
-
-    """
+    """EMD (earth mover distance) loss."""
 
     def __init__(self, loss_weight=1.0, r=2, reduction='mean'):
         super(EMDLoss, self).__init__()
         if reduction not in ['none', 'mean', 'sum']:
-            raise ValueError(f'Unsupported reduction mode: {reduction}. Supported ones are: {_reduction_modes}')
+            raise ValueError(
+                f'Unsupported reduction mode: {reduction}. Supported ones are: {_reduction_modes}'
+            )
         self.loss_weight = loss_weight
         self.r = r
         self.reduction = reduction
 
     def forward(self, pred, target, weight=None, **kwargs):
-        return self.loss_weight * emd_loss(pred, target, r=self.r, weight=weight, reduction=self.reduction)
+        return self.loss_weight * emd_loss(
+            pred, target, r=self.r, weight=weight, reduction=self.reduction
+        )
 
 
 def plcc_loss(pred, target):
@@ -60,9 +62,7 @@ def plcc_loss(pred, target):
 
 @LOSS_REGISTRY.register()
 class PLCCLoss(nn.Module):
-    """PLCC loss, induced from Pearson’s Linear Correlation Coefficient.
-
-    """
+    """PLCC loss, induced from Pearson’s Linear Correlation Coefficient."""
 
     def __init__(self, loss_weight=1.0):
         super(PLCCLoss, self).__init__()
@@ -136,4 +136,6 @@ class NiNLoss(nn.Module):
         self.q = q
 
     def forward(self, pred, target):
-        return self.loss_weight * norm_loss_with_normalization(pred, target, self.p, self.q)
+        return self.loss_weight * norm_loss_with_normalization(
+            pred, target, self.p, self.q
+        )

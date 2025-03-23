@@ -9,7 +9,7 @@ Reference:
     }
 
 Reference url: https://github.com/jmhessel/clipscore
-Re-implemented by: Chaofeng Chen (https://github.com/chaofengc) 
+Re-implemented by: Chaofeng Chen (https://github.com/chaofengc)
 """
 
 import torch
@@ -58,9 +58,13 @@ class CLIPScore(nn.Module):
             torch.Tensor: The computed similarity scores.
         """
         assert caption_list is not None, 'caption_list is None'
-        text = clip.tokenize([self.prefix + ' ' + caption for caption in caption_list], truncate=True).to(img.device)
+        text = clip.tokenize(
+            [self.prefix + ' ' + caption for caption in caption_list], truncate=True
+        ).to(img.device)
 
-        img_features = self.clip_model.encode_image(clip_preprocess_tensor(img, self.clip_model))
+        img_features = self.clip_model.encode_image(
+            clip_preprocess_tensor(img, self.clip_model)
+        )
         text_features = self.clip_model.encode_text(text)
         img_features = img_features / img_features.norm(dim=-1, keepdim=True)
         text_features = text_features / text_features.norm(dim=-1, keepdim=True)

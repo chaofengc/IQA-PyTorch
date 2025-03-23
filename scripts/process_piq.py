@@ -3,7 +3,7 @@ import csv
 
 def get_meta_info(root_dir, save_meta_path):
     attrs = ['Details', 'Exposure', 'Overall']
-    
+
     rows_all = []
     for att in attrs:
         tmp_row = []
@@ -19,29 +19,29 @@ def get_meta_info(root_dir, save_meta_path):
         reader = csv.reader(open(f'{root_dir}/Device Split.csv'))
         next(reader)
         for item in reader:
-            device_split[item[0]] = item[1] 
-        
+            device_split[item[0]] = item[1]
+
         scene_split = {}
         reader = csv.reader(open(f'{root_dir}/Scene Split.csv'))
         next(reader)
         for item in reader:
-            scene_split[item[0]] = item[1] 
-        
+            scene_split[item[0]] = item[1]
+
         for item in lreader:
             tmp_row = item
-            img_name = tmp_row[0].split("\\")[1]
+            img_name = tmp_row[0].split('\\')[1]
 
             if img_name in device_split:
                 ds = device_split[img_name]
-        
+
             for k, v in scene_split.items():
                 if k in img_name:
                     ss = v
-        
+
             tmp_row += [ds, ss]
             tmp_row[0] = tmp_row[0].replace('\\', '/')
             rows_all.append(tmp_row)
-        
+
     with open(save_meta_path, 'w') as file:
         csv_writer = csv.writer(file)
 

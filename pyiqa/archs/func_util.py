@@ -9,7 +9,7 @@ from pyiqa.matlab_utils import fspecial, imfilter, exact_padding_2d
 EPS = torch.finfo(torch.float32).eps
 
 
-def preprocess_rgb(x, test_y_channel, data_range: float = 1, color_space="yiq"):
+def preprocess_rgb(x, test_y_channel, data_range: float = 1, color_space='yiq'):
     """
     Preprocesses an RGB image tensor.
 
@@ -33,7 +33,7 @@ def preprocess_rgb(x, test_y_channel, data_range: float = 1, color_space="yiq"):
     return x
 
 
-def extract_2d_patches(x, kernel, stride=1, dilation=1, padding="same"):
+def extract_2d_patches(x, kernel, stride=1, dilation=1, padding='same'):
     """
     Extracts 2D patches from a 4D tensor.
 
@@ -48,7 +48,7 @@ def extract_2d_patches(x, kernel, stride=1, dilation=1, padding="same"):
         torch.Tensor: Extracted patches tensor of shape (batch_size, num_patches, channels, kernel, kernel).
     """
     b, c, h, w = x.shape
-    if padding != "none":
+    if padding != 'none':
         x = exact_padding_2d(x, kernel, stride, dilation, mode=padding)
 
     # Extract patches
@@ -88,7 +88,7 @@ def normalize_img_with_gauss(
     kernel_size: int = 7,
     sigma: float = 7.0 / 6,
     C: int = 1,
-    padding: str = "same",
+    padding: str = 'same',
 ):
     kernel = fspecial(kernel_size, sigma, 1).to(img)
     mu = imfilter(img, kernel, padding=padding)
@@ -159,7 +159,7 @@ def get_meshgrid(size: Tuple[int, int]) -> torch.Tensor:
     else:
         # Even
         y = torch.arange(-size[1] / 2, size[1] / 2) / size[1]
-    return torch.meshgrid(x, y, indexing="ij")
+    return torch.meshgrid(x, y, indexing='ij')
 
 
 def estimate_ggd_param(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -179,9 +179,9 @@ def estimate_ggd_param(x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
     sigma_sq = x.pow(2).mean(dim=(-1, -2))
     sigma = sigma_sq.sqrt().squeeze(dim=-1)
 
-    assert not torch.isclose(
-        sigma, torch.zeros_like(sigma)
-    ).all(), "Expected image with non zero variance of pixel values"
+    assert not torch.isclose(sigma, torch.zeros_like(sigma)).all(), (
+        'Expected image with non zero variance of pixel values'
+    )
 
     E = x.abs().mean(dim=(-1, -2))
     rho = sigma_sq / E**2

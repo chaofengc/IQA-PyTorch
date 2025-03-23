@@ -29,7 +29,7 @@ default_model_urls = {
     '0.0_squeeze': get_url_from_name('LPIPS_v0.0_squeeze-c27abd3a.pth'),
     '0.1_alex': get_url_from_name('LPIPS_v0.1_alex-df73285e.pth'),
     '0.1_vgg': get_url_from_name('LPIPS_v0.1_vgg-a78928a0.pth'),
-    '0.1_squeeze': get_url_from_name('LPIPS_v0.1_squeeze-4a5350f2.pth')
+    '0.1_squeeze': get_url_from_name('LPIPS_v0.1_squeeze-4a5350f2.pth'),
 }
 
 
@@ -48,7 +48,7 @@ def normalize_tensor(in_feat, eps=1e-10):
 
 @ARCH_REGISTRY.register()
 class LPIPS(nn.Module):
-    """ LPIPS model.
+    """LPIPS model.
     Args:
         lpips (Boolean) : Whether to use linear layers on top of base/trunk network.
         pretrained (Boolean): Whether means linear layers are calibrated with human
@@ -66,22 +66,23 @@ class LPIPS(nn.Module):
         use_dropout (Boolean): Whether to use dropout when training linear layers.
 
 
-        """
+    """
 
-    def __init__(self,
-                 pretrained=True,
-                 net='alex',
-                 version='0.1',
-                 lpips=True,
-                 spatial=False,
-                 pnet_rand=False,
-                 pnet_tune=False,
-                 use_dropout=True,
-                 pretrained_model_path=None,
-                 eval_mode=True,
-                 semantic_weight_layer=-1,
-                 **kwargs):
-
+    def __init__(
+        self,
+        pretrained=True,
+        net='alex',
+        version='0.1',
+        lpips=True,
+        spatial=False,
+        pnet_rand=False,
+        pnet_tune=False,
+        use_dropout=True,
+        pretrained_model_path=None,
+        eval_mode=True,
+        semantic_weight_layer=-1,
+        **kwargs,
+    ):
         super(LPIPS, self).__init__()
 
         self.pnet_type = net
@@ -92,29 +93,29 @@ class LPIPS(nn.Module):
         self.version = version
         self.scaling_layer = ScalingLayer()
 
-        self.semantic_weight_layer = semantic_weight_layer 
+        self.semantic_weight_layer = semantic_weight_layer
 
-        if (self.pnet_type in ['vgg', 'vgg16']):
+        if self.pnet_type in ['vgg', 'vgg16']:
             net_type = vgg16
             self.chns = [64, 128, 256, 512, 512]
-        elif (self.pnet_type == 'alex'):
+        elif self.pnet_type == 'alex':
             net_type = alexnet
             self.chns = [64, 192, 384, 256, 256]
-        elif (self.pnet_type == 'squeeze'):
+        elif self.pnet_type == 'squeeze':
             net_type = squeezenet
             self.chns = [64, 128, 256, 384, 384, 512, 512]
         self.L = len(self.chns)
 
         self.net = net_type(pretrained=not self.pnet_rand, requires_grad=self.pnet_tune)
 
-        if (lpips):
+        if lpips:
             self.lin0 = NetLinLayer(self.chns[0], use_dropout=use_dropout)
             self.lin1 = NetLinLayer(self.chns[1], use_dropout=use_dropout)
             self.lin2 = NetLinLayer(self.chns[2], use_dropout=use_dropout)
             self.lin3 = NetLinLayer(self.chns[3], use_dropout=use_dropout)
             self.lin4 = NetLinLayer(self.chns[4], use_dropout=use_dropout)
             self.lins = [self.lin0, self.lin1, self.lin2, self.lin3, self.lin4]
-            if (self.pnet_type == 'squeeze'):  # 7 layers for squeezenet
+            if self.pnet_type == 'squeeze':  # 7 layers for squeezenet
                 self.lin5 = NetLinLayer(self.chns[5], use_dropout=use_dropout)
                 self.lin6 = NetLinLayer(self.chns[6], use_dropout=use_dropout)
                 self.lins += [self.lin5, self.lin6]
@@ -123,9 +124,11 @@ class LPIPS(nn.Module):
             if pretrained_model_path is not None:
                 load_pretrained_network(self, pretrained_model_path, False)
             elif pretrained:
-                load_pretrained_network(self, default_model_urls[f'{version}_{net}'], False)
+                load_pretrained_network(
+                    self, default_model_urls[f'{version}_{net}'], False
+                )
 
-        if (eval_mode):
+        if eval_mode:
             self.eval()
 
     def forward(self, in1, in0, retPerLayer=False, normalize=True):
@@ -142,69 +145,103 @@ class LPIPS(nn.Module):
             Quality score.
 
         """
-        if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
+        if (
+            normalize
+        ):  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1
 
         # v0.0 - original release had a bug, where input was not scaled
-        in0_input, in1_input = (self.scaling_layer(in0), self.scaling_layer(in1)) if self.version == '0.1' else (in0,
-                                                                                                                 in1)
+        in0_input, in1_input = (
+            (self.scaling_layer(in0), self.scaling_layer(in1))
+            if self.version == '0.1'
+            else (in0, in1)
+        )
         outs0, outs1 = self.net.forward(in0_input), self.net.forward(in1_input)
         feats0, feats1, diffs = {}, {}, {}
 
         for kk in range(self.L):
-            feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
-            diffs[kk] = (feats0[kk] - feats1[kk])**2
+            feats0[kk], feats1[kk] = (
+                normalize_tensor(outs0[kk]),
+                normalize_tensor(outs1[kk]),
+            )
+            diffs[kk] = (feats0[kk] - feats1[kk]) ** 2
 
-        if (self.lpips):
+        if self.lpips:
             if self.spatial:
-                res = [upsample(self.lins[kk](diffs[kk]), out_HW=in0.shape[2:]) for kk in range(self.L)]
+                res = [
+                    upsample(self.lins[kk](diffs[kk]), out_HW=in0.shape[2:])
+                    for kk in range(self.L)
+                ]
             elif self.semantic_weight_layer >= 0:
                 res = []
-                semantic_feat = outs0[self.semantic_weight_layer] 
+                semantic_feat = outs0[self.semantic_weight_layer]
                 for kk in range(self.L):
                     diff_score = self.lins[kk](diffs[kk])
-                    semantic_weight = torch.nn.functional.interpolate(semantic_feat, size=diff_score.shape[2:], mode='bilinear', align_corners=False)
-                    avg_score = torch.sum(diff_score * semantic_weight, dim=[1, 2, 3], keepdim=True) / torch.sum(semantic_weight, dim=[1, 2, 3], keepdim=True)
+                    semantic_weight = torch.nn.functional.interpolate(
+                        semantic_feat,
+                        size=diff_score.shape[2:],
+                        mode='bilinear',
+                        align_corners=False,
+                    )
+                    avg_score = torch.sum(
+                        diff_score * semantic_weight, dim=[1, 2, 3], keepdim=True
+                    ) / torch.sum(semantic_weight, dim=[1, 2, 3], keepdim=True)
                     res.append(avg_score)
             else:
-                res = [spatial_average(self.lins[kk](diffs[kk]), keepdim=True) for kk in range(self.L)]
+                res = [
+                    spatial_average(self.lins[kk](diffs[kk]), keepdim=True)
+                    for kk in range(self.L)
+                ]
         else:
-            if (self.spatial):
-                res = [upsample(diffs[kk].sum(dim=1, keepdim=True), out_HW=in0.shape[2:]) for kk in range(self.L)]
+            if self.spatial:
+                res = [
+                    upsample(diffs[kk].sum(dim=1, keepdim=True), out_HW=in0.shape[2:])
+                    for kk in range(self.L)
+                ]
             else:
-                res = [spatial_average(diffs[kk].sum(dim=1, keepdim=True), keepdim=True) for kk in range(self.L)]
+                res = [
+                    spatial_average(diffs[kk].sum(dim=1, keepdim=True), keepdim=True)
+                    for kk in range(self.L)
+                ]
 
         val = 0
         for i in range(self.L):
             val += res[i]
 
-        if (retPerLayer):
+        if retPerLayer:
             return (val, res)
         else:
             return val.squeeze(-1).squeeze(-1)
 
 
 class ScalingLayer(nn.Module):
-
     def __init__(self):
         super(ScalingLayer, self).__init__()
-        self.register_buffer('shift', torch.Tensor([-.030, -.088, -.188])[None, :, None, None])
-        self.register_buffer('scale', torch.Tensor([.458, .448, .450])[None, :, None, None])
+        self.register_buffer(
+            'shift', torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None]
+        )
+        self.register_buffer(
+            'scale', torch.Tensor([0.458, 0.448, 0.450])[None, :, None, None]
+        )
 
     def forward(self, inp):
         return (inp - self.shift) / self.scale
 
 
 class NetLinLayer(nn.Module):
-    ''' A single linear layer which does a 1x1 conv '''
+    """A single linear layer which does a 1x1 conv"""
 
     def __init__(self, chn_in, chn_out=1, use_dropout=False):
         super(NetLinLayer, self).__init__()
 
-        layers = [
-            nn.Dropout(),
-        ] if (use_dropout) else []
+        layers = (
+            [
+                nn.Dropout(),
+            ]
+            if (use_dropout)
+            else []
+        )
         layers += [
             nn.Conv2d(chn_in, chn_out, 1, stride=1, padding=0, bias=False),
         ]
@@ -215,7 +252,6 @@ class NetLinLayer(nn.Module):
 
 
 class squeezenet(torch.nn.Module):
-
     def __init__(self, requires_grad=False, pretrained=True):
         super(squeezenet, self).__init__()
         pretrained_features = models.squeezenet1_1(pretrained=pretrained).features
@@ -260,14 +296,16 @@ class squeezenet(torch.nn.Module):
         h_relu6 = h
         h = self.slice7(h)
         h_relu7 = h
-        vgg_outputs = namedtuple('SqueezeOutputs', ['relu1', 'relu2', 'relu3', 'relu4', 'relu5', 'relu6', 'relu7'])
+        vgg_outputs = namedtuple(
+            'SqueezeOutputs',
+            ['relu1', 'relu2', 'relu3', 'relu4', 'relu5', 'relu6', 'relu7'],
+        )
         out = vgg_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5, h_relu6, h_relu7)
 
         return out
 
 
 class alexnet(torch.nn.Module):
-
     def __init__(self, requires_grad=False, pretrained=True):
         super(alexnet, self).__init__()
         alexnet_pretrained_features = models.alexnet(weights='IMAGENET1K_V1').features
@@ -302,14 +340,15 @@ class alexnet(torch.nn.Module):
         h_relu4 = h
         h = self.slice5(h)
         h_relu5 = h
-        alexnet_outputs = namedtuple('AlexnetOutputs', ['relu1', 'relu2', 'relu3', 'relu4', 'relu5'])
+        alexnet_outputs = namedtuple(
+            'AlexnetOutputs', ['relu1', 'relu2', 'relu3', 'relu4', 'relu5']
+        )
         out = alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
 
         return out
 
 
 class vgg16(torch.nn.Module):
-
     def __init__(self, requires_grad=False, pretrained=True):
         super(vgg16, self).__init__()
         vgg_pretrained_features = models.vgg16(weights='IMAGENET1K_V1').features
@@ -344,25 +383,26 @@ class vgg16(torch.nn.Module):
         h_relu4_3 = h
         h = self.slice5(h)
         h_relu5_3 = h
-        vgg_outputs = namedtuple('VggOutputs', ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3', 'relu5_3'])
+        vgg_outputs = namedtuple(
+            'VggOutputs', ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3', 'relu5_3']
+        )
         out = vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
         return out
 
 
 class resnet(torch.nn.Module):
-
     def __init__(self, requires_grad=False, pretrained=True, num=18):
         super(resnet, self).__init__()
-        if (num == 18):
+        if num == 18:
             self.net = models.resnet18(pretrained=pretrained)
-        elif (num == 34):
+        elif num == 34:
             self.net = models.resnet34(pretrained=pretrained)
-        elif (num == 50):
+        elif num == 50:
             self.net = models.resnet50(pretrained=pretrained)
-        elif (num == 101):
+        elif num == 101:
             self.net = models.resnet101(pretrained=pretrained)
-        elif (num == 152):
+        elif num == 152:
             self.net = models.resnet152(pretrained=pretrained)
         self.N_slices = 5
 

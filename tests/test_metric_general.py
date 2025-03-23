@@ -10,7 +10,7 @@ import os
 ATOL = 1e-2
 RTOL = 1e-2
 
-# Currently, some metrics have larger differences with official results 
+# Currently, some metrics have larger differences with official results
 TOL_DICT = {
     'brisque': (1e-2, 8e-2),
     'niqe': (1e-2, 6e-2),
@@ -31,6 +31,7 @@ DIST_IMG_DIR = './ResultsCalibra/dist_dir'
 OFFICIAL_RESULT_FILE = './ResultsCalibra/results_official.csv'
 CALBR_SUMMARY_FILE = './ResultsCalibra/calibration_summary.csv'
 
+
 def read_folder(path):
     img_batch = []
     for imgname in sorted(os.listdir(path)):
@@ -45,7 +46,7 @@ def metrics_with_official_results():
     result_dict = {}
     for row in official_results:
         result_dict[row[0]] = np.array(row[1:])
-    
+
     return result_dict
 
 
@@ -59,13 +60,12 @@ def dist_img() -> torch.Tensor:
     return read_folder(DIST_IMG_DIR)
 
 
-
 # ==================================== Test metrics ====================================
+
 
 @pytest.mark.calibration
 @pytest.mark.parametrize(
-        ("metric_name"),
-        [(k) for k in metrics_with_official_results().keys()]
+    ('metric_name'), [(k) for k in metrics_with_official_results().keys()]
 )
 def test_match_official_with_given_cases(ref_img, dist_img, metric_name, device):
     official_result = metrics_with_official_results()[metric_name]
@@ -73,9 +73,11 @@ def test_match_official_with_given_cases(ref_img, dist_img, metric_name, device)
     score = metric(dist_img, ref_img)
 
     # save results
-    cal_sum = pd.read_csv(CALBR_SUMMARY_FILE, index_col='Method') 
+    cal_sum = pd.read_csv(CALBR_SUMMARY_FILE, index_col='Method')
     cal_sum.loc[metric_name] = [f'{item:.4f}' for item in official_result.tolist()]
-    cal_sum.loc[metric_name + '(ours)'] = [f'{item:.4f}' for item in score.squeeze().cpu().numpy().tolist()]
+    cal_sum.loc[metric_name + '(ours)'] = [
+        f'{item:.4f}' for item in score.squeeze().cpu().numpy().tolist()
+    ]
     cal_sum = cal_sum.sort_values(by=['Method'], ascending=True)
     cal_sum.to_csv(CALBR_SUMMARY_FILE)
 
@@ -83,14 +85,33 @@ def test_match_official_with_given_cases(ref_img, dist_img, metric_name, device)
         atol, rtol = TOL_DICT[metric_name]
     else:
         atol, rtol = ATOL, RTOL
-    assert torch.allclose(score.squeeze(), torch.from_numpy(official_result).to(score), atol=atol, rtol=rtol), \
-            f"Metric {metric_name} results mismatch with official results."
+    assert torch.allclose(
+        score.squeeze(),
+        torch.from_numpy(official_result).to(score),
+        atol=atol,
+        rtol=rtol,
+    ), f'Metric {metric_name} results mismatch with official results.'
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU not available")
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='GPU not available')
 @pytest.mark.parametrize(
-    ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['ahiq', 'fid', 'vsi', 'clipscore', 'topiq_nr-face', 'tres', 'tres-koniq', 'inception_score', 'qalign']]
+    ('metric_name'),
+    [
+        (k)
+        for k in pyiqa.list_models()
+        if k
+        not in [
+            'ahiq',
+            'fid',
+            'vsi',
+            'clipscore',
+            'topiq_nr-face',
+            'tres',
+            'tres-koniq',
+            'inception_score',
+            'qalign',
+        ]
+    ],
 )
 def test_cpu_gpu_consistency(metric_name):
     """Test if the metric results are consistent between CPU and GPU.
@@ -117,13 +138,29 @@ def test_cpu_gpu_consistency(metric_name):
     score_cpu = metric_cpu(x_cpu, y_cpu)
     score_gpu = metric_gpu(x_gpu, y_gpu)
 
-    assert torch.allclose(score_cpu, score_gpu.cpu(), atol=ATOL, rtol=RTOL), \
-        f"Metric {metric_name} results mismatch between CPU and GPU."
+    assert torch.allclose(score_cpu, score_gpu.cpu(), atol=ATOL, rtol=RTOL), (
+        f'Metric {metric_name} results mismatch between CPU and GPU.'
+    )
 
 
 @pytest.mark.parametrize(
-    ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['pi', 'nrqm', 'fid', 'mad', 'vsi', 'clipscore', 'entropy', 'topiq_nr-face', 'inception_score']]
+    ('metric_name'),
+    [
+        (k)
+        for k in pyiqa.list_models()
+        if k
+        not in [
+            'pi',
+            'nrqm',
+            'fid',
+            'mad',
+            'vsi',
+            'clipscore',
+            'entropy',
+            'topiq_nr-face',
+            'inception_score',
+        ]
+    ],
 )
 def test_gradient_backward(metric_name, device):
     """Test if the metric can be used in a gradient descent process.
@@ -148,7 +185,9 @@ def test_gradient_backward(metric_name, device):
         score = score[0]
     score.sum().backward()
 
-    assert torch.isnan(x.grad).sum() == 0, f"Metric {metric_name} cannot be used in a gradient descent process."
+    assert torch.isnan(x.grad).sum() == 0, (
+        f'Metric {metric_name} cannot be used in a gradient descent process.'
+    )
 
     if torch.cuda.is_available():
         del x
@@ -157,8 +196,12 @@ def test_gradient_backward(metric_name, device):
 
 
 @pytest.mark.parametrize(
-    ("metric_name"),
-    [(k) for k in pyiqa.list_models() if k not in ['fid', 'inception_score', 'clipscore']]
+    ('metric_name'),
+    [
+        (k)
+        for k in pyiqa.list_models()
+        if k not in ['fid', 'fid_dinov2', 'inception_score', 'clipscore']
+    ],
 )
 def test_forward(metric_name, device):
     """Test if the metric can be used in a gradient descent process.
@@ -171,7 +214,7 @@ def test_forward(metric_name, device):
         size = (2, 3, 384, 384)
     if 'qalign' in metric_name or 'compare2score' in metric_name:
         size = (1, 3, 224, 224)
-    
+
     if 'face' in metric_name:
         size = (1, 3, 224, 224)
         kwargs['align_crop_face'] = False
@@ -186,7 +229,7 @@ def test_forward(metric_name, device):
     metric.eval()
     if hasattr(metric.net, 'test_sample'):
         metric.net.test_sample = 1
-    
+
     score = metric(x, y)
 
     if torch.cuda.is_available():

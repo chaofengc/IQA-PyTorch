@@ -9,7 +9,9 @@ from pyiqa.models.inference_model import InferenceModel
 
 
 def create_metric(metric_name, as_loss=False, device=None, **kwargs):
-    assert metric_name in DEFAULT_CONFIGS.keys(), f'Metric {metric_name} not implemented yet.' 
+    assert metric_name in DEFAULT_CONFIGS.keys(), (
+        f'Metric {metric_name} not implemented yet.'
+    )
     metric = InferenceModel(metric_name, as_loss=as_loss, device=device, **kwargs)
     logger = get_root_logger()
     logger.info(f'Metric [{metric.net.__class__.__name__}] is created.')
@@ -21,7 +23,7 @@ def _natural_key(string_):
 
 
 def list_models(metric_mode=None, filter='', exclude_filters=''):
-    """ Return list of available model names, sorted alphabetically
+    """Return list of available model names, sorted alphabetically
     Args:
         filter (str) - Wildcard filter string that works with fnmatch
         exclude_filters (str or list[str]) - Wildcard filters to exclude models after including them with filter
@@ -31,8 +33,14 @@ def list_models(metric_mode=None, filter='', exclude_filters=''):
     if metric_mode is None:
         all_models = DEFAULT_CONFIGS.keys()
     else:
-        assert metric_mode in ['FR', 'NR'], f'Metric mode only support [FR, NR], but got {metric_mode}'
-        all_models = [key for key in DEFAULT_CONFIGS.keys() if DEFAULT_CONFIGS[key]['metric_mode'] == metric_mode]
+        assert metric_mode in ['FR', 'NR'], (
+            f'Metric mode only support [FR, NR], but got {metric_mode}'
+        )
+        all_models = [
+            key
+            for key in DEFAULT_CONFIGS.keys()
+            if DEFAULT_CONFIGS[key]['metric_mode'] == metric_mode
+        ]
 
     if filter:
         models = []
@@ -54,9 +62,16 @@ def list_models(metric_mode=None, filter='', exclude_filters=''):
 
 
 def get_dataset_info(dataset_name=None):
-    dataset_info = yaml.safe_load(open(f'{os.path.dirname(os.path.abspath(__file__))}/default_dataset_configs.yml', 'r'))
+    dataset_info = yaml.safe_load(
+        open(
+            f'{os.path.dirname(os.path.abspath(__file__))}/default_dataset_configs.yml',
+            'r',
+        )
+    )
     if dataset_name == None:
         return dataset_info
     else:
-        assert dataset_name in dataset_info.keys(), f'Dataset {dataset_name} not implemented yet.'
+        assert dataset_name in dataset_info.keys(), (
+            f'Dataset {dataset_name} not implemented yet.'
+        )
         return dataset_info[dataset_name]

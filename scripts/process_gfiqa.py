@@ -14,7 +14,7 @@ def get_random_splits(seed=123):
     meta_info = pd.read_csv(meta_info_file)
     img_list = meta_info['img_name'].tolist()
 
-    total_num = len(img_list) 
+    total_num = len(img_list)
 
     all_img_index = list(range(total_num))
     num_splits = 10
@@ -28,10 +28,10 @@ def get_random_splits(seed=123):
         sep1 = int(total_num * ratio[0])
         sep2 = sep1 + int(total_num * ratio[1])
         split_info[i + 1] = {
-            'train': all_img_index[:sep1], 
+            'train': all_img_index[:sep1],
             'val': all_img_index[sep1:sep2],
-            'test': all_img_index[sep2:] 
-            }
+            'test': all_img_index[sep2:],
+        }
 
     with open(save_path, 'wb') as sf:
         pickle.dump(split_info, sf)
