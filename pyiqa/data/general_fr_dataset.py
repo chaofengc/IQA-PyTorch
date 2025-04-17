@@ -28,7 +28,7 @@ class GeneralFRDataset(BaseIQADataset):
             ref_path = osp.join(ref_img_folder, row[0])
             img_path = osp.join(target_img_folder, row[1])
             mos_label = float(row[2])
-            self.paths_mos.append([img_path, ref_path, mos_label])
+            self.paths_mos.append([ref_path, img_path, mos_label])
 
     def get_transforms(self, opt):
         # do paired transform first and then do common transform
