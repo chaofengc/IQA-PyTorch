@@ -4,6 +4,9 @@ import pytest
 import os
 import yaml
 
+from pyiqa import load_dataset
+
+
 with open('./pyiqa/default_dataset_configs.yml') as f:
     options = yaml.safe_load(f)
 
@@ -15,16 +18,13 @@ common_opt = {
     'phase': 'train',
 }
 
-
 @pytest.mark.parametrize(
     ('test_dataset_name'),
     [
         (k)
         for k in options.keys()
-        if os.path.exists(
-            options[k]['dataroot_target']
+        if os.path.exists(options[k]['dataroot_target'])
             and os.path.exists(options[k]['meta_info_file'])
-        )
     ],
 )
 def test_datasets_loading(test_dataset_name):
@@ -59,3 +59,22 @@ def test_datasets_loading(test_dataset_name):
         num_batches += 1
         if num_batches > max_num_test:
             break
+
+
+@pytest.mark.parametrize(
+    ('test_dataset_name'),
+    [
+        (k)
+        for k in options.keys()
+        if options[k]['type'] == 'GeneralFRDataset'
+    ],
+)
+def test_fr_datasets_loading(test_dataset_name):
+    idx0, idx1 = 0, 1
+    if test_dataset_name == 'live':
+        idx0, idx1 = -1, -2
+
+    frdata = load_dataset(test_dataset_name)
+
+    assert not torch.allclose(frdata[idx0]['img'], frdata[idx1]['img']), f'distortion images of the same image should be different! {test_dataset_name}'
+    assert torch.allclose(frdata[idx0]['ref_img'], frdata[idx1]['ref_img']), f'reference images of the same image should be the same! {test_dataset_name}'

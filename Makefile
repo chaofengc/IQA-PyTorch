@@ -34,7 +34,10 @@ test_grad:
 	pytest tests/test_metric_general.py::test_gradient_backward -v
 
 test_dataset:
-	pytest tests/test_datasets_general.py -v
+	pytest tests/test_datasets_general.py::test_datasets_loading -v
+
+test_fr_dataset:
+	pytest tests/test_datasets_general.py::test_fr_datasets_loading -v
 
 test_all:
 	pytest tests/ -v
