@@ -40,7 +40,6 @@ def imread2pil(img_source, rgb=False):
     if type(img_source) == bytes:
         img = Image.open(io.BytesIO(img_source))
     elif type(img_source) == str:
-        assert is_image_file(img_source), f'{img_source} is not a valid image file.'
         img = Image.open(img_source)
     elif isinstance(img_source, Image.Image):
         img = img_source
@@ -58,17 +57,7 @@ def imread2tensor(img_source, rgb=False):
         img_source (str, bytes, or PIL.Image): image filepath string, image contents as a bytearray or a PIL Image instance
         rgb: convert input to RGB if true
     """
-    if type(img_source) == bytes:
-        img = Image.open(io.BytesIO(img_source))
-    elif type(img_source) == str:
-        assert is_image_file(img_source), f'{img_source} is not a valid image file.'
-        img = Image.open(img_source)
-    elif isinstance(img_source, Image.Image):
-        img = img_source
-    else:
-        raise Exception('Unsupported source type')
-    if rgb:
-        img = img.convert('RGB')
+    img = imread2pil(img_source, rgb)
     img_tensor = TF.to_tensor(img)
     return img_tensor
 
