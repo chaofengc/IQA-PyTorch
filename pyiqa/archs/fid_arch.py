@@ -298,7 +298,7 @@ def get_folder_features(
                     normalize_input = True
 
                 feat = model(batch.to(device), False, normalize_input)
-                feat = feat[0].squeeze(-1).squeeze(-1).detach().cpu().numpy()
+                feat = feat[0].reshape(-1, feat[0].shape[1]).detach().cpu().numpy()
             else:
                 feat = model(batch.to(device))
                 feat = feat.detach().cpu().numpy()

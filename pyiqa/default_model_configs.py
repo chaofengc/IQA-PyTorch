@@ -362,6 +362,15 @@ DEFAULT_CONFIGS = OrderedDict(
             'lower_better': True,
             'score_range': '0, ~',
         },
+        'sfid': {
+            'metric_opts': {
+                'type': 'FID',
+                'dims': 768,
+            },
+            'metric_mode': 'NR',
+            'lower_better': True,
+            'score_range': '0, ~',
+        },
         'fid_dinov2': {
             'metric_opts': {
                 'type': 'FID',
