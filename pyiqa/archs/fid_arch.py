@@ -299,9 +299,12 @@ def get_folder_features(
                     normalize_input = True
 
                 feat = model(batch.to(device), False, normalize_input)[0]
-                feat = feat.permute(0, 2, 3, 1).reshape(
-                    -1, feat.shape[1]
-                ).detach().cpu().numpy()
+                if feat.shape[-1] == 1:
+                    feat = feat.reshape(feat.shape[0], feat.shape[1]).detach().cpu().numpy()
+                else:
+                    # calculate sFID
+                    # use only the first 7 channels
+                    feat = feat[:, :7].permute(0, 2, 3, 1).reshape(feat.shape[0], -1).detach().cpu().numpy()
             else:
                 feat = model(batch.to(device))
                 feat = feat.detach().cpu().numpy()

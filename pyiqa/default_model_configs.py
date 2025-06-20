@@ -362,7 +362,7 @@ DEFAULT_CONFIGS = OrderedDict(
             'lower_better': True,
             'score_range': '0, ~',
         },
-        # spatial FID used in: https://github.com/openai/guided-diffusion
+        # sFID used in: https://github.com/openai/guided-diffusion
         'sfid': {
             'metric_opts': {
                 'type': 'FID',
