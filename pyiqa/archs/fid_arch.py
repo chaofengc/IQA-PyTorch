@@ -307,7 +307,7 @@ def get_folder_features(
                     # References:
                     #   - https://github.com/openai/guided-diffusion
                     #   - Generating images with sparse representations, https://arxiv.org/pdf/2103.03841
-                    feat = feat[:, :7].permute(0, 2, 3, 1).reshape(feat.shape[0], -1).detach().cpu().numpy()
+                    feat = feat[:, :7].reshape(feat.shape[0], -1).detach().cpu().numpy()
             else:
                 feat = model(batch.to(device))
                 feat = feat.detach().cpu().numpy()
