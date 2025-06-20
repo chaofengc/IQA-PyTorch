@@ -303,7 +303,10 @@ def get_folder_features(
                     feat = feat.reshape(feat.shape[0], feat.shape[1]).detach().cpu().numpy()
                 else:
                     # calculate sFID
-                    # use only the first 7 channels
+                    # use only the first 7 channels to get feature of dim 2023
+                    # References:
+                    #   - https://github.com/openai/guided-diffusion
+                    #   - Generating images with sparse representations, https://arxiv.org/pdf/2103.03841
                     feat = feat[:, :7].permute(0, 2, 3, 1).reshape(feat.shape[0], -1).detach().cpu().numpy()
             else:
                 feat = model(batch.to(device))
