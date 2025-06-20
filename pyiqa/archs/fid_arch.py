@@ -83,6 +83,7 @@ class ResizeDataset(torch.utils.data.Dataset):
             )
         else:
             img_np = np.array(img_pil).clip(0, 255)
+            img_t = torch.from_numpy(img_np).permute(2, 0, 1).float()
             img_t = nn.functional.interpolate(
                 img_t.unsqueeze(0), size=self.size, mode='bilinear', align_corners=False
             )
@@ -297,8 +298,10 @@ def get_folder_features(
                     batch = batch / 255
                     normalize_input = True
 
-                feat = model(batch.to(device), False, normalize_input)
-                feat = feat[0].reshape(-1, feat[0].shape[1]).detach().cpu().numpy()
+                feat = model(batch.to(device), False, normalize_input)[0]
+                feat = feat.permute(0, 2, 3, 1).reshape(
+                    -1, feat.shape[1]
+                ).detach().cpu().numpy()
             else:
                 feat = model(batch.to(device))
                 feat = feat.detach().cpu().numpy()
