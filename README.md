@@ -14,7 +14,7 @@ An IQA toolbox with pure python and pytorch. Please refer to [Awesome-Image-Qual
 
 ## :open_book: Introduction
 
-This is a comprehensive image quality assessment (IQA) toolbox built with **pure Python and PyTorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.** Please refer to the following documents for details:  
+This is a comprehensive image quality assessment (IQA) toolbox built with **pure Python and PyTorch**. We provide reimplementation of many widely used full reference (FR) and no reference (NR) metrics, **with results calibrated against official MATLAB scripts when available**. With GPU acceleration, **our implementations are much faster than their Matlab counterparts.** Please refer to the following documents for details:  
 
 <div align="center">
 
