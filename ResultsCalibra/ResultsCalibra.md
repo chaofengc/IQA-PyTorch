@@ -79,4 +79,4 @@ We random select 5 pairs of images from TID2013 for results calibration. Images 
 <a name="fn13">[13]</a> Results have about ±2% difference with tensorflow codes because of some detailed implementation differences between TensorFlow and PyTorch. For example, PyTorch does not support gaussian interpolation, different default epsilon value, etc.<br>
 <a name="fn14">[14]</a> Perceptual Index (PI) use YCBCR color space and crop border with size 4.<br>
 <a name="fn15">[15]</a> We use codes from the [clean-fid](https://github.com/GaParmar/clean-fid) project.<br>
-<a name="fn16">[15]</a> We use codes from the [torch-fidelity](https://github.com/toshas/torch-fidelity) project with "fidelity --gpu 0 --samples-find-ext bmp,BMP --isc --isc-splits 1 --input1 ResultsCalibra/dist_dir/".<br>
+<a name="fn16">[16]</a> We use codes from the [torch-fidelity](https://github.com/toshas/torch-fidelity) project with "fidelity --gpu 0 --samples-find-ext bmp,BMP --isc --isc-splits 1 --input1 ResultsCalibra/dist_dir/".<br>
