@@ -81,6 +81,7 @@ class ResizeDataset(torch.utils.data.Dataset):
             img_t = interpolate_bilinear_2d_like_tensorflow1x(
                 img_t.unsqueeze(0), size=self.size, align_corners=False
             )
+            img_t = img_t.squeeze(0)
         else:
             img_np = np.array(img_pil).clip(0, 255)
             img_t = torch.from_numpy(img_np).permute(2, 0, 1).float()
@@ -299,7 +300,7 @@ def get_folder_features(
                     normalize_input = True
 
                 feat = model(batch.to(device), False, normalize_input)[0]
-                if feat.shape[-1] == 1:
+                if feat.shape[-1] == 1 or len(feat.shape) == 2:
                     feat = feat.reshape(feat.shape[0], feat.shape[1]).detach().cpu().numpy()
                 else:
                     # calculate sFID
