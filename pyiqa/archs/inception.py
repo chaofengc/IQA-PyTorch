@@ -73,9 +73,13 @@ class InceptionV3(nn.Module):
         if isinstance(output_blocks, (list, tuple)):
             self.output_blocks = sorted(output_blocks)
             self.last_needed_block = max(output_blocks)
-        elif isinstance(output_blocks, str) and 'logits' in output_blocks:
-            self.output_blocks = output_blocks
-            self.last_needed_block = 3
+        elif isinstance(output_blocks, str):
+            if 'logits' in output_blocks:
+                self.output_blocks = output_blocks
+                self.last_needed_block = 3
+            elif 'mixed_6a' in output_blocks:
+                self.output_blocks = output_blocks
+                self.last_needed_block = 2
 
         assert self.last_needed_block <= 3, 'Last possible output block index is 3'
 
@@ -108,16 +112,24 @@ class InceptionV3(nn.Module):
 
         # Block 2: maxpool2 to aux classifier
         if self.last_needed_block >= 2:
-            block2 = [
-                inception.Mixed_5b,
-                inception.Mixed_5c,
-                inception.Mixed_5d,
-                inception.Mixed_6a,
-                inception.Mixed_6b,
-                inception.Mixed_6c,
-                inception.Mixed_6d,
-                inception.Mixed_6e,
-            ]
+            if self.output_blocks == 'mixed_6a':
+                block2 = [
+                    inception.Mixed_5b,
+                    inception.Mixed_5c,
+                    inception.Mixed_5d,
+                    inception.Mixed_6a,
+                ]
+            else:
+                block2 = [
+                    inception.Mixed_5b,
+                    inception.Mixed_5c,
+                    inception.Mixed_5d,
+                    inception.Mixed_6a,
+                    inception.Mixed_6b,
+                    inception.Mixed_6c,
+                    inception.Mixed_6d,
+                    inception.Mixed_6e,
+                ]
             self.blocks.append(nn.Sequential(*block2))
 
         # Block 3: aux classifier to final avgpool
@@ -161,6 +173,11 @@ class InceptionV3(nn.Module):
 
             if idx == self.last_needed_block:
                 break
+        
+        if self.output_blocks == 'mixed_6a':
+            # If the output block is 'mixed_6a', we return the features of the
+            # last block before the aux classifier, which is Mixed_6a.
+            outp.append(x)
 
         if self.output_blocks == 'logits_unbiased':
             outp.append(x.flatten(1).mm(self.fc.weight.T))

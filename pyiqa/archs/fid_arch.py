@@ -378,8 +378,11 @@ class FID(nn.Module):
         super().__init__()
 
         if backbone == 'inceptionv3':
-            block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
-            self.model = InceptionV3(output_blocks=[block_idx])
+            if isinstance(dims, int): 
+                block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
+                self.model = InceptionV3(output_blocks=[block_idx])
+            elif isinstance(dims, str): 
+                self.model = InceptionV3(output_blocks=dims)
             self.model.eval()
             self.test_img_size = (299, 299)
         elif backbone == 'dinov2':

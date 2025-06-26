@@ -366,7 +366,7 @@ DEFAULT_CONFIGS = OrderedDict(
         'sfid': {
             'metric_opts': {
                 'type': 'FID',
-                'dims': 768,
+                'dims': 'mixed_6a',
             },
             'metric_mode': 'NR',
             'lower_better': True,
