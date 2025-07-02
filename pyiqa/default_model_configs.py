@@ -354,33 +354,6 @@ DEFAULT_CONFIGS = OrderedDict(
             'metric_mode': 'NR',
             'score_range': '~0, ~1',
         },
-        'fid': {
-            'metric_opts': {
-                'type': 'FID',
-            },
-            'metric_mode': 'NR',
-            'lower_better': True,
-            'score_range': '0, ~',
-        },
-        # sFID used in: https://github.com/openai/guided-diffusion
-        'sfid': {
-            'metric_opts': {
-                'type': 'FID',
-                'dims': 'mixed_6a',
-            },
-            'metric_mode': 'NR',
-            'lower_better': True,
-            'score_range': '0, ~',
-        },
-        'fid_dinov2': {
-            'metric_opts': {
-                'type': 'FID',
-                'backbone': 'dinov2',
-            },
-            'metric_mode': 'NR',
-            'lower_better': True,
-            'score_range': '0, ~',
-        },
         'maniqa': {
             'metric_opts': {
                 'type': 'MANIQA',
@@ -669,14 +642,6 @@ DEFAULT_CONFIGS = OrderedDict(
             'metric_mode': 'NR',
             'score_range': '~-3, ~3',
         },
-        'inception_score': {
-            'metric_opts': {
-                'type': 'InceptionScore',
-            },
-            'metric_mode': 'NR',
-            'lower_better': False,
-            'score_range': '0, ~',
-        },
         'arniqa': {
             'metric_opts': {
                 'type': 'ARNIQA',
@@ -792,6 +757,44 @@ DEFAULT_CONFIGS = OrderedDict(
             },
             'metric_mode': 'NR',
             'score_range': '0, 1',
+        },
+        # =============================================================
+        # Generative metrics
+        # =============================================================
+        'fid': {
+            'metric_opts': {
+                'type': 'FID',
+            },
+            'metric_mode': 'NR',
+            'lower_better': True,
+            'score_range': '0, ~',
+        },
+        # sFID used in: https://github.com/openai/guided-diffusion
+        'sfid': {
+            'metric_opts': {
+                'type': 'FID',
+                'dims': 'mixed_6a',
+            },
+            'metric_mode': 'NR',
+            'lower_better': True,
+            'score_range': '0, ~',
+        },
+        'fid_dinov2': {
+            'metric_opts': {
+                'type': 'FID',
+                'backbone': 'dinov2',
+            },
+            'metric_mode': 'NR',
+            'lower_better': True,
+            'score_range': '0, ~',
+        },
+        'inception_score': {
+            'metric_opts': {
+                'type': 'InceptionScore',
+            },
+            'metric_mode': 'NR',
+            'lower_better': False,
+            'score_range': '0, ~',
         },
     }
 )
