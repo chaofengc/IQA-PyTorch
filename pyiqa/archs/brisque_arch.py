@@ -263,16 +263,10 @@ class BRISQUE(torch.nn.Module):
             self.sv_coef, self.sv = torch.load(
                 pretrained_model_path, weights_only=False
             )
-            self.gamma = 0.05
-            self.rho = -153.591
-            self.scale = 1
         elif version == 'matlab':
             pretrained_model_path = load_file_from_url(
                 default_model_urls['brisque_matlab']
             )
-            self.gamma = 1
-            self.rho = -43.4582
-            self.scale = 0.3210
 
             params = scipy.io.loadmat(pretrained_model_path)
             sv = params['sv']
@@ -280,6 +274,16 @@ class BRISQUE(torch.nn.Module):
             sv = torch.from_numpy(sv)
             self.sv_coef = torch.from_numpy(sv_coef)
             self.sv = sv / self.scale
+
+        # Set hyper-parameters based on the version 
+        if version == 'original':
+            self.gamma = 0.05
+            self.rho = -153.591
+            self.scale = 1
+        elif version == 'matlab':
+            self.gamma = 1
+            self.rho = -43.4582
+            self.scale = 0.3210
 
         self.version = version
 
