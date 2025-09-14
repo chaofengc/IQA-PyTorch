@@ -251,8 +251,8 @@ class AFINE(nn.Module):
     def __init__(
         self,
         model_type='afine_all_scale',
-        # clip_backbone='ViT-B/32',
-        clip_backbone='/mnt/bn/chenduchris/pretrained_models/CLIP/ViT-B-32.pt',
+        clip_backbone='ViT-B/32',
+        # clip_backbone='/mnt/bn/chenduchris/pretrained_models/CLIP/ViT-B-32.pt',
         step=32,
         num_patch=15,
         pretrained=True,
