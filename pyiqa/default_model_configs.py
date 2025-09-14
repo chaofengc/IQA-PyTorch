@@ -796,5 +796,45 @@ DEFAULT_CONFIGS = OrderedDict(
             'lower_better': False,
             'score_range': '0, ~',
         },
+        'afine_nr': {
+            'metric_opts': {
+                'type': 'AFINE',
+                'model_type': 'afine_nr',
+                'pretrained': True,
+            },
+            'metric_mode': 'NR',
+            'lower_better': True,
+            'score_range': '-2, 2',
+        },
+        'afine_fr': {
+            'metric_opts': {
+                'type': 'AFINE',
+                'model_type': 'afine_fr',
+                'pretrained': True,
+            },
+            'metric_mode': 'FR',
+            'lower_better': True,
+            'score_range': '-2, 2',
+        },
+        'afine_all_scale': {
+            'metric_opts': {
+                'type': 'AFINE',
+                'model_type': 'afine_all_scale',
+                'pretrained': True,
+            },
+            'metric_mode': 'FR',
+            'lower_better': True,
+            'score_range': '0, 100',
+        },
+        'afine_all': {
+            'metric_opts': {
+                'type': 'AFINE',
+                'model_type': 'afine_all',
+                'pretrained': True,
+            },
+            'metric_mode': 'FR',
+            'lower_better': True,
+            'score_range': '~, 2',
+        },
     }
 )
