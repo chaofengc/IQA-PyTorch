@@ -38,6 +38,7 @@ This is a comprehensive image quality assessment (IQA) toolbox built with **pure
 ## :zap: Quick Start
 
 ### Installation
+
 ```bash
 # Install with pip
 pip install pyiqa
@@ -51,6 +52,12 @@ git clone https://github.com/chaofengc/IQA-PyTorch.git
 cd IQA-PyTorch
 pip install -r requirements.txt
 python setup.py develop
+```
+
+[Optional] Accelerate `pip` with `uv` inside conda environment
+```bash
+conda install uv
+alias pip="uv pip"
 ```
 
 ### Basic Usage 
