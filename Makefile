@@ -1,15 +1,14 @@
 refresh: clean build install build_dist release 
 
 build:
-	python setup.py build
+	python -m build
 
 install:
 	python setup.py install
 
 build_dist:
 	make clean
-	python setup.py sdist bdist_wheel
-	pip install dist/*.whl
+	python -m build
 
 release:
 	python -m twine upload dist/*
