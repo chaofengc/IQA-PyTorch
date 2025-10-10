@@ -44,6 +44,10 @@ This is a comprehensive image quality assessment (IQA) toolbox built with **pure
 # Install with pip
 pip install pyiqa
 
+# Install faster with uv
+pip install uv
+uv pip install pyiqa
+
 # Install latest github version
 pip uninstall pyiqa # if have older version installed already 
 pip install git+https://github.com/chaofengc/IQA-PyTorch.git
