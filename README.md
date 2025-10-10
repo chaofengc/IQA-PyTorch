@@ -49,8 +49,7 @@ pip install git+https://github.com/chaofengc/IQA-PyTorch.git
 # Install with git clone
 git clone https://github.com/chaofengc/IQA-PyTorch.git
 cd IQA-PyTorch
-pip install -r requirements.txt
-python setup.py develop
+pip install -e .
 ```
 
 ### Basic Usage 

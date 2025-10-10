@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyiqa"
+description = "PyTorch Toolbox for Image Quality Assessment"
+readme = "README.md"
+requires-python = ">=3.6"
+license = { text = "Apache Software License" }
+authors = [
+    { name = "Chaofeng Chen", email = "chaofenghust@gmail.com" },
+]
+keywords = ["image quality assessment", "pytorch"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+
+# dynamic fields handled automatically
+dynamic = ["version", "dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/chaofengc/IQA-PyTorch"
+Repository = "https://github.com/chaofengc/IQA-PyTorch"
+Issues = "https://github.com/chaofengc/IQA-PyTorch/issues"
+
+[project.scripts]
+pyiqa = "pyiqa.pyiqa_cmd:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = [
+    "options",
+    "datasets",
+    "experiments",
+    "results",
+    "tb_logger",
+    "wandb",
+    "tests",
+    "ResultsCalibra",
+    "scripts",
+]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+# include extra non-code files (replacement for MANIFEST.in)
+[tool.setuptools.package-data]
+pyiqa = [
+    "archs/class_mapping.json",
+    "default_dataset_configs.yml",
+]
+
+# setuptools-scm handles versioning dynamically from git
+[tool.setuptools_scm]
+write_to = "pyiqa/version.py"
+version_scheme = "post-release"   # or "guess-next-dev"
+local_scheme = "no-local-version" # removes +gSHA.dYYYYMMDD
+fallback_version = "0.0.0"
+
+# Developer tool configurations (from setup.cfg)
+[tool.flake8]
+ignore = [
+    "W503",  # line break before binary operator
+    "W504",  # line break after binary operator
+]
+max-line-length = 120
+
+[tool.codespell]
+skip = [".git", "./docs/build", "*.cfg", "./pyiqa/archs/uranker.py", "scripts/*"]
+quiet-level = 3
+ignore-words-list = "hist,fo,NiN"
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 120
+blank_line_before_nested_class_or_def = true
+split_before_expression_after_opening_paren = true
