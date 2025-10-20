@@ -361,13 +361,13 @@ class AFINE(nn.Module):
             afine_all_scale = scale_finalscore(score = afine_all)
 
             if self.model_type == 'afine_nr':
-                return natural_dis_scale.squeeze().item()
+                return natural_dis_scale.squeeze()
             elif self.model_type == 'afine_fr':
-                return fidelity_disref_scale.squeeze().item()
+                return fidelity_disref_scale.squeeze()
             elif self.model_type == 'afine_all_scale':
-                return afine_all_scale.squeeze().item()
+                return afine_all_scale.squeeze()
             elif self.model_type == 'afine_all':
-                return afine_all.squeeze().item()
+                return afine_all.squeeze()
             else:
                 raise ValueError(f"self.model_type must be afine_nr, afine_fr, afine_all or afine_all_scale.")
 
