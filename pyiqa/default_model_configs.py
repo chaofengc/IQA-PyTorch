@@ -714,6 +714,14 @@ DEFAULT_CONFIGS = OrderedDict(
             'score_range': '0, ~10',
             'lower_better': True,
         },
+        'maclip': {
+            'metric_opts': {
+                'type': 'MACLIP',
+                'model_type': 'maclip',
+            },
+            'metric_mode': 'NR',
+            'score_range': '0, 1',
+        },
         'qualiclip': {
             'metric_opts': {
                 'type': 'QualiCLIP',
