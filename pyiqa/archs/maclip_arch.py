@@ -17,7 +17,6 @@ Reference:
 import torch
 import torch.nn as nn
 import clip
-from .clip_model import load
 import torch.nn.functional as F
 import torch.nn as nn
 from torchvision.transforms import ToTensor, Normalize
@@ -26,8 +25,10 @@ import torchvision
 import torch.nn.functional as F
 import torch
 
-OPENAI_CLIP_MEAN = (0.48145466, 0.4578275, 0.40821073)
-OPENAI_CLIP_STD = (0.26862954, 0.26130258, 0.27577711)
+from pyiqa.utils.registry import ARCH_REGISTRY
+from pyiqa.archs.constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
+from pyiqa.archs.clip_model import load
+
 
 class CustomCLIP(nn.Module):
     def __init__(self, backbone: str, device="cpu"):
@@ -55,7 +56,7 @@ class CustomCLIP(nn.Module):
         return logits_per_image, logits_per_text, image_features_org
 
 
-
+@ARCH_REGISTRY.register()
 class MACLIP(nn.Module):
     def __init__(self,
                  model_type='clipiqa',backbone='RN50',pos_embedding=False) -> None:
