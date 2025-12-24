@@ -25,6 +25,7 @@ This is a comprehensive image quality assessment (IQA) toolbox built with **pure
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
+- ✨**Dec, 2025**. Add `maclip` metric proposed in [MACLIP](https://github.com/zhix000/MA-CLIP), introducing magnitude in IQA. Thanks to [zhicheng](https://github.com/zhix000) for their contribution 🤗, and please refer to their official papers for more details! 
 - 🎉**Sep, 2025**. Add `afine` metric proposed in [AFINE](https://github.com/ChrisDud0257/AFINE). Thanks to [Du CHEN](https://github.com/ChrisDud0257) for their great work 🤗, and please refer to their official papers for more details! 
 - 🎉**Jun, 2025**. Add `sfid`, a commonly used metric in generative models.
 - 🎆**Jan, 2025**. Add `qualiclip`, `qualiclip+` and its variances trained on different datasets, refer to official repo [here](https://github.com/miccunifi/QualiCLIP). Thanks for the contribution from [Lorenzo Agnolucci](https://github.com/LorenzoAgnolucci) 🤗.
@@ -128,10 +129,10 @@ iqa_metric.load_weights('path/to/weights.pth', weight_keys='params')
 Example test script with input directory/images and reference directory/images. 
 ```bash
 # example for FR metric with dirs
-python inference_iqa.py -m LPIPS[or lpips] -i ./ResultsCalibra/dist_dir[dist_img] -r ./ResultsCalibra/ref_dir[ref_img]
+python inference_iqa.py -m LPIPS[or lpips] -t ./ResultsCalibra/dist_dir[dist_img] -r ./ResultsCalibra/ref_dir[ref_img]
 
 # example for NR metric with single image
-python inference_iqa.py -m brisque -i ./ResultsCalibra/dist_dir/I03.bmp
+python inference_iqa.py -m brisque -t ./ResultsCalibra/dist_dir/I03.bmp
 ```
 
 #### Easy load of popular datasets
