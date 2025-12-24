@@ -88,7 +88,7 @@ class MACLIP(nn.Module):
     def preprocess(self, img):
         transforms = torchvision.transforms.Compose([
             Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))])
-        raw_image = transforms(img).unsqueeze(0)
+        raw_image = transforms(img)
         unfold = nn.Unfold(kernel_size=(224, 224), stride=128)
         img = unfold(raw_image).view(1, 3, 224, 224, -1)[0]
         img = img.permute(3,0,1,2).cuda()
