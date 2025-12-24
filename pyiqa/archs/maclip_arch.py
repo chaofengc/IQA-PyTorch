@@ -67,7 +67,6 @@ class MACLIP(nn.Module):
         super().__init__()
 
         self.clip_model = CustomCLIP(backbone=backbone, device='cuda')
-        # Different from original paper, we assemble multiple prompts to improve performance
         self.prompt_pairs = clip.tokenize([
             'Good image', 'bad image',
             'Sharp image', 'blurry image',
