@@ -149,7 +149,7 @@ bapps:
 gfiqa:
   name: GFIQA 
   type: GeneralNRDataset
-  dataroot_target: ./datasets/GFIQA/image
+  dataroot_target: ./datasets/GFIQA-20k/image
   meta_info_file: ./datasets/meta_info/meta_info_GFIQADataset.csv
   split_index: 1
 
