@@ -10,6 +10,7 @@ print(pyiqa.list_models())
 
 | FR Method                | Model names                                                            | Description                                                | Score Direction  |
 | ------------------------ | ---------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------- |
+| DMM                      | `dmm`                                                     | Published in [TMM](https://ieeexplore.ieee.org/abstract/document/10886996) | Higher is better |
 | TOPIQ                    | `topiq_fr`, `topiq_fr-pipal`                                           | Proposed in [this paper](https://arxiv.org/abs/2308.03060) | Higher is better |
 | AHIQ                     | `ahiq`                                                                 |                                                            | Higher is better |
 | PieAPP                   | `pieapp`                                                               |                                                            | Lower is better  |

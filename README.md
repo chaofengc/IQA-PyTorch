@@ -25,6 +25,7 @@ This is a comprehensive image quality assessment (IQA) toolbox built with **pure
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
+- 👉**Dec, 2025**.Add FR-IQA method `dmm` proposed in [paper](https://ieeexplore.ieee.org/abstract/document/10886996), with SVD-based debiased mapping to mitigate perception bias. Thanks to [baoliang](https://github.com/Baoliang93) for their great work 🤗, refer to DMM for more details.
 - ✨**Dec, 2025**. Add `maclip` metric proposed in [MACLIP](https://github.com/zhix000/MA-CLIP), introducing magnitude in IQA. Thanks to [zhicheng](https://github.com/zhix000) for their contribution 🤗, and please refer to their official papers for more details! 
 - 🎉**Sep, 2025**. Add `afine` metric proposed in [AFINE](https://github.com/ChrisDud0257/AFINE). Thanks to [Du CHEN](https://github.com/ChrisDud0257) for their great work 🤗, and please refer to their official papers for more details! 
 - 🎉**Jun, 2025**. Add `sfid`, a commonly used metric in generative models.
