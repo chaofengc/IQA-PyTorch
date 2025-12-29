@@ -122,15 +122,15 @@ class L2Pool2d(torch.nn.Module):
 #----------------------- Main Class-----------------------------------
 @ARCH_REGISTRY.register()
 class DMM(nn.Module):
-    def __init__(self, reduce_dim=256, kernel_size=5, features_to_compute=('relu3_3','relu4_3'), criterion=torch.nn.CosineSimilarity(), use_dropout=True):
-        super(DMM, self).__init__()
+    def __init__(self, reduce_dim=256, kernel_size=5, features_to_compute=('relu3_3','relu4_3'), criterion=torch.nn.CosineSimilarity(), use_dropout=True, **kwargs):
+        super().__init__()
         self.criterion = criterion
         self.features_extractor = FeaturesExtractor(target_features=features_to_compute, replace_pooling=True)
         self.patchsize = 16
         self.stride = 4
         self.unfold = nn.Unfold(kernel_size=self.patchsize, stride=self.stride )
 
-    def forward(self, Ref, Dist, as_loss=False):
+    def forward(self, Dist, Ref, as_loss=False):
         # preprocess image
         Ref = self.prepare_image_adt(Ref)
         Dist = self.prepare_image_adt(Dist)
