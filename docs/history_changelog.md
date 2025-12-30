@@ -1,5 +1,5 @@
 # History of Changelog
-
+- 👉**Dec, 2025**.Add FR-IQA method `dmm` proposed in [paper](https://github.com/Baoliang93/DMM), with SVD-based debiased mapping to mitigate perception bias. 
 - 💥**Dec, 2025**.Add `maclip` proposed in [MACLIP](https://github.com/zhix000/MA-CLIP), introducing magnitude in IQA. Refer to their official papers for more details! 
 - 🚀**Oct, 2024**. Update `topiq_nr-face` by training with the [GCFIQA](https://github.com/DSL-FIQA/DSL-FIQA) dataset. Thanks to their work! 🤗
 - 🎨**Oct, 2024**. Add perceptual color difference metric `msswd` proposed in [MS-SWD (ECCV2024)](https://github.com/real-hjq/MS-SWD). Thanks to their work! 🤗

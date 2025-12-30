@@ -714,6 +714,14 @@ DEFAULT_CONFIGS = OrderedDict(
             'score_range': '0, ~10',
             'lower_better': True,
         },
+        'dmm': {
+            'metric_opts': {
+                'type': 'DMM',
+                'model_type': 'dmm',
+            },
+            'metric_mode': 'FR',
+            'score_range': '0, ~',
+        },
         'maclip': {
             'metric_opts': {
                 'type': 'MACLIP',
