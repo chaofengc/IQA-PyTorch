@@ -14,7 +14,7 @@ Reference url: https://github.com/Q-Future/Compare2Score
 import torch
 from torch import nn
 import warnings
-from .q_align.modeling_mplug_owl2 import MPLUGOwl2LlamaForCausalLM
+from .q_align.cmp_modelling_mplug_owl2 import MPLUGOwl2LlamaForCausalLM
 from transformers import BitsAndBytesConfig
 
 from .constants import OPENAI_CLIP_MEAN
@@ -69,6 +69,14 @@ class Compare2Score(nn.Module):
                 'ignore',
                 message=r"The following generation flags are not valid and may be ignored: .*",
             )
+            warnings.filterwarnings(
+                'ignore',
+                message=r"`do_sample` is set to `False`\. However, `temperature` is set to .*",
+            )
+            warnings.filterwarnings(
+                'ignore',
+                message=r"`do_sample` is set to `False`\. However, `top_p` is set to .*",
+            )
             self.model = MPLUGOwl2LlamaForCausalLM.from_pretrained('q-future/Compare2Score', **model_kwargs)
         if getattr(self.model, 'generation_config', None) is not None:
             gen_cfg = self.model.generation_config
@@ -78,15 +86,15 @@ class Compare2Score(nn.Module):
 
     def preprocess(self, x):
         assert x.shape[0] == 1, 'Currently, only support batch size 1.'
-        image = F.to_pil_image(x[0])
-        return [image]
+        images = F.to_pil_image(x[0])
+        return images
 
     def forward(self, x):
         """
-        x: torch.Tensor, expected shape [1, C, H, W]
+        x: str, path to image
         """
 
-        images = self.preprocess(x)
-        score = self.model.score(images)
+        image_tensor = self.preprocess(x)
+        score = self.model.score(image_tensor)
 
         return score

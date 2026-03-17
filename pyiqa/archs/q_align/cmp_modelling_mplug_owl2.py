@@ -1,45 +1,40 @@
-# Copyright 2023 Haotian Liu & Qinghao Ye & Haoning Wu (Modified from LLaVA, and mPLUG-Owl2)
+#    Copyright 2023 Haotian Liu & Qinghao Ye (Modified from LLaVA)
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#        http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
 
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple, Union
-
+from datasets import load_dataset
 import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
-
+import numpy as np
 import copy
 import os
 import sys
+from PIL import Image
+import requests
+from io import BytesIO
 
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, CLIPImageProcessor
-try:
-    from transformers.generation import GenerationMixin
-except ImportError:
-    from transformers.generation_utils import GenerationMixin
-
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
 from .configuration_mplug_owl2 import MPLUGOwl2Config, MplugOwlVisionConfig, MplugOwlVisualAbstractorConfig
 from .visual_encoder import MplugOwlVisionModel, MplugOwlVisualAbstractorModel
 from .modeling_llama2 import LlamaConfig, LlamaModel, LlamaForCausalLM, replace_llama_modality_adaptive
-from .modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
-
 IGNORE_INDEX = -100
 IMAGE_TOKEN_INDEX = -200
 DEFAULT_IMAGE_TOKEN = "<|image|>"
-
 from icecream import ic
 
 def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX, return_tensors=None):
@@ -61,36 +56,83 @@ def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX
         if return_tensors == 'pt':
             return torch.tensor(input_ids, dtype=torch.long)
         raise ValueError(f'Unsupported tensor type: {return_tensors}')
-
     return input_ids
 
 def expand2square(pil_img, background_color):
-    from PIL import Image
-    width, height = pil_img.size
-    if width == height:
-        return pil_img
-    elif width > height:
-        result = Image.new(pil_img.mode, (width, width), background_color)
-        result.paste(pil_img, (0, (width - height) // 2))
-        return result
-    else:
-        result = Image.new(pil_img.mode, (height, height), background_color)
-        result.paste(pil_img, ((height - width) // 2, 0))
-        return result
+        from PIL import Image
+        width, height = pil_img.size
+        if width == height:
+            return pil_img
+        elif width > height:
+            result = Image.new(pil_img.mode, (width, width), background_color)
+            result.paste(pil_img, (0, (width - height) // 2))
+            return result
+        else:
+            result = Image.new(pil_img.mode, (height, height), background_color)
+            result.paste(pil_img, ((height - width) // 2, 0))
+            return result
 
+def norm_cdf(x):
+    return 0.5 * (1 + torch.erf(x / torch.sqrt(torch.tensor(2.0))))
+
+def optimize_score_map_pytorch_cuda(c, seed=0, original_seed=20020, num_iterations=100):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+
+    c = torch.tensor(c, dtype=torch.float32, device=device, requires_grad=False)
+    initial_scores = torch.rand(c.shape[0], device=device, requires_grad=True)
+    
+    optimizer = torch.optim.Adam([initial_scores], lr=0.1)
+
+    for _ in range(num_iterations):
+        optimizer.zero_grad()
+        sum_log_diff = torch.sum(c * torch.log(torch.maximum(norm_cdf(initial_scores[:, None] - initial_scores), torch.tensor(1e-6, device=device))))
+        sum_squares = torch.sum(initial_scores ** 2) / 2
+
+        loss = -(sum_log_diff - sum_squares)
+        loss.backward()
+        optimizer.step()
+    
+    optimized_scores = initial_scores.detach().cpu().numpy()
+    min_score, max_score = np.min(optimized_scores), np.max(optimized_scores)
+    
+    # Scale scores to 0-100
+    scaled_scores = 100 * (optimized_scores - min_score) / (max_score - min_score)
+    
+    # Reset the seed
+    np.random.seed(original_seed)
+    return torch.tensor(scaled_scores[-1], device=device)
+
+def softmax(logits):
+    # exp_logits = np.exp(logits - np.max(logits))
+    probs = np.exp(logits) / np.sum(np.exp(logits))
+    return probs
+    # return exp_logits / exp_logits.sum()
+
+def update_matrix(anchor_matrix, scores, indices):
+    n = anchor_matrix.shape[0]
+    new_row = np.zeros((1, n))
+    new_col = np.zeros((n + 1, 1))
+    new_row[0, indices] = scores
+    new_col[indices, 0] = 1-scores  # Assuming symmetric preference for simplicity
+    anchor_matrix = np.vstack([anchor_matrix, new_row])
+    anchor_matrix = np.hstack([anchor_matrix, new_col])
+    anchor_matrix[n, n] = 0.5
+    return anchor_matrix
+    
 
 class MPLUGOwl2MetaModel:
-
     def __init__(self, config):
         super(MPLUGOwl2MetaModel, self).__init__(config)
         self.vision_model = MplugOwlVisionModel(
             MplugOwlVisionConfig(**config.visual_config["visual_model"])
         )
         self.visual_abstractor = MplugOwlVisualAbstractorModel(
-            MplugOwlVisualAbstractorConfig(**config.visual_config["visual_abstractor"]),
-            config.hidden_size
+            MplugOwlVisualAbstractorConfig(**config.visual_config["visual_abstractor"]), config.hidden_size
         )
-
+    
     def get_vision_tower(self):
         vision_model = getattr(self, 'vision_model', None)
         if type(vision_model) is list:
@@ -105,7 +147,6 @@ class MPLUGOwl2MetaModel:
 
 
 class MPLUGOwl2MetaForCausalLM(ABC):
-
     @abstractmethod
     def get_model(self):
         pass
@@ -123,7 +164,7 @@ class MPLUGOwl2MetaForCausalLM(ABC):
                 attention_mask = torch.ones((attention_mask.shape[0], past_key_values[-1][-1].shape[-2] + 1), dtype=attention_mask.dtype, device=attention_mask.device)
             multiway_indices = torch.zeros_like(input_ids).long().to(self.device)
             return input_ids, multiway_indices, attention_mask, past_key_values, None, labels
-
+        
         if type(images) is list or images.ndim == 5:
             concat_images = torch.cat([image for image in images], dim=0)
             image_features = self.encode_images(concat_images)
@@ -147,13 +188,13 @@ class MPLUGOwl2MetaForCausalLM(ABC):
                 cur_input_embeds_2 = self.get_model().embed_tokens(cur_input_ids[half_len:])
                 cur_input_embeds = torch.cat([cur_input_embeds_1, cur_image_features[0:0], cur_input_embeds_2], dim=0)
                 new_input_embeds.append(cur_input_embeds)
+                
                 cur_modality_indicators = torch.zeros(len(cur_input_embeds)).long().to(self.device)
                 new_modality_indicators.append(cur_modality_indicators)
                 if labels is not None:
                     new_labels.append(labels[batch_idx])
                 cur_image_idx += 1
                 continue
-
             image_token_indices = torch.where(cur_input_ids == IMAGE_TOKEN_INDEX)[0]
             cur_new_input_embeds = []
             cur_modality_indicators = []
@@ -162,16 +203,17 @@ class MPLUGOwl2MetaForCausalLM(ABC):
                 cur_new_labels = []
                 assert cur_labels.shape == cur_input_ids.shape
             while image_token_indices.numel() > 0:
+                # print("cur_image_idx", cur_image_idx)
                 cur_image_features = image_features[cur_image_idx]
                 image_token_start = image_token_indices[0]
                 cur_new_input_embeds.append(self.get_model().embed_tokens(cur_input_ids[:image_token_start]))
                 cur_new_input_embeds.append(cur_image_features)
                 
-                # Add modality indicator 
+                # Add modality indicator
                 assert image_token_start == len(cur_input_ids[:image_token_start])
                 cur_modality_indicators.append(torch.zeros(len(cur_input_ids[:image_token_start])).long())
                 cur_modality_indicators.append(torch.ones(len(cur_image_features)).long())
-
+                
                 if labels is not None:
                     cur_new_labels.append(cur_labels[:image_token_start])
                     cur_new_labels.append(torch.full((cur_image_features.shape[0],), IGNORE_INDEX, device=labels.device, dtype=labels.dtype))
@@ -192,28 +234,29 @@ class MPLUGOwl2MetaForCausalLM(ABC):
             cur_modality_indicators = [x.to(device=self.device) for x in cur_modality_indicators]
             cur_modality_indicators = torch.cat(cur_modality_indicators, dim=0)
             new_modality_indicators.append(cur_modality_indicators)
-
+            
+            
             if labels is not None:
                 cur_new_labels = torch.cat(cur_new_labels, dim=0)
                 new_labels.append(cur_new_labels)
 
         if any(x.shape != new_input_embeds[0].shape for x in new_input_embeds):
             max_len = max(x.shape[0] for x in new_input_embeds)
-
+            
             # Embedding
             new_input_embeds_align = []
             for cur_new_embed in new_input_embeds:
                 cur_new_embed = torch.cat((cur_new_embed, torch.zeros((max_len - cur_new_embed.shape[0], cur_new_embed.shape[1]), dtype=cur_new_embed.dtype, device=cur_new_embed.device)), dim=0)
                 new_input_embeds_align.append(cur_new_embed)
             new_input_embeds = torch.stack(new_input_embeds_align, dim=0)
-
+            
             # Modality
             new_modality_indicators_align = []
             for cur_modality_indicator in new_modality_indicators:
                 cur_new_embed = torch.cat((cur_modality_indicator, torch.zeros(max_len - cur_modality_indicator.shape[0], dtype=cur_modality_indicator.dtype, device=cur_modality_indicator.device)), dim=0)
                 new_modality_indicators_align.append(cur_new_embed)
             new_modality_indicators = torch.stack(new_modality_indicators_align, dim=0)
-
+            
             # Label
             if labels is not None:
                 new_labels_align = []
@@ -222,7 +265,7 @@ class MPLUGOwl2MetaForCausalLM(ABC):
                     cur_new_label = torch.cat((cur_new_label, torch.full((max_len - cur_new_label.shape[0],), IGNORE_INDEX, dtype=cur_new_label.dtype, device=cur_new_label.device)), dim=0)
                     new_labels_align.append(cur_new_label)
                 new_labels = torch.stack(new_labels_align, dim=0)
-
+            
             # Attention Mask
             if attention_mask is not None:
                 new_attention_mask = []
@@ -243,8 +286,8 @@ class MPLUGOwl2MetaForCausalLM(ABC):
                 new_attn_mask_pad_left = torch.full((attention_mask.shape[0], new_input_embeds.shape[1] - input_ids.shape[1]), True, dtype=attention_mask.dtype, device=attention_mask.device)
                 attention_mask = torch.cat((new_attn_mask_pad_left, attention_mask), dim=1)
                 assert attention_mask.shape == new_input_embeds.shape[:2]
-
         return None, new_modality_indicators, attention_mask, past_key_values, new_input_embeds, new_labels
+
 
 
 class MPLUGOwl2LlamaModel(MPLUGOwl2MetaModel, LlamaModel):
@@ -253,48 +296,71 @@ class MPLUGOwl2LlamaModel(MPLUGOwl2MetaModel, LlamaModel):
     def __init__(self, config: MPLUGOwl2Config):
         super(MPLUGOwl2LlamaModel, self).__init__(config)
 
-class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, GenerationMixin, MPLUGOwl2MetaForCausalLM):
+
+class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
     config_class = MPLUGOwl2Config
 
     def __init__(self, config):
-        # super(LlamaForCausalLM, self).__init__(config)
-        LlamaForCausalLM.__init__(self, config)
+        super(LlamaForCausalLM, self).__init__(config)
         self.model = MPLUGOwl2LlamaModel(config)
-        self.tokenizer = AutoTokenizer.from_pretrained("q-future/one-align")
-        self.image_processor = CLIPImageProcessor.from_pretrained("q-future/one-align")
-        self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-        self.preferential_ids_ = [id_[1] for id_ in self.tokenizer(["excellent","good","fair","poor","bad"])["input_ids"]]
+        self.tokenizer = AutoTokenizer.from_pretrained("VQA-CityU/Compare2Score_1")
+        self.image_processor = CLIPImageProcessor.from_pretrained("VQA-CityU/Compare2Score_1")
 
+        self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
+        self.preferential_ids_ = [id_[1] for id_ in self.tokenizer(["inferior", "worse", "similar", "better", "superior"])["input_ids"]]
+        self.anchor_images = load_dataset("VQA-CityU/Anchor_images")
+        
+        self.weight_tensor = np.array([0., 0.25, 0.5, 0.75, 1.], dtype=np.float16)
+        self.anchor_matrix = np.array(
+            [[5.0000000e-01, 2.5912809e-01, 3.3130276e-04, 1.6087297e-06, 1.1803027e-09],
+             [7.4087191e-01, 5.0000000e-01, 2.4985345e-01, 9.9954158e-02, 1.8675303e-08],
+             [9.9966872e-01, 7.5014657e-01, 5.0000000e-01, 4.9968880e-01, 2.4852838e-01],
+             [9.9999839e-01, 9.0004587e-01, 5.0031120e-01, 5.0000000e-01, 2.5400183e-01],
+             [1.0000000e+00, 1.0000000e+00, 7.5147164e-01, 7.4599814e-01, 5.0000000e-01]], 
+            dtype=np.float32)
+        anchor_intervals = 5#16
+        num_anchor_image_per_interval = 1
+        num_anchor_image = anchor_intervals * num_anchor_image_per_interval
+        self.anchor_indices = np.arange(0,num_anchor_image)
         # Initialize weights and apply final processing
         self.post_init()
+        
 
     def get_model(self):
         return self.model
+    
+    # def download_image(self, url):
+    #     response = requests.get(url)
+    #     return Image.open(BytesIO(response.content)).convert('RGB')
 
-    def score(self, images, task_: str = "quality", input_: str = "image", return_dict = False, image_tensor = None,
-    ):
-        if not hasattr(self, "weight_tensor"):
-            self.weight_tensor = torch.Tensor([5.,4.,3.,2.,1.]).half().to(self.device)
-        prompt = "USER: How would you rate the {} of this {}?\n<|image|>\nASSISTANT: The {} of the {} is".format(task_, input_, task_, input_)
-        if input_ == "image":
-            if image_tensor is None:
-                images = [expand2square(img, tuple(int(x*255) for x in self.image_processor.image_mean)) for img in images]
-                image_tensor = self.image_processor.preprocess(images, return_tensors="pt")["pixel_values"].half().to(self.device)
-            input_ids = tokenizer_image_token(prompt, self.tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0).to(self.device)
+    # def load_image(self, path):
+    #     if path.startswith('http://') or path.startswith('https://'):
+    #         return self.download_image(path)
+    #     return Image.open(path).convert('RGB')
+    
+    def score(self, image):
+        prompt = "USER: <|image|> <|image|> Compared with the first image, what is your quality rating for second image? \nASSISTANT: The quality of the second image is"
+        input_ids = tokenizer_image_token(prompt, self.tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0).to(self.device)
+        
+        anchor_images = [item['image'] for item in self.anchor_images['train']]
+        
+        probabilities = []
+        for index in self.anchor_indices:
+            anchor_image = anchor_images[index]
+            # image = self.load_image(image_path)
+            images = [anchor_image, image]
+            images = [expand2square(img, tuple(int(x*255) for x in self.image_processor.image_mean)) for img in images]
+            image_tensor = self.image_processor.preprocess(images, return_tensors='pt')['pixel_values'].half().to(self.device)
+            
             with torch.inference_mode():
-                output_logits = self(input_ids.repeat(image_tensor.shape[0], 1), images=image_tensor)["logits"][:,-1, self.preferential_ids_]
-            if return_dict:
-                return {"logits": output_logits, "scores": torch.softmax(output_logits, -1) @ self.weight_tensor}
-            return torch.softmax(output_logits, -1) @ self.weight_tensor
-        else:
-            video = [[expand2square(frame, tuple(int(x*255) for x in self.image_processor.image_mean)) for frame in vid] for vid in images]
-            input_ids = tokenizer_image_token(prompt, self.tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0).to(self.device)
-            with torch.inference_mode():
-                video_tensors = [self.image_processor.preprocess(vid, return_tensors="pt")["pixel_values"].half().to(self.model.device) for vid in video]
-                output_logits = self(input_ids.repeat(len(video_tensors), 1), images=video_tensors)["logits"][:,-1, self.preferential_ids_]
-            if return_dict:
-                return {"logits": output_logits, "scores": torch.softmax(output_logits, -1) @ self.weight_tensor}
-            return torch.softmax(output_logits, -1) @ self.weight_tensor
+                output_logits = self(input_ids, images=image_tensor)["logits"][:, -1, self.preferential_ids_]
+                output_logits = output_logits.cpu().detach().numpy() / 100
+                # print(output_logits)
+                probabilities.append(np.dot(softmax(output_logits),  self.weight_tensor))
+        updated_matrix = update_matrix(self.anchor_matrix, np.squeeze(np.array(probabilities)), self.anchor_indices)
+        score = optimize_score_map_pytorch_cuda(updated_matrix, seed=0, original_seed=20020, num_iterations=100)
+        # print(score)
+        return score
 
     def forward(
         self,
@@ -315,7 +381,6 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, GenerationMixin, MPLUGOwl2Meta
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
         )
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-
         input_ids, modality_indicators, attention_mask, past_key_values, inputs_embeds, labels = \
             self.prepare_inputs_labels_for_multimodal(input_ids, attention_mask, past_key_values, labels, images)
 
@@ -382,32 +447,20 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, GenerationMixin, MPLUGOwl2Meta
         )
         return model_inputs
 
-# AutoConfig.register("mplug_owl2", MPLUGOwl2Config)
-# AutoModelForCausalLM.register(MPLUGOwl2Config, MPLUGOwl2LlamaForCausalLM)
-# replace_llama_modality_adaptive()
+AutoConfig.register("mplug_owl2", MPLUGOwl2Config)
+AutoModelForCausalLM.register(MPLUGOwl2Config, MPLUGOwl2LlamaForCausalLM)
+
+replace_llama_modality_adaptive()
 
 if __name__ == "__main__":
-    # config = MPLUGOwl2Config.from_pretrained('q-future/one-align')
-    # from icecream import ic
-    # # config = MPLUGOwl2Config()
-    # model = AutoModelForCausalLM(config)
-    # images = torch.randn(2, 3, 448, 448)
-    # input_ids = torch.cat([
-    #     torch.ones(8).long(),
-    #     torch.tensor([-1]*1).long(),
-    #     torch.ones(8).long(),
-    #     torch.tensor([-1]*1).long(),
-    #     torch.ones(8).long()
-    # ], dim=0).unsqueeze(0)
-    # labels = input_ids.clone()
-    # labels[labels < 0] = -100
-
-    # # image_feature = model.encode_images(images)
-    # # ic(image_feature.shape)
-
-    # output = model(images=images, input_ids=input_ids, labels=labels)
-    # ic(output.loss)
-    # ic(output.logits.shape)
-
-    # model.save_pretrained('/cpfs01/shared/public/test/tmp_owl')
-    pass
+    # config = MPLUGOwl2Config.from_pretrained('VQA-CityU/Compare2Score_1')
+    from icecream import ic
+    # config = MPLUGOwl2Config()
+    # model =  AutoModelForCausalLM(config)
+    model = AutoModelForCausalLM.from_pretrained('VQA-CityU/Compare2Score_1', trust_remote_code=True, 
+                                             torch_dtype=torch.float16, device_map="auto")
+    
+    model.score("/home/zhw/IQA/code/NeurIPS24/Q-Align/playground/data/TID2013/distorted_images/i01_01_5.bmp")
+    url = "https://raw.githubusercontent.com/Q-Future/Q-Align/main/fig/singapore_flyer.jpg"
+    model.score(url)
+ 
