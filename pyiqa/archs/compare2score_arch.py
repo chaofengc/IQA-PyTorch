@@ -13,7 +13,8 @@ Reference url: https://github.com/Q-Future/Compare2Score
 
 import torch
 from torch import nn
-from transformers import AutoModelForCausalLM, BitsAndBytesConfig
+from .q_align.modeling_mplug_owl2 import MPLUGOwl2LlamaForCausalLM
+from transformers import BitsAndBytesConfig
 
 from .constants import OPENAI_CLIP_MEAN
 from pyiqa.utils.registry import ARCH_REGISTRY
@@ -41,9 +42,9 @@ class Compare2Score(nn.Module):
         )
 
         # load model
-        self.model = AutoModelForCausalLM.from_pretrained(
+        self.model = MPLUGOwl2LlamaForCausalLM.from_pretrained(
             'q-future/Compare2Score',
-            trust_remote_code=True,
+            trust_remote_code=False,
             load_in_4bit=True if dtype == '4bit' else False,
             load_in_8bit=True if dtype == '8bit' else False,
             torch_dtype=torch.float16 if dtype == 'fp16' else None,
