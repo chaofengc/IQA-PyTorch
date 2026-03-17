@@ -1,4 +1,4 @@
-accelerate<=1.1.0
+accelerate
 addict
 datasets
 bitsandbytes; sys_platform != 'darwin'
