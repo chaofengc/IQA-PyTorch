@@ -27,6 +27,10 @@ import sys
 # sys.path.insert(0, dir_path)
 
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, CLIPImageProcessor
+try:
+    from transformers.generation import GenerationMixin
+except ImportError:
+    from transformers.generation_utils import GenerationMixin
 
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
@@ -252,7 +256,7 @@ class MPLUGOwl2LlamaModel(MPLUGOwl2MetaModel, LlamaModel):
     def __init__(self, config: MPLUGOwl2Config):
         super(MPLUGOwl2LlamaModel, self).__init__(config)
 
-class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
+class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, GenerationMixin, MPLUGOwl2MetaForCausalLM):
     config_class = MPLUGOwl2Config
 
     def __init__(self, config):

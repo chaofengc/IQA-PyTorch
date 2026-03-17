@@ -30,6 +30,10 @@ from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
 from transformers.activations import ACT2FN
+try:
+    from transformers.generation import GenerationMixin
+except ImportError:
+    from transformers.generation_utils import GenerationMixin
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast, SequenceClassifierOutputWithPast
 from transformers.modeling_utils import PreTrainedModel
 from transformers.utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, replace_return_docstrings
@@ -658,7 +662,7 @@ class LlamaModel(PreTrainedModel):
         )
 
 
-class LlamaForCausalLM(PreTrainedModel):
+class LlamaForCausalLM(PreTrainedModel, GenerationMixin):
     _tied_weights_keys = ["lm_head.weight"]
 
     def __init__(self, config):

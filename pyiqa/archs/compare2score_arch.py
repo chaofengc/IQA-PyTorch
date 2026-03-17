@@ -13,6 +13,7 @@ Reference url: https://github.com/Q-Future/Compare2Score
 
 import torch
 from torch import nn
+import warnings
 from .q_align.modeling_mplug_owl2 import MPLUGOwl2LlamaForCausalLM
 from transformers import BitsAndBytesConfig
 
@@ -41,26 +42,51 @@ class Compare2Score(nn.Module):
             f"Invalid dtype {dtype}. Choose from 'nf4', 'int8', or 'fp16'."
         )
 
-        # load model
-        self.model = MPLUGOwl2LlamaForCausalLM.from_pretrained(
-            'q-future/Compare2Score',
-            trust_remote_code=False,
-            load_in_4bit=True if dtype == '4bit' else False,
-            load_in_8bit=True if dtype == '8bit' else False,
-            torch_dtype=torch.float16 if dtype == 'fp16' else None,
-        )
+        model_kwargs = {
+            'trust_remote_code': False,
+            'torch_dtype': torch.float16 if dtype == 'fp16' else None,
+        }
+        if dtype in ['4bit', '8bit']:
+            quant_kwargs = {'load_in_4bit': dtype == '4bit', 'load_in_8bit': dtype == '8bit'}
+            if dtype == '4bit':
+                quant_kwargs.update(
+                    {
+                        'bnb_4bit_quant_type': 'nf4',
+                        'bnb_4bit_compute_dtype': torch.float16,
+                    }
+                )
+            try:
+                model_kwargs['quantization_config'] = BitsAndBytesConfig(**quant_kwargs)
+                model_kwargs['torch_dtype'] = torch.float16
+            except Exception as err:
+                warnings.warn(
+                    f"Failed to enable {dtype} quantization ({err}). Falling back to fp16.",
+                    RuntimeWarning,
+                )
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                'ignore',
+                message=r"The following generation flags are not valid and may be ignored: .*",
+            )
+            self.model = MPLUGOwl2LlamaForCausalLM.from_pretrained('q-future/Compare2Score', **model_kwargs)
+        if getattr(self.model, 'generation_config', None) is not None:
+            gen_cfg = self.model.generation_config
+            if not getattr(gen_cfg, 'do_sample', False):
+                gen_cfg.temperature = None
+                gen_cfg.top_p = None
 
     def preprocess(self, x):
         assert x.shape[0] == 1, 'Currently, only support batch size 1.'
-        images = F.to_pil_image(x[0])
-        return images
+        image = F.to_pil_image(x[0])
+        return [image]
 
     def forward(self, x):
         """
-        x: str, path to image
+        x: torch.Tensor, expected shape [1, C, H, W]
         """
 
-        image_tensor = self.preprocess(x)
-        score = self.model.score(image_tensor)
+        images = self.preprocess(x)
+        score = self.model.score(images)
 
         return score
