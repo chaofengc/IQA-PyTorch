@@ -42,7 +42,7 @@ class Compare2Score(nn.Module):
         )
 
         model_kwargs = {
-            'trust_remote_code': False,
+            'trust_remote_code': True,
             'torch_dtype': torch.float16 if dtype == 'fp16' else None,
         }
         if dtype in ['4bit', '8bit']:

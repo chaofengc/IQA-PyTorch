@@ -21,7 +21,8 @@ from torch.nn import CrossEntropyLoss
 import numpy as np
 from PIL import Image
 
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, CLIPImageProcessor
+from transformers import AutoConfig, AutoModelForCausalLM, CLIPImageProcessor
+from transformers.models.llama import LlamaTokenizer
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
 from .configuration_mplug_owl2 import MPLUGOwl2Config, MplugOwlVisionConfig, MplugOwlVisualAbstractorConfig
@@ -295,8 +296,8 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
     def __init__(self, config):
         super(LlamaForCausalLM, self).__init__(config)
         self.model = MPLUGOwl2LlamaModel(config)
-        self.tokenizer = AutoTokenizer.from_pretrained("VQA-CityU/Compare2Score_1")
-        self.image_processor = CLIPImageProcessor.from_pretrained("VQA-CityU/Compare2Score_1")
+        self.tokenizer = LlamaTokenizer.from_pretrained("VQA-CityU/Compare2Score_1", trust_remote_code=True)
+        self.image_processor = CLIPImageProcessor.from_pretrained("VQA-CityU/Compare2Score_1", trust_remote_code=True)
 
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
         self.preferential_ids_ = [id_[1] for id_ in self.tokenizer(["inferior", "worse", "similar", "better", "superior"])["input_ids"]]
