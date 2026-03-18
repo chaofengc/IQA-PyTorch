@@ -196,7 +196,6 @@ class MPLUGOwl2MetaForCausalLM(ABC):
                 cur_new_labels = []
                 assert cur_labels.shape == cur_input_ids.shape
             while image_token_indices.numel() > 0:
-                # print("cur_image_idx", cur_image_idx)
                 cur_image_features = image_features[cur_image_idx]
                 image_token_start = image_token_indices[0]
                 cur_new_input_embeds.append(self.get_model().embed_tokens(cur_input_ids[:image_token_start]))
@@ -321,16 +320,7 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
 
     def get_model(self):
         return self.model
-    
-    # def download_image(self, url):
-    #     response = requests.get(url)
-    #     return Image.open(BytesIO(response.content)).convert('RGB')
 
-    # def load_image(self, path):
-    #     if path.startswith('http://') or path.startswith('https://'):
-    #         return self.download_image(path)
-    #     return Image.open(path).convert('RGB')
-    
     def score(self, image):
         prompt = "USER: <|image|> <|image|> Compared with the first image, what is your quality rating for second image? \nASSISTANT: The quality of the second image is"
         input_ids = tokenizer_image_token(prompt, self.tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0).to(self.device)
@@ -340,7 +330,6 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
         probabilities = []
         for index in self.anchor_indices:
             anchor_image = anchor_images[index]
-            # image = self.load_image(image_path)
             images = [anchor_image, image]
             images = [expand2square(img, tuple(int(x*255) for x in self.image_processor.image_mean)) for img in images]
             image_tensor = self.image_processor.preprocess(images, return_tensors='pt')['pixel_values'].half().to(self.device)
@@ -348,11 +337,9 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
             with torch.inference_mode():
                 output_logits = self(input_ids, images=image_tensor)["logits"][:, -1, self.preferential_ids_]
                 output_logits = output_logits.cpu().detach().numpy() / 100
-                # print(output_logits)
                 probabilities.append(np.dot(softmax(output_logits),  self.weight_tensor))
         updated_matrix = update_matrix(self.anchor_matrix, np.squeeze(np.array(probabilities)), self.anchor_indices)
         score = optimize_score_map_pytorch_cuda(updated_matrix, seed=0, original_seed=20020, num_iterations=100)
-        # print(score)
         return score
 
     def forward(
@@ -444,15 +431,4 @@ AutoConfig.register("mplug_owl2", MPLUGOwl2Config)
 AutoModelForCausalLM.register(MPLUGOwl2Config, MPLUGOwl2LlamaForCausalLM)
 
 replace_llama_modality_adaptive()
-
-if __name__ == "__main__":
-    # config = MPLUGOwl2Config.from_pretrained('VQA-CityU/Compare2Score_1')
-    # config = MPLUGOwl2Config()
-    # model =  AutoModelForCausalLM(config)
-    model = AutoModelForCausalLM.from_pretrained('VQA-CityU/Compare2Score_1', trust_remote_code=True, 
-                                             torch_dtype=torch.float16, device_map="auto")
-    
-    model.score("/home/zhw/IQA/code/NeurIPS24/Q-Align/playground/data/TID2013/distorted_images/i01_01_5.bmp")
-    url = "https://raw.githubusercontent.com/Q-Future/Q-Align/main/fig/singapore_flyer.jpg"
-    model.score(url)
  

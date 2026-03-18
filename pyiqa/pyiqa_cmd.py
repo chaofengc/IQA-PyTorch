@@ -10,35 +10,35 @@ from pprint import pprint
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Test a metric')
+    parser = argparse.ArgumentParser(description='Test image quality metrics')
 
     # required input arguments
-    parser.add_argument('metric', nargs='*', help='Metric name(s)')
-    parser.add_argument('-t', '--target', type=str, help='Target files or folder')
+    parser.add_argument('metric', nargs='*', help='Name(s) of metric(s) to evaluate')
+    parser.add_argument('-t', '--target', type=str, help='Path to target image file or folder')
     parser.add_argument(
-        '-r', '--ref', type=str, default=None, help='Reference files or folder'
+        '-r', '--ref', type=str, default=None, help='Path to reference image file or folder (optional)'
     )
 
     # metric specific options
     parser.add_argument(
-        '--isc_splits', type=int, default=10, help='Splits for inception score'
+        '--isc_splits', type=int, default=10, help='Number of splits for Inception Score calculation'
     )
     parser.add_argument(
         '--fid_mode',
         type=str,
         default='clean',
-        help='Image resize mode for FID [clean, legacy_pytorch, legacy_tensorflow]',
+        help='Image resize mode for FID: clean, legacy_pytorch, or legacy_tensorflow'
     )
 
     # common options
     parser.add_argument(
-        '--device', type=str, default=None, help='Print verbose message'
+        '--device', type=str, default=None, help='Device to run metrics on (e.g., cpu, cuda)'
     )
     parser.add_argument(
-        '-v', '--verbose', action='store_true', help='Print verbose message'
+        '-v', '--verbose', action='store_true', help='Enable verbose output'
     )
     parser.add_argument(
-        '-ls', '--list_models', action='store_true', help='Print verbose message'
+        '-ls', '--list_models', action='store_true', help='List available metric models'
     )
 
     args, unknown_args = parser.parse_known_args()

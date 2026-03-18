@@ -4,7 +4,7 @@ build:
 	python -m build
 
 install:
-	python setup.py install
+	pip install .
 
 build_dist:
 	make clean

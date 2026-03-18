@@ -57,7 +57,6 @@ dependencies = { file = ["requirements.txt"] }
 # include extra non-code files (replacement for MANIFEST.in)
 [tool.setuptools.package-data]
 pyiqa = [
-    "archs/class_mapping.json",
     "default_dataset_configs.yml",
 ]
 

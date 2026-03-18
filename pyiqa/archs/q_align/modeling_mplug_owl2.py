@@ -375,29 +375,3 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, GenerationMixin, MPLUGOwl2Meta
             }
         )
         return model_inputs
-
-# AutoConfig.register("mplug_owl2", MPLUGOwl2Config)
-# AutoModelForCausalLM.register(MPLUGOwl2Config, MPLUGOwl2LlamaForCausalLM)
-# replace_llama_modality_adaptive()
-
-if __name__ == "__main__":
-    # config = MPLUGOwl2Config.from_pretrained('q-future/one-align')
-    # # config = MPLUGOwl2Config()
-    # model = AutoModelForCausalLM(config)
-    # images = torch.randn(2, 3, 448, 448)
-    # input_ids = torch.cat([
-    #     torch.ones(8).long(),
-    #     torch.tensor([-1]*1).long(),
-    #     torch.ones(8).long(),
-    #     torch.tensor([-1]*1).long(),
-    #     torch.ones(8).long()
-    # ], dim=0).unsqueeze(0)
-    # labels = input_ids.clone()
-    # labels[labels < 0] = -100
-
-    # # image_feature = model.encode_images(images)
-
-    # output = model(images=images, input_ids=input_ids, labels=labels)
-
-    # model.save_pretrained('/cpfs01/shared/public/test/tmp_owl')
-    pass
