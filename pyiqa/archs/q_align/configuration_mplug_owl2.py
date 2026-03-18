@@ -2,14 +2,10 @@
 #
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
-import copy
 import os
 from typing import Union
 
 from transformers.configuration_utils import PretrainedConfig
-from transformers.models.auto.modeling_auto import MODEL_FOR_CAUSAL_LM_MAPPING_NAMES
-from transformers.utils import logging
-from transformers.models.auto import CONFIG_MAPPING
 
 
 class LlamaConfig(PretrainedConfig):

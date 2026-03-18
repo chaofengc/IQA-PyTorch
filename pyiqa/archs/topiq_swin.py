@@ -17,7 +17,6 @@ Modifications and additions for timm hacked together by / Copyright 2021, Ross W
 # Written by Ze Liu
 # --------------------------------------------------------
 import math
-from functools import partial
 from typing import Optional
 
 import torch

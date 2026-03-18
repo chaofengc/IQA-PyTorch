@@ -19,7 +19,6 @@ from transformers import BitsAndBytesConfig
 
 from .constants import OPENAI_CLIP_MEAN
 from pyiqa.utils.registry import ARCH_REGISTRY
-from transformers import CLIPImageProcessor
 import torchvision.transforms.functional as F
 from PIL import Image
 

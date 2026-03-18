@@ -1,5 +1,4 @@
 import numpy as np
-import pickle
 from PIL import Image
 import os
 
@@ -7,7 +6,6 @@ import torch
 from torch.utils import data as data
 
 from pyiqa.utils.registry import DATASET_REGISTRY
-import pandas as pd
 
 from .base_iqa_dataset import BaseIQADataset
 

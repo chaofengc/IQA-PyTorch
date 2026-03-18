@@ -1,10 +1,7 @@
 import cv2
 import random
-import functools
-from typing import Union
 from PIL import Image
 from collections.abc import Sequence
-import numpy as np
 
 import torch
 import torchvision.transforms as tf
@@ -119,7 +116,7 @@ class PairedRandomErasing(tf.RandomErasing):
                 else:
                     value = self.value
 
-                if value is not None and not (len(value) in (1, imgs[0].shape[-3])):
+                if value is not None and len(value) not in (1, imgs[0].shape[-3]):
                     raise ValueError(
                         'If value is a sequence, it should have either a single value or '
                         f'{imgs[0].shape[-3]} (number of input channels)'

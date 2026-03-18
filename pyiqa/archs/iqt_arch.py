@@ -23,7 +23,7 @@ from einops import repeat
 import timm
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.archs.arch_util import load_pretrained_network, to_2tuple, uniform_crop
+from pyiqa.archs.arch_util import load_pretrained_network, uniform_crop
 
 
 class IQARegression(nn.Module):

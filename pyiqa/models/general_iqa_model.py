@@ -6,7 +6,7 @@ from tqdm import tqdm
 from pyiqa.archs import build_network
 from pyiqa.losses import build_loss
 from pyiqa.metrics import calculate_metric
-from pyiqa.utils import get_root_logger, imwrite, tensor2img
+from pyiqa.utils import get_root_logger
 from pyiqa.utils.registry import MODEL_REGISTRY
 from .base_model import BaseModel
 

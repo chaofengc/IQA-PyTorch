@@ -17,7 +17,6 @@ import torch
 import torchvision
 import torch.nn as nn
 from collections import OrderedDict
-from torchvision import  transforms
 import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 

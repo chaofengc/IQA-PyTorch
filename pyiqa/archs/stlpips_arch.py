@@ -13,7 +13,6 @@ Cite as:
 """
 
 import torch
-from torchvision import models
 import torch.nn as nn
 from collections import namedtuple
 import numpy as np

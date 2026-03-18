@@ -787,7 +787,7 @@ def build_model(state_dict: dict):
         set(
             k.split('.')[2]
             for k in state_dict
-            if k.startswith(f'transformer.resblocks')
+            if k.startswith('transformer.resblocks')
         )
     )
 

@@ -13,7 +13,7 @@ Official codes: https://github.com/RQ-Wu/UnderwaterRanker
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import nn, einsum
+from torch import einsum
 
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 

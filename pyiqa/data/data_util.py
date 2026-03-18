@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 import torch
-import os
-import csv
 from os import path as osp
 from torch.nn import functional as F
 

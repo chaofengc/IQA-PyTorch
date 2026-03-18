@@ -1,4 +1,3 @@
-import pickle
 from PIL import Image
 import os
 
@@ -45,7 +44,7 @@ class PieAPPDataset(GeneralFRDataset):
         if self.phase == 'test':
             temp = []
             for item in self.paths_mos:
-                if not item in temp:
+                if item not in temp:
                     temp.append(item)
             self.paths_mos = temp
 

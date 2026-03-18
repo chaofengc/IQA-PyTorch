@@ -1,6 +1,4 @@
-from collections import OrderedDict
 
-from pyiqa.metrics import calculate_metric
 from pyiqa.utils.registry import MODEL_REGISTRY
 from .general_iqa_model import GeneralIQAModel
 

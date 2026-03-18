@@ -15,7 +15,6 @@ import timm
 from timm.models.vision_transformer import Block
 from .constants import IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
 from .maniqa_swin import SwinTransformer
-from torch import nn
 from einops import rearrange
 
 from pyiqa.utils.registry import ARCH_REGISTRY

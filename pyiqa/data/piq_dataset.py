@@ -44,7 +44,7 @@ class PIQDataset(GeneralNRDataset):
         split_index = opt.get('split_index', None)
         if split_index is not None:
             assert split_index in [1, 2], (
-                f'split indexes should be, 1: device split; 2: scene split'
+                'split indexes should be, 1: device split; 2: scene split'
             )
             assert self.phase in ['train', 'test'], (
                 f'PIQDataset has no {self.phase} split'

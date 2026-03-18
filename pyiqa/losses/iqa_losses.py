@@ -1,4 +1,3 @@
-from cv2 import reduce
 import torch
 import numpy as np
 from torch import nn as nn

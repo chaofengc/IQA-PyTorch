@@ -4,7 +4,6 @@ import math
 import time
 import torch
 import os
-import tarfile
 from os import path as osp
 
 from pyiqa.data import build_dataloader, build_dataset
@@ -23,7 +22,6 @@ from pyiqa.utils import (
     make_exp_dirs,
     mkdir_and_rename,
     scandir,
-    load_file_from_url,
 )
 from pyiqa.utils.options import copy_opt_file, dict2str, parse_options
 from pyiqa.utils.dist_util import master_only

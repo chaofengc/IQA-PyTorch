@@ -19,11 +19,8 @@ import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
 
-import copy
-import os
-import sys
 
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, CLIPImageProcessor
+from transformers import AutoTokenizer, CLIPImageProcessor
 try:
     from transformers.generation import GenerationMixin
 except ImportError:
@@ -33,8 +30,7 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 
 from .configuration_mplug_owl2 import MPLUGOwl2Config, MplugOwlVisionConfig, MplugOwlVisualAbstractorConfig
 from .visual_encoder import MplugOwlVisionModel, MplugOwlVisualAbstractorModel
-from .modeling_llama2 import LlamaConfig, LlamaModel, LlamaForCausalLM, replace_llama_modality_adaptive
-from .modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
+from .modeling_llama2 import LlamaModel, LlamaForCausalLM
 
 IGNORE_INDEX = -100
 IMAGE_TOKEN_INDEX = -200

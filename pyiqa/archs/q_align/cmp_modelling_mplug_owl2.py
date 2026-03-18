@@ -19,19 +19,14 @@ import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
 import numpy as np
-import copy
-import os
-import sys
 from PIL import Image
-import requests
-from io import BytesIO
 
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, CLIPImageProcessor
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
 from .configuration_mplug_owl2 import MPLUGOwl2Config, MplugOwlVisionConfig, MplugOwlVisualAbstractorConfig
 from .visual_encoder import MplugOwlVisionModel, MplugOwlVisualAbstractorModel
-from .modeling_llama2 import LlamaConfig, LlamaModel, LlamaForCausalLM, replace_llama_modality_adaptive
+from .modeling_llama2 import LlamaModel, LlamaForCausalLM, replace_llama_modality_adaptive
 IGNORE_INDEX = -100
 IMAGE_TOKEN_INDEX = -200
 DEFAULT_IMAGE_TOKEN = "<|image|>"
@@ -58,7 +53,6 @@ def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX
     return input_ids
 
 def expand2square(pil_img, background_color):
-        from PIL import Image
         width, height = pil_img.size
         if width == height:
             return pil_img

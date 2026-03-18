@@ -3,7 +3,6 @@ r"""LAION-Aesthetics Predictor
 Introduced by: https://github.com/christophschuhmann/improved-aesthetic-predictor
 """
 
-import torch
 import torch.nn as nn
 
 import clip

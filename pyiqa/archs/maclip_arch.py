@@ -18,12 +18,8 @@ import torch
 import torch.nn as nn
 import clip
 import torch.nn.functional as F
-import torch.nn as nn
-from torchvision.transforms import ToTensor, Normalize
-from PIL import Image
+from torchvision.transforms import Normalize
 import torchvision
-import torch.nn.functional as F
-import torch
 
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD

@@ -4,7 +4,6 @@ import random
 import time
 import torch
 from os import path as osp
-import shutil
 
 from .dist_util import master_only
 

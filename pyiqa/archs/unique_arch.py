@@ -18,7 +18,6 @@ Cite as:
 import torch
 import torchvision
 import torch.nn as nn
-import torch.nn.functional as F
 from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs.arch_util import load_pretrained_network
 from pyiqa.archs.arch_util import get_url_from_name

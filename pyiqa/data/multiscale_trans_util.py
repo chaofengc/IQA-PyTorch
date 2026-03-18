@@ -5,10 +5,8 @@ Reference: https://github.com/google-research/google-research/blob/5c622d523c/mu
 Modified: Chaofeng Chen (https://github.com/chaofengc)
 """
 
-from unittest.mock import patch
 import numpy as np
 import math
-from os import path as osp
 
 import torch
 from torch.nn import functional as F

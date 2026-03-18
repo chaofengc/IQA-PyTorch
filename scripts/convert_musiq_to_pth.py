@@ -101,7 +101,7 @@ def convert_module(tf_same_key_strs, th_same_key_strs=None):
             tfw = tfw.transpose()
         assert tfw.shape == thw.shape, f'shape not match, {tfw.shape}, {thw.shape}'
         th_params[thk].copy_(torch.from_numpy(tfw))
-        assert check_same(tfw, th_params[thk]), f'value not match'
+        assert check_same(tfw, th_params[thk]), 'value not match'
         total_converted_params = total_converted_params + 1
 
 

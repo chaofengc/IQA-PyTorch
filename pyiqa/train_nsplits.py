@@ -1,24 +1,9 @@
-import datetime
-import logging
-import time
 import torch
 import os
 import numpy as np
 from os import path as osp
 
-from pyiqa.data.prefetch_dataloader import CPUPrefetcher, CUDAPrefetcher
-from pyiqa.models import build_model
-from pyiqa.utils import (
-    AvgTimer,
-    MessageLogger,
-    get_root_logger,
-    get_time_str,
-    get_env_info,
-    make_exp_dirs,
-    mkdir_and_rename,
-)
-from pyiqa.utils.options import copy_opt_file, dict2str, parse_options, make_paths
-from pyiqa.train import init_tb_loggers, create_train_val_dataloader
+from pyiqa.utils.options import parse_options, make_paths
 from pyiqa.train import train_pipeline
 
 

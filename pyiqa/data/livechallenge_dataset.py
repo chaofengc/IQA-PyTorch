@@ -1,4 +1,3 @@
-import os
 
 from pyiqa.utils.registry import DATASET_REGISTRY
 from .general_nr_dataset import GeneralNRDataset

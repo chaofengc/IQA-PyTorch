@@ -78,7 +78,7 @@ def main():
 
     avg_score = 0
     test_img_num = len(input_paths)
-    if not 'fid' in metric_name:
+    if 'fid' not in metric_name:
         pbar = tqdm(total=test_img_num, unit='image')
         for idx, img_path in enumerate(input_paths):
             img_name = os.path.basename(img_path)
@@ -118,7 +118,7 @@ def main():
     if args.save_file:
         print(f'Done! Results are in {args.save_file}.')
     else:
-        print(f'Done!')
+        print('Done!')
 
 
 if __name__ == '__main__':

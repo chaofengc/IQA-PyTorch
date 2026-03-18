@@ -8,7 +8,6 @@ Paper link: https://arxiv.org/abs/2308.03060
 
 """
 
-import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -516,7 +515,7 @@ class CFANet(nn.Module):
 
     def preprocess_face(self, x):
         warnings.warn(
-            f'The faces will be aligned, cropped and resized to 512x512 with facexlib. Currently, this metric does not support batch size > 1 and gradient backpropagation.',
+            'The faces will be aligned, cropped and resized to 512x512 with facexlib. Currently, this metric does not support batch size > 1 and gradient backpropagation.',
             UserWarning,
         )
         # warning message
@@ -542,11 +541,11 @@ class CFANet(nn.Module):
             )
             return x.to(device)
         else:
-            assert False, f'No face detected in the input image.'
+            assert False, 'No face detected in the input image.'
 
     def forward(self, x, y=None, return_mos=True, return_dist=False):
         if self.use_ref:
-            assert y is not None, f'Please input y when use reference is True.'
+            assert y is not None, 'Please input y when use reference is True.'
         else:
             y = None
 

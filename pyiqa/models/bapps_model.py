@@ -4,9 +4,6 @@ from pyiqa.metrics import calculate_metric
 from pyiqa.utils.registry import MODEL_REGISTRY
 from .general_iqa_model import GeneralIQAModel
 from tqdm import tqdm
-import numpy as np
-import torch.nn as nn
-import torch.nn.functional as F
 import os.path as osp
 
 
@@ -58,7 +55,7 @@ class BAPPSModel(GeneralIQAModel):
 
         # log metrics in training batch
 
-        self.log_dict[f'train_metrics/acc'] = self.compute_accuracy(
+        self.log_dict['train_metrics/acc'] = self.compute_accuracy(
             score_A, score_B, self.gt_mos
         )
 

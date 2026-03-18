@@ -246,7 +246,7 @@ class BRISQUE(torch.nn.Module):
         # However, this check allows to fail fast when the loss is being initialised and training has not been started.
         assert kernel_size % 2 == 1, f'Kernel size must be odd, got [{kernel_size}]'
         assert test_y_channel, (
-            f'Only [test_y_channel=True] is supported for current BRISQUE model, which is taken directly from official codes: https://github.com/utlive/BRISQUE.'
+            'Only [test_y_channel=True] is supported for current BRISQUE model, which is taken directly from official codes: https://github.com/utlive/BRISQUE.'
         )
 
         self.kernel_sigma = kernel_sigma
@@ -271,9 +271,8 @@ class BRISQUE(torch.nn.Module):
             params = scipy.io.loadmat(pretrained_model_path)
             sv = params['sv']
             sv_coef = np.ravel(params['sv_coef'])
-            sv = torch.from_numpy(sv)
+            self.sv = torch.from_numpy(sv)
             self.sv_coef = torch.from_numpy(sv_coef)
-            self.sv = sv / self.scale
 
         # Set hyper-parameters based on the version 
         if version == 'original':
@@ -284,6 +283,7 @@ class BRISQUE(torch.nn.Module):
             self.gamma = 1
             self.rho = -43.4582
             self.scale = 0.3210
+        self.sv = self.sv / self.scale
 
         self.version = version
 

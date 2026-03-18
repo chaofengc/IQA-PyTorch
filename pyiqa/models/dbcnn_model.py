@@ -1,12 +1,5 @@
-import torch
-from collections import OrderedDict
-from os import path as osp
-from tqdm import tqdm
 
-from pyiqa.archs import build_network
-from pyiqa.losses import build_loss
-from pyiqa.metrics import calculate_metric
-from pyiqa.utils import get_root_logger, imwrite, logger, tensor2img
+from pyiqa.utils import get_root_logger
 from pyiqa.utils.registry import MODEL_REGISTRY
 from pyiqa.models import lr_scheduler as lr_scheduler
 from .general_iqa_model import GeneralIQAModel
@@ -22,7 +15,7 @@ class DBCNNModel(GeneralIQAModel):
 
     def reset_optimizers_finetune(self):
         logger = get_root_logger()
-        logger.info(f'\n Start finetune stage. Set all parameters trainable\n')
+        logger.info('\n Start finetune stage. Set all parameters trainable\n')
         train_opt = self.opt['train']
         optim_params = []
         for k, v in self.net.named_parameters():

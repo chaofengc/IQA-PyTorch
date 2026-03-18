@@ -17,16 +17,11 @@ This file only support inferring A-FINE value. If you want to further train A-FI
 
 import torch
 import torch.nn as nn
-import os
 import math
 from torchvision.transforms.functional import normalize
-import numpy as np
 
-from .constants import OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 
 from pyiqa.utils.registry import ARCH_REGISTRY
-from pyiqa.utils.download_util import DEFAULT_CACHE_DIR
-from pyiqa.archs.arch_util import load_pretrained_network
 from pyiqa.utils.download_util import load_file_from_url
 
 from copy import deepcopy
@@ -34,7 +29,6 @@ from copy import deepcopy
 
 from .afineclip_model import load
 import torch.nn.functional as F
-from itertools import product
 from pyiqa.archs.arch_util import get_url_from_name
 
 default_model_urls = {
@@ -327,6 +321,7 @@ class AFINE(nn.Module):
 
 
         # The height and width of all the images must be divisible by 32, since we utilize the pretrained CLIP ViT-B-32 model
+        assert dis.shape[2] % 32 == 0 and dis.shape[3] % 32 == 0, "The height and width of the input image must be divisible by 32."
         _,c,h,w = dis.shape
         if h % 32 != 0:
             pad_h = 32 - h % 32
@@ -361,13 +356,13 @@ class AFINE(nn.Module):
             afine_all_scale = scale_finalscore(score = afine_all)
 
             if self.model_type == 'afine_nr':
-                return natural_dis_scale.squeeze()
+                return natural_dis_scale
             elif self.model_type == 'afine_fr':
-                return fidelity_disref_scale.squeeze()
+                return fidelity_disref_scale
             elif self.model_type == 'afine_all_scale':
-                return afine_all_scale.squeeze()
+                return afine_all_scale
             elif self.model_type == 'afine_all':
-                return afine_all.squeeze()
+                return afine_all
             else:
-                raise ValueError(f"self.model_type must be afine_nr, afine_fr, afine_all or afine_all_scale.")
+                raise ValueError("self.model_type must be afine_nr, afine_fr, afine_all or afine_all_scale.")
 

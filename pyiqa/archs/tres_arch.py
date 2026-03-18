@@ -10,7 +10,7 @@ Official code: https://github.com/isalirezag/TReS
 
 import math
 import copy
-from typing import Optional, List
+from typing import Optional
 import numpy as np
 
 import torch

@@ -200,7 +200,7 @@ def test_gradient_backward(metric_name, device):
     [
         (k)
         for k in pyiqa.list_models()
-        if k not in ['fid', 'fid_dinov2', 'inception_score', 'clipscore']
+        if k not in ['sfid', 'fid', 'fid_dinov2', 'inception_score', 'clipscore']
     ],
 )
 def test_forward(metric_name, device):
@@ -214,6 +214,8 @@ def test_forward(metric_name, device):
         size = (2, 3, 384, 384)
     if 'qalign' in metric_name or 'compare2score' in metric_name:
         size = (1, 3, 224, 224)
+    if 'afine' in metric_name:
+        size = (1, 3, 256, 256)
 
     if 'face' in metric_name:
         size = (1, 3, 224, 224)

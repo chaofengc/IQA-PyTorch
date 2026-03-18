@@ -1,4 +1,3 @@
-import math
 import torch
 from torch import autograd as autograd
 from torch import nn as nn

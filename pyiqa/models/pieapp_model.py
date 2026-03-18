@@ -3,10 +3,6 @@ import torch
 from pyiqa.metrics.correlation_coefficient import calculate_rmse
 from pyiqa.utils.registry import MODEL_REGISTRY
 from .general_iqa_model import GeneralIQAModel
-from tqdm import tqdm
-import numpy as np
-import torch.nn as nn
-import torch.nn.functional as F
 
 
 @MODEL_REGISTRY.register()
@@ -59,4 +55,4 @@ class PieAPPModel(GeneralIQAModel):
         pred_score = train_output_score.squeeze(-1).cpu().detach().numpy()
         gt_prob = self.gt_prob.squeeze(-1).cpu().detach().numpy()
 
-        self.log_dict[f'train_metrics/rmse'] = calculate_rmse(pred_score, gt_prob)
+        self.log_dict['train_metrics/rmse'] = calculate_rmse(pred_score, gt_prob)

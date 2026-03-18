@@ -1,4 +1,3 @@
-from scipy import stats
 import numpy as np
 from pyiqa.utils.registry import METRIC_REGISTRY
 

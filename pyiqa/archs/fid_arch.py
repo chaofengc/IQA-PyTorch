@@ -13,14 +13,13 @@ References:
 """
 
 import os
-from typing import List, Optional, Tuple, Union, Dict, Any
+from typing import Optional, Any
 
 import numpy as np
 import torch
 from PIL import Image
 from scipy import linalg
 from torch import nn
-from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 
 from pyiqa.archs.arch_util import get_url_from_name

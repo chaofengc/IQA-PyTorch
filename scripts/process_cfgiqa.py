@@ -1,6 +1,5 @@
 import csv
 import json
-from tqdm import tqdm
 
 
 def create_cfgiqa_meta_info():
