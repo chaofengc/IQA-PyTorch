@@ -40,8 +40,6 @@ IGNORE_INDEX = -100
 IMAGE_TOKEN_INDEX = -200
 DEFAULT_IMAGE_TOKEN = "<|image|>"
 
-from icecream import ic
-
 def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX, return_tensors=None):
     prompt_chunks = [tokenizer(chunk).input_ids if len(chunk) > 0 else [] for chunk in prompt.split(DEFAULT_IMAGE_TOKEN)]
 
@@ -388,7 +386,6 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, GenerationMixin, MPLUGOwl2Meta
 
 if __name__ == "__main__":
     # config = MPLUGOwl2Config.from_pretrained('q-future/one-align')
-    # from icecream import ic
     # # config = MPLUGOwl2Config()
     # model = AutoModelForCausalLM(config)
     # images = torch.randn(2, 3, 448, 448)
@@ -403,11 +400,8 @@ if __name__ == "__main__":
     # labels[labels < 0] = -100
 
     # # image_feature = model.encode_images(images)
-    # # ic(image_feature.shape)
 
     # output = model(images=images, input_ids=input_ids, labels=labels)
-    # ic(output.loss)
-    # ic(output.logits.shape)
 
     # model.save_pretrained('/cpfs01/shared/public/test/tmp_owl')
     pass

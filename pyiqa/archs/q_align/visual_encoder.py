@@ -9,7 +9,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint
-from icecream import ic
 
 def get_abs_pos(abs_pos, tgt_size):
     # abs_pos: L, C

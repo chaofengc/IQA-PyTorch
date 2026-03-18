@@ -35,7 +35,6 @@ from .modeling_llama2 import LlamaConfig, LlamaModel, LlamaForCausalLM, replace_
 IGNORE_INDEX = -100
 IMAGE_TOKEN_INDEX = -200
 DEFAULT_IMAGE_TOKEN = "<|image|>"
-from icecream import ic
 
 def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX, return_tensors=None):
     prompt_chunks = [tokenizer(chunk).input_ids if len(chunk) > 0 else [] for chunk in prompt.split(DEFAULT_IMAGE_TOKEN)]
@@ -454,7 +453,6 @@ replace_llama_modality_adaptive()
 
 if __name__ == "__main__":
     # config = MPLUGOwl2Config.from_pretrained('VQA-CityU/Compare2Score_1')
-    from icecream import ic
     # config = MPLUGOwl2Config()
     # model =  AutoModelForCausalLM(config)
     model = AutoModelForCausalLM.from_pretrained('VQA-CityU/Compare2Score_1', trust_remote_code=True, 

@@ -5,7 +5,6 @@ bitsandbytes; sys_platform != 'darwin'
 einops
 facexlib
 future
-icecream
 lmdb
 numpy
 openai-clip
