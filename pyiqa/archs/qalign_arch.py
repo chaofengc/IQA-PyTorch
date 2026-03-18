@@ -39,13 +39,16 @@ class QAlign(nn.Module):
     def __init__(self, dtype='fp16') -> None:
         super().__init__()
 
+        self.dtype = dtype
+        self.model_dtype = self._get_model_dtype(dtype)
+
         assert dtype in ['fp16', '4bit', '8bit'], (
             f"Invalid dtype {dtype}. Choose from 'fp16', '4bit', or '8bit'."
         )
 
         model_kwargs = {
-            'trust_remote_code': False,
-            'torch_dtype': torch.float16 if dtype == 'fp16' else None,
+            'trust_remote_code': True,
+            'torch_dtype': self.model_dtype if dtype == 'fp16' else None,
         }
         if dtype in ['4bit', '8bit']:
             quant_kwargs = {
@@ -56,12 +59,12 @@ class QAlign(nn.Module):
                 quant_kwargs.update(
                     {
                         'bnb_4bit_quant_type': 'nf4',
-                        'bnb_4bit_compute_dtype': torch.float16,
+                        'bnb_4bit_compute_dtype': self.model_dtype,
                     }
                 )
             try:
                 model_kwargs['quantization_config'] = BitsAndBytesConfig(**quant_kwargs)
-                model_kwargs['torch_dtype'] = torch.float16
+                model_kwargs['torch_dtype'] = self.model_dtype
             except Exception as err:
                 warnings.warn(
                     f"Failed to enable {dtype} quantization ({err}). Falling back to fp16.",
@@ -79,14 +82,20 @@ class QAlign(nn.Module):
             if not getattr(gen_cfg, 'do_sample', False):
                 gen_cfg.temperature = None
                 gen_cfg.top_p = None
-        self.image_processor = CLIPImageProcessor.from_pretrained('q-future/one-align')
+        self.image_processor = CLIPImageProcessor.from_pretrained('q-future/one-align', trust_remote_code=True)
+
+    @staticmethod
+    def _get_model_dtype(dtype):
+        if dtype != 'fp16':
+            return torch.float16
+        return torch.float16
 
     def preprocess(self, x):
         assert x.shape[0] == 1, 'Currently, only support batch size 1.'
         image = expand2square(F.to_pil_image(x[0]))
         image_tensor = self.image_processor.preprocess(image, return_tensors='pt')[
             'pixel_values'
-        ].half()
+        ].to(dtype=self.model_dtype)
         return image_tensor.to(x.device)
 
     def forward(self, x, task_='quality', input_='image'):

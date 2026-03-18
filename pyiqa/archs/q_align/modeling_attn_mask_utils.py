@@ -160,6 +160,16 @@ class AttentionMaskConverter:
 
         return inverted_mask.masked_fill(inverted_mask.to(torch.bool), torch.finfo(dtype).min)
 
+    @staticmethod
+    def _unmask_unattended(expanded_mask: torch.FloatTensor, min_dtype: float):
+        """Attend to all tokens in rows that are fully masked to avoid SDPA NaNs."""
+        if expanded_mask.dtype == torch.bool:
+            raise ValueError(
+                "AttentionMaskConverter._unmask_unattended expects a float `expanded_mask`, got a BoolTensor."
+            )
+
+        return expanded_mask.mul(~torch.all(expanded_mask == min_dtype, dim=-1, keepdim=True))
+
 
 def _prepare_4d_causal_attention_mask(
     attention_mask: Optional[torch.Tensor],
@@ -328,7 +338,7 @@ def _prepare_4d_causal_attention_mask_for_sdpa(
         # produces nans if sequences are completely unattended in the attention mask. Details: https://github.com/pytorch/pytorch/issues/110213
         if query_length > 1:
             expanded_4d_mask = AttentionMaskConverter._unmask_unattended(
-                expanded_4d_mask, attention_mask, unmasked_value=0.0
+                expanded_4d_mask, min_dtype=torch.finfo(inputs_embeds.dtype).min
             )
 
     return expanded_4d_mask

@@ -3,11 +3,26 @@ from typing import Optional, Tuple, Union
 
 from transformers.modeling_outputs import BaseModelOutput, BaseModelOutputWithPooling
 from transformers.modeling_utils import PreTrainedModel
-from transformers.pytorch_utils import find_pruneable_heads_and_indices, prune_linear_layer
+from transformers.pytorch_utils import prune_linear_layer
+
+try:
+    from transformers.pytorch_utils import find_pruneable_heads_and_indices
+except ImportError:
+    def find_pruneable_heads_and_indices(heads, n_heads, head_size, already_pruned_heads):
+        """Compatibility fallback for Transformers>=5 where this helper was removed."""
+        mask = torch.ones(n_heads, head_size)
+        heads = set(heads) - already_pruned_heads
+        for head in heads:
+            head = head - sum(1 if h < head else 0 for h in already_pruned_heads)
+            mask[head] = 0
+        mask = mask.view(-1).contiguous().eq(1)
+        index = torch.arange(mask.numel())[mask].long()
+        return heads, index
 
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.utils.checkpoint
 
 def get_abs_pos(abs_pos, tgt_size):
@@ -765,6 +780,24 @@ class MplugOwlVisualAbstractorModel(PreTrainedModel):
         self.vit_eos = torch.nn.Parameter(torch.randn(1, 1, language_hidden_size))
 
         self.post_init()
+
+    def get_head_mask(self, head_mask, num_hidden_layers, is_attention_chunked=False):
+        """Compatibility helper for Transformers>=5 where PreTrainedModel.get_head_mask was removed."""
+        if head_mask is None:
+            return [None] * num_hidden_layers
+
+        if head_mask.dim() == 1:
+            head_mask = head_mask.unsqueeze(0).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
+            head_mask = head_mask.expand(num_hidden_layers, -1, -1, -1, -1)
+        elif head_mask.dim() == 2:
+            head_mask = head_mask.unsqueeze(1).unsqueeze(-1).unsqueeze(-1)
+        else:
+            raise ValueError(f"head_mask must have dim 1 or 2, but got dim={head_mask.dim()}")
+
+        head_mask = head_mask.to(dtype=self.dtype)
+        if is_attention_chunked:
+            head_mask = head_mask.unsqueeze(-1)
+        return head_mask
 
     def _prune_heads(self, heads_to_prune):
         """
