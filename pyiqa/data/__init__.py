@@ -1,11 +1,13 @@
 import importlib
 import numpy as np
 import random
+import re
 import torch
 import torch.utils.data
 from copy import deepcopy
 from functools import partial
 from os import path as osp
+from pathlib import Path
 
 from pyiqa.data.prefetch_dataloader import PrefetchDataLoader
 from pyiqa.utils import get_root_logger, scandir
@@ -14,19 +16,46 @@ from pyiqa.utils.registry import DATASET_REGISTRY
 
 __all__ = ['build_dataset', 'build_dataloader']
 
-# automatically scan and import dataset modules for registry
-# scan all the files under the data folder with '_dataset' in file names
-data_folder = osp.dirname(osp.abspath(__file__))
-dataset_filenames = [
-    osp.splitext(osp.basename(v))[0]
-    for v in scandir(data_folder)
-    if v.endswith('_dataset.py')
-]
-# import all the dataset modules
-_dataset_modules = [
-    importlib.import_module(f'pyiqa.data.{file_name}')
-    for file_name in dataset_filenames
-]
+_DATA_PACKAGE = __package__
+_DATA_FOLDER = Path(__file__).resolve().parent
+_ALL_DATASET_IMPORTED = False
+
+
+def _camel_to_snake(name: str) -> str:
+    s1 = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+def _lazy_import_dataset(dataset_type: str) -> None:
+    global _ALL_DATASET_IMPORTED
+
+    stem = dataset_type[:-8] if dataset_type.endswith('_dataset') else dataset_type
+    candidates = (
+        f'{_DATA_PACKAGE}.{stem}_dataset',
+        f'{_DATA_PACKAGE}.{stem.lower()}_dataset',
+        f'{_DATA_PACKAGE}.{_camel_to_snake(stem)}_dataset',
+    )
+
+    for module_name in dict.fromkeys(candidates):
+        try:
+            importlib.import_module(module_name)
+        except ModuleNotFoundError as error:
+            if error.name != module_name:
+                raise
+        if dataset_type in DATASET_REGISTRY:
+            return
+
+    if _ALL_DATASET_IMPORTED:
+        return
+
+    # Compatibility fallback: import all modules once.
+    for file_path in _DATA_FOLDER.glob('*_dataset.py'):
+        module_name = f'{_DATA_PACKAGE}.{file_path.stem}'
+        try:
+            importlib.import_module(module_name)
+        except Exception:
+            continue
+    _ALL_DATASET_IMPORTED = True
 
 
 def build_dataset(dataset_opt):
@@ -38,6 +67,8 @@ def build_dataset(dataset_opt):
             type (str): Dataset type.
     """
     dataset_opt = deepcopy(dataset_opt)
+    if dataset_opt['type'] not in DATASET_REGISTRY:
+        _lazy_import_dataset(dataset_opt['type'])
     dataset = DATASET_REGISTRY.get(dataset_opt['type'])(dataset_opt)
     logger = get_root_logger()
     logger.info(

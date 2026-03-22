@@ -1,26 +1,53 @@
 import importlib
 from copy import deepcopy
-from os import path as osp
+import re
+from pathlib import Path
 
-from pyiqa.utils import get_root_logger, scandir
+from pyiqa.utils import get_root_logger
 from pyiqa.utils.registry import MODEL_REGISTRY
 
 __all__ = ['build_model']
 
-# automatically scan and import model modules for registry
-# scan all the files under the 'models' folder and collect files ending with
-# '_model.py'
-model_folder = osp.dirname(osp.abspath(__file__))
-model_filenames = [
-    osp.splitext(osp.basename(v))[0]
-    for v in scandir(model_folder)
-    if v.endswith('_model.py')
-]
-# import all the model modules
-_model_modules = [
-    importlib.import_module(f'pyiqa.models.{file_name}')
-    for file_name in model_filenames
-]
+_MODEL_PACKAGE = __package__
+_MODEL_FOLDER = Path(__file__).resolve().parent
+_ALL_MODEL_IMPORTED = False
+
+
+def _camel_to_snake(name: str) -> str:
+    s1 = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+def _lazy_import_model(model_type: str) -> None:
+    global _ALL_MODEL_IMPORTED
+
+    stem = model_type[:-6] if model_type.endswith('_model') else model_type
+    candidates = (
+        f'{_MODEL_PACKAGE}.{stem}_model',
+        f'{_MODEL_PACKAGE}.{stem.lower()}_model',
+        f'{_MODEL_PACKAGE}.{_camel_to_snake(stem)}_model',
+    )
+
+    for module_name in dict.fromkeys(candidates):
+        try:
+            importlib.import_module(module_name)
+        except ModuleNotFoundError as error:
+            if error.name != module_name:
+                raise
+        if model_type in MODEL_REGISTRY:
+            return
+
+    if _ALL_MODEL_IMPORTED:
+        return
+
+    # Compatibility fallback: import all modules once.
+    for file_path in _MODEL_FOLDER.glob('*_model.py'):
+        module_name = f'{_MODEL_PACKAGE}.{file_path.stem}'
+        try:
+            importlib.import_module(module_name)
+        except Exception:
+            continue
+    _ALL_MODEL_IMPORTED = True
 
 
 def build_model(opt):
@@ -31,6 +58,8 @@ def build_model(opt):
             model_type (str): Model type.
     """
     opt = deepcopy(opt)
+    if opt['model_type'] not in MODEL_REGISTRY:
+        _lazy_import_model(opt['model_type'])
     model = MODEL_REGISTRY.get(opt['model_type'])(opt)
     logger = get_root_logger()
     logger.info(f'Model [{model.__class__.__name__}] is created.')

@@ -280,6 +280,50 @@ Example for distributed training
 torchrun --nproc_per_node=2 --master_port=4321 pyiqa/train.py -opt options/train/CLIPIQA/train_CLIPIQA_koniq10k.yml --launcher pytorch
 ```
 
+## :electric_plug: Plugin Authoring (Experimental)
+
+You can add custom datasets/architectures/models/losses/metrics from an external package via Python entry points.
+
+### 1) Add entry points in your plugin `pyproject.toml`
+
+```toml
+[project]
+name = "my-pyiqa-plugin"
+version = "0.1.0"
+dependencies = ["pyiqa>=0.1"]
+
+[project.entry-points."pyiqa.models"]
+my_models = "my_pyiqa_plugin.register:register_models"
+
+[project.entry-points."pyiqa.archs"]
+my_archs = "my_pyiqa_plugin.register:register_archs"
+
+[project.entry-points."pyiqa.datasets"]
+my_datasets = "my_pyiqa_plugin.register:register_datasets"
+
+[project.entry-points."pyiqa.losses"]
+my_losses = "my_pyiqa_plugin.register:register_losses"
+
+[project.entry-points."pyiqa.metrics"]
+my_metrics = "my_pyiqa_plugin.register:register_metrics"
+```
+
+### 2) Minimal registration function
+
+```python
+# my_pyiqa_plugin/register.py
+from pyiqa.utils.registry import MODEL_REGISTRY
+
+
+def register_models():
+  from .my_model import MyModel
+
+  # Registers with key "MyModel" by default.
+  MODEL_REGISTRY.register(MyModel)
+```
+
+After installing your plugin package, PyIQA will discover and load these entry points lazily when a registry is queried.
+
 ## :beers: Contribution
 
 Any contributions to this repository are greatly appreciated. Please follow the [contribution instructions](docs/Instruction.md) for contribution guidance.

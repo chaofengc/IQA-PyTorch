@@ -5,7 +5,6 @@ bitsandbytes; sys_platform != 'darwin'
 einops
 facexlib
 future
-lmdb
 numpy
 openai-clip
 opencv-python-headless
