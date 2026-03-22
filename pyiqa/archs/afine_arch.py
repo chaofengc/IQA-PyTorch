@@ -1,18 +1,14 @@
-"""A-FINE Model
+"""A-FINE architecture for generalized image quality assessment.
 
-github repo link: https://github.com/ChrisDud0257/AFINE
+Reference:
+        Chen, D., Wu, T., Ma, K., and Zhang, L.
+        Toward Generalized Image Quality Assessment: Relaxing the Perfect
+        Reference Quality Assumption. CVPR 2025.
 
-Cite as:
-@inproceedings{chen2025toward,
-  title={Toward Generalized Image Quality Assessment: Relaxing the Perfect Reference Quality Assumption},
-  author={Chen, Du and Wu, Tianhe and Ma, Kede and Zhang, Lei},
-  booktitle={Proceedings of the 2025 IEEE/CVF Computer Vision and Pattern Recognition Conference},
-  pages={12742--12752},
-  year={2025}
-}
+Project page:
+        https://github.com/ChrisDud0257/AFINE
 
-This file only support inferring A-FINE value. If you want to further train A-FINE, plase refer to https://github.com/ChrisDud0257/AFINE
-
+This implementation is intended for inference with pretrained checkpoints.
 """
 
 import torch
@@ -37,6 +33,18 @@ default_model_urls = {
 
 
 def scale_finalscore(score, yita1 = 100, yita2 = 0, yita3 = -1.9710, yita4 = -2.3734):
+    """Map raw A-FINE score to a bounded, human-readable range.
+
+    Args:
+        score (torch.Tensor): Raw score tensor.
+        yita1 (float): Upper bound of target range.
+        yita2 (float): Lower bound of target range.
+        yita3 (float): Logistic midpoint parameter.
+        yita4 (float): Logistic scale parameter.
+
+    Returns:
+        torch.Tensor: Scaled score tensor.
+    """
 
     exp_pow = -1 * (score - yita3) / (math.fabs(yita4) + 1e-10)
     if exp_pow >=10:
@@ -49,6 +57,20 @@ def scale_finalscore(score, yita1 = 100, yita2 = 0, yita3 = -1.9710, yita4 = -2.
 
 
 class AFINEQhead(nn.Module):
+    """Naturalness head used by A-FINE.
+
+    This head aggregates mean and variance statistics from CLIP feature maps and
+    predicts the no-reference naturalness term.
+
+    Args:
+        chns (tuple[int, ...]): Channel dimensions for input image and feature
+            levels.
+        feature_out_channel (int): Number of output channels for the score head.
+        input_dim (int): Channel dimension of CLIP feature tokens.
+        hidden_dim (int): Hidden width for projection layers.
+        mean (tuple[float, float, float]): RGB normalization mean.
+        std (tuple[float, float, float]): RGB normalization standard deviation.
+    """
     def __init__(self, chns = (3, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768), feature_out_channel = 1,
                        input_dim = 768, hidden_dim = 128,
                        mean = (0.48145466, 0.4578275, 0.40821073), std = (0.26862954, 0.26130258, 0.27577711)):
@@ -104,6 +126,16 @@ class AFINEQhead(nn.Module):
 
 
 class AFINEDhead(nn.Module):
+    """Fidelity head used by A-FINE.
+
+    The module computes similarity statistics between distorted and reference
+    features and outputs a full-reference fidelity term.
+
+    Args:
+        chns (tuple[int, ...]): Channel dimensions for each feature level.
+        mean (tuple[float, float, float]): RGB normalization mean.
+        std (tuple[float, float, float]): RGB normalization standard deviation.
+    """
     def __init__(self, chns = (3, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768),
                  mean = (0.48145466, 0.4578275, 0.40821073), std = (0.26862954, 0.26130258, 0.27577711)):
         super(AFINEDhead, self).__init__()
@@ -175,6 +207,7 @@ class AFINEDhead(nn.Module):
 
 ### Non-linear mapping to generalize NR and FR scores to a fixed limitation
 class AFINENLM_NR_Fit(nn.Module):
+    """Nonlinear calibration layer for the naturalness branch."""
     def __init__(self, yita1 = 2, yita2 = -2, yita3 = 3.7833, yita4 = 7.5676):
         super(AFINENLM_NR_Fit, self).__init__()
         self.yita3 = nn.Parameter(torch.tensor(yita3, dtype=torch.float32), requires_grad = True)
@@ -198,6 +231,7 @@ class AFINENLM_NR_Fit(nn.Module):
 
 ### Non-linear mapping to generalize NR and FR scores to a fixed limitation
 class AFINENLM_FR_Fit_with_limit(nn.Module):
+    """Bounded nonlinear calibration layer for the fidelity branch."""
     def __init__(self, yita1 = 2, yita2 = -2, yita3 = -24.1335, yita4 = 8.1093, yita3_upper = -21, yita3_lower = -27, yita4_upper = 9, yita4_lower = 7):
         super(AFINENLM_FR_Fit_with_limit, self).__init__()
         self.yita3 = nn.Parameter(torch.tensor(yita3, dtype=torch.float32), requires_grad = True)
@@ -227,6 +261,7 @@ class AFINENLM_FR_Fit_with_limit(nn.Module):
 
 ### adapter
 class AFINELearnLambda(nn.Module):
+    """Adaptive fusion layer for naturalness and fidelity terms."""
     def __init__(self, k = 5):
         super(AFINELearnLambda, self).__init__()
 
@@ -242,6 +277,27 @@ class AFINELearnLambda(nn.Module):
 
 @ARCH_REGISTRY.register()
 class AFINE(nn.Module):
+    """A-FINE inference model.
+
+    Args:
+        model_type (str): Output type.
+            Supported values are ``"afine_all_scale"``, ``"afine_all"``,
+            ``"afine_fr"``, and ``"afine_nr"``.
+        clip_backbone (str): CLIP backbone identifier.
+        step (int): Kept for compatibility with original config interface.
+        num_patch (int): Kept for compatibility with original config interface.
+        pretrained (bool): Kept for compatibility. This implementation expects
+            a pretrained checkpoint.
+        pretrained_model_path (str | None): Local checkpoint path. If ``None``,
+            the model is downloaded from ``url_key``.
+        url_key (str): Key used to resolve default checkpoint URL.
+
+    Example:
+        >>> metric = AFINE(model_type='afine_all_scale')
+        >>> dis = torch.rand(1, 3, 224, 224)
+        >>> ref = torch.rand(1, 3, 224, 224)
+        >>> score = metric(dis, ref)
+    """
     def __init__(
         self,
         model_type='afine_all_scale',
@@ -306,6 +362,24 @@ class AFINE(nn.Module):
 
 
     def forward(self, dis, ref=None):
+        """Run A-FINE scoring.
+
+        Args:
+            dis (torch.Tensor): Distorted image tensor with shape
+                ``(N, 3, H, W)``.
+            ref (torch.Tensor | None): Optional reference image tensor with the
+                same shape as ``dis``. If ``None``, ``dis`` is reused.
+
+        Returns:
+            torch.Tensor: Score tensor according to ``model_type``.
+
+        Raises:
+            AssertionError: If image height or width is not divisible by 32.
+            ValueError: If ``model_type`` is unsupported.
+
+        Notes:
+            Lower values indicate better quality for A-FINE terms.
+        """
         ### note that, dis must path to the distortion image path, while ref must path to the reference image path, you cannot switch them.
         
         # preprocess for distortion image and reference image

@@ -29,6 +29,8 @@ default_model_urls = {
 
 
 class TABlock(nn.Module):
+    """Token-attention block used in MANIQA stages."""
+
     def __init__(self, dim, drop=0.1):
         super().__init__()
         self.c_q = nn.Linear(dim, dim)
@@ -54,6 +56,8 @@ class TABlock(nn.Module):
 
 
 class SaveOutput:
+    """Forward-hook collector for intermediate ViT block outputs."""
+
     def __init__(self):
         self.outputs = []
 
@@ -66,30 +70,27 @@ class SaveOutput:
 
 @ARCH_REGISTRY.register()
 class MANIQA(nn.Module):
-    """
-    Implementation of the MANIQA model for image quality assessment.
+    """MANIQA no-reference IQA model.
 
     Args:
-        - embed_dim (int): Embedding dimension for the model. Default is 768.
-        - num_outputs (int): Number of output scores. Default is 1.
-        - patch_size (int): Size of patches for the model. Default is 8.
-        - drop (float): Dropout rate for the model. Default is 0.1.
-        - depths (list): List of depths for the Swin Transformer blocks. Default is [2, 2].
-        - window_size (int): Window size for the Swin Transformer blocks. Default is 4.
-        - dim_mlp (int): Dimension of the MLP for the Swin Transformer blocks. Default is 768.
-        - num_heads (list): List of number of heads for the Swin Transformer blocks. Default is [4, 4].
-        - img_size (int): Size of the input image. Default is 224.
-        - num_tab (int): Number of TA blocks for the model. Default is 2.
-        - scale (float): Scale for the Swin Transformer blocks. Default is 0.13.
-        - test_sample (int): Number of test samples for the model. Default is 20.
-        - pretrained (bool): Whether to use a pretrained model. Default is True.
-        - pretrained_model_path (str): Path to the pretrained model. Default is None.
-        - train_dataset (str): Name of the training dataset. Default is 'pipal'.
-        - default_mean (torch.Tensor): Default mean for the model. Default is None.
-        - default_std (torch.Tensor): Default standard deviation for the model. Default is None.
-
-    Returns:
-        torch.Tensor: Predicted quality score for the input image.
+        embed_dim (int): Embedding dimension.
+        num_outputs (int): Number of output channels.
+        patch_size (int): Patch size used by ViT backbone.
+        drop (float): Dropout ratio for prediction heads.
+        depths (list[int]): Depths of Swin blocks.
+        window_size (int): Swin attention window size.
+        dim_mlp (int): MLP dimension used in Swin blocks.
+        num_heads (list[int]): Number of attention heads in Swin blocks.
+        img_size (int): Input crop size.
+        num_tab (int): Number of token-attention blocks per stage.
+        scale (float): Swin scaling factor.
+        test_sample (int): Number of evaluation crops.
+        pretrained (bool): Whether to load pretrained model weights.
+        pretrained_model_path (str | None): Optional local checkpoint path.
+        train_dataset (str): Checkpoint key for pretrained loading.
+        default_mean (torch.Tensor | None): Optional custom normalization mean.
+        default_std (torch.Tensor | None): Optional custom normalization std.
+        **kwargs: Reserved compatibility arguments.
     """
 
     def __init__(
@@ -188,6 +189,7 @@ class MANIQA(nn.Module):
             load_pretrained_network(self, default_model_urls[train_dataset], True)
 
     def extract_feature(self, save_output):
+        """Concatenate selected ViT block tokens into MANIQA feature tensor."""
         x6 = save_output.outputs[6][:, 1:]
         x7 = save_output.outputs[7][:, 1:]
         x8 = save_output.outputs[8][:, 1:]
@@ -196,14 +198,13 @@ class MANIQA(nn.Module):
         return x
 
     def forward(self, x):
-        """
-        Forward pass of the MANIQA model.
+        """Predict image quality score.
 
         Args:
-            x (torch.Tensor): Input image tensor.
+            x (torch.Tensor): Input tensor with shape ``(N, 3, H, W)``.
 
         Returns:
-            torch.Tensor: Predicted quality score for the input image.
+            torch.Tensor: Predicted score tensor with shape ``(N, 1)``.
         """
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         bsz = x.shape[0]

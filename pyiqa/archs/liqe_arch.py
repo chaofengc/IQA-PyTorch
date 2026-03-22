@@ -63,6 +63,20 @@ default_model_urls = {
 
 @ARCH_REGISTRY.register()
 class LIQE(nn.Module):
+    """LIQE no-reference quality predictor based on CLIP text-image matching.
+
+    Args:
+        model_type (str): Output type name for compatibility.
+        backbone (str): CLIP backbone. Only ``'ViT-B/32'`` is supported.
+        step (int): Sliding stride for 224x224 patch extraction.
+        num_patch (int): Number of selected patches per image.
+        pretrained (bool | str): Whether to load pretrained weights. When set to
+            ``'mix'``, the multitask checkpoint is used.
+        pretrained_model_path (str | None): Optional local checkpoint path.
+        mtl (bool): Whether to enable multitask (quality/scene/distortion) text
+            prompts.
+    """
+
     def __init__(
         self,
         model_type='liqe',
@@ -128,11 +142,23 @@ class LIQE(nn.Module):
             torch.save(self.text_features.to('cpu'), text_feat_cache_path)
 
     def get_text_features(self, x):
+        """Encode and normalize text features for prompt set."""
         text_features = self.clip_model.encode_text(self.joint_texts.to(x.device))
         text_features = text_features / text_features.norm(dim=1, keepdim=True)
         return text_features
 
     def forward(self, x):
+        """Predict LIQE quality score.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape ``(N, 3, H, W)``.
+
+        Returns:
+            torch.Tensor: Predicted quality scores with shape ``(N, 1)``.
+
+        Raises:
+            AssertionError: If the short image side is smaller than ``224``.
+        """
         bs = x.size(0)
         h = x.size(2)
         w = x.size(3)

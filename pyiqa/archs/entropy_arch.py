@@ -16,11 +16,16 @@ from pyiqa.utils.color_util import to_y_channel
 
 
 def entropy(x, data_range=255.0, eps=1e-8, color_space='yiq'):
-    r"""Compute entropy of a gray scale image.
+    r"""Compute grayscale entropy from an image tensor.
+
     Args:
-        x: An input tensor. Shape :math:`(N, C, H, W)`.
+        x (torch.Tensor): Input tensor with shape ``(N, C, H, W)``.
+        data_range (float): Maximum intensity value used for histogram bins.
+        eps (float): Numerical stability constant in ``log2``.
+        color_space (str): Color space used when converting RGB to luminance.
+
     Returns:
-        Entropy of the image.
+        torch.Tensor: Entropy values with shape ``(N,)``.
     """
 
     if x.shape[1] == 3:
@@ -41,11 +46,10 @@ def entropy(x, data_range=255.0, eps=1e-8, color_space='yiq'):
 
 @ARCH_REGISTRY.register()
 class Entropy(nn.Module):
-    r"""
+    r"""Entropy-based no-reference image quality metric wrapper.
+
     Args:
-        x (torch.Tensor): image tensor with shape (B, _, H, W), range [0, 1]
-    Return:
-        score (torch.Tensor): (B, 1)
+        **kwargs: Keyword arguments forwarded to :func:`entropy`.
     """
 
     def __init__(self, **kwargs):
@@ -53,5 +57,13 @@ class Entropy(nn.Module):
         self.kwargs = kwargs
 
     def forward(self, x):
+        """Compute entropy score for input batch.
+
+        Args:
+            x (torch.Tensor): Image tensor with shape ``(N, C, H, W)``.
+
+        Returns:
+            torch.Tensor: Entropy score tensor with shape ``(N,)``.
+        """
         score = entropy(x, **self.kwargs)
         return score

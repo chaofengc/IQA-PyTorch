@@ -1,3 +1,11 @@
+"""Shared normalization constants for architecture backbones.
+
+This module centralizes channel-wise mean and standard deviation values used by
+models in :mod:`pyiqa.archs` for preprocessing input images.
+
+All tuples follow RGB channel order.
+"""
+
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 IMAGENET_INCEPTION_MEAN = (0.5, 0.5, 0.5)

@@ -28,19 +28,23 @@ default_model_urls = {
 
 @ARCH_REGISTRY.register()
 class NIMA(nn.Module):
-    """Neural IMage Assessment model.
+    """Neural IMage Assessment (NIMA) model.
 
     Modification:
         - for simplicity, we use global average pool for all models
         - we remove the dropout, because parameters with avg pool is much less.
 
     Args:
-        base_model_name: pretrained model to extract features, can be any models supported by timm.
-                         Models used in the paper: vgg16, inception_resnet_v2, mobilenetv2_100
+        base_model_name (str): Backbone model name supported by :mod:`timm`.
+        train_dataset (str): Dataset tag used to select default checkpoint.
+        num_classes (int): Number of output classes for score distribution.
+        dropout_rate (float): Dropout ratio in classifier head.
+        pretrained (bool): Whether to load pretrained NIMA weights.
+        pretrained_model_path (str | None): Optional local checkpoint path.
 
-        default input shape:
-            - vgg and mobilenet: (N, 3, 224, 224)
-            - inception: (N, 3, 299, 299)
+    Notes:
+        Typical input sizes are ``224`` (VGG/MobileNet) or ``299``
+        (Inception-family backbones).
     """
 
     def __init__(
@@ -86,6 +90,7 @@ class NIMA(nn.Module):
             )
 
     def preprocess(self, x):
+        """Resize/crop (eval mode) and normalize input image tensor."""
         if not self.training:
             x = T.functional.resize(x, self.base_model.default_cfg['input_size'][-1])
             x = T.functional.center_crop(
@@ -96,12 +101,16 @@ class NIMA(nn.Module):
         return x
 
     def forward(self, x, return_mos=True, return_dist=False):
-        r"""Computation image quality using NIMA.
-        Args:
-            x: An input tensor. Shape :math:`(N, C, H, W)`.
-            return_mos: Whether to return mos_score.
-            retuen_dist: Whether to return dist_score.
+        r"""Compute image quality using NIMA.
 
+        Args:
+            x (torch.Tensor): Input tensor with shape ``(N, 3, H, W)``.
+            return_mos (bool): Whether to return MOS prediction.
+            return_dist (bool): Whether to return score distribution.
+
+        Returns:
+            torch.Tensor | list[torch.Tensor]: One tensor when a single output is
+            requested, otherwise ``[mos, dist]``.
         """
         # imagenet normalization of input is hard coded
         x = self.preprocess(x)

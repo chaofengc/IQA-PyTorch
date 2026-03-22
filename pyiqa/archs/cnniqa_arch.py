@@ -21,15 +21,15 @@ default_model_urls = {'koniq10k': get_url_from_name('CNNIQA_koniq10k-e6f14c91.pt
 
 @ARCH_REGISTRY.register()
 class CNNIQA(nn.Module):
-    r"""CNNIQA model.
+    r"""CNNIQA no-reference image quality model.
 
     Args:
         ker_size (int): Kernel size.
         n_kers (int): Number of kernels.
         n1_nodes (int): Number of n1 nodes.
         n2_nodes (int): Number of n2 nodes.
-        pretrained (str): Pretrained model name.
-        pretrained_model_path (str): Pretrained model path.
+        pretrained (str | None): Pretrained model key.
+        pretrained_model_path (str | None): Optional local checkpoint path.
     """
 
     def __init__(
@@ -56,13 +56,13 @@ class CNNIQA(nn.Module):
             load_pretrained_network(self, pretrained_model_path, True, 'params')
 
     def forward(self, x):
-        r"""Compute IQA using CNNIQA model.
+        r"""Predict quality score with CNNIQA.
 
         Args:
-            x (torch.Tensor): An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            x (torch.Tensor): Input tensor with shape ``(N, 3, H, W)``.
 
         Returns:
-            torch.Tensor: Value of CNNIQA model.
+            torch.Tensor: Predicted score tensor with shape ``(N, 1)``.
         """
         h = self.conv1(x)
 

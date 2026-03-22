@@ -63,6 +63,13 @@ names = {
 
 
 class MultiVGGFeaturesExtractor(nn.Module):
+    """Extract multiple VGG19 feature maps for DeepDC.
+
+    Args:
+        target_features (tuple[str, ...]): VGG layer names to return.
+        use_input_norm (bool): Whether to apply ImageNet normalization.
+        requires_grad (bool): Whether backbone parameters require gradients.
+    """
     def __init__(
         self,
         target_features=('conv1_2', 'conv2_2', 'conv3_4', 'conv4_4', 'conv5_4'),
@@ -95,6 +102,16 @@ class MultiVGGFeaturesExtractor(nn.Module):
             self.features.eval()
 
     def forward(self, x):
+        """Extract requested VGG feature maps.
+
+        Args:
+            x (torch.Tensor): Input tensor in range ``[0, 1]`` with shape
+                ``(N, 3, H, W)``.
+
+        Returns:
+            collections.OrderedDict[str, torch.Tensor]: Mapping from feature
+            names to feature tensors.
+        """
         # assume input range is [0, 1]
         if self.use_input_norm:
             x = (x - self.mean) / self.std
@@ -116,6 +133,15 @@ class MultiVGGFeaturesExtractor(nn.Module):
 
 @ARCH_REGISTRY.register()
 class DeepDC(nn.Module):
+    """DeepDC full-reference IQA metric.
+
+    The score is derived from distance correlation between feature-space
+    double-centered distance matrices.
+
+    Args:
+        features_to_compute (tuple[str, ...]): VGG feature names used in the
+            DeepDC aggregation.
+    """
     def __init__(
         self,
         features_to_compute=('conv1_2', 'conv2_2', 'conv3_4', 'conv4_4', 'conv5_4'),
@@ -127,15 +153,14 @@ class DeepDC(nn.Module):
         ).eval()
 
     def forward(self, x, y):
-        r"""Compute IQA using DeepDC model.
+        r"""Compute DeepDC quality score.
 
         Args:
-            - x: An input tensor with (N, C, H, W) shape. RGB channel order for colour images.
-            - y: An reference tensor with (N, C, H, W) shape. RGB channel order for colour images.
+            x (torch.Tensor): Distorted image tensor with shape ``(N, 3, H, W)``.
+            y (torch.Tensor): Reference image tensor with shape ``(N, 3, H, W)``.
 
         Returns:
-            Value of DeepDC model.
-
+            torch.Tensor: Quality score tensor with shape ``(N, 1)``.
         """
         targets, inputs = x, y
         inputs_fea = self.features_extractor(inputs)
@@ -158,6 +183,15 @@ class DeepDC(nn.Module):
 
     # double-centered distance matrix (dcdm)
     def _DCDM(self, x):
+        """Compute double-centered distance matrix for each sample.
+
+        Args:
+            x (torch.Tensor): Feature tensor of shape ``(N, C, H, W)`` or
+                ``(N, M, C)``.
+
+        Returns:
+            torch.Tensor: Matrix tensor with shape ``(N, C, C)``.
+        """
         if len(x.shape) == 4:
             batchSize, dim, h, w = x.data.shape
             M = h * w
@@ -189,6 +223,15 @@ class DeepDC(nn.Module):
         return dcdm
 
     def Distance_Correlation(self, matrix_A, matrix_B):
+        """Compute distance correlation between matrix batches.
+
+        Args:
+            matrix_A (torch.Tensor): First matrix batch of shape ``(N, C, C)``.
+            matrix_B (torch.Tensor): Second matrix batch of shape ``(N, C, C)``.
+
+        Returns:
+            torch.Tensor: Correlation values with shape ``(N,)``.
+        """
         Gamma_XY = torch.sum(matrix_A * matrix_B, dim=[1, 2])
         Gamma_XX = torch.sum(matrix_A * matrix_A, dim=[1, 2])
         Gamma_YY = torch.sum(matrix_B * matrix_B, dim=[1, 2])
@@ -198,6 +241,16 @@ class DeepDC(nn.Module):
 
 
 def prepare_image(image, resize=True):
+    """Convert a PIL image to a 4D tensor for DeepDC demos.
+
+    Args:
+        image (PIL.Image.Image): Input image.
+        resize (bool): If ``True``, resize shortest side to ``256`` when both
+            sides are larger than ``256``.
+
+    Returns:
+        torch.Tensor: Tensor with shape ``(1, 3, H, W)``.
+    """
     if resize and min(image.size) > 256:
         image = transforms.functional.resize(image, 256)
     image = transforms.ToTensor()(image)

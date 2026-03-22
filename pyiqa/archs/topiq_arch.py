@@ -48,11 +48,23 @@ default_model_urls = {
 
 
 def _get_clones(module, N):
+    """Return ``N`` deep-copied modules in a :class:`~torch.nn.ModuleList`."""
     return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
 
 def _get_activation_fn(activation):
-    """Return an activation function given a string"""
+    """Resolve activation callable from string name.
+
+    Args:
+        activation (str): Activation name. Supported values are ``'relu'``,
+            ``'gelu'``, and ``'glu'``.
+
+    Returns:
+        Callable: Activation function from :mod:`torch.nn.functional`.
+
+    Raises:
+        RuntimeError: If ``activation`` is unsupported.
+    """
     if activation == 'relu':
         return F.relu
     if activation == 'gelu':
@@ -63,6 +75,7 @@ def _get_activation_fn(activation):
 
 
 class TransformerEncoderLayer(nn.Module):
+    """Transformer encoder layer used in local self-attention blocks."""
     def __init__(
         self,
         d_model,
@@ -99,6 +112,7 @@ class TransformerEncoderLayer(nn.Module):
 
 
 class TransformerDecoderLayer(nn.Module):
+    """Transformer decoder layer used for cross-scale attention."""
     def __init__(
         self,
         d_model,
@@ -138,6 +152,7 @@ class TransformerDecoderLayer(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
+    """Stacked wrapper for encoder layers."""
     def __init__(self, encoder_layer, num_layers):
         super().__init__()
         self.layers = _get_clones(encoder_layer, num_layers)
@@ -153,6 +168,7 @@ class TransformerEncoder(nn.Module):
 
 
 class TransformerDecoder(nn.Module):
+    """Stacked wrapper for decoder layers."""
     def __init__(self, decoder_layer, num_layers):
         super().__init__()
         self.layers = _get_clones(decoder_layer, num_layers)
@@ -168,6 +184,7 @@ class TransformerDecoder(nn.Module):
 
 
 class GatedConv(nn.Module):
+    """Gated local pooling module for no-reference feature aggregation."""
     def __init__(self, weightdim, ksz=3):
         super().__init__()
 
@@ -192,6 +209,37 @@ class GatedConv(nn.Module):
 
 @ARCH_REGISTRY.register()
 class CFANet(nn.Module):
+    """TOPIQ/CFANet architecture for NR and FR quality prediction.
+
+    Args:
+        semantic_model_name (str): Backbone name, for example ``'resnet50'``,
+            ``'clip_ViT-B/32'``, or a Swin variant.
+        model_name (str): Registered checkpoint key.
+        backbone_pretrain (bool): Whether to load pretrained backbone weights.
+        in_size (tuple[int, int] | None): Optional training input size.
+        use_ref (bool): Whether to use a reference image input.
+        num_class (int): Number of output dimensions.
+        num_crop (int): Number of evaluation crops.
+        crop_size (int): Crop size for multi-crop evaluation.
+        inter_dim (int): Intermediate feature dimension.
+        num_heads (int): Attention head count.
+        num_attn_layers (int): Number of attention layers per block.
+        dprate (float): Dropout probability.
+        activation (str): Activation name.
+        pretrained (bool): Whether to load pretrained CFANet checkpoint.
+        pretrained_model_path (str | None): Optional local checkpoint path.
+        out_act (bool): Whether to apply positive output activation for scalar
+            prediction.
+        block_pool (str): Feature block pooling mode.
+        test_img_size (tuple[int, int] | None): Optional test-time resize.
+        align_crop_face (bool): Whether to run face alignment for GFIQA models.
+        default_mean (tuple[float, float, float]): Input normalization mean.
+        default_std (tuple[float, float, float]): Input normalization std.
+
+    Notes:
+        Set ``use_ref=True`` for full-reference mode and ``use_ref=False`` for
+        no-reference mode.
+    """
     def __init__(
         self,
         semantic_model_name='resnet50',
@@ -544,6 +592,22 @@ class CFANet(nn.Module):
             assert False, 'No face detected in the input image.'
 
     def forward(self, x, y=None, return_mos=True, return_dist=False):
+        """Compute quality prediction.
+
+        Args:
+            x (torch.Tensor): Distorted image tensor with shape ``(N, 3, H, W)``.
+            y (torch.Tensor | None): Optional reference image tensor with shape
+                ``(N, 3, H, W)``. Required when ``use_ref`` is ``True``.
+            return_mos (bool): Whether to return mapped MOS output.
+            return_dist (bool): Whether to return raw distance/logit output.
+
+        Returns:
+            torch.Tensor | list[torch.Tensor]: Single tensor when one output is
+            requested, otherwise ``[mos, dist]`` in that order.
+
+        Raises:
+            AssertionError: If ``use_ref`` is ``True`` but ``y`` is not given.
+        """
         if self.use_ref:
             assert y is not None, 'Please input y when use reference is True.'
         else:

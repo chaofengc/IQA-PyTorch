@@ -24,6 +24,8 @@ default_model_urls = {
 
 
 class AdaptiveConcatPool2d(nn.Module):
+    """Concatenate adaptive max and average pooling outputs."""
+
     def __init__(self, sz=None):
         super().__init__()
         sz = sz or (1, 1)
@@ -36,6 +38,14 @@ class AdaptiveConcatPool2d(nn.Module):
 
 @ARCH_REGISTRY.register()
 class PAQ2PIQ(nn.Module):
+    """PaQ-2-PiQ no-reference image quality predictor.
+
+    Args:
+        backbone (str): Backbone name. Currently ``'resnet18'`` is supported.
+        pretrained (bool): Whether to load pretrained PaQ-2-PiQ weights.
+        pretrained_model_path (str | None): Optional local checkpoint path.
+    """
+
     def __init__(
         self, backbone='resnet18', pretrained=True, pretrained_model_path=None
     ):
@@ -74,6 +84,14 @@ class PAQ2PIQ(nn.Module):
             load_pretrained_network(self, default_model_urls['url'])
 
     def forward(self, x):
+        """Predict quality score from image tensor.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape ``(N, 3, H, W)``.
+
+        Returns:
+            torch.Tensor: Predicted scores with shape ``(N, 1)``.
+        """
         im_data = x
         batch_size = im_data.shape[0]
 

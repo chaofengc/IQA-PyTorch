@@ -22,15 +22,7 @@ from .fid_arch import get_folder_features
 
 @ARCH_REGISTRY.register()
 class InceptionScore(nn.Module):
-    """Implements the Inception Score (IS) metric.
-
-    Args:
-        dims (int): The number of dimensions of the Inception-v3 feature representation to use.
-            Must be one of 64, 192, 768, or 2048. Default: 2048.
-
-    Attributes:
-        model (nn.Module): The Inception-v3 network used to extract features.
-    """
+    """Compute Inception Score (IS) for a folder of generated images."""
 
     def __init__(
         self,
@@ -51,6 +43,23 @@ class InceptionScore(nn.Module):
         verbose=True,
         **kwargs,
     ):
+        """Compute IS mean and standard deviation.
+
+        Args:
+            img_dir (str): Directory containing images.
+            mode (str): Preprocessing mode used by the Inception feature
+                extractor.
+            splits (int): Number of splits used in IS estimation.
+            num_workers (int): Number of dataloader workers.
+            batch_size (int): Batch size for feature extraction.
+            device (torch.device): Device for inference.
+            verbose (bool): Whether to print progress.
+            **kwargs: Unused extra keyword arguments for compatibility.
+
+        Returns:
+            dict[str, float]: Dictionary with ``inception_score_mean`` and
+            ``inception_score_std``.
+        """
         if verbose:
             print(f'Compute inception score for {img_dir}')
 

@@ -23,11 +23,17 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 
 
 def color_space_transform(input_color, fromSpace2toSpace):
-    """
-    Transforms inputs between different color spaces
-    :param input_color: tensor of colors to transform (with NxCxHxW layout)
-    :param fromSpace2toSpace: string describing transform
-    :return: transformed tensor (with NxCxHxW layout)
+    """Transform color tensors between supported color spaces.
+
+    Args:
+        input_color (torch.Tensor): Color tensor with shape ``(N, C, H, W)``.
+        fromSpace2toSpace (str): Conversion key, for example ``'srgb2lab'``.
+
+    Returns:
+        torch.Tensor: Transformed tensor with shape ``(N, C, H, W)``.
+
+    Raises:
+        ValueError: If the conversion key is not defined.
     """
     dim = input_color.size()
     device = input_color.device
@@ -180,6 +186,16 @@ def color_space_transform(input_color, fromSpace2toSpace):
 
 @ARCH_REGISTRY.register()
 class MS_SWD_learned(nn.Module):
+    """MS-SWD perceptual color difference metric.
+
+    Args:
+        resize_input (bool): Whether to resize inputs with short side larger
+            than ``256`` before scoring.
+        pretrained (bool): Whether to load pretrained weights.
+        pretrained_model_path (str | None): Optional local checkpoint path.
+        **kwargs: Reserved compatibility arguments.
+    """
+
     def __init__(
         self,
         resize_input: bool = True,
@@ -214,11 +230,13 @@ class MS_SWD_learned(nn.Module):
             )
 
     def preprocess_img(self, x):
+        """Optionally resize image batch before feature extraction."""
         if self.resize_input and min(x.shape[2:]) > 256:
             x = TF.resize(x, 256)
         return x
 
     def forward_once(self, x):
+        """Encode one image batch into sorted SWD feature representation."""
         x = color_space_transform(x, 'srgb2lab')
         x = self.conv11x11(x)
         x = self.relu(x)
@@ -227,6 +245,15 @@ class MS_SWD_learned(nn.Module):
         return x
 
     def forward(self, x, y):
+        """Compute MS-SWD distance.
+
+        Args:
+            x (torch.Tensor): Distorted image tensor with shape ``(N, 3, H, W)``.
+            y (torch.Tensor): Reference image tensor with shape ``(N, 3, H, W)``.
+
+        Returns:
+            torch.Tensor: Distance scores with shape ``(N,)``.
+        """
         x = self.preprocess_img(x)
         y = self.preprocess_img(y)
         output_x = self.forward_once(x)

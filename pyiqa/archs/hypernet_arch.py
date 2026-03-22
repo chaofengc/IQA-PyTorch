@@ -28,13 +28,15 @@ default_model_urls = {
 
 @ARCH_REGISTRY.register()
 class HyperNet(nn.Module):
-    """HyperNet Model.
+    """HyperIQA self-adaptive hyper network for no-reference IQA.
+
     Args:
-        - base_model_name (String): pretrained model to extract features,
-        can be any models supported by timm. Default: resnet50.
-        - pretrained_model_path (String): Pretrained model path.
-        - default_mean (list): Default mean value.
-        - default_std (list): Default std value.
+        base_model_name (str): Backbone model name supported by :mod:`timm`.
+        num_crop (int): Number of test-time crops for inference averaging.
+        pretrained (bool): Whether to load pretrained HyperIQA weights.
+        pretrained_model_path (str | None): Optional local checkpoint path.
+        default_mean (list[float]): Input normalization mean.
+        default_std (list[float]): Input normalization std.
 
     Reference:
         Su, Shaolin, Qingsen Yan, Yu Zhu, Cheng Zhang, Xin Ge,
@@ -152,6 +154,7 @@ class HyperNet(nn.Module):
             )
 
     def preprocess(self, x):
+        """Resize to 224x224 if needed and apply ImageNet normalization."""
         # input must have shape of (224, 224) because of network design
         if x.shape[2:] != torch.Size([224, 224]):
             x = nn.functional.interpolate(x, (224, 224), mode='bicubic')
@@ -159,6 +162,7 @@ class HyperNet(nn.Module):
         return x
 
     def forward_patch(self, x):
+        """Predict quality for one 224x224 patch batch."""
         assert x.shape[2:] == torch.Size([224, 224]), (
             f'Input patch size must be (224, 224), but got {x.shape[2:]}'
         )
@@ -200,9 +204,13 @@ class HyperNet(nn.Module):
         return x.squeeze(-1)
 
     def forward(self, x):
-        r"""HYPERNET model.
+        r"""Compute HyperNet quality score.
+
         Args:
-            x: A distortion tensor. Shape :math:`(N, C, H, W)`.
+            x (torch.Tensor): Distorted image tensor with shape ``(N, 3, H, W)``.
+
+        Returns:
+            torch.Tensor: Predicted quality score tensor with shape ``(N, 1)``.
         """
         # imagenet normalization of input is hard coded
 

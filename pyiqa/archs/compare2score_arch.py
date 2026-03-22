@@ -24,6 +24,14 @@ from PIL import Image
 
 
 def expand2square(pil_img):
+    """Pad a PIL image to square with CLIP-mean background color.
+
+    Args:
+        pil_img (PIL.Image.Image): Input image.
+
+    Returns:
+        PIL.Image.Image: Square padded image.
+    """
     background_color = tuple(int(x * 255) for x in OPENAI_CLIP_MEAN)
     width, height = pil_img.size
     maxwh = max(width, height)
@@ -34,6 +42,16 @@ def expand2square(pil_img):
 
 @ARCH_REGISTRY.register()
 class Compare2Score(nn.Module):
+    """Compare2Score large multimodal IQA model wrapper.
+
+    Args:
+        dtype (str): Inference precision mode. Supported values are
+            ``'fp16'``, ``'4bit'``, and ``'8bit'``.
+
+    Notes:
+        Current implementation supports batch size ``1`` in preprocessing.
+    """
+
     def __init__(self, dtype='fp16') -> None:
         super().__init__()
 
@@ -84,13 +102,29 @@ class Compare2Score(nn.Module):
                 gen_cfg.top_p = None
 
     def preprocess(self, x):
+        """Convert a single-image tensor batch to PIL image.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape ``(1, 3, H, W)``.
+
+        Returns:
+            PIL.Image.Image: Converted image.
+
+        Raises:
+            AssertionError: If batch size is not ``1``.
+        """
         assert x.shape[0] == 1, 'Currently, only support batch size 1.'
         images = F.to_pil_image(x[0])
         return images
 
     def forward(self, x):
-        """
-        x: str, path to image
+        """Run Compare2Score model inference.
+
+        Args:
+            x (torch.Tensor): Input image tensor with shape ``(1, 3, H, W)``.
+
+        Returns:
+            torch.Tensor: Predicted quality score.
         """
 
         image_tensor = self.preprocess(x)

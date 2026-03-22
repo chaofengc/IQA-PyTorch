@@ -32,7 +32,18 @@ default_model_urls = {
 
 
 def _get_activation_fn(activation):
-    """Return an activation function given a string"""
+    """Return activation callable by name.
+
+    Args:
+        activation (str): Activation name. Supported values are ``'relu'``,
+            ``'gelu'``, and ``'glu'``.
+
+    Returns:
+        Callable: Activation function from :mod:`torch.nn.functional`.
+
+    Raises:
+        RuntimeError: If ``activation`` is unsupported.
+    """
     if activation == 'relu':
         return F.relu
     if activation == 'gelu':
@@ -43,10 +54,24 @@ def _get_activation_fn(activation):
 
 
 def _get_clones(module, N):
+    """Create ``N`` deep-copied modules in a :class:`~torch.nn.ModuleList`."""
     return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
 
 class Transformer(nn.Module):
+    """Transformer encoder used by TReS to aggregate multiscale features.
+
+    Args:
+        d_model (int): Feature dimension.
+        nhead (int): Number of attention heads.
+        num_encoder_layers (int): Number of encoder layers.
+        num_decoder_layers (int): Unused legacy argument kept for compatibility.
+        dim_feedforward (int): Hidden dimension in feed-forward blocks.
+        dropout (float): Dropout ratio.
+        activation (str): Activation function name.
+        normalize_before (bool): Whether to apply pre-normalization.
+        return_intermediate_dec (bool): Legacy compatibility argument.
+    """
     def __init__(
         self,
         d_model=256,
@@ -199,9 +224,10 @@ class TransformerEncoderLayer(nn.Module):
 
 
 class PositionEmbeddingSine(nn.Module):
-    """
-    This is a more standard version of the position embedding, very similar to the one
-    used by the Attention is all you need paper, generalized to work on images.
+    """Sine-cosine positional encoding for 2D feature maps.
+
+    This implementation is adapted from DETR-style positional encoding and
+    generates a fixed embedding tensor with shape ``(N, C, H, W)``.
     """
 
     def __init__(
@@ -249,6 +275,7 @@ class PositionEmbeddingSine(nn.Module):
 
 
 class L2pooling(nn.Module):
+    """L2 pooling with Hann-window smoothing."""
     def __init__(self, filter_size=5, stride=1, channels=None, pad_off=0):
         super(L2pooling, self).__init__()
         self.padding = (filter_size - 2) // 2
@@ -275,6 +302,25 @@ class L2pooling(nn.Module):
 
 @ARCH_REGISTRY.register()
 class TReS(nn.Module):
+    """TReS no-reference IQA model.
+
+    Args:
+        network (str): ResNet backbone name.
+        train_dataset (str): Dataset key used to choose default checkpoint.
+        nheadt (int): Number of transformer attention heads.
+        num_encoder_layerst (int): Number of transformer encoder blocks.
+        dim_feedforwardt (int): Transformer feed-forward hidden size.
+        test_sample (int): Number of uniform crops during evaluation.
+        default_mean (list[float]): Input normalization mean in RGB order.
+        default_std (list[float]): Input normalization std in RGB order.
+        pretrained (bool): Whether to load default pretrained checkpoint.
+        pretrained_model_path (str | None): Optional local checkpoint path.
+
+    Example:
+        >>> metric = TReS(train_dataset='koniq')
+        >>> x = torch.rand(1, 3, 512, 512)
+        >>> score = metric(x)
+    """
     def __init__(
         self,
         network='resnet50',
@@ -376,6 +422,14 @@ class TReS(nn.Module):
         return x, l1, l2, l3, l4
 
     def forward(self, x):
+        """Compute TReS quality score.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape ``(N, 3, H, W)``.
+
+        Returns:
+            torch.Tensor: Predicted quality score with shape ``(N, 1)``.
+        """
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         bsz = x.shape[0]
 

@@ -27,6 +27,12 @@ from pyiqa.archs.clip_model import load
 
 
 class CustomCLIP(nn.Module):
+    """Thin wrapper around CLIP image/text encoders used by MACLIP.
+
+    Args:
+        backbone (str): CLIP backbone identifier.
+        device (str): Device string used when initializing the model.
+    """
     def __init__(self, backbone: str, device="cpu"):
         super().__init__()
 
@@ -36,6 +42,20 @@ class CustomCLIP(nn.Module):
         self.logit_scale = self.clip_model.logit_scale
 
     def forward(self, image, text, pos_embedding=False, text_features=None):
+        """Encode image/text and return logits and unnormalized image features.
+
+        Args:
+            image (torch.Tensor): Image tensor with shape ``(N, 3, H, W)``.
+            text (torch.Tensor): Tokenized text tensor.
+            pos_embedding (bool): Whether to enable positional embedding branch
+                in the custom CLIP visual encoder.
+            text_features (torch.Tensor | None): Optional precomputed text
+                features.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+                ``(logits_per_image, logits_per_text, image_features_org)``.
+        """
         image_features_org = self.encode_image(image, pos_embedding)
         if text_features is None:
             text_features = self.encode_text(text)
@@ -54,12 +74,21 @@ class CustomCLIP(nn.Module):
 
 @ARCH_REGISTRY.register()
 class MACLIP(nn.Module):
+    """Magnitude-Aware CLIP for no-reference image quality assessment.
+
+    Args:
+        model_type (str): Output type identifier.
+        backbone (str): CLIP backbone name.
+        pos_embedding (bool): Whether to enable visual positional embedding in
+            CLIP image encoding.
+
+    Notes:
+        The current implementation runs on CUDA and is intended for inference.
+    """
+
     def __init__(self,
                  model_type='clipiqa',backbone='RN50',pos_embedding=False) -> None:
-        '''
-        Args:
-            backbone: CLIP backbone model (default: `RN50`, optional: `ViT-B/32`, `RN101` etc., from `clip_model.py`).
-        '''
+        """Initialize MACLIP model."""
         super().__init__()
 
         self.clip_model = CustomCLIP(backbone=backbone, device='cuda')
@@ -81,6 +110,14 @@ class MACLIP(nn.Module):
             p.requires_grad = False
  
     def preprocess(self, img):
+        """Normalize image and build overlapping 224x224 patch set.
+
+        Args:
+            img (torch.Tensor): Input tensor with shape ``(1, 3, H, W)``.
+
+        Returns:
+            torch.Tensor: Patch tensor with shape ``(P, 3, 224, 224)``.
+        """
         transforms = torchvision.transforms.Compose([
             Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))])
         raw_image = transforms(img)
@@ -92,6 +129,7 @@ class MACLIP(nn.Module):
         return img
 
     def box_cox(self, x, lam=0.5, epsilon=1e-6):
+        """Apply Box-Cox-like transform after per-sample standardization."""
         x = (x) / (x.std(dim=1, keepdim=True) + epsilon)  # [B, D]
         if lam == 0:
             transformed = torch.log(x+1)
@@ -101,12 +139,19 @@ class MACLIP(nn.Module):
         return transformed
 
     def fusion(self, cos, norm, base_cos=1.0, base_norm=0.6, alpha=1.0):
-        '''
+        """Fuse cosine and magnitude cues with adaptive softmax weighting.
+
         Args:
-            box_lam: Lambda parameter for Box-Cox transformation (default: 0.5)
-            base_cos/base_norm: Base weights for fusion of cosine similarity and magnitude cues (default: 1.0/0.6).
-            alpha: Fusion coefficient (default: 1.0)
-        '''
+            cos (torch.Tensor): Cosine-similarity based quality scores.
+            norm (torch.Tensor): Magnitude-cue scores.
+            base_cos (float): Base weight prior for cosine cue.
+            base_norm (float): Base weight prior for magnitude cue.
+            alpha (float): Adaptive weight adjustment factor.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+                Fused score, cosine weight, and magnitude weight.
+        """
         d = cos - norm 
         cos_param = base_cos + alpha * d
         norm_param = base_norm - alpha * d
@@ -116,6 +161,18 @@ class MACLIP(nn.Module):
         return weighted_metric, w_cos, w_norm
 
     def forward(self, x, box_lam=0.5, base_cos=1.0, base_norm=0.6, alpha=1.0):
+        """Compute MACLIP score.
+
+        Args:
+            x (torch.Tensor): Input image tensor with shape ``(1, 3, H, W)``.
+            box_lam (float): Lambda for Box-Cox transform.
+            base_cos (float): Base weight for cosine cue.
+            base_norm (float): Base weight for magnitude cue.
+            alpha (float): Adaptive fusion factor.
+
+        Returns:
+            torch.Tensor: Scalar quality score.
+        """
         x = self.preprocess(x)
         clip_model = self.clip_model.to(x.device)
         prompts = self.prompt_pairs.to(x.device)

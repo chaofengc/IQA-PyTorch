@@ -19,6 +19,8 @@ default_model_urls = {'url': get_url_from_name('sac+logos+ava1-l14-linearMSE.pth
 
 
 class MLP(nn.Module):
+    """Regression head used by LAION-Aesthetics predictor."""
+
     def __init__(self, input_size, xcol='emb', ycol='avg_rating'):
         super().__init__()
         self.input_size = input_size
@@ -40,21 +42,17 @@ class MLP(nn.Module):
         )
 
     def forward(self, x):
+        """Predict scalar aesthetics score from normalized image embeddings."""
         return self.layers(x)
 
 
 @ARCH_REGISTRY.register()
 class LAIONAes(nn.Module):
-    """
-    LAIONAes is a class that implements a neural network architecture for image quality assessment.
-
-    The architecture is based on the ViT-L/14 model from the OpenAI CLIP library, and uses an MLP to predict image quality scores.
+    """LAION-Aesthetics predictor based on CLIP ViT-L/14 embeddings.
 
     Args:
-        None
-
-    Returns:
-        A tensor representing the predicted image quality scores.
+        pretrained (bool): Whether to load pretrained MLP weights.
+        pretrained_model_path (str | None): Optional local checkpoint path.
     """
 
     def __init__(
@@ -76,6 +74,14 @@ class LAIONAes(nn.Module):
             load_pretrained_network(self.mlp, default_model_urls['url'])
 
     def forward(self, x):
+        """Predict aesthetics score.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape ``(N, 3, H, W)``.
+
+        Returns:
+            torch.Tensor: Predicted score tensor with shape ``(N, 1)``.
+        """
         clip_model = self.clip_model[0].to(x)
         if not self.training:
             img = clip_preprocess_tensor(x, clip_model)

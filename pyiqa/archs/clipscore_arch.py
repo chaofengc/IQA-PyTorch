@@ -22,21 +22,27 @@ from .arch_util import clip_preprocess_tensor
 
 @ARCH_REGISTRY.register()
 class CLIPScore(nn.Module):
-    """
-    A PyTorch module for computing image-text similarity scores using the CLIP model.
+    """Compute CLIPScore between an image and one or more captions.
+
+    The implementation follows the original CLIPScore formulation and returns a
+    non-negative image-text similarity score:
+
+    .. math::
+
+        s = w \cdot \max(\cos(f_{img}, f_{txt}), 0)
 
     Args:
-        backbone (str): The name of the CLIP model backbone to use. Default is 'ViT-B/32'.
-        w (float): The weight to apply to the similarity score. Default is 2.5.
-        prefix (str): The prefix to add to each caption when computing text features. Default is 'A photo depicts'.
+        backbone (str): CLIP backbone name accepted by :mod:`clip`, for example
+            ``"ViT-B/32"``.
+        w (float): Multiplicative scaling factor applied to cosine similarity.
+        prefix (str): Text prefix prepended to each caption before tokenization.
 
-    Attributes:
-        clip_model (CLIP): The CLIP model used for computing image and text features.
-        prefix (str): The prefix to add to each caption when computing text features.
-        w (float): The weight to apply to the similarity score.
-
-    Methods:
-        forward(img, caption_list): Computes the similarity score between the input image and a list of captions.
+    Example:
+        >>> metric = CLIPScore(backbone='ViT-B/32')
+        >>> img = torch.rand(2, 3, 224, 224)
+        >>> score = metric(img, ['a dog on grass', 'a city street'])
+        >>> score.shape
+        torch.Size([2])
     """
 
     def __init__(self, backbone='ViT-B/32', w=2.5, prefix='A photo depicts') -> None:
@@ -47,15 +53,18 @@ class CLIPScore(nn.Module):
         self.w = w
 
     def forward(self, img, caption_list=None):
-        """
-        Computes the similarity score between the input image and a list of captions.
+        """Compute CLIPScore for each image-caption pair.
 
         Args:
-            img (torch.Tensor): Input image tensor.
-            caption_list (list of str): List of captions to compare with the image.
+            img (torch.Tensor): Input tensor with shape ``(N, 3, H, W)``.
+            caption_list (list[str] | None): List of length ``N`` containing
+                captions paired with each image.
 
         Returns:
-            torch.Tensor: The computed similarity scores.
+            torch.Tensor: Score tensor with shape ``(N,)``.
+
+        Raises:
+            AssertionError: If ``caption_list`` is not provided.
         """
         assert caption_list is not None, 'caption_list is None'
         text = clip.tokenize(

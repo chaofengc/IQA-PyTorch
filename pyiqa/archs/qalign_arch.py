@@ -26,6 +26,14 @@ from pyiqa.utils.registry import ARCH_REGISTRY
 
 
 def expand2square(pil_img):
+    """Pad image to square canvas using CLIP-mean background.
+
+    Args:
+        pil_img (PIL.Image.Image): Input image.
+
+    Returns:
+        PIL.Image.Image: Square padded image.
+    """
     background_color = tuple(int(x * 255) for x in OPENAI_CLIP_MEAN)
     width, height = pil_img.size
     maxwh = max(width, height)
@@ -36,6 +44,16 @@ def expand2square(pil_img):
 
 @ARCH_REGISTRY.register()
 class QAlign(nn.Module):
+    """Q-Align multimodal visual scoring model.
+
+    Args:
+        dtype (str): Inference precision mode. Supported values are
+            ``'fp16'``, ``'4bit'``, and ``'8bit'``.
+
+    Notes:
+        The current preprocessing path supports batch size ``1``.
+    """
+
     def __init__(self, dtype='fp16') -> None:
         super().__init__()
 
@@ -86,11 +104,23 @@ class QAlign(nn.Module):
 
     @staticmethod
     def _get_model_dtype(dtype):
+        """Resolve torch dtype used by model and image preprocessing."""
         if dtype != 'fp16':
             return torch.float16
         return torch.float16
 
     def preprocess(self, x):
+        """Convert input tensor to Q-Align CLIP-processor tensor.
+
+        Args:
+            x (torch.Tensor): Input image tensor with shape ``(1, 3, H, W)``.
+
+        Returns:
+            torch.Tensor: Processed image tensor suitable for Q-Align.
+
+        Raises:
+            AssertionError: If batch size is not ``1``.
+        """
         assert x.shape[0] == 1, 'Currently, only support batch size 1.'
         image = expand2square(F.to_pil_image(x[0]))
         image_tensor = self.image_processor.preprocess(image, return_tensors='pt')[
@@ -99,8 +129,19 @@ class QAlign(nn.Module):
         return image_tensor.to(x.device)
 
     def forward(self, x, task_='quality', input_='image'):
-        """
-        task_: str, optional [quality, aesthetic]
+        """Run Q-Align scoring.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape ``(1, 3, H, W)``.
+            task_ (str): Task prompt. Common options are ``'quality'`` and
+                ``'aesthetic'``.
+            input_ (str): Input type. Currently only ``'image'`` is supported.
+
+        Returns:
+            torch.Tensor: Predicted task score.
+
+        Raises:
+            NotImplementedError: If ``input_`` is not ``'image'``.
         """
         if input_ != 'image':
             raise NotImplementedError(f'Input type {input_} is not supported yet.')
