@@ -85,36 +85,38 @@ class InferenceModel(torch.nn.Module):
     def forward(self, target, ref=None, **kwargs):
         device = self.dummy_param.device
 
-        with torch.set_grad_enabled(self.as_loss):
-            if 'fid' in self.metric_name:
-                output = self.net(target, ref, device=device, **kwargs)
-            elif self.metric_name == 'inception_score':
-                output = self.net(target, device=device, **kwargs)
-            else:
-                if not torch.is_tensor(target):
-                    target = imread2tensor(target, rgb=True)
-                    target = target.unsqueeze(0)
+        with torch.backends.cudnn.flags(enabled=True, benchmark=False, deterministic=True):
+
+            with torch.set_grad_enabled(self.as_loss):
+                if 'fid' in self.metric_name:
+                    output = self.net(target, ref, device=device, **kwargs)
+                elif self.metric_name == 'inception_score':
+                    output = self.net(target, device=device, **kwargs)
+                else:
+                    if not torch.is_tensor(target):
+                        target = imread2tensor(target, rgb=True)
+                        target = target.unsqueeze(0)
+                        if self.metric_mode == 'FR':
+                            assert ref is not None, (
+                                'Please specify reference image for Full Reference metric'
+                            )
+                            ref = imread2tensor(ref, rgb=True)
+                            ref = ref.unsqueeze(0)
+                            self.is_valid_input(ref)
+
+                    self.is_valid_input(target)
+
                     if self.metric_mode == 'FR':
                         assert ref is not None, (
                             'Please specify reference image for Full Reference metric'
                         )
-                        ref = imread2tensor(ref, rgb=True)
-                        ref = ref.unsqueeze(0)
-                        self.is_valid_input(ref)
+                        output = self.net(target.to(device), ref.to(device), **kwargs)
+                    elif self.metric_mode == 'NR':
+                        output = self.net(target.to(device), **kwargs)
 
-                self.is_valid_input(target)
-
-                if self.metric_mode == 'FR':
-                    assert ref is not None, (
-                        'Please specify reference image for Full Reference metric'
-                    )
-                    output = self.net(target.to(device), ref.to(device), **kwargs)
-                elif self.metric_mode == 'NR':
-                    output = self.net(target.to(device), **kwargs)
-
-        if self.as_loss:
-            if isinstance(output, tuple):
-                output = output[0]
-            return weight_reduce_loss(output, self.loss_weight, self.loss_reduction)
-        else:
-            return output
+            if self.as_loss:
+                if isinstance(output, tuple):
+                    output = output[0]
+                return weight_reduce_loss(output, self.loss_weight, self.loss_reduction)
+            else:
+                return output
