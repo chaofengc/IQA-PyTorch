@@ -3,7 +3,6 @@ import torch
 from collections import OrderedDict
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
-# from pyiqa.utils.registry import ARCH_REGISTRY
 from pyiqa.archs import build_network
 from pyiqa.utils.img_util import imread2tensor
 
@@ -42,9 +41,6 @@ class InferenceModel(torch.nn.Module):
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         else:
             self.device = device
-
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
 
         self.as_loss = as_loss
         self.loss_weight = loss_weight
