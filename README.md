@@ -2,7 +2,8 @@
 
 <img width="60%" src="docs/pyiqa_logo2.png">
 
-An Image Quality Assessment (IQA) toolbox with pure python and pytorch. Please refer to [Awesome-Image-Quality-Assessment](https://github.com/chaofengc/Awesome-Image-Quality-Assessment) for a comprehensive collection of IQA methods.
+**An Image Quality Assessment (IQA) toolbox with pure python and pytorch.**  
+🚀 Install with `pip install pyiqa`  
 
 <a href="https://colab.research.google.com/drive/14J3KoyrjJ6R531DsdOy5Bza5xfeMODi6?usp=sharing"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="google colab logo"></a>
 [![PyPI](https://img.shields.io/pypi/v/pyiqa)](https://pypi.org/project/pyiqa/)
