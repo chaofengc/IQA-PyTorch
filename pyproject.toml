@@ -7,7 +7,8 @@ name = "pyiqa"
 description = "PyTorch Toolbox for Image Quality Assessment"
 readme = "README.md"
 requires-python = ">=3.6"
-license = { text = "Apache Software License" }
+license = "CC-BY-NC-SA-4.0"
+license-files = ["LICENSE", "LICENSE-S-Lab"]
 authors = [
     { name = "Chaofeng Chen", email = "chaofenghust@gmail.com" },
 ]
@@ -15,7 +16,6 @@ keywords = ["image quality assessment", "pytorch"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
