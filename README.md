@@ -335,9 +335,7 @@ Any contributions to this repository are greatly appreciated. Please follow the 
 
 ## :scroll: License
 
-This work is licensed under a [NTU S-Lab License](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE_NTU-S-Lab) and <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
-
-<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a>
+This work is licensed under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/) (see [LICENSE](LICENSE)) and the [NTU S-Lab License](https://github.com/chaofengc/IQA-PyTorch/blob/main/LICENSE-S-Lab) for applicable components.
 
 ## :bookmark_tabs: Citation
 

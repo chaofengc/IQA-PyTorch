@@ -7,7 +7,7 @@ name = "pyiqa"
 description = "PyTorch Toolbox for Image Quality Assessment"
 readme = "README.md"
 requires-python = ">=3.6"
-license = "CC-BY-NC-SA-4.0"
+license = "PolyForm-Noncommercial-1.0.0"
 license-files = ["LICENSE", "LICENSE-S-Lab"]
 authors = [
     { name = "Chaofeng Chen", email = "chaofenghust@gmail.com" },
