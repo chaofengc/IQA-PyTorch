@@ -1,4 +1,3 @@
-from .file_client import FileClient
 from .img_util import (
     crop_border,
     imfrombytes,
@@ -30,8 +29,6 @@ from .download_util import download_file_from_google_drive, load_file_from_url
 from .color_util import rgb2ycbcr, ycbcr2rgb
 
 __all__ = [
-    # file_client.py
-    'FileClient',
     # img_util.py
     'imread2tensor',
     'img2tensor',
