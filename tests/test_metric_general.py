@@ -110,6 +110,7 @@ def test_match_official_with_given_cases(ref_img, dist_img, metric_name, device)
             'tres-koniq',
             'inception_score',
             'qalign',
+            'fgresq_pair',  # structured pair output, not a single score tensor
         ]
     ],
 )
@@ -153,6 +154,7 @@ def test_cpu_gpu_consistency(metric_name):
             'pi',
             'nrqm',
             'fid',
+            'fgresq_pair',  # pair inference is not exposed as a scalar training loss
             'mad',
             'vsi',
             'clipscore',

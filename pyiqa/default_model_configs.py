@@ -415,6 +415,22 @@ DEFAULT_CONFIGS = OrderedDict(
             'metric_mode': 'NR',
             'score_range': '0, 1',
         },
+        'fgresq': {
+            'metric_opts': {
+                'type': 'FGResQ',
+                'pretrained': True,
+            },
+            'metric_mode': 'NR',
+            'score_range': '0, 1',
+        },
+        'fgresq_pair': {
+            'metric_opts': {
+                'type': 'FGResQ',
+                'pretrained': True,
+            },
+            'metric_mode': 'FR',
+            'score_range': 'quality: 0, 1; rank: 0, 2; rank_prob: 0, 1',
+        },
         'tres': {
             'metric_opts': {
                 'type': 'TReS',
