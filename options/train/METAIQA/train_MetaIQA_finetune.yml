@@ -1,0 +1,93 @@
+# general settings
+name: 002_MetaIQA_Finetune_LIVEC_Official
+model_type: GeneralIQAModel
+num_gpu: 1
+manual_seed: 123
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: livechallenge
+    type: GeneralNRDataset
+    dataroot_target: ./datasets/LIVEC/Images
+    meta_info_file: ./datasets/meta_info/meta_info_LIVEChallengeDataset.csv
+
+    split_ratio: '802'
+    split_index: 10
+
+    mos_range: [0, 100]
+    lower_better: false
+    mos_normalize: true
+
+    augment:
+      hflip: true
+      random_crop: 224
+
+    use_shuffle: true
+    num_worker_per_gpu: 4
+    batch_size_per_gpu: 50
+
+  val:
+    name: livechallenge_val
+    type: GeneralNRDataset
+    dataroot_target: ./datasets/LIVEC/Images
+    meta_info_file: ./datasets/meta_info/meta_info_LIVEChallengeDataset.csv
+
+    split_ratio: '802'
+    split_index: 10
+
+    mos_range: [0, 100]
+    lower_better: false
+    mos_normalize: true
+  
+# network structures
+network:
+  type: MetaIQA
+  pretrained: true
+  pretrained_model_path: ~
+
+# path
+path:
+  pretrain_network_g: ~
+  strict_load_g: true
+  resume_state: 
+
+# training settings
+train:
+  optim:
+    type: Adam
+    lr: !!float 1e-4
+    lr_resnet_layer: !!float 1e-4
+    lr_net: !!float 1e-2
+    weight_decay: 0
+
+  scheduler:
+    type: MultiStepLR
+    milestones: [190, 380, 570, 760, 950, 1140, 1330, 1520, 1710]
+    gamma: 0.8
+
+  total_iter: 1900
+  warmup_iter: -1
+
+  mos_loss_opt:
+    type: MSELoss
+    loss_weight: !!float 1.0
+
+# validation settings
+val:
+  val_freq: !!float 50
+  save_img: false
+  pbar: true
+
+  key_metric: srcc
+  metrics:
+    srcc:
+      type: calculate_srcc
+    plcc:
+      type: calculate_plcc
+
+# logging settings
+logger:
+  print_freq: 50
+  save_latest_freq: !!float 100
+  use_tb_logger: true

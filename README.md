@@ -239,7 +239,7 @@ Basically, we use the largest existing datasets for training, and cross dataset 
 | Metric Type   | Reproduced Models |
 | ------------- | ----------------------------- |
 | FR            | `wadiqam_fr`  |
-| NR            | `cnniqa`, `dbcnn`, `hyperiqa`,  `wadiqam_nr` |
+| NR            | `cnniqa`, `dbcnn`, `hyperiqa`, `metaiqa`, `wadiqam_nr` |
 | Aesthetic IQA | `nima`, `nima-vgg16-ava`      |
 
 >[!NOTE]
@@ -377,7 +377,7 @@ Please also consider to cite our works on image quality assessment if it is usef
 
 The code architecture is borrowed from [BasicSR](https://github.com/xinntao/BasicSR). Several implementations are taken from: [IQA-optimization](https://github.com/dingkeyan93/IQA-optimization), [Image-Quality-Assessment-Toolbox](https://github.com/RyanXingQL/Image-Quality-Assessment-Toolbox), [piq](https://github.com/photosynthesis-team/piq), [piqa](https://github.com/francois-rozet/piqa), [clean-fid](https://github.com/GaParmar/clean-fid)
 
-We also thanks the following public repositories: [MUSIQ](https://github.com/google-research/google-research/tree/master/musiq), [DBCNN](https://github.com/zwx8981/DBCNN-PyTorch), [NIMA](https://github.com/kentsyx/Neural-IMage-Assessment), [HyperIQA](https://github.com/SSL92/hyperIQA), [CNNIQA](https://github.com/lidq92/CNNIQA), [WaDIQaM](https://github.com/lidq92/WaDIQaM), [PieAPP](https://github.com/prashnani/PerceptualImageError), [paq2piq](https://github.com/baidut/paq2piq), [MANIQA](https://github.com/IIGROUP/MANIQA) 
+We also thanks the following public repositories: [MUSIQ](https://github.com/google-research/google-research/tree/master/musiq), [DBCNN](https://github.com/zwx8981/DBCNN-PyTorch), [NIMA](https://github.com/kentsyx/Neural-IMage-Assessment), [HyperIQA](https://github.com/SSL92/hyperIQA), [CNNIQA](https://github.com/lidq92/CNNIQA), [WaDIQaM](https://github.com/lidq92/WaDIQaM), [PieAPP](https://github.com/prashnani/PerceptualImageError), [paq2piq](https://github.com/baidut/paq2piq), [MANIQA](https://github.com/IIGROUP/MANIQA) , [MetaIQA](https://github.com/zhuhancheng/MetaIQA)
 
 ## :e-mail: Contact
 
