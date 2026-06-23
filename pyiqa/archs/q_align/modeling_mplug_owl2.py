@@ -259,7 +259,9 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
         self.image_processor = CLIPImageProcessor.from_pretrained("q-future/one-align", trust_remote_code=True)
 
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-        self.preferential_ids_ = [id_[1] for id_ in self.tokenizer(["excellent","good","fair","poor","bad"])["input_ids"]]
+        # id_[-1] (was id_[1]): newer LlamaTokenizer no longer prepends a BOS token,
+        # so the level word is the last (and only) id rather than at index 1.
+        self.preferential_ids_ = [id_[-1] for id_ in self.tokenizer(["excellent","good","fair","poor","bad"])["input_ids"]]
 
         # Initialize weights and apply final processing
         self.post_init()

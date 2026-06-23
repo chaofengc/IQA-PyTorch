@@ -37,6 +37,7 @@ This is a comprehensive image quality assessment (IQA) toolbox built with **pure
 ---
 
 ### :triangular_flag_on_post: Updates/Changelog
+- 🆕**Jun, 2026**. Add `qrealign` (Q-ReAlign), a modern Q-Align visual scorer on a Qwen3.5-VL backbone, with three sizes `qrealign-mini` (0.8B) / `qrealign-lite` (4B) / `qrealign-pro` (9B). Requires `transformers>=5.0`. See [Q-ReAlign](https://github.com/Q-Future/Q-ReAlign).
 - 🆕**May, 2026**. Add `fgresq` metric from [FGResQ](https://github.com/sxfly99/FGResQ). Thanks to their great work 🤗, and see the [paper](https://arxiv.org/abs/2508.14475) for details.
 - 👉**Dec, 2025**.Add FR-IQA method `dmm` proposed in [paper](https://ieeexplore.ieee.org/abstract/document/10886996), with SVD-based debiased mapping to mitigate perception bias. Thanks to [baoliang](https://github.com/Baoliang93) for their great work 🤗, refer to DMM for more details.
 - ✨**Dec, 2025**. Add `maclip` metric proposed in [MACLIP](https://github.com/zhix000/MA-CLIP), introducing magnitude in IQA. Thanks to [zhicheng](https://github.com/zhix000) for their contribution 🤗, and please refer to their official papers for more details! 

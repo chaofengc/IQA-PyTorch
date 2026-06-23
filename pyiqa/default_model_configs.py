@@ -651,6 +651,38 @@ DEFAULT_CONFIGS = OrderedDict(
             'metric_mode': 'NR',
             'score_range': '1, 5',
         },
+        'qrealign': {
+            'metric_opts': {
+                'type': 'QReAlign',
+                'model': 'mini',
+            },
+            'metric_mode': 'NR',
+            'score_range': '0, 1',
+        },
+        'qrealign-mini': {
+            'metric_opts': {
+                'type': 'QReAlign',
+                'model': 'mini',
+            },
+            'metric_mode': 'NR',
+            'score_range': '0, 1',
+        },
+        'qrealign-lite': {
+            'metric_opts': {
+                'type': 'QReAlign',
+                'model': 'lite',
+            },
+            'metric_mode': 'NR',
+            'score_range': '0, 1',
+        },
+        'qrealign-pro': {
+            'metric_opts': {
+                'type': 'QReAlign',
+                'model': 'pro',
+            },
+            'metric_mode': 'NR',
+            'score_range': '0, 1',
+        },
         'compare2score': {
             'metric_opts': {
                 'type': 'Compare2Score',

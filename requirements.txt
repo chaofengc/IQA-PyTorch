@@ -23,5 +23,8 @@ timm>=0.8
 torch>=1.13
 torchvision>=0.13
 tqdm
-transformers>=4.36.1
+# transformers>=5.0 is required by the qrealign (Qwen3.5-VL) metric; the rest of
+# the toolbox is verified healthy on 5.x. qrealign needs 5.2 for native qwen3_5,
+# and runs on 5.0/5.1 via the vendored shim in pyiqa/archs/qrealign/.
+transformers>=5.0
 yapf
