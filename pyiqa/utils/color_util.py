@@ -8,6 +8,7 @@ Modified by: Chaofeng Chen (https://github.com/chaofengc)
 
 from typing import Union, Dict
 import torch
+import torch.nn.functional as F
 
 
 def safe_frac_pow(x: torch.Tensor, p) -> torch.Tensor:
@@ -29,12 +30,14 @@ def to_y_channel(
     )
     color_space = color_space.lower()
     if color_space == 'yiq':
-        img = rgb2yiq(img)
-    elif color_space == 'ycbcr':
-        img = rgb2ycbcr(img)
-    elif color_space == 'lhm':
-        img = rgb2lhm(img)
-    out_img = img[:, [0], :, :] * out_data_range
+        y_weights = img.new_tensor([0.299, 0.587, 0.114]).view(1, 3, 1, 1)
+        out_img = F.conv2d(img, y_weights) * out_data_range
+    else:
+        if color_space == 'ycbcr':
+            img = rgb2ycbcr(img)
+        elif color_space == 'lhm':
+            img = rgb2lhm(img)
+        out_img = img[:, [0], :, :] * out_data_range
     if out_data_range >= 255:
         # differentiable round with pytorch
         out_img = out_img - out_img.detach() + out_img.round()
