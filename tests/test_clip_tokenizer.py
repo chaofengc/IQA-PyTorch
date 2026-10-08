@@ -1,5 +1,3 @@
-import pytest
-
 from pyiqa.archs.clip_tokenizer import SimpleTokenizer
 
 
