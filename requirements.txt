@@ -4,15 +4,16 @@ datasets
 bitsandbytes; sys_platform != 'darwin'
 einops
 facexlib
+ftfy
 future
 numpy
-openai-clip
 opencv-python-headless
 pandas
 Pillow
 pre-commit
 pytest
 pyyaml
+regex
 requests
 ruff
 scikit-image

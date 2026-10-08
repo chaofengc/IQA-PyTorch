@@ -158,8 +158,10 @@ def load(
 
         for graph in graphs:
             for node in graph.findAllNodes('prim::Constant'):
-                if 'value' in node.attributeNames() and str(node['value']).startswith(
-                    'cuda'
+                if (
+                    'value' in node.attributeNames()
+                    and node.kindOf('value') == 's'
+                    and node.s('value').startswith('cuda')
                 ):
                     node.copyAttributes(device_node)
 
@@ -191,8 +193,13 @@ def load(
                         1,
                         2,
                     ]:  # dtype can be the second or third argument to aten::to()
-                        if inputs[i].node()['value'] == 5:
-                            inputs[i].node().copyAttributes(float_node)
+                        input_node = inputs[i].node()
+                        if (
+                            'value' in input_node.attributeNames()
+                            and input_node.kindOf('value') == 'i'
+                            and input_node.i('value') == 5
+                        ):
+                            input_node.copyAttributes(float_node)
 
         model.apply(patch_float)
         patch_float(model.encode_image)

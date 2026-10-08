@@ -8,7 +8,7 @@ description = "PyTorch Toolbox for Image Quality Assessment"
 readme = "README.md"
 requires-python = ">=3.6"
 license = "PolyForm-Noncommercial-1.0.0"
-license-files = ["LICENSE", "LICENSE-S-Lab"]
+license-files = ["LICENSE", "LICENSE-S-Lab", "LICENSE-OpenAI-CLIP"]
 authors = [
     { name = "Chaofeng Chen", email = "chaofenghust@gmail.com" },
 ]
@@ -58,6 +58,7 @@ dependencies = { file = ["requirements.txt"] }
 [tool.setuptools.package-data]
 pyiqa = [
     "default_dataset_configs.yml",
+    "archs/bpe_simple_vocab_16e6.txt.gz",
 ]
 
 # setuptools-scm handles versioning dynamically from git
