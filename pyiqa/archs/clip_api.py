@@ -1,7 +1,6 @@
 from functools import lru_cache
 
 import torch
-from PIL import Image
 
 from .clip_model import available_models, load as load_model
 from .clip_tokenizer import SimpleTokenizer
