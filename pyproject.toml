@@ -58,6 +58,8 @@ dependencies = { file = ["requirements.txt"] }
 [tool.setuptools.package-data]
 pyiqa = [
     "default_dataset_configs.yml",
+    "archs/bpe_simple_vocab_16e6.txt.gz",
+    "archs/CLIP_LICENSE",
 ]
 
 # setuptools-scm handles versioning dynamically from git

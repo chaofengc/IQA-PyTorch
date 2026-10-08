@@ -6,7 +6,7 @@ einops
 facexlib
 future
 numpy
-openai-clip
+ftfy
 opencv-python-headless
 pandas
 Pillow
@@ -14,6 +14,7 @@ pre-commit
 pytest
 pyyaml
 requests
+regex
 ruff
 scikit-image
 scipy

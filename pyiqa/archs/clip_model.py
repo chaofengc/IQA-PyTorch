@@ -673,7 +673,7 @@ class CLIP(nn.Module):
     def dtype(self):
         return self.visual.conv1.weight.dtype
 
-    def encode_image(self, image, pos_embedding):
+    def encode_image(self, image, pos_embedding=False):
         return self.visual(image.type(self.dtype), pos_embedding=pos_embedding)
 
     def encode_text(self, text):
