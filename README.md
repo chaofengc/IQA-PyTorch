@@ -146,6 +146,49 @@ python inference_iqa.py -m LPIPS[or lpips] -t ./ResultsCalibra/dist_dir[dist_img
 python inference_iqa.py -m brisque -t ./ResultsCalibra/dist_dir/I03.bmp
 ```
 
+#### Candidate-pool gMAD-style testing
+
+`pyiqa-gmad` is a standalone candidate-pool helper that uses two non-reference
+metrics to find pairs where one metric gives similar scores while the other
+metric differs. It is not a replacement for the official gMAD evaluation
+protocol.
+
+```bash
+pyiqa-gmad ./candidate_images \
+  --metric-a musiq \
+  --metric-b brisque \
+  --tie-tolerance 0.1 \
+  --device cuda \
+  --output gmad_results.json
+```
+
+The directory is searched recursively. Scores are standardized within the
+candidate pool, with `lower_better` metrics sign-corrected before comparison.
+The tie tolerance is measured in standardized-score units. Results contain one
+most-differentiating pair for each direction, or `null` if no pair meets the
+tie constraint. Install pyiqa with `pip install -e .` to register the command.
+
+To reuse precomputed scores, provide a CSV with an `image` column and one
+column for each metric. Relative image paths are resolved from the CSV's
+directory by default; use `--image-root` to choose a different root.
+
+```csv
+image,musiq,brisque
+images/sample1.png,62.4,28.1
+images/sample2.png,48.7,39.5
+```
+
+```bash
+pyiqa-gmad --scores-csv scores.csv \
+  --metric-a musiq \
+  --metric-b brisque \
+  --tie-tolerance 0.1
+```
+
+For metric names not known to pyiqa, specify score direction with
+`--direction-a lower|higher` and `--direction-b lower|higher`. Known pyiqa
+metric directions are inferred automatically.
+
 #### Easy load of popular datasets
 
 We offer an easy way to load popular IQA datasets through the configuration file `pyiqa/default_dataset_configs.yml`. The specified datasets will automatically download from the [huggingface IQA-PyTorch-Dataset](https://huggingface.co/datasets/chaofengc/IQA-PyTorch-Datasets). See example code below:

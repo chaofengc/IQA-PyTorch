@@ -34,6 +34,7 @@ Issues = "https://github.com/chaofengc/IQA-PyTorch/issues"
 
 [project.scripts]
 pyiqa = "pyiqa.pyiqa_cmd:main"
+pyiqa-gmad = "pyiqa.gmad_test:main"
 
 [tool.setuptools]
 include-package-data = true
