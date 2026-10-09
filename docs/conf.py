@@ -17,6 +17,8 @@ import sys
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../'))
 
+from setuptools_scm import get_version
+
 # -- Project information -----------------------------------------------------
 
 project = 'pyiqa'
@@ -24,7 +26,13 @@ copyright = '2021 - 2024, Chaofeng Chen'
 author = 'Chaofeng Chen'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.13'
+release = get_version(
+    root=os.path.abspath(os.path.join(os.path.dirname(__file__), '..')),
+    version_scheme='post-release',
+    local_scheme='no-local-version',
+    fallback_version='0.0.0',
+)
+version = '.'.join(release.split('.')[:2])
 
 
 # -- General configuration ---------------------------------------------------
