@@ -1,3 +1,5 @@
+"""Vision transformer and visual abstractor modules used by mPLUG-Owl2."""
+
 import math
 from typing import Optional, Tuple, Union
 
@@ -29,6 +31,14 @@ def get_abs_pos(abs_pos, tgt_size):
     # abs_pos: L, C
     # tgt_size: M
     # return: M, C
+    """Resize a square grid of learned absolute positional embeddings to the requested token-grid size.
+
+    Args:
+        abs_pos: Flattened square-grid absolute embeddings shaped (source_tokens, channels).
+        tgt_size: Target token count; its integer square root defines the output square-grid side.
+
+    Returns:
+        Embeddings shaped (target_grid_tokens, channels), or the original tensor when sizes match."""
     src_size = int(math.sqrt(abs_pos.size(0)))
     tgt_size = int(math.sqrt(tgt_size))
     dtype = abs_pos.dtype
@@ -63,6 +73,14 @@ def get_2d_sincos_pos_embed(embed_dim, grid_size, cls_token=False):
 
 
 def get_2d_sincos_pos_embed_from_grid(embed_dim, grid):
+    """Combine height and width sine/cosine embeddings for a supplied two-axis grid.
+
+    Args:
+        embed_dim: Embedding width; sine/cosine helpers require an even width.
+        grid: Two-axis coordinate grid with height and width positions.
+
+    Returns:
+        A NumPy array shaped (grid_points, embed_dim)."""
     assert embed_dim % 2 == 0
 
     # use half of dimensions to encode grid_h
@@ -96,7 +114,15 @@ def get_1d_sincos_pos_embed_from_grid(embed_dim, pos):
 
 
 class MplugOwlVisionEmbeddings(nn.Module):
+    """Creates class-token and patch embeddings with learned positional encodings."""
     def __init__(self, config):
+        """Initialize MplugOwlVisionEmbeddings from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.config = config
         self.hidden_size = config.hidden_size
@@ -120,6 +146,13 @@ class MplugOwlVisionEmbeddings(nn.Module):
         self.pre_layernorm = nn.LayerNorm(self.hidden_size, eps=config.layer_norm_eps)
 
     def forward(self, pixel_values: torch.FloatTensor) -> torch.Tensor:
+        """Run the MplugOwlVisionEmbeddings computation for the supplied inputs.
+
+        Args:
+            pixel_values: Image pixels shaped (batch, channels, height, width).
+
+        Returns:
+            A tensor shaped (batch, patches + 1, hidden_size), including the class token."""
         batch_size = pixel_values.size(0)
         image_embeds = self.patch_embed(pixel_values)
         image_embeds = image_embeds.flatten(2).transpose(1, 2)
@@ -136,6 +169,13 @@ class MplugOwlVisionAttention(nn.Module):
     """Multi-headed attention from 'Attention Is All You Need' paper"""
 
     def __init__(self, config):
+        """Initialize MplugOwlVisionAttention from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.config = config
         self.hidden_size = config.hidden_size
@@ -153,6 +193,15 @@ class MplugOwlVisionAttention(nn.Module):
         self.dense = nn.Linear(self.hidden_size, self.hidden_size)
 
     def _shape(self, tensor: torch.Tensor, seq_len: int, bsz: int):
+        """Reshape projected states to batch, head, sequence, and head-dimension order.
+
+        Args:
+            tensor: Projected states shaped (batch, sequence, hidden_size).
+            seq_len: Number of sequence positions represented by tensor.
+            bsz: Batch size represented by tensor.
+
+        Returns:
+            Projected states shaped (batch, heads, sequence, head_dim)."""
         return tensor.view(bsz, seq_len, self.num_heads, self.head_dim).transpose(1, 2).contiguous()
 
     def forward(
@@ -236,12 +285,28 @@ class MplugOwlVisionAttention(nn.Module):
 
 
 class QuickGELU(nn.Module):
+    """Module implementing the QuickGELU activation used by the vision MLP."""
     def forward(self, x: torch.Tensor):
+        """Run the QuickGELU computation for the supplied inputs.
+
+        Args:
+            x: Input tensor to transform, activate, or encode.
+
+        Returns:
+            The elementwise QuickGELU activation, with the same shape as x."""
         return x * torch.sigmoid(1.702 * x)
 
 
 class MplugOwlMLP(nn.Module):
+    """Two-layer QuickGELU feed-forward block in the vision transformer."""
     def __init__(self, config):
+        """Initialize MplugOwlMLP from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.config = config
         self.activation_fn = QuickGELU()
@@ -249,6 +314,13 @@ class MplugOwlMLP(nn.Module):
         self.fc2 = nn.Linear(config.intermediate_size, config.hidden_size)
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        """Run the MplugOwlMLP computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+
+        Returns:
+            A tensor with the same leading dimensions and hidden size as its input."""
         hidden_states = self.fc1(hidden_states)
         hidden_states = self.activation_fn(hidden_states)
         hidden_states = self.fc2(hidden_states)
@@ -256,7 +328,15 @@ class MplugOwlMLP(nn.Module):
 
 
 class MplugOwlVisionEncoderLayer(nn.Module):
+    """Vision-transformer block with self-attention and an MLP residual path."""
     def __init__(self, config):
+        """Initialize MplugOwlVisionEncoderLayer from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.hidden_size = config.hidden_size
         self.self_attn = MplugOwlVisionAttention(config)
@@ -314,6 +394,13 @@ class MplugOwlVisionEncoder(nn.Module):
     """
 
     def __init__(self, config):
+        """Initialize MplugOwlVisionEncoder from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.config = config
         self.layers = nn.ModuleList([MplugOwlVisionEncoderLayer(config) for _ in range(config.num_hidden_layers)])
@@ -363,7 +450,21 @@ class MplugOwlVisionEncoder(nn.Module):
             if self.gradient_checkpointing and self.training:
 
                 def create_custom_forward(module):
+                    """Wrap a module in a checkpoint-compatible forward callable.
+
+                    Args:
+                        module: Layer module executed by this wrapper.
+
+                    Returns:
+                        A callable suitable for checkpointing the given module."""
                     def custom_forward(*inputs):
+                        """Call the wrapped layer with the captured cache and attention-output setting.
+
+                        Args:
+                            inputs: Positional tensors passed to the checkpointed layer.
+
+                        Returns:
+                            The wrapped module’s forward result."""
                         return module(*inputs, output_attentions)
 
                     return custom_forward
@@ -396,10 +497,18 @@ class MplugOwlVisionEncoder(nn.Module):
 
 
 class MplugOwlVisionModel(PreTrainedModel):
+    """Vision transformer that encodes image pixels into patch-level hidden states."""
     main_input_name = "pixel_values"
     _no_split_modules = ["MplugOwlVisionEncoderLayer"]
 
     def __init__(self, config):
+        """Initialize MplugOwlVisionModel from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__(config)
         self.config = config
         self.hidden_size = config.hidden_size
@@ -457,11 +566,23 @@ class MplugOwlVisionModel(PreTrainedModel):
         )
 
     def get_input_embeddings(self):
+        """Return the image patch-and-class-token embedding module.
+
+        Returns:
+            The image patch-and-class-token embedding module."""
         return self.embeddings
 
 
 class MplugOwlVisualAbstractorMLP(nn.Module):
+    """Gated feed-forward block used in the visual abstractor."""
     def __init__(self, config):
+        """Initialize MplugOwlVisualAbstractorMLP from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.config = config
         in_features = config.hidden_size
@@ -473,6 +594,13 @@ class MplugOwlVisualAbstractorMLP(nn.Module):
         self.ffn_ln = nn.LayerNorm(config.intermediate_size, eps=config.layer_norm_eps)
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        """Run the MplugOwlVisualAbstractorMLP computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+
+        Returns:
+            A tensor with the same leading dimensions and hidden size as its input."""
         hidden_states = self.act(self.w1(hidden_states)) * self.w3(hidden_states)
         hidden_states = self.ffn_ln(hidden_states)
         hidden_states = self.w2(hidden_states)
@@ -480,7 +608,15 @@ class MplugOwlVisualAbstractorMLP(nn.Module):
 
 
 class MplugOwlVisualAbstractorMultiHeadAttention(nn.Module):
+    """Cross-attention from learnable queries to vision-encoder states."""
     def __init__(self, config):
+        """Initialize MplugOwlVisualAbstractorMultiHeadAttention from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.config = config
         if config.hidden_size % config.num_attention_heads != 0:
@@ -519,18 +655,47 @@ class MplugOwlVisualAbstractorMultiHeadAttention(nn.Module):
         
 
     def save_attn_gradients(self, attn_gradients):
+        """Store the gradient captured for the most recently saved attention map.
+
+        Args:
+            attn_gradients: Gradient tensor for the saved attention probabilities.
+
+        Returns:
+            None; stores the supplied attention gradient on the instance."""
         self.attn_gradients = attn_gradients
 
     def get_attn_gradients(self):
+        """Return the attention-map gradient previously stored by the module.
+
+        Returns:
+            The stored attention gradient."""
         return self.attn_gradients
 
     def save_attention_map(self, attention_map):
+        """Store the attention probability tensor for later inspection.
+
+        Args:
+            attention_map: Attention probability tensor to retain for inspection or gradient analysis.
+
+        Returns:
+            None; stores the supplied attention map on the instance."""
         self.attention_map = attention_map
 
     def get_attention_map(self):
+        """Return the attention probability tensor previously stored by the module.
+
+        Returns:
+            The stored attention map."""
         return self.attention_map
 
     def transpose_for_scores(self, x):
+        """Split the final projection dimension into attention heads and move heads before sequence.
+
+        Args:
+            x: Input tensor to transform, activate, or encode.
+
+        Returns:
+            A tensor shaped (batch, heads, sequence, head_size)."""
         new_x_shape = x.size()[:-1] + (self.num_attention_heads, self.attention_head_size)
         x = x.view(*new_x_shape)
         return x.permute(0, 2, 1, 3)
@@ -549,6 +714,19 @@ class MplugOwlVisualAbstractorMultiHeadAttention(nn.Module):
         # and values come from an encoder; the attention mask needs to be
         # such that the encoder's padding tokens are not attended to.
         
+        """Run the MplugOwlVisualAbstractorMultiHeadAttention computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            head_mask: Optional per-head mask applied to attention probabilities.
+            encoder_hidden_states: Vision features shaped (batch, source_tokens, encoder_hidden_size) for cross-attention.
+            encoder_attention_mask: Optional mask for encoder key/value positions.
+            past_key_value: Optional per-layer key/value cache used for incremental decoding.
+            output_attentions: Whether attention probabilities should be returned when supported.
+
+        Returns:
+            A tuple containing query context states and optional attention probabilities."""
         qk_pos_embed = torch.cat([self.q_pos_embed, self.k_pos_embed], dim = 0).unsqueeze(0).to(dtype=hidden_states.dtype)
         
         key_layer = self.transpose_for_scores(self.key(encoder_hidden_states + qk_pos_embed))
@@ -598,7 +776,15 @@ class MplugOwlVisualAbstractorMultiHeadAttention(nn.Module):
 
 
 class MplugOwlVisualAbstractorCrossOutput(nn.Module):
+    """Projection, normalization, and residual output block for abstractor attention."""
     def __init__(self, config):
+        """Initialize MplugOwlVisualAbstractorCrossOutput from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         dim = config.hidden_size
         self.out_proj = nn.Linear(dim, dim, bias=True)
@@ -606,13 +792,29 @@ class MplugOwlVisualAbstractorCrossOutput(nn.Module):
         self.mlp = MplugOwlVisualAbstractorMLP(config)
 
     def forward(self, hidden_states: torch.Tensor, input_tensor: torch.Tensor) -> torch.Tensor:
+        """Run the MplugOwlVisualAbstractorCrossOutput computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+            input_tensor: Residual query states added to the projected attention context.
+
+        Returns:
+            Residual-updated query states with the same shape as the input query tensor."""
         input_tensor = input_tensor + self.out_proj(hidden_states)
         input_tensor = input_tensor + self.mlp(self.norm2(input_tensor))
         return input_tensor
 
 
 class MplugOwlVisualAbstractorAttention(nn.Module):
+    """Visual abstractor attention block with query/key normalization."""
     def __init__(self, config):
+        """Initialize MplugOwlVisualAbstractorAttention from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.attention = MplugOwlVisualAbstractorMultiHeadAttention(config)
         self.output = MplugOwlVisualAbstractorCrossOutput(config)
@@ -621,6 +823,13 @@ class MplugOwlVisualAbstractorAttention(nn.Module):
         self.normk = nn.LayerNorm(config.hidden_size)
 
     def prune_heads(self, heads):
+        """Remove the requested attention heads and update the module’s projection dimensions.
+
+        Args:
+            heads: Attention-head indices to prune from this layer.
+
+        Returns:
+            None; replaces projection layers and records the pruned heads."""
         if len(heads) == 0:
             return
         heads, index = find_pruneable_heads_and_indices(
@@ -649,6 +858,19 @@ class MplugOwlVisualAbstractorAttention(nn.Module):
         output_attentions: Optional[bool] = False,
     ) -> Tuple[torch.Tensor]:
         # HACK we apply norm on q and k
+        """Run the MplugOwlVisualAbstractorAttention computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            head_mask: Optional per-head mask applied to attention probabilities.
+            encoder_hidden_states: Vision features shaped (batch, source_tokens, encoder_hidden_size) for cross-attention.
+            encoder_attention_mask: Optional mask for encoder key/value positions.
+            past_key_value: Optional per-layer key/value cache used for incremental decoding.
+            output_attentions: Whether attention probabilities should be returned when supported.
+
+        Returns:
+            A tuple containing updated query states and optional attention outputs."""
         hidden_states = self.norm1(hidden_states)
         encoder_hidden_states = self.normk(encoder_hidden_states)
         encoder_hidden_states = torch.cat([hidden_states, encoder_hidden_states], dim=1)
@@ -669,7 +891,16 @@ class MplugOwlVisualAbstractorAttention(nn.Module):
 
 
 class MplugOwlVisualAbstractorLayer(nn.Module):
+    """One learnable-query cross-attention layer in the visual abstractor."""
     def __init__(self, config, layer_idx):
+        """Initialize MplugOwlVisualAbstractorLayer from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+            layer_idx: Zero-based index of this layer in the abstractor stack.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.chunk_size_feed_forward = config.chunk_size_feed_forward
         self.seq_len_dim = 1
@@ -688,6 +919,18 @@ class MplugOwlVisualAbstractorLayer(nn.Module):
         encoder_attention_mask=None,
         output_attentions=False,
     ):
+        """Run the MplugOwlVisualAbstractorLayer computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            head_mask: Optional per-head mask applied to attention probabilities.
+            encoder_hidden_states: Vision features shaped (batch, source_tokens, encoder_hidden_size) for cross-attention.
+            encoder_attention_mask: Optional mask for encoder key/value positions.
+            output_attentions: Whether attention probabilities should be returned when supported.
+
+        Returns:
+            A tuple containing the updated learnable-query states."""
         if encoder_hidden_states is None:
             raise ValueError("encoder_hidden_states must be given for cross-attention layers")
         cross_attention_outputs = self.crossattention(
@@ -705,7 +948,15 @@ class MplugOwlVisualAbstractorLayer(nn.Module):
 
 
 class MplugOwlVisualAbstractorEncoder(nn.Module):
+    """Stack of visual abstractor cross-attention layers."""
     def __init__(self, config):
+        """Initialize MplugOwlVisualAbstractorEncoder from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.config = config
         self.layers = nn.ModuleList(
@@ -725,6 +976,21 @@ class MplugOwlVisualAbstractorEncoder(nn.Module):
         output_hidden_states=False,
         return_dict=True,
     ):
+        """Run the MplugOwlVisualAbstractorEncoder computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            head_mask: Optional per-head mask applied to attention probabilities.
+            encoder_hidden_states: Vision features shaped (batch, source_tokens, encoder_hidden_size) for cross-attention.
+            encoder_attention_mask: Optional mask for encoder key/value positions.
+            past_key_values: Optional collection of per-layer key/value caches.
+            output_attentions: Whether attention probabilities should be returned when supported.
+            output_hidden_states: Whether intermediate layer states should be included in the output.
+            return_dict: Whether to return a Transformers ModelOutput instead of a tuple.
+
+        Returns:
+            A BaseModelOutput whose last_hidden_state contains final query states."""
         all_hidden_states = () if output_hidden_states else None
 
         for i in range(self.config.num_hidden_layers):
@@ -738,7 +1004,21 @@ class MplugOwlVisualAbstractorEncoder(nn.Module):
             if getattr(self.config, "gradient_checkpointing", False) and self.training:
 
                 def create_custom_forward(module):
+                    """Wrap a module in a checkpoint-compatible forward callable.
+
+                    Args:
+                        module: Layer module executed by this wrapper.
+
+                    Returns:
+                        A callable suitable for checkpointing the given module."""
                     def custom_forward(*inputs):
+                        """Call the wrapped layer with the captured cache and attention-output setting.
+
+                        Args:
+                            inputs: Positional tensors passed to the checkpointed layer.
+
+                        Returns:
+                            The wrapped module’s forward result."""
                         return module(*inputs, past_key_value, output_attentions)
 
                     return custom_forward
@@ -769,8 +1049,17 @@ class MplugOwlVisualAbstractorEncoder(nn.Module):
 
 
 class MplugOwlVisualAbstractorModel(PreTrainedModel):
+    """Maps vision-encoder tokens to a fixed set of language-space visual tokens."""
     _no_split_modules = ["MplugOwlVisualAbstractorLayer"]
     def __init__(self, config, language_hidden_size):
+        """Initialize MplugOwlVisualAbstractorModel from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+            language_hidden_size: Output feature width matching the language model hidden dimension.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__(config)
         self.config = config
 

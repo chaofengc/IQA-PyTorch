@@ -1,3 +1,5 @@
+"""Default architecture options and score metadata for supported metrics."""
+
 from collections import OrderedDict
 
 # IMPORTANT NOTES !!!

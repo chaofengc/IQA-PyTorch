@@ -76,6 +76,13 @@ class MultiVGGFeaturesExtractor(nn.Module):
         use_input_norm=True,
         requires_grad=False,
     ):  # ALL FALSE is the best for COS_Similarity; Correlation: use_norm = True
+        """Initialize the multi vggfeatures extractor and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            target_features: Feature layer names or indices returned by the extractor.
+            use_input_norm: Whether to normalize input images before feature extraction.
+            requires_grad: Whether the feature extractor parameters require gradients.
+        """
         super(MultiVGGFeaturesExtractor, self).__init__()
         self.use_input_norm = use_input_norm
         self.target_features = target_features
@@ -127,6 +134,16 @@ class MultiVGGFeaturesExtractor(nn.Module):
         return y
 
     def _normalize_tensor(sefl, in_feat, eps=1e-10):
+        """Normalize feature vectors along the channel dimension with an epsilon for numerical stability.
+
+        Args:
+            sefl: The module instance that owns the feature-normalization operation.
+            in_feat: Feature tensor or collection extracted from the corresponding input.
+            eps: Small positive constant used to avoid division by zero.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
         return in_feat / (norm_factor + eps)
 
@@ -146,6 +163,11 @@ class DeepDC(nn.Module):
         self,
         features_to_compute=('conv1_2', 'conv2_2', 'conv3_4', 'conv4_4', 'conv5_4'),
     ):
+        """Initialize the deep dc and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            features_to_compute: Names or indices of VGG feature maps to extract.
+        """
         super(DeepDC, self).__init__()
         self.MSE = torch.nn.MSELoss()
         self.features_extractor = MultiVGGFeaturesExtractor(

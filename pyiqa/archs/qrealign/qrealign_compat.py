@@ -25,6 +25,15 @@ if not _have_init:
     init = types.ModuleType("transformers.initialization")
     init.ones_ = torch.nn.init.ones_; init.zeros_ = torch.nn.init.zeros_
     def _copy_(dst, src):
+        """Copy source values into the destination without recording an autograd operation.
+
+        Args:
+            dst: Destination tensor updated in place.
+            src: Source tensor to copy.
+
+        Returns:
+            The destination tensor.
+        """
         with torch.no_grad(): dst.copy_(src)
         return dst
     init.copy_ = _copy_
@@ -37,18 +46,28 @@ except Exception:
     oc = types.ModuleType("transformers.utils.output_capturing")
     sys.modules["transformers.utils.output_capturing"] = oc
 if not hasattr(oc, "capture_outputs"):
-    def capture_outputs(fn): return fn
+    def capture_outputs(fn): 'Identity decorator fallback used when Transformers output capture is unavailable.\n\nArgs:\n    fn: Function passed to the decorator.\n\nReturns:\n    The original decorated object unchanged.'; return fn
     oc.capture_outputs = capture_outputs
 
 # 3) utils.generic: merge_with_config_defaults / maybe_autocast / is_flash_attention_requested
 g = importlib.import_module("transformers.utils.generic")
 if not hasattr(g, "merge_with_config_defaults"):
-    def merge_with_config_defaults(fn): return fn
+    def merge_with_config_defaults(fn): 'Identity decorator fallback used when config-default merging is unavailable.\n\nArgs:\n    fn: Function passed to the decorator.\n\nReturns:\n    The original function unchanged.'; return fn
     g.merge_with_config_defaults = merge_with_config_defaults
 if not hasattr(g, "maybe_autocast"):
     import torch
     @contextlib.contextmanager
     def maybe_autocast(device_type="cuda", enabled=True, **kw):
+        """Enter CUDA autocast only when enabled for CUDA and CUDA is available; otherwise yield without autocasting.
+
+        Args:
+            device_type: Device type requested for autocasting.
+            enabled: Whether autocasting is enabled.
+            **kw: Keyword options passed to ``torch.autocast`` when active.
+
+        Returns:
+            Nothing; this is a context manager that yields control.
+        """
         if enabled and device_type == "cuda" and torch.cuda.is_available():
             with torch.autocast(device_type=device_type, **kw): yield
         else:
@@ -56,6 +75,14 @@ if not hasattr(g, "maybe_autocast"):
     g.maybe_autocast = maybe_autocast
 if not hasattr(g, "is_flash_attention_requested"):
     def is_flash_attention_requested(config):
+        """Check whether the configured attention implementation name contains ``flash``.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+
+        Returns:
+            True if the implementation name contains ``flash``; otherwise False.
+        """
         impl = getattr(config, "_attn_implementation", None) or getattr(config, "attn_implementation", None)
         return bool(impl) and "flash" in str(impl)
     g.is_flash_attention_requested = is_flash_attention_requested
@@ -63,14 +90,23 @@ if not hasattr(g, "is_flash_attention_requested"):
 # 4) utils.torch_compilable_check -> no-op
 u = importlib.import_module("transformers.utils")
 if not hasattr(u, "torch_compilable_check"):
-    def torch_compilable_check(*a, **k): return None
+    def torch_compilable_check(*a, **k): 'No-op fallback for the Transformers torch-compilability check.\n\nArgs:\n    *a: Positional compatibility arguments.\n    **k: Keyword arguments accepted for compatibility.\n\nReturns:\n    None.'; return None
     u.torch_compilable_check = torch_compilable_check
 
 # 5) integrations.use_kernelized_func -> decorator factory returning fn unchanged
 integ = importlib.import_module("transformers.integrations")
 if not hasattr(integ, "use_kernelized_func"):
     def use_kernelized_func(*da, **dk):
-        def deco(fn): return fn
+        """Return a decorator factory that leaves the wrapped function unchanged.
+
+        Args:
+            *da: Positional decorator-factory arguments accepted for compatibility.
+            **dk: Keyword decorator-factory arguments accepted for compatibility.
+
+        Returns:
+            Decorator that leaves the function unchanged.
+        """
+        def deco(fn): 'Return the function unchanged.\n\nArgs:\n    fn: Function passed to the decorator.'; return fn
         return deco
     integ.use_kernelized_func = use_kernelized_func
 
@@ -84,6 +120,15 @@ try:
     from transformers.modeling_utils import AttentionInterface as _AI
     if not hasattr(_AI, "get_interface"):
         def get_interface(self, key, default=None):
+            """Return the registered attention implementation, or ``default`` when the key is absent.
+
+            Args:
+                key: Key vectors, arranged by batch, sequence, heads, and key width.
+                default: Fallback returned when the registry key is absent.
+
+            Returns:
+                Registered attention implementation or the supplied fallback.
+            """
             fn = self.get(key)
             return fn if fn is not None else default
         _AI.get_interface = get_interface
@@ -96,6 +141,15 @@ _mu = importlib.import_module("transformers.masking_utils")
 _ccm = _mu.create_causal_mask
 if "inputs_embeds" not in _inspect.signature(_ccm).parameters:
     def _ccm_compat(*args, **kw):
+        """Rename ``inputs_embeds`` to the legacy ``input_embeds`` keyword before calling causal-mask creation.
+
+        Args:
+            *args: Value for args.
+            **kw: Keyword options passed to ``torch.autocast`` when active.
+
+        Returns:
+            The original causal-mask function result.
+        """
         if "inputs_embeds" in kw and "input_embeds" not in kw:
             kw["input_embeds"] = kw.pop("inputs_embeds")
         return _ccm(*args, **kw)
@@ -109,9 +163,19 @@ if not hasattr(_mr, "RopeParameters"):
 # 10) auto_docstring: 4.57's version crashes parsing 5.2-style union annotations.
 #     It is purely cosmetic -> replace with a no-op handling @deco and @deco(...).
 def _noop_auto_docstring(obj=None, *a, **k):
+    """Replace incompatible auto-docstring processing with an identity decorator for bare or configured use.
+
+    Args:
+        obj: Decorated object for bare decorator use, if supplied.
+        *a: Positional compatibility arguments.
+        **k: Key tensor matching the query layout.
+
+    Returns:
+        The object unchanged for bare use, or an identity decorator for configured use.
+    """
     if callable(obj) and not a and not k:
         return obj            # used as @auto_docstring
-    def deco(fn): return fn   # used as @auto_docstring(...)
+    def deco(fn): 'Return the object supplied to this identity decorator.\n\nArgs:\n    fn: Function passed to the decorator.'; return fn   # used as @auto_docstring(...)
     return deco
 for _m in ["transformers.utils", "transformers.utils.auto_docstring", "transformers"]:
     try:
@@ -128,11 +192,24 @@ _PC = getattr(_cu, "PreTrainedConfig", None) or getattr(_cu, "PretrainedConfig",
 if _PC is not None and not getattr(_PC, "_qrealign_setpatch", False):
     _orig_to_dict = _PC.to_dict
     def _desetify(o):
+        """Recursively convert sets to sorted lists while traversing dictionaries and sequences.
+
+        Args:
+            o: Value for o.
+
+        Returns:
+            Recursively converted value with sets represented as sorted lists.
+        """
         if isinstance(o, set): return sorted(o, key=str)
         if isinstance(o, dict): return {k: _desetify(v) for k, v in o.items()}
         if isinstance(o, (list, tuple)): return type(o)(_desetify(v) for v in o)
         return o
     def to_dict(self):
+        """Return the parent config dictionary with nested sets converted to sorted lists.
+
+        Returns:
+            Config dictionary with nested sets converted to sorted lists.
+        """
         return _desetify(_orig_to_dict(self))
     _PC.to_dict = to_dict
     _PC._qrealign_setpatch = True

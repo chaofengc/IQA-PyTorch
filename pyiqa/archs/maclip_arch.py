@@ -34,6 +34,12 @@ class CustomCLIP(nn.Module):
         device (str): Device string used when initializing the model.
     """
     def __init__(self, backbone: str, device="cpu"):
+        """Initialize the custom clip and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            backbone: Feature-extractor backbone identifier or module.
+            device: Target PyTorch device, such as CPU or CUDA.
+        """
         super().__init__()
 
         self.clip_model = load(backbone, device)

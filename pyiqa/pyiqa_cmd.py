@@ -10,6 +10,7 @@ from pprint import pprint
 
 
 def main():
+    """Evaluate one or more metrics from image paths or directories."""
     parser = argparse.ArgumentParser(description='Test image quality metrics')
 
     # required input arguments
@@ -58,6 +59,8 @@ def main():
     print(f'[{get_time()}] ===> Metrics loaded: {args.metric}')
 
     results = {}
+    # Distribution metrics consume directories/statistics directly rather than
+    # producing one score per corresponding image pair.
     # Test fid, inception_score
     if 'fid' in metric_func_list:
         metric_func = metric_func_list.pop('fid')

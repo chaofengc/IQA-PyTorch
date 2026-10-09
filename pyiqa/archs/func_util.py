@@ -1,3 +1,5 @@
+"""Shared numerical and image-processing functions used by IQA architectures."""
+
 from typing import Tuple
 import torch
 import torch.nn.functional as F
@@ -90,6 +92,18 @@ def normalize_img_with_gauss(
     C: int = 1,
     padding: str = 'same',
 ):
+    """Locally subtract Gaussian mean and divide by stabilized local deviation.
+
+    Args:
+        img (torch.Tensor): Image tensor filtered by the local Gaussian window.
+        kernel_size (int): Side length of the Gaussian filter.
+        sigma (float): Gaussian standard deviation.
+        C (int): Constant added to the local standard deviation denominator.
+        padding (str): Padding mode forwarded to :func:`imfilter`.
+
+    Returns:
+        torch.Tensor: Locally normalized image tensor with the input shape.
+    """
     kernel = fspecial(kernel_size, sigma, 1).to(img)
     mu = imfilter(img, kernel, padding=padding)
     std = imfilter(img**2, kernel, padding=padding)

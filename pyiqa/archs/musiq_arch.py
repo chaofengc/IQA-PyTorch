@@ -35,6 +35,14 @@ class StdConv(nn.Conv2d):
 
     def forward(self, x):
         # implement same padding
+        """Apply the convolution with standardized filter weights.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         x = exact_padding_2d(x, self.kernel_size, self.stride, mode='same')
         weight = self.weight
         weight = weight - weight.mean((1, 2, 3), keepdim=True)
@@ -43,7 +51,17 @@ class StdConv(nn.Conv2d):
 
 
 class Bottleneck(nn.Module):
+    """Residual bottleneck block used by the MUSIQ convolutional feature stem.
+
+    """
     def __init__(self, inplanes, outplanes, stride=1):
+        """Initialize the bottleneck and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            inplanes: Input channel count of the residual stage.
+            outplanes: Output channel count of the residual block.
+            stride: Spatial stride for the convolutional stage.
+        """
         super().__init__()
 
         width = inplanes
@@ -63,6 +81,14 @@ class Bottleneck(nn.Module):
             self.gn_proj = nn.GroupNorm(32, outplanes, eps=1e-4)
 
     def forward(self, x):
+        """Apply the bottleneck computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         identity = x
         if self.needs_projection:
             identity = self.gn_proj(self.conv_proj(identity))
@@ -76,6 +102,16 @@ class Bottleneck(nn.Module):
 
 
 def drop_path(x, drop_prob: float = 0.0, training: bool = False):
+    """Perform the drop path operation for musiq.
+
+    Args:
+        x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+        drop_prob: Probability of dropping a sample/path during training.
+        training: Whether the model is in training mode (controls stochastic depth).
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     if drop_prob == 0.0 or not training:
         return x
     keep_prob = 1 - drop_prob
@@ -92,14 +128,30 @@ class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
 
     def __init__(self, drop_prob=None):
+        """Initialize the drop path and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            drop_prob: Probability of dropping a sample/path during training.
+        """
         super(DropPath, self).__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x):
+        """Apply per-sample stochastic depth when training.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         return drop_path(x, self.drop_prob, self.training)
 
 
 class Mlp(nn.Module):
+    """Two-layer feed-forward MLP with activation and dropout for MUSIQ transformer blocks.
+
+    """
     def __init__(
         self,
         in_features,
@@ -108,6 +160,15 @@ class Mlp(nn.Module):
         act_layer=nn.GELU,
         drop=0.0,
     ):
+        """Initialize the mlp and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            in_features: Number of input features.
+            hidden_features: Width of the MLP hidden layer.
+            out_features: Number of output features.
+            act_layer: Activation-layer constructor used between linear projections.
+            drop: Dropout probability applied by the layer.
+        """
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -117,6 +178,14 @@ class Mlp(nn.Module):
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
+        """Apply the mlp computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = self.fc1(x)
         x = self.act(x)
         x = self.drop(x)
@@ -126,7 +195,19 @@ class Mlp(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
+    """Multi-head self-attention layer for MUSIQ token sequences.
+
+    """
     def __init__(self, dim, num_heads=6, bias=False, attn_drop=0.0, out_drop=0.0):
+        """Initialize the multi head attention and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            num_heads: Number of attention heads.
+            bias: Whether the attention/output projections include a learned bias.
+            attn_drop: Dropout probability applied to attention weights.
+            out_drop: Dropout probability applied after the output projection.
+        """
         super().__init__()
         assert dim % num_heads == 0, 'dim should be divisible by num_heads'
         self.num_heads = num_heads
@@ -142,6 +223,15 @@ class MultiHeadAttention(nn.Module):
         self.out_drop = nn.Dropout(out_drop)
 
     def forward(self, x, mask=None):
+        """Apply the multi head attention computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            mask: Optional mask controlling which positions participate in attention or aggregation.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         B, N, C = x.shape
         q = self.query(x)
         k = self.key(x)
@@ -168,6 +258,9 @@ class MultiHeadAttention(nn.Module):
 
 
 class TransformerBlock(nn.Module):
+    """MUSIQ transformer block combining multi-head attention and an MLP.
+
+    """
     def __init__(
         self,
         dim,
@@ -179,6 +272,18 @@ class TransformerBlock(nn.Module):
         act_layer=nn.GELU,
         norm_layer=nn.LayerNorm,
     ):
+        """Initialize the transformer block and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            mlp_dim: Hidden width of the feed-forward MLP.
+            num_heads: Number of attention heads.
+            drop: Dropout probability applied by the layer.
+            attn_drop: Dropout probability applied to attention weights.
+            drop_path: Stochastic depth probability applied by the layer.
+            act_layer: Activation-layer constructor used between linear projections.
+            norm_layer: Normalization-layer constructor used by the block.
+        """
         super().__init__()
         self.norm1 = norm_layer(dim, eps=1e-6)
         self.attention = MultiHeadAttention(
@@ -191,6 +296,15 @@ class TransformerBlock(nn.Module):
         )
 
     def forward(self, x, inputs_masks):
+        """Apply the transformer block computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            inputs_masks: Boolean mask identifying valid input tokens or patches.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         y = self.norm1(x)
         y = self.attention(y, inputs_masks)
         x = x + self.drop_path(y)
@@ -202,6 +316,12 @@ class AddHashSpatialPositionEmbs(nn.Module):
     """Adds learnable hash-based spatial embeddings to the inputs."""
 
     def __init__(self, spatial_pos_grid_size, dim):
+        """Initialize the add hash spatial position embs and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            spatial_pos_grid_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            dim: Embedding or channel width of the attention/feature representation.
+        """
         super().__init__()
         self.position_emb = nn.parameter.Parameter(
             torch.randn(1, spatial_pos_grid_size * spatial_pos_grid_size, dim)
@@ -209,6 +329,15 @@ class AddHashSpatialPositionEmbs(nn.Module):
         nn.init.normal_(self.position_emb, std=0.02)
 
     def forward(self, inputs, inputs_positions):
+        """Compute the MUSIQ prediction for the supplied image or image pair.
+
+        Args:
+            inputs: Input sequence or feature tensor.
+            inputs_positions: Position indices associated with the input tokens.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         return inputs + self.position_emb.squeeze(0)[inputs_positions.long()]
 
 
@@ -216,15 +345,33 @@ class AddScaleEmbs(nn.Module):
     """Adds learnable scale embeddings to the inputs."""
 
     def __init__(self, num_scales, dim):
+        """Initialize the add scale embs and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            num_scales: Number of items, stages, tokens, or channels configured for this operation.
+            dim: Embedding or channel width of the attention/feature representation.
+        """
         super().__init__()
         self.scale_emb = nn.parameter.Parameter(torch.randn(num_scales, dim))
         nn.init.normal_(self.scale_emb, std=0.02)
 
     def forward(self, inputs, inputs_scale_positions):
+        """Compute the MUSIQ prediction for the supplied image or image pair.
+
+        Args:
+            inputs: Input sequence or feature tensor.
+            inputs_scale_positions: Scale-level indices associated with the tokens.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         return inputs + self.scale_emb[inputs_scale_positions.long()]
 
 
 class TransformerEncoder(nn.Module):
+    """Transformer encoder that aggregates MUSIQ multiscale image tokens.
+
+    """
     def __init__(
         self,
         input_dim,
@@ -238,6 +385,20 @@ class TransformerEncoder(nn.Module):
         use_scale_emb=True,
         use_sinusoid_pos_emb=False,
     ):
+        """Initialize the transformer encoder and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            input_dim: Input feature dimension expected by the projection layer.
+            mlp_dim: Hidden width of the feed-forward MLP.
+            attention_dropout_rate: Dropout probability applied to attention weights.
+            dropout_rate: Dropout probability used by the model.
+            num_heads: Number of attention heads.
+            num_layers: Number of items, stages, tokens, or channels configured for this operation.
+            num_scales: Number of items, stages, tokens, or channels configured for this operation.
+            spatial_pos_grid_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            use_scale_emb: Whether to add learned scale-level embeddings to image tokens.
+            use_sinusoid_pos_emb: Whether to add sinusoidal spatial positional embeddings.
+        """
         super().__init__()
         self.use_scale_emb = use_scale_emb
         self.posembed_input = AddHashSpatialPositionEmbs(
@@ -258,6 +419,17 @@ class TransformerEncoder(nn.Module):
     def forward(
         self, x, inputs_spatial_positions, inputs_scale_positions, inputs_masks
     ):
+        """Apply the transformer encoder computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            inputs_spatial_positions: Spatial position indices associated with the tokens.
+            inputs_scale_positions: Scale-level indices associated with the tokens.
+            inputs_masks: Boolean mask identifying valid input tokens or patches.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         n, _, c = x.shape
 
         x = self.posembed_input(x, inputs_spatial_positions)
@@ -335,6 +507,26 @@ class MUSIQ(nn.Module):
         longer_side_lengths=[224, 384],
         max_seq_len_from_original_res=-1,
     ):
+        """Initialize the musiq and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            num_class: Number of items, stages, tokens, or channels configured for this operation.
+            hidden_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            mlp_dim: Hidden width of the feed-forward MLP.
+            attention_dropout_rate: Dropout probability applied to attention weights.
+            dropout_rate: Dropout probability used by the model.
+            num_heads: Number of attention heads.
+            num_layers: Number of items, stages, tokens, or channels configured for this operation.
+            num_scales: Number of items, stages, tokens, or channels configured for this operation.
+            spatial_pos_grid_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            use_scale_emb: Whether to add learned scale-level embeddings to image tokens.
+            use_sinusoid_pos_emb: Whether to add sinusoidal spatial positional embeddings.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            longer_side_lengths: Candidate resized longer-side lengths used for multiscale inference.
+            max_seq_len_from_original_res: Maximum token sequence length derived from the original image resolution.
+        """
         super(MUSIQ, self).__init__()
 
         resnet_token_dim = 64

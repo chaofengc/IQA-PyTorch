@@ -40,15 +40,30 @@ class SaveOutput:
     """
 
     def __init__(self):
+        """Initialize the save output and configure its layers, parameters, and optional pretrained state.
+
+        """
         self.outputs = {}
 
     def __call__(self, module, module_in, module_out):
+        """Handle the save output callback using the supplied inputs.
+
+        Args:
+            module: Module whose forward hook was invoked.
+            module_in: Tuple of positional inputs received by the hooked module.
+            module_out: Output produced by the hooked module.
+        """
         if module_out.device in self.outputs.keys():
             self.outputs[module_out.device].append(module_out)
         else:
             self.outputs[module_out.device] = [module_out]
 
     def clear(self, device):
+        """Clear saved activations and move the hook storage to the requested device.
+
+        Args:
+            device: Target PyTorch device, such as CPU or CUDA.
+        """
         self.outputs[device] = []
 
 
@@ -70,6 +85,14 @@ class DeformFusion(nn.Module):
         cnn_channels=256 * 3,
         out_channels=256 * 3,
     ):
+        """Initialize the deform fusion and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            in_channels: Number of input feature channels.
+            cnn_channels: Channel width of the convolutional feature branch.
+            out_channels: Number of output feature channels.
+        """
         super().__init__()
         self.d_hidn = 512
         stride = 1 if patch_size == 8 else 2
@@ -94,6 +117,15 @@ class DeformFusion(nn.Module):
         )
 
     def forward(self, cnn_feat, vit_feat):
+        """Fuse CNN feature maps and vision-transformer patch features using deformable convolution.
+
+        Args:
+            cnn_feat: Convolutional feature map, typically ``(B, C, H, W)``.
+            vit_feat: Vision-transformer patch features corresponding to the same image.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         vit_feat = F.interpolate(vit_feat, size=cnn_feat.shape[-2:], mode='nearest')
         offset = self.conv_offset(vit_feat)
         deform_feat = self.deform(cnn_feat, offset)
@@ -112,6 +144,13 @@ class Pixel_Prediction(nn.Module):
     """
 
     def __init__(self, inchannels=768 * 5 + 256 * 3, outchannels=256, d_hidn=1024):
+        """Initialize the pixel prediction and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            inchannels: Number of input feature channels.
+            outchannels: Number of output feature channels.
+            d_hidn: Transformer hidden-state width.
+        """
         super().__init__()
         self.d_hidn = d_hidn
         self.down_channel = nn.Conv2d(inchannels, outchannels, kernel_size=1)
@@ -136,6 +175,17 @@ class Pixel_Prediction(nn.Module):
         )
 
     def forward(self, f_dis, f_ref, cnn_dis, cnn_ref):
+        """Predict a spatial quality map from distorted/reference CNN and transformer features.
+
+        Args:
+            f_dis: Distorted-image feature representation.
+            f_ref: Reference-image feature representation.
+            cnn_dis: Convolutional features extracted from the distorted image.
+            cnn_ref: Convolutional features extracted from the reference image.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         f_dis = torch.cat((f_dis, cnn_dis), 1)
         f_ref = torch.cat((f_ref, cnn_ref), 1)
         f_dis = self.down_channel(f_dis)
@@ -189,6 +239,16 @@ class AHIQ(nn.Module):
         pretrained=True,
         pretrained_model_path=None,
     ):
+        """Initialize the ahiq and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            num_crop: Number of image crops used for inference or training.
+            crop_size: Spatial size of each crop.
+            default_mean: Per-channel input normalization means.
+            default_std: Per-channel input normalization standard deviations.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+        """
         super().__init__()
 
         self.resnet50 = timm.create_model('resnet50', pretrained=True)

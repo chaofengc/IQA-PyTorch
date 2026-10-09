@@ -451,6 +451,16 @@ class NRQM(torch.nn.Module):
         crop_border: int = 0,
         pretrained_model_path: str = None,
     ) -> None:
+        """Load NRQM's learned parameters and configure input conversion.
+
+        Args:
+            test_y_channel (bool): Evaluate luminance rather than all RGB
+                channels when the input has three channels.
+            color_space (str): Color space used for luminance conversion.
+            crop_border (int): Number of pixels cropped from each image edge.
+            pretrained_model_path (str, optional): MATLAB model path; if
+                omitted, the default model is downloaded.
+        """
         super(NRQM, self).__init__()
         self.test_y_channel = test_y_channel
         self.crop_border = crop_border
@@ -512,6 +522,14 @@ class PI(torch.nn.Module):
     """
 
     def __init__(self, crop_border=4, color_space='ycbcr'):
+        """Create the NIQE and NRQM components used by the PI score.
+
+        Args:
+            crop_border (int): Number of pixels excluded from each image edge
+                by both component metrics.
+            color_space (str): Luminance color-space conversion for the
+                component metrics.
+        """
         super(PI, self).__init__()
         self.nrqm = NRQM(crop_border=crop_border, color_space=color_space)
         self.niqe = NIQE(crop_border=crop_border, color_space=color_space)

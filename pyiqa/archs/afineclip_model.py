@@ -1,3 +1,5 @@
+"""CLIP visual and text encoder components used by AFINE. The model structure follows OpenAI CLIP; retain the upstream attribution and license terms."""
+
 import hashlib
 import os
 import urllib
@@ -44,6 +46,15 @@ _MODELS = {
 
 
 def _download(url: str, root: str):
+    """Download a CLIP checkpoint to the cache, verifying its expected SHA-256 when the URL encodes one.
+
+    Args:
+        url: Checkpoint URL; a hash embedded in the URL is checked when available.
+        root: Directory in which a downloaded checkpoint is cached.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     os.makedirs(root, exist_ok=True)
     filename = os.path.basename(url)
 
@@ -76,10 +87,26 @@ def _download(url: str, root: str):
 
 
 def _convert_image_to_rgb(image):
+    """Convert a PIL image to RGB mode.
+
+    Args:
+        image: Batched image tensor, normally RGB in ``(B, 3, H, W)`` layout.
+
+    Returns:
+        Cleaned text or converted RGB image.
+    """
     return image.convert("RGB")
 
 
 def _transform(n_px):
+    """Build the CLIP image preprocessing pipeline for the requested square input resolution.
+
+    Args:
+        n_px: Number of items, stages, tokens, or channels configured for this operation.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     return Compose([
         Resize(n_px, interpolation=BICUBIC),
         CenterCrop(n_px),
@@ -158,6 +185,11 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
         return getattr(node, sel)(key)
 
     def patch_device(module):
+        """Perform the patch device operation for afineclip.
+
+        Args:
+            module: Module whose forward hook was invoked.
+        """
         try:
             graphs = [module.graph] if hasattr(module, "graph") else []
         except RuntimeError:
@@ -182,6 +214,11 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
         float_node = float_input.node()
 
         def patch_float(module):
+            """Perform the patch float operation for afineclip.
+
+            Args:
+                module: Module whose forward hook was invoked.
+            """
             try:
                 graphs = [module.graph] if hasattr(module, "graph") else []
             except RuntimeError:
@@ -207,9 +244,19 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
 
 
 class Bottleneck(nn.Module):
+    """Residual bottleneck block used in the AFINE CLIP modified ResNet visual encoder.
+
+    """
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1):
+        """Initialize the bottleneck and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            inplanes: Input channel count of the residual stage.
+            planes: Output channel count of the convolutional residual stage.
+            stride: Spatial stride for the convolutional stage.
+        """
         super().__init__()
 
         # all conv layers have stride 1. an avgpool is performed after the second convolution when stride > 1
@@ -239,6 +286,14 @@ class Bottleneck(nn.Module):
             ]))
 
     def forward(self, x: torch.Tensor):
+        """Apply the bottleneck computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         identity = x
 
         out = self.relu1(self.bn1(self.conv1(x)))
@@ -255,7 +310,18 @@ class Bottleneck(nn.Module):
 
 
 class AttentionPool2d(nn.Module):
+    """Attention-based pooling layer that reduces a spatial feature map to a global embedding.
+
+    """
     def __init__(self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int = None):
+        """Initialize the attention pool2d and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            spacial_dim: Spatial side length of the feature map before attention pooling.
+            embed_dim: Dimension of the shared image-text or feature embedding.
+            num_heads: Number of attention heads.
+            output_dim: Output feature or embedding dimension.
+        """
         super().__init__()
         self.positional_embedding = nn.Parameter(torch.randn(spacial_dim ** 2 + 1, embed_dim) / embed_dim ** 0.5)
         self.k_proj = nn.Linear(embed_dim, embed_dim)
@@ -265,6 +331,14 @@ class AttentionPool2d(nn.Module):
         self.num_heads = num_heads
 
     def forward(self, x):
+        """Apply the attention pool2d computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = x.flatten(start_dim=2).permute(2, 0, 1)  # NCHW -> (HW)NC
         x = torch.cat([x.mean(dim=0, keepdim=True), x], dim=0)  # (HW+1)NC
         x = x + self.positional_embedding[:, None, :].to(x.dtype)  # (HW+1)NC
@@ -299,6 +373,15 @@ class ModifiedResNet(nn.Module):
     """
 
     def __init__(self, layers, output_dim, heads, input_resolution=224, width=64):
+        """Initialize the modified res net and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            layers: Number of blocks in each stage or transformer stack.
+            output_dim: Output feature or embedding dimension.
+            heads: Number of attention heads.
+            input_resolution: Expected input image resolution.
+            width: Channel or embedding width of the configured network.
+        """
         super().__init__()
         self.output_dim = output_dim
         self.input_resolution = input_resolution
@@ -326,6 +409,16 @@ class ModifiedResNet(nn.Module):
         self.attnpool = AttentionPool2d(input_resolution // 32, embed_dim, heads, output_dim)
 
     def _make_layer(self, planes, blocks, stride=1):
+        """Build one residual stage of the convolutional image encoder.
+
+        Args:
+            planes: Output channel count of the convolutional residual stage.
+            blocks: Number of residual blocks in the stage.
+            stride: Spatial stride for the convolutional stage.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         layers = [Bottleneck(self._inplanes, planes, stride)]
 
         self._inplanes = planes * Bottleneck.expansion
@@ -335,7 +428,23 @@ class ModifiedResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        """Compute the AFINECLIP prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         def stem(x):
+            """Perform the stem operation for afineclip.
+
+            Args:
+                x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+            Returns:
+                Computed result; type and shape follow the supplied inputs and model configuration.
+            """
             x = self.relu1(self.bn1(self.conv1(x)))
             x = self.relu2(self.bn2(self.conv2(x)))
             x = self.relu3(self.bn3(self.conv3(x)))
@@ -363,18 +472,47 @@ class LayerNorm(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16."""
 
     def forward(self, x: torch.Tensor):
+        """Apply the layer norm computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         orig_type = x.dtype
         ret = super().forward(x.type(torch.float32))
         return ret.type(orig_type)
 
 
 class QuickGELU(nn.Module):
+    """Fast GELU-style activation used by the CLIP transformer.
+
+    """
     def forward(self, x: torch.Tensor):
+        """Compute the AFINECLIP prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         return x * torch.sigmoid(1.702 * x)
 
 
 class ResidualAttentionBlock(nn.Module):
+    """Transformer block with multi-head self-attention and a residual MLP.
+
+    """
     def __init__(self, d_model: int, n_head: int, attn_mask: torch.Tensor = None):
+        """Initialize the residual attention block and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            d_model: Transformer embedding width.
+            n_head: Number of attention heads.
+            attn_mask: Optional attention mask controlling which query-key positions may interact.
+        """
         super().__init__()
 
         self.attn = nn.MultiheadAttention(d_model, n_head)
@@ -388,23 +526,58 @@ class ResidualAttentionBlock(nn.Module):
         self.attn_mask = attn_mask
 
     def attention(self, x: torch.Tensor):
+        """Apply self-attention to a sequence in the residual attention block.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         self.attn_mask = self.attn_mask.to(dtype=x.dtype, device=x.device) if self.attn_mask is not None else None
         return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
 
     def forward(self, x: torch.Tensor):
+        """Apply the residual attention block computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = x + self.attention(self.ln_1(x))
         x = x + self.mlp(self.ln_2(x))
         return x
 
 
 class Transformer(nn.Module):
+    """Stack of residual attention blocks used by the AFINE CLIP text encoder.
+
+    """
     def __init__(self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None):
+        """Initialize the transformer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            width: Channel or embedding width of the configured network.
+            layers: Number of blocks in each stage or transformer stack.
+            heads: Number of attention heads.
+            attn_mask: Optional attention mask controlling which query-key positions may interact.
+        """
         super().__init__()
         self.width = width
         self.layers = layers
         self.resblocks = nn.Sequential(*[ResidualAttentionBlock(width, heads, attn_mask) for _ in range(layers)])
 
     def forward(self, x: torch.Tensor):
+        """Apply the transformer computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         feature_list = []
         for i in range(self.layers):
             x = self.resblocks[i](x)
@@ -414,7 +587,20 @@ class Transformer(nn.Module):
 
 
 class VisionTransformer(nn.Module):
+    """Patch-based visual transformer that maps an image batch to CLIP embeddings.
+
+    """
     def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: int, output_dim: int):
+        """Initialize the vision transformer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            input_resolution: Expected input image resolution.
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            width: Channel or embedding width of the configured network.
+            layers: Number of blocks in each stage or transformer stack.
+            heads: Number of attention heads.
+            output_dim: Output feature or embedding dimension.
+        """
         super().__init__()
         self.input_resolution = input_resolution
         self.output_dim = output_dim
@@ -431,6 +617,14 @@ class VisionTransformer(nn.Module):
         self.proj = nn.Parameter(scale * torch.randn(width, output_dim))
 
     def forward(self, x: torch.Tensor):
+        """Encode image patches with the AFINE CLIP visual transformer.
+
+        Args:
+            x: RGB image tensor shaped ``(B, 3, H, W)``.
+
+        Returns:
+            Image embedding tensor shaped ``(B, output_dim)``.
+        """
         x = self.conv1(x)  # shape = [*, width, grid, grid]
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
         x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
@@ -456,6 +650,9 @@ class VisionTransformer(nn.Module):
 
 
 class AFINECLIP(nn.Module):
+    """Dual encoder that maps images and tokenized text into a shared CLIP embedding space.
+
+    """
     def __init__(self,
                  embed_dim: int,
                  # vision
@@ -470,6 +667,20 @@ class AFINECLIP(nn.Module):
                  transformer_heads: int,
                  transformer_layers: int
                  ):
+        """Initialize the afineclip and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            embed_dim: Dimension of the shared image-text or feature embedding.
+            image_resolution: Expected image resolution for the visual encoder.
+            vision_layers: Number of visual-transformer layers or residual blocks per visual stage.
+            vision_width: Channel width of the visual encoder.
+            vision_patch_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            context_length: Maximum number of tokens in the CLIP text context.
+            vocab_size: Number of token IDs supported by the text embedding.
+            transformer_width: Width of the text-transformer embeddings.
+            transformer_heads: Number of attention heads in the text transformer.
+            transformer_layers: Number of text-transformer blocks.
+        """
         super().__init__()
 
         self.context_length = context_length
@@ -512,6 +723,9 @@ class AFINECLIP(nn.Module):
         self.initialize_parameters()
 
     def initialize_parameters(self):
+        """Initialize CLIP embedding, attention, and projection parameters.
+
+        """
         nn.init.normal_(self.token_embedding.weight, std=0.02)
         nn.init.normal_(self.positional_embedding, std=0.01)
 
@@ -543,6 +757,11 @@ class AFINECLIP(nn.Module):
     def build_attention_mask(self):
         # lazily create causal attention mask, with full attention between the vision tokens
         # pytorch uses additive attention mask; fill with -inf
+        """Create the causal attention mask used by the CLIP text transformer.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         mask = torch.empty(self.context_length, self.context_length)
         mask.fill_(float("-inf"))
         mask.triu_(1)  # zero out the lower diagonal
@@ -550,12 +769,33 @@ class AFINECLIP(nn.Module):
 
     @property
     def dtype(self):
+        """Perform the dtype operation for afineclip.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return self.visual.conv1.weight.dtype
 
     def encode_image(self, image):
+        """Encode a batch of images into the model embedding space.
+
+        Args:
+            image: Batched image tensor, normally RGB in ``(B, 3, H, W)`` layout.
+
+        Returns:
+            Batch of embeddings with the model embedding dimension on the final axis.
+        """
         return self.visual(image.type(self.dtype))
 
     def encode_text(self, text):
+        """Encode tokenized text into the model embedding space.
+
+        Args:
+            text: Text string or sequence of strings, depending on the API.
+
+        Returns:
+            Batch of embeddings with the model embedding dimension on the final axis.
+        """
         x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
 
         x = x + self.positional_embedding.type(self.dtype)
@@ -571,6 +811,16 @@ class AFINECLIP(nn.Module):
         return x
 
     def forward(self, image, text):
+        """Encode and normalize images and text, then compute their scaled pairwise similarities.
+
+        Args:
+            image: Batched RGB image tensor shaped ``(B, 3, H, W)``.
+            text: Token IDs shaped ``(B, L)``.
+
+
+        Returns:
+            Pair of image-to-text and text-to-image similarity-logit tensors, shaped ``(B_image, B_text)`` and ``(B_text, B_image)``.
+        """
         image_features = self.encode_image(image)
         text_features = self.encode_text(text)
 
@@ -591,6 +841,11 @@ def convert_weights(model: nn.Module):
     """Convert applicable model parameters to fp16"""
 
     def _convert_weights_to_fp16(l):
+        """Perform the internal convert weights to fp16 operation used by afineclip.
+
+        Args:
+            l: Token sequence or word-piece representation being merged.
+        """
         if isinstance(l, (nn.Conv1d, nn.Conv2d, nn.Linear)):
             l.weight.data = l.weight.data.half()
             if l.bias is not None:
@@ -612,6 +867,14 @@ def convert_weights(model: nn.Module):
 
 
 def build_model(state_dict: dict):
+    """Construct the CLIP model architecture inferred from a checkpoint state dictionary.
+
+    Args:
+        state_dict: Checkpoint mapping parameter names to tensors.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     vit = "visual.proj" in state_dict
 
     if vit:

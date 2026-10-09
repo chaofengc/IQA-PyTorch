@@ -74,6 +74,16 @@ class AFINEQhead(nn.Module):
     def __init__(self, chns = (3, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768), feature_out_channel = 1,
                        input_dim = 768, hidden_dim = 128,
                        mean = (0.48145466, 0.4578275, 0.40821073), std = (0.26862954, 0.26130258, 0.27577711)):
+        """Initialize the afineqhead and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            chns: Channel counts for the feature levels used by the quality head.
+            feature_out_channel: Channel width of the extracted feature representation.
+            input_dim: Input feature dimension expected by the projection layer.
+            hidden_dim: Hidden width used by the quality-prediction layers.
+            mean: Per-channel input normalization means.
+            std: Per-channel input normalization standard deviations.
+        """
         super(AFINEQhead, self).__init__()
 
         self.chns = chns
@@ -93,6 +103,15 @@ class AFINEQhead(nn.Module):
 
 
     def forward(self, x, h_list_x):
+        """Apply the afineqhead computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            h_list_x: List of intermediate feature tensors extracted from the first/distorted image.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = x * self.std + self.mean
 
         img_feature_x = x.flatten(2).permute(0, 2, 1)
@@ -138,6 +157,13 @@ class AFINEDhead(nn.Module):
     """
     def __init__(self, chns = (3, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768),
                  mean = (0.48145466, 0.4578275, 0.40821073), std = (0.26862954, 0.26130258, 0.27577711)):
+        """Initialize the afinedhead and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            chns: Channel counts for the feature levels used by the quality head.
+            mean: Per-channel input normalization means.
+            std: Per-channel input normalization standard deviations.
+        """
         super(AFINEDhead, self).__init__()
 
         self.chns = chns
@@ -154,6 +180,17 @@ class AFINEDhead(nn.Module):
 
     def forward(self, x, y, h_list_x, h_list_y):
         ### the input image should be generalized back to its original values
+        """Apply the afinedhead computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            y: Reference-image tensor or target quality value, depending on whether the metric is full-reference or regression-based.
+            h_list_x: List of intermediate feature tensors extracted from the first/distorted image.
+            h_list_y: List of intermediate feature tensors extracted from the second/reference image.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = x * self.std + self.mean
         y = y * self.std + self.mean
 
@@ -209,6 +246,14 @@ class AFINEDhead(nn.Module):
 class AFINENLM_NR_Fit(nn.Module):
     """Nonlinear calibration layer for the naturalness branch."""
     def __init__(self, yita1 = 2, yita2 = -2, yita3 = 3.7833, yita4 = 7.5676):
+        """Initialize the afinenlm nr fit and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            yita1: First scalar coefficient of the nonlinear score-mapping function.
+            yita2: Second scalar coefficient of the nonlinear score-mapping function.
+            yita3: Learnable center or offset parameter of the nonlinear score mapping.
+            yita4: Learnable scale parameter of the nonlinear score mapping.
+        """
         super(AFINENLM_NR_Fit, self).__init__()
         self.yita3 = nn.Parameter(torch.tensor(yita3, dtype=torch.float32), requires_grad = True)
         self.yita4 = nn.Parameter(torch.tensor(yita4, dtype=torch.float32), requires_grad = True)
@@ -219,6 +264,14 @@ class AFINENLM_NR_Fit(nn.Module):
         # print(f"For NR, self.yita3 is {self.yita3}, self.yita4 is {self.yita4}")
         # d_hat = (self.yita1 - self.yita2) / (1 + torch.exp(-1 * (x - self.yita3) / (torch.abs(self.yita4) + 1e-10))) + self.yita2
 
+        """Compute the AFINE prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         exp_pow = -1 * (x - self.yita3) / (torch.abs(self.yita4) + 1e-10)
 
         if exp_pow >=10:
@@ -233,6 +286,18 @@ class AFINENLM_NR_Fit(nn.Module):
 class AFINENLM_FR_Fit_with_limit(nn.Module):
     """Bounded nonlinear calibration layer for the fidelity branch."""
     def __init__(self, yita1 = 2, yita2 = -2, yita3 = -24.1335, yita4 = 8.1093, yita3_upper = -21, yita3_lower = -27, yita4_upper = 9, yita4_lower = 7):
+        """Initialize the afinenlm fr fit with limit and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            yita1: First scalar coefficient of the nonlinear score-mapping function.
+            yita2: Second scalar coefficient of the nonlinear score-mapping function.
+            yita3: Learnable center or offset parameter of the nonlinear score mapping.
+            yita4: Learnable scale parameter of the nonlinear score mapping.
+            yita3_upper: Upper bound used when constraining the third score-mapping coefficient.
+            yita3_lower: Lower bound used when constraining the third score-mapping coefficient.
+            yita4_upper: Upper bound used when constraining the fourth score-mapping coefficient.
+            yita4_lower: Lower bound used when constraining the fourth score-mapping coefficient.
+        """
         super(AFINENLM_FR_Fit_with_limit, self).__init__()
         self.yita3 = nn.Parameter(torch.tensor(yita3, dtype=torch.float32), requires_grad = True)
         self.yita4 = nn.Parameter(torch.tensor(yita4, dtype=torch.float32), requires_grad = True)
@@ -244,6 +309,14 @@ class AFINENLM_FR_Fit_with_limit(nn.Module):
         self.yita4_lower = yita4_lower
 
     def forward(self, x):
+        """Compute the AFINE prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         yita3_ = torch.clamp(self.yita3, self.yita3_lower, self.yita3_upper)
         yita4_ = torch.clamp(self.yita4, self.yita4_lower, self.yita4_upper)
         # print(f"For FR, self.yita3 is {self.yita3}, yita3 is {yita3_}, self.yita4 is {self.yita4}, yita4 is {yita4_}")
@@ -263,12 +336,27 @@ class AFINENLM_FR_Fit_with_limit(nn.Module):
 class AFINELearnLambda(nn.Module):
     """Adaptive fusion layer for naturalness and fidelity terms."""
     def __init__(self, k = 5):
+        """Initialize the afinelearn lambda and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            k: Number of learned weighting coefficients or feature groups.
+        """
         super(AFINELearnLambda, self).__init__()
 
         self.k = nn.Parameter(torch.tensor(k, dtype=torch.float32), requires_grad = True)
 
 
     def forward(self, x_nr, ref_nr, xref_fr):
+        """Compute the AFINE prediction for the supplied image or image pair.
+
+        Args:
+            x_nr: No-reference quality score or feature for the distorted image.
+            ref_nr: No-reference quality score or feature for the reference image.
+            xref_fr: Full-reference quality score or feature for the image pair.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         k_ = F.softplus(self.k)
         # print(f"self.k is {self.k}, k_ is {k_}")
         u = torch.exp(k_*(ref_nr - x_nr)) * x_nr + xref_fr
@@ -310,6 +398,17 @@ class AFINE(nn.Module):
         pretrained_model_path=None,
         url_key = 'afine'
 ) -> None:
+        """Initialize the afine and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            model_type: Registered model variant or task configuration.
+            clip_backbone: CLIP image/text backbone variant used to extract semantic features.
+            step: Sampling interval or step size for patch/crop extraction.
+            num_patch: Number of sampled patches used to form the image representation.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            url_key: Key used to select the pretrained checkpoint URL.
+        """
         super().__init__()
         self.clip_backbone = clip_backbone
         ### If you cannot download the pretrained CLIP model in on-line manner when you infer A-FINE, then please manually download it from "https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt"

@@ -1,3 +1,5 @@
+"""Swin Transformer layers adapted for MANIQA image feature extraction."""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,6 +10,9 @@ from timm.layers import DropPath, to_2tuple, trunc_normal_
 
 
 class Mlp(nn.Module):
+    """Two-layer feed-forward MLP with activation and dropout for Swin blocks.
+
+    """
     def __init__(
         self,
         in_features,
@@ -16,6 +21,15 @@ class Mlp(nn.Module):
         act_layer=nn.GELU,
         drop=0.0,
     ):
+        """Initialize the mlp and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            in_features: Number of input features.
+            hidden_features: Width of the MLP hidden layer.
+            out_features: Number of output features.
+            act_layer: Activation-layer constructor used between linear projections.
+            drop: Dropout probability applied by the layer.
+        """
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -25,6 +39,14 @@ class Mlp(nn.Module):
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
+        """Apply the mlp computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = self.fc1(x)
         x = self.act(x)
         x = self.drop(x)
@@ -93,6 +115,17 @@ class WindowAttention(nn.Module):
         attn_drop=0.0,
         proj_drop=0.0,
     ):
+        """Initialize the window attention and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            window_size: Spatial side length of each attention window.
+            num_heads: Number of attention heads.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            qk_scale: Optional scale applied to query-key attention logits; defaults to the inverse square root of the head width.
+            attn_drop: Dropout probability applied to attention weights.
+            proj_drop: Dropout probability applied after the output projection.
+        """
         super().__init__()
         self.dim = dim
         self.window_size = window_size  # Wh, Ww
@@ -183,10 +216,23 @@ class WindowAttention(nn.Module):
         return x
 
     def extra_repr(self) -> str:
+        """Perform the extra repr operation for window attention.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return f'dim={self.dim}, window_size={self.window_size}, num_heads={self.num_heads}'
 
     def flops(self, N):
         # calculate flops for 1 window with token length of N
+        """Perform the flops operation for window attention.
+
+        Args:
+            N: Number of tokens, positions, or spatial values in the current block.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         flops = 0
         # qkv = self.qkv(x)
         flops += N * self.dim * 3 * self.dim
@@ -234,6 +280,23 @@ class SwinBlock(nn.Module):
         act_layer=nn.GELU,
         norm_layer=nn.LayerNorm,
     ):
+        """Initialize the swin block and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            input_resolution: Expected input image resolution.
+            num_heads: Number of attention heads.
+            window_size: Spatial side length of each attention window.
+            shift_size: Offset used to shift the attention-window partition.
+            dim_mlp: Hidden width of the feed-forward MLP.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            qk_scale: Optional scale applied to query-key attention logits; defaults to the inverse square root of the head width.
+            drop: Dropout probability applied by the layer.
+            attn_drop: Dropout probability applied to attention weights.
+            drop_path: Stochastic depth probability applied by the layer.
+            act_layer: Activation-layer constructor used between linear projections.
+            norm_layer: Normalization-layer constructor used by the block.
+        """
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution
@@ -304,6 +367,14 @@ class SwinBlock(nn.Module):
         self.register_buffer('attn_mask', attn_mask)
 
     def forward(self, x):
+        """Apply the swin block computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         H, W = self.input_resolution
         B, L, C = x.shape
         assert L == H * W, 'input feature has wrong size'
@@ -390,6 +461,24 @@ class BasicLayer(nn.Module):
         downsample=None,
         use_checkpoint=False,
     ):
+        """Initialize the basic layer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            input_resolution: Expected input image resolution.
+            depth: Number of layers or blocks in this stage.
+            num_heads: Number of attention heads.
+            window_size: Spatial side length of each attention window.
+            dim_mlp: Hidden width of the feed-forward MLP.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            qk_scale: Optional scale applied to query-key attention logits; defaults to the inverse square root of the head width.
+            drop: Dropout probability applied by the layer.
+            attn_drop: Dropout probability applied to attention weights.
+            drop_path: Stochastic depth probability applied by the layer.
+            norm_layer: Normalization-layer constructor used by the block.
+            downsample: Optional downsampling layer constructor for the stage transition.
+            use_checkpoint: Whether to recompute activations with gradient checkpointing to reduce memory use.
+        """
         super().__init__()
         self.dim = dim
         self.conv = nn.Conv2d(dim, dim, 3, 1, 1)
@@ -429,6 +518,14 @@ class BasicLayer(nn.Module):
             self.downsample = None
 
     def forward(self, x):
+        """Apply the basic layer computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         for blk in self.blocks:
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(blk, x)
@@ -445,9 +542,19 @@ class BasicLayer(nn.Module):
         return x
 
     def extra_repr(self) -> str:
+        """Perform the extra repr operation for basic layer.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return f'dim={self.dim}, input_resolution={self.input_resolution}, depth={self.depth}'
 
     def flops(self):
+        """Perform the flops operation for basic layer.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         flops = 0
         for blk in self.blocks:
             flops += blk.flops()
@@ -457,6 +564,9 @@ class BasicLayer(nn.Module):
 
 
 class SwinTransformer(nn.Module):
+    """Hierarchical shifted-window transformer backbone used for image feature extraction.
+
+    """
     def __init__(
         self,
         patches_resolution,
@@ -478,6 +588,28 @@ class SwinTransformer(nn.Module):
         scale=0.8,
         **kwargs,
     ):
+        """Initialize the swin transformer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            patches_resolution: Grid resolution of the patch tokens.
+            depths: Number of transformer blocks in each stage or branch.
+            num_heads: Number of attention heads.
+            embed_dim: Dimension of the shared image-text or feature embedding.
+            drop: Dropout probability applied by the layer.
+            drop_rate: Dropout probability applied by the layer.
+            drop_path_rate: Maximum stochastic-depth probability across the network.
+            dropout: Dropout probability used by the projection or transformer layers.
+            window_size: Spatial side length of each attention window.
+            dim_mlp: Hidden width of the feed-forward MLP.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            qk_scale: Optional scale applied to query-key attention logits; defaults to the inverse square root of the head width.
+            attn_drop_rate: Dropout probability applied to attention weights.
+            norm_layer: Normalization-layer constructor used by the block.
+            downsample: Optional downsampling layer constructor for the stage transition.
+            use_checkpoint: Whether to recompute activations with gradient checkpointing to reduce memory use.
+            scale: Scaling factor or embedding scale configured by this model.
+            **kwargs: kwargs value used to configure or compute this operation.
+        """
         super().__init__()
         self.scale = scale
         self.embed_dim = embed_dim
@@ -517,6 +649,14 @@ class SwinTransformer(nn.Module):
             self.layers.append(layer)
 
     def forward(self, x):
+        """Apply the swin transformer computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = self.dropout(x)
         x = rearrange(x, 'b c h w -> b (h w) c')
         for layer in self.layers:

@@ -17,6 +17,7 @@ IMAGE_EXTENSIONS = {'.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff', '.webp'}
 
 
 def _collect_images(image_dir):
+    """Return supported image files below a directory in stable path order."""
     image_dir = Path(image_dir)
     if not image_dir.is_dir():
         raise ValueError(f'Image directory does not exist: {image_dir}')
@@ -32,6 +33,7 @@ def _collect_images(image_dir):
 
 
 def _score_images(metric_name, images, device):
+    """Run one configured NR metric once per image and return scalar scores."""
     metric_config = DEFAULT_CONFIGS.get(metric_name)
     if metric_config is None:
         raise ValueError(f'Unknown pyiqa metric: {metric_name}')
@@ -56,6 +58,12 @@ def _score_images(metric_name, images, device):
 
 
 def _load_score_csv(scores_csv, metric_a, metric_b, image_root=None):
+    """Load two score columns and resolve each row's image path.
+
+    The CSV must contain ``image`` and columns named after both selected
+    metrics. Relative paths are interpreted from ``image_root`` when supplied,
+    otherwise from the directory containing the CSV.
+    """
     scores_csv = Path(scores_csv).resolve()
     root = Path(image_root).resolve() if image_root else scores_csv.parent
     images = []
@@ -108,6 +116,7 @@ def _load_score_csv(scores_csv, metric_a, metric_b, image_root=None):
 
 
 def _resolve_lower_better(metric_name, override):
+    """Resolve score direction from an explicit override or pyiqa metadata."""
     if override is not None:
         return override
     metric_config = DEFAULT_CONFIGS.get(metric_name)
@@ -120,6 +129,7 @@ def _resolve_lower_better(metric_name, override):
 
 
 def _standardize(scores, lower_better):
+    """Orient higher quality as better, then z-score scores within the pool."""
     oriented = [-score if lower_better else score for score in scores]
     mean = sum(oriented) / len(oriented)
     variance = sum((score - mean)**2 for score in oriented) / len(oriented)
@@ -130,7 +140,11 @@ def _standardize(scores, lower_better):
 
 
 def _best_pair(tie_scores, target_scores, tolerance):
-    """Find the maximum target-score gap among pairs within tie tolerance."""
+    """Find the greatest target-score gap among pairs tied by one metric.
+
+    A sliding window over sorted tie scores limits candidate pairs to the
+    requested tolerance; monotonic queues track target-score extrema per window.
+    """
     ordered = sorted(range(len(tie_scores)), key=tie_scores.__getitem__)
     minimum = deque()
     maximum = deque()
@@ -175,6 +189,7 @@ def _best_pair(tie_scores, target_scores, tolerance):
 
 
 def _pair_result(pair, images, scores_a, scores_b, normalized_a, normalized_b, name_a, name_b):
+    """Format a selected pair with raw and standardized metric scores."""
     if pair is None:
         return None
 
@@ -207,7 +222,13 @@ def run_gmad(
     lower_better_a=None,
     lower_better_b=None,
 ):
-    """Return the most differentiating candidate pair in both metric directions."""
+    """Find candidate pairs where either metric ties while the other differs.
+
+    Supply either ``image_dir`` for pyiqa inference or ``scores_csv`` containing
+    precomputed scores. The function standardizes within this candidate pool;
+    its output is a gMAD-style exploratory result, not a complete official
+    gMAD evaluation.
+    """
     if tie_tolerance < 0:
         raise ValueError('tie_tolerance must be non-negative')
     if metric_a == metric_b:

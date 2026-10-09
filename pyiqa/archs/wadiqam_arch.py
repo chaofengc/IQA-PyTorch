@@ -28,6 +28,14 @@ default_model_urls = {
 
 
 def make_layers(cfg: List[Union[str, int]]) -> nn.Sequential:
+    """Perform the make layers operation for wa diqa m.
+
+    Args:
+        cfg: Layer configuration describing the feature-extractor stages.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     layers: List[nn.Module] = []
     in_channels = 3
     for v in cfg:
@@ -65,6 +73,18 @@ class WaDIQaM(nn.Module):
         load_feature_weight_only=False,
         eps=1e-8,
     ):
+        """Initialize the wa diqa m and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            metric_type: Metric or model variant used for the quality computation.
+            model_name: Registered backbone or model identifier.
+            pretrained: Whether to initialize or load pretrained weights.
+            weighted_average: Whether to combine patch scores using learned or supplied weights.
+            train_patch_num: Number of training patches sampled per image.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            load_feature_weight_only: Whether to load only feature-extractor weights from the checkpoint.
+            eps: Small positive constant used to avoid division by zero.
+        """
         super(WaDIQaM, self).__init__()
 
         backbone_cfg = [
@@ -120,6 +140,12 @@ class WaDIQaM(nn.Module):
             )
 
     def load_pretrained_network(self, model_path, load_feature_weight_only=False):
+        """Load the pretrained network data or parameters required by this implementation.
+
+        Args:
+            model_path: Filesystem path to an input file or checkpoint.
+            load_feature_weight_only: Whether to load only feature-extractor weights from the checkpoint.
+        """
         print(f'Loading pretrained model from {model_path}')
         state_dict = torch.load(model_path, map_location=torch.device('cpu'))['params']
         if load_feature_weight_only:
@@ -181,12 +207,29 @@ class WaDIQaM(nn.Module):
             return cropped_x
 
     def get_patches(self, x, y=None):
+        """Return the patches value derived from the supplied configuration or input.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            y: Reference-image tensor or target quality value, depending on whether the metric is full-reference or regression-based.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         if self.training:
             return self._get_random_patches(x, y)
         else:
             return self._get_nonoverlap_patches(x, y)
 
     def extract_features(self, patches):
+        """Perform the extract features operation for wa diqa m.
+
+        Args:
+            patches: Collection of image patches or patch-level feature tensors.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         h = self.features(patches)
         h = h.reshape(-1, self.patch_num, 512)
         return h

@@ -27,6 +27,7 @@ class InceptionScore(nn.Module):
     def __init__(
         self,
     ) -> None:
+        """Create the Inception model configured to emit unbiased logits."""
         super().__init__()
 
         self.model = InceptionV3(output_blocks='logits_unbiased')

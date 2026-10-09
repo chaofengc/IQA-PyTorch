@@ -207,6 +207,23 @@ def calculate_niqe(
 
 
 def gauDerivative(sigma, in_ch=1, out_ch=1, device=None):
+    """Construct X- and Y-oriented Gaussian derivative kernels.
+
+    The square support extends to ``ceil(3 * sigma)`` pixels from the center;
+    the resulting arrays are repeated across input and output channels.
+
+    Args:
+        sigma (float): Standard deviation controlling the kernel support and
+            Gaussian envelope.
+        in_ch (int): Number of input-channel copies in each kernel.
+        out_ch (int): Number of output-channel copies in each kernel.
+        device (torch.device or str, optional): Device for the returned
+            tensors.
+
+    Returns:
+        tuple[torch.Tensor, torch.Tensor]: X and Y kernels with shape
+        ``(out_ch, in_ch, K, K)``.
+    """
     halfLength = math.ceil(3 * sigma)
 
     x, y = np.meshgrid(
@@ -482,6 +499,19 @@ class NIQE(torch.nn.Module):
         version: str = 'original',
         pretrained_model_path: str = None,
     ) -> None:
+        """Load NIQE's natural-image statistics and evaluation settings.
+
+        Args:
+            channels (int): Number of channels expected by the metric.
+            test_y_channel (bool): Convert RGB input to the configured
+                luminance channel before evaluation.
+            color_space (str): Color-space conversion used for luminance.
+            crop_border (int): Number of pixels cropped from each image edge.
+            version (str): Selects bundled ``'original'`` or ``'matlab'``
+                natural-image statistics when no path is given.
+            pretrained_model_path (str, optional): Path to a MATLAB parameter
+                file; takes precedence over ``version``.
+        """
         super(NIQE, self).__init__()
         self.channels = channels
         self.test_y_channel = test_y_channel
@@ -538,6 +568,15 @@ class ILNIQE(torch.nn.Module):
     def __init__(
         self, channels: int = 3, crop_border: int = 0, pretrained_model_path: str = None
     ) -> None:
+        """Load IL-NIQE's template model and set input handling options.
+
+        Args:
+            channels (int): Number of expected input channels; evaluation
+                currently requires three-channel RGB.
+            crop_border (int): Number of pixels cropped from each image edge.
+            pretrained_model_path (str, optional): Path to the template-model
+                MATLAB file; defaults to the bundled model.
+        """
         super(ILNIQE, self).__init__()
         self.channels = channels
         self.crop_border = crop_border

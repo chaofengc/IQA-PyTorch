@@ -454,6 +454,18 @@ class FSIM(nn.Module):
         delta_theta: float = 1.2,
         k: float = 2.0,
     ) -> None:
+        """Bind the FSIM algorithm's feature and phase-congruency parameters.
+
+        Args:
+            chromatic (bool): Include chromatic similarity when computing FSIM.
+            scales (int): Number of scales in the log-Gabor filters.
+            orientations (int): Number of filter orientations.
+            min_length (int): Wavelength of the smallest filter.
+            mult (int): Wavelength multiplier between scales.
+            sigma_f (float): Relative filter bandwidth parameter.
+            delta_theta (float): Angular bandwidth parameter.
+            k (float): Noise-threshold multiplier for phase congruency.
+        """
         super().__init__()
 
         # Save function with predefined parameters, rather than parameters themself

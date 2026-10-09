@@ -30,6 +30,25 @@ def extract_patches_2d(
     batch_first: bool = True,
     keep_last_patch: bool = False,
 ) -> torch.Tensor:
+    """Extract a regular grid of patches from a batched image tensor.
+
+    Images smaller than the requested patch are zero-padded to fit. Float
+    ``step`` entries are interpreted as fractions of the corresponding patch
+    dimension; integer entries are pixel strides.
+
+    Args:
+        img (torch.Tensor): Input tensor of shape ``(B, C, H, W)``.
+        patch_shape (list[int]): Patch height and width.
+        step (list[int | float]): Vertical and horizontal stride or stride
+            fraction.
+        batch_first (bool): Return ``(B, P, C, pH, pW)`` when true; otherwise
+            return ``(P, B, C, pH, pW)``.
+        keep_last_patch (bool): Append patches anchored at the bottom/right
+            edges when the regular grid does not reach those edges.
+
+    Returns:
+        torch.Tensor: Extracted image patches.
+    """
     patch_H, patch_W = patch_shape[0], patch_shape[1]
 
     if img.size(2) < patch_H:
@@ -86,6 +105,16 @@ def extract_patches_2d(
 
 
 def make_csf(rows, cols, nfreq):
+    """Build the contrast-sensitivity frequency weighting array.
+
+    Args:
+        rows (int): Number of rows in the frequency grid.
+        cols (int): Number of columns in the frequency grid.
+        nfreq (float): Frequency scale used to construct the grid.
+
+    Returns:
+        numpy.ndarray: Transposed 2D contrast-sensitivity weighting array.
+    """
     xvals = np.arange(-(cols - 1) / 2.0, (cols + 1) / 2.0)
     yvals = np.arange(-(rows - 1) / 2.0, (rows + 1) / 2.0)
 
@@ -105,6 +134,18 @@ def make_csf(rows, cols, nfreq):
 
 
 def get_moments(d, sk=False):
+    """Calculate patch means and standard deviations, optionally higher moments.
+
+    Args:
+        d (torch.Tensor): Patch tensor with spatial dimensions at indices 3 and
+            4, conventionally shaped ``(B, P, C, H, W)``.
+        sk (bool): Also compute standardized skewness and excess kurtosis.
+
+    Returns:
+        tuple[torch.Tensor, ...]: ``(mean, std)`` when ``sk`` is false;
+        otherwise ``(mean, std, skewness, excess_kurtosis)``. Each result
+        retains singleton spatial dimensions.
+    """
     # Return the first 4 moments of the data provided
     mean = torch.mean(d, dim=[3, 4], keepdim=True)
     diffs = d - mean
@@ -123,6 +164,17 @@ def get_moments(d, sk=False):
 
 
 def ical_stat(x, p=16, s=4):
+    """Compute local standard deviation, skewness, and kurtosis maps.
+
+    Args:
+        x (torch.Tensor): Input tensor of shape ``(B, C, H, W)``.
+        p (int): Square patch side length.
+        s (int): Patch stride.
+
+    Returns:
+        tuple[torch.Tensor, torch.Tensor, torch.Tensor]: Standard-deviation,
+        skewness, and excess-kurtosis maps reshaped to the patch grid.
+    """
     B, C, H, W = x.shape
     x1 = extract_patches_2d(x, patch_shape=[p, p], step=[s, s])
     _, std, skews, kurt = get_moments(x1, sk=True)
@@ -135,6 +187,17 @@ def ical_stat(x, p=16, s=4):
 
 
 def ical_std(x, p=16, s=4):
+    """Compute local means and standard deviations over overlapping patches.
+
+    Args:
+        x (torch.Tensor): Input tensor of shape ``(B, C, H, W)``.
+        p (int): Square patch side length.
+        s (int): Patch stride.
+
+    Returns:
+        tuple[torch.Tensor, torch.Tensor]: Patch mean and standard-deviation
+        maps, each reshaped to ``(B, C, grid_height, grid_width)``.
+    """
     B, C, H, W = x.shape
     x1 = extract_patches_2d(x, patch_shape=[p, p], step=[s, s])
     mean, std = get_moments(x1)
@@ -145,6 +208,17 @@ def ical_std(x, p=16, s=4):
 
 
 def hi_index(ref_img, dst_img):
+    """Compute the high-frequency distortion component of MAD.
+
+    Args:
+        ref_img (torch.Tensor): Reference images scaled to the 0--255 domain,
+            shaped ``(B, C, H, W)``.
+        dst_img (torch.Tensor): Distorted images with the same shape and scale.
+
+    Returns:
+        torch.Tensor: Per-channel high-frequency distortion scores, shaped
+        ``(B, C)``.
+    """
     k = 0.02874
     G = 0.5
     C_slope = 1
@@ -208,6 +282,16 @@ def hi_index(ref_img, dst_img):
 
 
 def gaborconvolve(im):
+    """Apply the fixed multiscale, multi-orientation log-Gabor filter bank.
+
+    Args:
+        im (torch.Tensor): Image batch shaped ``(B, C, H, W)``.
+
+    Returns:
+        list[list[torch.Tensor]]: Complex response tensors indexed first by
+        orientation and then by scale; real and imaginary components occupy
+        the final dimension.
+    """
     nscale = 5  # Number of wavelet scales.
     norient = 4  # Number of filter orientations.
     minWaveLength = 3  # Wavelength of smallest scale filter.
@@ -279,6 +363,16 @@ def gaborconvolve(im):
 
 
 def lo_index(ref, dst):
+    """Compute the local-statistics distortion component of MAD.
+
+    Args:
+        ref (torch.Tensor): Reference images shaped ``(B, C, H, W)``.
+        dst (torch.Tensor): Distorted images with the same shape.
+
+    Returns:
+        torch.Tensor: Per-channel low-frequency distortion scores, shaped
+        ``(B, C)``.
+    """
     gabRef = gaborconvolve(ref)
     gabDst = gaborconvolve(dst)
     s = [0.5 / 13.25, 0.75 / 13.25, 1 / 13.25, 5 / 13.25, 6 / 13.25]
@@ -310,6 +404,13 @@ class MAD(torch.nn.Module):
     """
 
     def __init__(self, channels=3, test_y_channel=False):
+        """Configure the image channels and optional luminance conversion.
+
+        Args:
+            channels (int): Number of channels expected by the metric.
+            test_y_channel (bool): Convert RGB inputs to luminance before
+                measuring distortion.
+        """
         super(MAD, self).__init__()
         self.channels = channels
         self.test_y_channel = test_y_channel

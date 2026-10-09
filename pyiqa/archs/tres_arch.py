@@ -84,6 +84,19 @@ class Transformer(nn.Module):
         normalize_before=False,
         return_intermediate_dec=False,
     ):
+        """Initialize the transformer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            d_model: Transformer embedding width.
+            nhead: Number of attention heads.
+            num_encoder_layers: Number of items, stages, tokens, or channels configured for this operation.
+            num_decoder_layers: Number of items, stages, tokens, or channels configured for this operation.
+            dim_feedforward: Hidden width of the transformer feed-forward network.
+            dropout: Dropout probability used by the projection or transformer layers.
+            activation: Activation-layer constructor or activation mode.
+            normalize_before: Whether to apply layer normalization before the attention/feed-forward operations.
+            return_intermediate_dec: Whether to return intermediate decoder-layer outputs.
+        """
         super().__init__()
 
         encoder_layer = TransformerEncoderLayer(
@@ -99,12 +112,24 @@ class Transformer(nn.Module):
         self.nhead = nhead
 
     def _reset_parameters(self):
+        """Perform the internal reset parameters operation used by transformer.
+
+        """
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
     def forward(self, src, pos_embed):
         # flatten NxCxHxW to HWxNxC
+        """Apply the transformer computation to the provided activations.
+
+        Args:
+            src: Source sequence or feature tensor supplied to the transformer encoder.
+            pos_embed: Positional embeddings added to token features.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         bs, c, h, w = src.shape
         src2 = src
         src = src.flatten(2).permute(2, 0, 1)
@@ -118,7 +143,17 @@ class Transformer(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
+    """Transformer encoder that processes TReS image-patch features.
+
+    """
     def __init__(self, encoder_layer, num_layers, norm=None):
+        """Initialize the transformer encoder and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            encoder_layer: Encoder-layer instance to clone for the transformer stack.
+            num_layers: Number of items, stages, tokens, or channels configured for this operation.
+            norm: Normalization module or mode applied to the feature tensor.
+        """
         super().__init__()
         self.layers = _get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
@@ -131,6 +166,18 @@ class TransformerEncoder(nn.Module):
         src_key_padding_mask: Optional[Tensor] = None,
         pos: Optional[Tensor] = None,
     ):
+        """Apply the stacked transformer encoder layers to patch features.
+
+        Args:
+            src: Source sequence or feature tensor supplied to the transformer encoder.
+            mask: Optional mask controlling which positions participate in attention or aggregation.
+            src_key_padding_mask: Optional mask controlling which positions participate in attention or aggregation.
+            pos: Positional embedding or position indices associated with the input tokens.
+
+
+        Returns:
+            Encoded patch feature tensor.
+        """
         output = src
 
         for layer in self.layers:
@@ -148,6 +195,9 @@ class TransformerEncoder(nn.Module):
 
 
 class TransformerEncoderLayer(nn.Module):
+    """Transformer encoder layer used to model interactions among TReS image patches.
+
+    """
     def __init__(
         self,
         d_model,
@@ -157,6 +207,16 @@ class TransformerEncoderLayer(nn.Module):
         activation='relu',
         normalize_before=False,
     ):
+        """Initialize the transformer encoder layer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            d_model: Transformer embedding width.
+            nhead: Number of attention heads.
+            dim_feedforward: Hidden width of the transformer feed-forward network.
+            dropout: Dropout probability used by the projection or transformer layers.
+            activation: Activation-layer constructor or activation mode.
+            normalize_before: Whether to apply layer normalization before the attention/feed-forward operations.
+        """
         super().__init__()
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         # Implementation of Feedforward model
@@ -173,6 +233,15 @@ class TransformerEncoderLayer(nn.Module):
         self.normalize_before = normalize_before
 
     def with_pos_embed(self, tensor, pos: Optional[Tensor]):
+        """Perform the with pos embed operation for transformer encoder layer.
+
+        Args:
+            tensor: Input tensor to transform or initialize.
+            pos: Positional embedding or position indices associated with the input tokens.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return tensor if pos is None else tensor + pos
 
     def forward_post(
@@ -182,6 +251,17 @@ class TransformerEncoderLayer(nn.Module):
         src_key_padding_mask: Optional[Tensor] = None,
         pos: Optional[Tensor] = None,
     ):
+        """Perform the forward post operation for transformer encoder layer.
+
+        Args:
+            src: Source sequence or feature tensor supplied to the transformer encoder.
+            src_mask: Optional mask controlling which positions participate in attention or aggregation.
+            src_key_padding_mask: Optional mask controlling which positions participate in attention or aggregation.
+            pos: Positional embedding or position indices associated with the input tokens.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         q = k = self.with_pos_embed(src, pos)
         src2 = self.self_attn(
             q, k, value=src, attn_mask=src_mask, key_padding_mask=src_key_padding_mask
@@ -200,6 +280,17 @@ class TransformerEncoderLayer(nn.Module):
         src_key_padding_mask: Optional[Tensor] = None,
         pos: Optional[Tensor] = None,
     ):
+        """Perform the forward pre operation for transformer encoder layer.
+
+        Args:
+            src: Source sequence or feature tensor supplied to the transformer encoder.
+            src_mask: Optional mask controlling which positions participate in attention or aggregation.
+            src_key_padding_mask: Optional mask controlling which positions participate in attention or aggregation.
+            pos: Positional embedding or position indices associated with the input tokens.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         src2 = self.norm1(src)
         q = k = self.with_pos_embed(src2, pos)
         src2 = self.self_attn(
@@ -218,6 +309,17 @@ class TransformerEncoderLayer(nn.Module):
         src_key_padding_mask: Optional[Tensor] = None,
         pos: Optional[Tensor] = None,
     ):
+        """Apply the transformer encoder layer computation to the provided activations.
+
+        Args:
+            src: Source sequence or feature tensor supplied to the transformer encoder.
+            src_mask: Optional mask controlling which positions participate in attention or aggregation.
+            src_key_padding_mask: Optional mask controlling which positions participate in attention or aggregation.
+            pos: Positional embedding or position indices associated with the input tokens.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         if self.normalize_before:
             return self.forward_pre(src, src_mask, src_key_padding_mask, pos)
         return self.forward_post(src, src_mask, src_key_padding_mask, pos)
@@ -233,6 +335,14 @@ class PositionEmbeddingSine(nn.Module):
     def __init__(
         self, num_pos_feats=64, temperature=10000, normalize=False, scale=None
     ):
+        """Initialize the position embedding sine and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            num_pos_feats: Number of items, stages, tokens, or channels configured for this operation.
+            temperature: Positive temperature used to scale similarity logits.
+            normalize: Whether to normalize compared feature vectors before computing similarity.
+            scale: Scaling factor or embedding scale configured by this model.
+        """
         super().__init__()
         self.num_pos_feats = num_pos_feats  # 128 in dert
         self.temperature = temperature
@@ -245,6 +355,14 @@ class PositionEmbeddingSine(nn.Module):
 
     # def forward(self, tensor_list: NestedTensor):
     def forward(self, tensor_val):
+        """Compute the TReS prediction for the supplied image or image pair.
+
+        Args:
+            tensor_val: Tensor or scalar value used to initialize the parameter.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         x = tensor_val
         # mask = tensor_list.mask # it has 1 for padding, so the important stuff is 0
         mask = torch.gt(torch.zeros(x.shape), 0).to(x.device)[:, 0, :, :]
@@ -277,6 +395,14 @@ class PositionEmbeddingSine(nn.Module):
 class L2pooling(nn.Module):
     """L2 pooling with Hann-window smoothing."""
     def __init__(self, filter_size=5, stride=1, channels=None, pad_off=0):
+        """Initialize the l2pooling and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            filter_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            stride: Spatial stride for the convolutional stage.
+            channels: Number of feature channels processed by the filter.
+            pad_off: Spatial offset applied to the padding operation.
+        """
         super(L2pooling, self).__init__()
         self.padding = (filter_size - 2) // 2
         self.stride = stride
@@ -289,6 +415,14 @@ class L2pooling(nn.Module):
         )
 
     def forward(self, input):
+        """Apply the l2pooling computation to the provided activations.
+
+        Args:
+            input: Image or feature tensor supplied to the feature extractor.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         input = input**2
         out = F.conv2d(
             input,
@@ -334,6 +468,20 @@ class TReS(nn.Module):
         pretrained=True,
         pretrained_model_path=None,
     ):
+        """Initialize the tre s and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            network: Feature-extractor backbone instance or architecture.
+            train_dataset: Training dataset/model variant used to select its weights or preprocessing.
+            nheadt: Number of attention heads in the transformer.
+            num_encoder_layerst: Number of items, stages, tokens, or channels configured for this operation.
+            dim_feedforwardt: Hidden width of the transformer feed-forward network.
+            test_sample: Number of test-time image samples or crops used to estimate the score.
+            default_mean: Per-channel input normalization means.
+            default_std: Per-channel input normalization standard deviations.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+        """
         super().__init__()
 
         self.test_sample = test_sample
@@ -402,6 +550,15 @@ class TReS(nn.Module):
 
     def forward_backbone(self, model, x):
         # See note [TorchScript super()]
+        """Perform the forward backbone operation for tre s.
+
+        Args:
+            model: Model instance whose parameters or attributes are used by this helper.
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         x = model.conv1(x)
         x = model.bn1(x)
         x = model.relu(x)

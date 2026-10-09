@@ -1,20 +1,13 @@
-"""
-A standalone PyTorch implementation for fast and efficient bicubic resampling.
-The resulting values are the same to MATLAB function imresize('bicubic').
-## Author:      Sanghyun Son
-## Email:       sonsang35@gmail.com (primary), thstkdgus35@snu.ac.kr (secondary)
-## Version:     1.2.0
-## Last update: July 9th, 2020 (KST)
-Dependency: torch
-Example::
->>> import torch
->>> import core
->>> x = torch.arange(16).float().view(1, 1, 4, 4)
->>> y = core.imresize(x, sizes=(3, 3))
->>> print(y)
-tensor([[[[ 0.7506,  2.1004,  3.4503],
-          [ 6.1505,  7.5000,  8.8499],
-          [11.5497, 12.8996, 14.2494]]]])
+"""MATLAB-compatible separable image resizing implemented with PyTorch.
+
+The bicubic interpolation follows the MATLAB ``imresize`` convention.
+Implementation adapted from work by Sanghyun Son (July 2020).
+
+Example:
+    >>> import torch
+    >>> from pyiqa.matlab_utils.resize import imresize
+    >>> image = torch.arange(16).float().view(1, 1, 4, 4)
+    >>> resized = imresize(image, sizes=(3, 3))
 """
 
 import math
@@ -277,13 +270,22 @@ def resize_1d(
     padding_type: str = 'reflect',
     antialiasing: bool = True,
 ) -> torch.Tensor:
-    """
+    """Resize a tensor along one spatial dimension using a separable kernel.
+
     Args:
-        x (torch.Tensor): A torch.Tensor of dimension (B x C, 1, H, W).
-        dim (int):
-        scale (float):
-        size (int):
-    Return:
+        x (torch.Tensor): Four-dimensional working tensor shaped
+            ``(B*C, 1, H, W)``.
+        dim (int): Spatial dimension to resize (height ``-2``/``2`` or width
+            ``-1``/``3``).
+        size (int): Output length along ``dim``.
+        scale (float): Output-to-input scale used to place sampling centers.
+        kernel (str): Resampling kernel; ``'cubic'`` or ``'gaussian'``.
+        sigma (float): Standard deviation for a Gaussian kernel.
+        padding_type (str): Boundary extension mode; currently ``'reflect'``.
+        antialiasing (bool): Widen the filter when downsampling.
+
+    Returns:
+        torch.Tensor: Resampled tensor with ``size`` elements along ``dim``.
     """
     # Identity case
     if scale == 1:
@@ -375,18 +377,29 @@ def imresize(
     padding_type: str = 'reflect',
     antialiasing: bool = True,
 ) -> torch.Tensor:
-    """
+    """Resize a 2D, 3D, or 4D image tensor with MATLAB-style interpolation.
+
     Args:
-        x (torch.Tensor):
-        scale (float):
-        sizes (tuple(int, int)):
-        kernel (str, default='cubic'):
-        sigma (float, default=2):
-        rotation_degree (float, default=0):
-        padding_type (str, default='reflect'):
-        antialiasing (bool, default=True):
-    Return:
-        torch.Tensor:
+        x (torch.Tensor): Image tensor shaped ``(H, W)``, ``(C, H, W)``, or
+            ``(N, C, H, W)``.
+        scale (float, optional): Uniform resize scale. Mutually exclusive with
+            ``sizes``.
+        sizes (tuple[int, int], optional): Requested output height and width.
+            Mutually exclusive with ``scale``.
+        kernel (str or torch.Tensor): Resampling kernel. String kernels
+            ``'cubic'`` and ``'gaussian'`` are supported.
+        sigma (float): Gaussian kernel standard deviation.
+        rotation_degree (float): Reserved for API compatibility; rotation is
+            not applied by this implementation.
+        padding_type (str): Boundary padding mode; currently ``'reflect'``.
+        antialiasing (bool): Apply a wider filter when downsampling.
+
+    Returns:
+        torch.Tensor: Resized tensor with the input rank and dtype preserved.
+
+    Raises:
+        ValueError: If neither or both of ``scale`` and ``sizes`` are given,
+            or when an unsupported kernel/padding mode is selected.
     """
     if scale is None and sizes is None:
         raise ValueError('One of scale or sizes must be specified!')

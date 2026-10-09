@@ -203,6 +203,15 @@ class PIQE(torch.nn.Module):
     def get_masks(
         self,
     ):
+        """Return the artifact, noise, and activity masks from the last call.
+
+        Returns:
+            dict[str, torch.Tensor]: Masks keyed by ``noticeable_artifacts_mask``,
+            ``noise_mask``, and ``activity_mask``.
+
+        Raises:
+            AssertionError: If :meth:`forward` has not yet computed results.
+        """
         assert self.results is not None, 'Please calculate the piqe score first.'
         return {
             'noticeable_artifacts_mask': self.results[1],
@@ -211,5 +220,13 @@ class PIQE(torch.nn.Module):
         }
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Compute PIQE and retain its score and diagnostic masks.
+
+        Args:
+            x (torch.Tensor): Image batch shaped ``(B, C, H, W)``.
+
+        Returns:
+            torch.Tensor: Per-image PIQE scores.
+        """
         self.results = piqe(x)
         return self.results[0]

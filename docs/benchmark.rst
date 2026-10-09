@@ -49,7 +49,7 @@ Performance on NR benchmarks
     :file: ../tests/NR_benchmark_results.csv
 
 Performance on image aesthetic benchmarks
-----------------------------------------
+------------------------------------------
 
 .. csv-table:: IAA benchmark
     :header-rows: 1

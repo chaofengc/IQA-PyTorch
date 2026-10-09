@@ -17,6 +17,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Configuration classes for the Qwen3.5 text, vision, and multimodal model components."""
+
 from ...configuration_utils import PreTrainedConfig, layer_type_validation
 from ...modeling_rope_utils import RopeParameters
 
@@ -155,6 +157,36 @@ class Qwen3_5TextConfig(PreTrainedConfig):
         eos_token_id: int | None = None,
         **kwargs,
     ):
+        """Store text model dimensions, attention settings, layer types, RoPE options, and token IDs; derive layer types when omitted.
+
+        Args:
+            vocab_size: Number of token embeddings and output classes.
+            hidden_size: Width of hidden feature vectors.
+            intermediate_size: Width of the MLP intermediate representation.
+            num_hidden_layers: Number of decoder layers.
+            num_attention_heads: Number of full-attention query heads.
+            num_key_value_heads: Number of full-attention key/value heads.
+            hidden_act: Activation function name.
+            max_position_embeddings: Configured maximum text sequence length.
+            initializer_range: Weight initialization scale.
+            rms_norm_eps: Epsilon used by RMS normalization.
+            use_cache: Whether cached states should be created or returned.
+            tie_word_embeddings: Whether the language model input/output embeddings are tied.
+            rope_parameters: RoPE type, base, scaling, and optional multimodal position settings.
+            attention_bias: Whether full-attention projections include bias terms.
+            attention_dropout: Dropout probability for attention weights.
+            head_dim: Width of each full-attention head.
+            linear_conv_kernel_dim: Kernel width of the linear-attention causal convolution.
+            linear_key_head_dim: Width of each linear-attention key head.
+            linear_value_head_dim: Width of each linear-attention value head.
+            linear_num_key_heads: Number of linear-attention key heads.
+            linear_num_value_heads: Number of linear-attention value heads.
+            layer_types: Optional attention type for each decoder layer; absent values use the interval pattern.
+            pad_token_id: Padding token ID.
+            bos_token_id: Beginning-of-sequence token ID.
+            eos_token_id: End-of-sequence token ID.
+            **kwargs: Additional model/backend options forwarded where supported.
+        """
         kwargs["ignore_keys_at_rope_validation"] = {"mrope_section", "mrope_interleaved"}
         self.pad_token_id = pad_token_id
         self.bos_token_id = bos_token_id
@@ -196,6 +228,8 @@ class Qwen3_5TextConfig(PreTrainedConfig):
 
 
 class Qwen3_5VisionConfig(PreTrainedConfig):
+    """Configuration for visual patch embedding, transformer depth, and spatial feature merging.
+    """
     model_type = "qwen3_5"
     base_config_key = "vision_config"
 
@@ -215,6 +249,23 @@ class Qwen3_5VisionConfig(PreTrainedConfig):
         initializer_range=0.02,
         **kwargs,
     ):
+        """Store vision depth, patch geometry, activation, head count, and input/output feature widths.
+
+        Args:
+            depth: Number of vision transformer blocks.
+            hidden_size: Width of hidden feature vectors.
+            hidden_act: Activation function name.
+            intermediate_size: Width of the MLP intermediate representation.
+            num_heads: Number of vision attention heads.
+            in_channels: Number of image/frame input channels.
+            patch_size: Spatial edge length of a patch.
+            spatial_merge_size: Spatial patch merge factor per axis.
+            temporal_patch_size: Number of frames grouped into a temporal patch.
+            out_hidden_size: Width of merged visual features.
+            num_position_embeddings: Number of learned spatial position embeddings.
+            initializer_range: Weight initialization scale.
+            **kwargs: Additional model/backend options forwarded where supported.
+        """
         super().__init__(**kwargs)
 
         self.depth = depth
@@ -286,6 +337,18 @@ class Qwen3_5Config(PreTrainedConfig):
         tie_word_embeddings=False,
         **kwargs,
     ):
+        """Build default or supplied text/vision sub-configs and store multimodal token IDs.
+
+        Args:
+            text_config: Text config object/dictionary; omitted values use the default text config.
+            vision_config: Vision config object/dictionary; omitted values use the default vision config.
+            image_token_id: Token ID marking image content.
+            video_token_id: Token ID marking video content.
+            vision_start_token_id: Token ID preceding a vision segment.
+            vision_end_token_id: Token ID terminating a vision segment.
+            tie_word_embeddings: Whether the language model input/output embeddings are tied.
+            **kwargs: Additional model/backend options forwarded where supported.
+        """
         if isinstance(vision_config, dict):
             self.vision_config = self.sub_configs["vision_config"](**vision_config)
         elif vision_config is None:

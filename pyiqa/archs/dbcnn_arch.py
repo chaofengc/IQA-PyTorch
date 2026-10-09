@@ -38,6 +38,11 @@ class SCNN(nn.Module):
     """
 
     def __init__(self, use_bn=True):
+        """Initialize the scnn and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            use_bn: Whether to use batch-normalization layers.
+        """
         super(SCNN, self).__init__()
 
         self.num_class = 39
@@ -122,6 +127,17 @@ class DBCNN(nn.Module):
         default_mean=[0.485, 0.456, 0.406],
         default_std=[0.229, 0.224, 0.225],
     ):
+        """Initialize the dbcnn and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            fc: Fully connected regression head or its configuration.
+            use_bn: Whether to use batch-normalization layers.
+            pretrained_scnn_path: Optional path to pretrained shallow CNN branch weights.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            default_mean: Per-channel input normalization means.
+            default_std: Per-channel input normalization standard deviations.
+        """
         super(DBCNN, self).__init__()
 
         # Convolution and pooling layers of VGG-16.

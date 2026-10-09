@@ -100,6 +100,13 @@ class GMSD(nn.Module):
     """
 
     def __init__(self, channels: int = 3, test_y_channel: bool = True) -> None:
+        """Set the expected channel count and luminance conversion behavior.
+
+        Args:
+            channels (int): Number of image channels processed by GMSD.
+            test_y_channel (bool): Convert three-channel input to luminance
+                before calculating gradient similarity.
+        """
         super(GMSD, self).__init__()
         self.channels = channels
         self.test_y_channel = test_y_channel

@@ -1,4 +1,8 @@
-# Dataset Preparation
+# Dataset preparation
+
+This guide describes the dataset adapters used by pyiqa's training and
+evaluation utilities. It does not distribute source image datasets; download
+them from the dataset owners and follow their licenses and terms of use.
 
 - [Dataset Preparation](#dataset-preparation)
   - [Supported Datasets](#supported-datasets)
@@ -9,7 +13,9 @@
 
 ## Supported Datasets
 
-The following datasets can be loaded with the current codes after downloaded (see example [scripts](../options/example_benchmark_data_opts.yml)):
+The following datasets can be loaded after downloading and arranging their
+files as expected by the corresponding configuration (see the example
+[benchmark options](../options/example_benchmark_data_opts.yml)):
 
 | FR Dataset | Description | NR Dataset       | Description        |
 | ---------- | ----------- | ---------------- | ------------------ |
@@ -33,42 +39,55 @@ Here are some other resources to download the dataset:
 
 ## Interface of Dataloader
 
-We create general interfaces for FR and NR datasets in `pyiqa/data/general_fr_dataset.py` and `pyiqa/data/general_nr_dataset.py`. The main arguments are
+General FR and NR dataset interfaces are implemented in
+`pyiqa/data/general_fr_dataset.py` and `pyiqa/data/general_nr_dataset.py`. The
+main options include:
 
 - `opt` contains all dataset options, including
-    - `dataroot_target`: path of target image folder.
-    - `dataroot_ref [optional]`: path of reference image folder.
-    - `meta_info_file`: file containing meta information of images, including relative image paths, mos labels and other labels.
-    - `augment [optional]` data augmentation transform list
-        - `hflip`: flip input images or pairs
-        - `random_crop`: int or tuple, random crop input images or pairs
-    - `split_file [optional]`: `train/val/test` split file `*.pkl`. If not specified, will use the split information in meta csv file or load the whole dataset.
-    - `split_index [optional]`: `str` or `int`, which split to use, valid when `split_file` is specified or corresponding split information exits in meta csv file.
-    - `dmos max`: some dataset use difference of mos. Set this to non-zero will change dmos to mos with `mos = dmos_max - dmos`.
-    - `phase`: phase labels [train, val, test]
+    - `dataroot_target`: target/distorted image directory.
+    - `dataroot_ref` (optional): reference image directory for FR datasets.
+    - `meta_info_file`: metadata file with relative image paths, MOS/DMOS labels,
+      and any dataset-specific fields.
+    - `augment` (optional): data augmentation settings, such as `hflip` or
+      `random_crop`; paired FR images receive consistent geometric transforms.
+    - `split_file` (optional): pickle file defining train/validation/test
+      indices. When omitted, split metadata or the complete dataset is used.
+    - `split_index` (optional): split name or index selected from the metadata
+      or split file.
+    - `dmos_max` (optional): convert DMOS to MOS using
+      `mos = dmos_max - dmos` for datasets that require it.
+    - `phase`: dataset phase, typically `train`, `val`, or `test`.
 
-The above interface requires the `meta_info_file` to provide the dataset information and the train/val/test split. The `meta_info_file` are `.csv` files, and has the following general format
+The above interface requires `meta_info_file` to provide dataset metadata and,
+optionally, split labels. The delimiter must match the selected dataset
+configuration; some metadata files use tabs despite having a `.csv` extension.
+Typical columns are:
+
+- NR datasets: image name, MOS/DMOS, optional standard deviation, optional
+  split name.
+- FR datasets: reference image name, distorted image name, MOS/DMOS, optional
+  standard deviation, optional split name.
+
+For example, an NR metadata row may look like:
+
+```text
+100.bmp    32.56107532210109    19.12472638223644    official_split
 ```
-- For NR datasets: name, mos(mean), std, split_name
-    ```
-    100.bmp   	32.56107532210109   	19.12472638223644   train/val/test
-    ```
 
-- For FR datasets: ref_name, dist_name, mos(mean), std, split_name 
-    ```
-    I01.bmp        I01_01_1.bmp   5.51429        0.13013 train/val/test
+An FR metadata row may look like:
 
-    ```
+```text
+I01.bmp    I01_01_1.bmp    5.51429    0.13013    official_split
 ```
 
-Note that we generate `train/val/test` splits follow the principles below:
+The provided `train/val/test` splits follow these principles:
 
 - For datasets which has official splits, we follow their splits.
 - For official split which has no `val` part, e.g., AVA dataset, we random separate 5% from training data as validation.
 - For small datasets which requires n-split results, we use `train:val=8:2`  ratio.
 - All random seeds are set to `123` when needed.
 
-According to these rules, the `split_name` is named as follows:
+Split names use the following conventions:
 
 - The official split is saved in a column named `official_split`.
 - [if necessary] Ten random splits are generated and stored using the format `ratio[split_ratio]_seed[seed number]_split[split index:02d]`. For example, for a split ratio of `train/val/test=8:0:2`, a seed number of 123, and the first split, the entry would be `ratio802_seed123_split01`.
@@ -76,27 +95,35 @@ According to these rules, the `split_name` is named as follows:
 
 ### Using separate split file
 
-You may also use the `split_file` to specify the split information. The `split_file` are `.pkl` files which contains the `train/val/test` information with python dictionary in the following format:
-```
-{
-    train_index: {
-        train: [train_index_list]
-        val: [val_index_list] # blank if no validation split
-        test: [test_index_list] # blank if no test split
-    }
+You may also use `split_file` to specify split membership. The pickle file
+contains a mapping from a one-based split index to zero-based metadata row
+indices. Empty lists represent unused phases:
+
+```python
+split_file = {
+    1: {
+        'train': [0, 1, 2],
+        'val': [],
+        'test': [3, 4],
+    },
 }
 ```
-The train_index starts from `1`. And the sample indexes correspond to the row index of `meta_info_file`, starting from `0`. We already generate the files for mainstream public datasets with scripts in folder [./scripts/](./scripts/).
+
+Example split files for common public datasets are generated by scripts in
+the repository's [`scripts/`](../scripts/) directory.
 
 ## Specific Datasets and Dataloader
 
-Some of the supported datasets have different label formats and file organizations, and we create specific dataloader for them:
+Some datasets use different label formats or directory layouts and therefore
+have dedicated adapters:
 
-- Live Challenge. The first 7 samples are usually removed in the related works.
-- AVA. Different label formats.
-- PieAPP. Different label formats.
-- BAPPS. Different label formats.
+- LIVE Challenge: related work often excludes the first seven samples.
+- AVA: aesthetic-rating labels and splits.
+- PieAPP: pairwise preference labels.
+- BAPPS: pairwise perceptual judgments.
 
 ## Test Dataloader
 
-You may use `tests/test_datasets.py` to test whether a dataset can be correctly loaded.
+Use `pytest tests/test_datasets_general.py` to check dataset loading. Dataset
+tests may require local data and should be configured with the paths described
+in `options/`.

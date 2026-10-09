@@ -1,3 +1,5 @@
+"""CLIP model architectures and utilities adapted from OpenAI CLIP; see repository license and upstream attribution for applicable terms."""
+
 import hashlib
 import os
 import urllib
@@ -28,6 +30,15 @@ _MODELS = {
 
 
 def _download(url: str, root: str):
+    """Download a CLIP checkpoint to the cache, verifying its expected SHA-256 when the URL encodes one.
+
+    Args:
+        url: Checkpoint URL; a hash embedded in the URL is checked when available.
+        root: Directory in which a downloaded checkpoint is cached.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     os.makedirs(root, exist_ok=True)
     filename = os.path.basename(url)
 
@@ -148,6 +159,11 @@ def load(
     ][-1]
 
     def patch_device(module):
+        """Perform the patch device operation for clip.
+
+        Args:
+            module: Module whose forward hook was invoked.
+        """
         try:
             graphs = [module.graph] if hasattr(module, 'graph') else []
         except RuntimeError:
@@ -178,6 +194,11 @@ def load(
         float_node = float_input.node()
 
         def patch_float(module):
+            """Perform the patch float operation for clip.
+
+            Args:
+                module: Module whose forward hook was invoked.
+            """
             try:
                 graphs = [module.graph] if hasattr(module, 'graph') else []
             except RuntimeError:
@@ -211,9 +232,19 @@ def load(
 
 
 class Bottleneck(nn.Module):
+    """Residual bottleneck block used in the CLIP modified ResNet visual encoder.
+
+    """
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1):
+        """Initialize the bottleneck and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            inplanes: Input channel count of the residual stage.
+            planes: Output channel count of the convolutional residual stage.
+            stride: Spatial stride for the convolutional stage.
+        """
         super().__init__()
 
         # all conv layers have stride 1. an avgpool is performed after the second convolution when stride > 1
@@ -254,6 +285,14 @@ class Bottleneck(nn.Module):
             )
 
     def forward(self, x: torch.Tensor):
+        """Apply the bottleneck computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         identity = x
 
         out = self.relu(self.bn1(self.conv1(x)))
@@ -270,9 +309,20 @@ class Bottleneck(nn.Module):
 
 
 class AttentionPool2d(nn.Module):
+    """Attention-based pooling layer that reduces a spatial feature map to a global embedding.
+
+    """
     def __init__(
         self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int = None
     ):
+        """Initialize the attention pool2d and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            spacial_dim: Spatial side length of the feature map before attention pooling.
+            embed_dim: Dimension of the shared image-text or feature embedding.
+            num_heads: Number of attention heads.
+            output_dim: Output feature or embedding dimension.
+        """
         super().__init__()
         self.positional_embedding = nn.Parameter(
             torch.randn(spacial_dim**2 + 1, embed_dim) / embed_dim**0.5
@@ -286,6 +336,16 @@ class AttentionPool2d(nn.Module):
         self.embed_dim = embed_dim
 
     def forward(self, x, return_token=False, pos_embedding=False):
+        """Apply the attention pool2d computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            return_token: Whether to return intermediate patch/token features in addition to pooled output.
+            pos_embedding: Optional positional-embedding setting or tensor used in feature encoding.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         n, c, h, w = x.shape
         x = x.reshape(x.shape[0], x.shape[1], x.shape[2] * x.shape[3]).permute(
             2, 0, 1
@@ -342,6 +402,15 @@ class ModifiedResNet(nn.Module):
     """
 
     def __init__(self, layers, output_dim, heads, input_resolution=224, width=64):
+        """Initialize the modified res net and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            layers: Number of blocks in each stage or transformer stack.
+            output_dim: Output feature or embedding dimension.
+            heads: Number of attention heads.
+            input_resolution: Expected input image resolution.
+            width: Channel or embedding width of the configured network.
+        """
         super().__init__()
         self.output_dim = output_dim
         self.input_resolution = input_resolution
@@ -375,6 +444,16 @@ class ModifiedResNet(nn.Module):
         )
 
     def _make_layer(self, planes, blocks, stride=1):
+        """Build one residual stage of the convolutional image encoder.
+
+        Args:
+            planes: Output channel count of the convolutional residual stage.
+            blocks: Number of residual blocks in the stage.
+            stride: Spatial stride for the convolutional stage.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         layers = [Bottleneck(self._inplanes, planes, stride)]
 
         self._inplanes = planes * Bottleneck.expansion
@@ -384,7 +463,25 @@ class ModifiedResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward_features(self, x, return_token=False, pos_embedding=False):
+        """Perform the forward features operation for modified res net.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            return_token: Whether to return intermediate patch/token features in addition to pooled output.
+            pos_embedding: Optional positional-embedding setting or tensor used in feature encoding.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         def stem(x):
+            """Perform the stem operation for clip.
+
+            Args:
+                x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+            Returns:
+                Computed result; type and shape follow the supplied inputs and model configuration.
+            """
             for conv, bn in [
                 (self.conv1, self.bn1),
                 (self.conv2, self.bn2),
@@ -408,7 +505,25 @@ class ModifiedResNet(nn.Module):
         return feat_list
 
     def forward(self, x, return_token=False, pos_embedding=False):
+        """Compute the CLIP prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            return_token: Whether to return intermediate patch/token features in addition to pooled output.
+            pos_embedding: Optional positional-embedding setting or tensor used in feature encoding.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         def stem(x):
+            """Perform the stem operation for clip.
+
+            Args:
+                x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+            Returns:
+                Computed result; type and shape follow the supplied inputs and model configuration.
+            """
             for conv, bn in [
                 (self.conv1, self.bn1),
                 (self.conv2, self.bn2),
@@ -437,18 +552,47 @@ class LayerNorm(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16."""
 
     def forward(self, x: torch.Tensor):
+        """Apply the layer norm computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         orig_type = x.dtype
         ret = super().forward(x.type(torch.float32))
         return ret.type(orig_type)
 
 
 class QuickGELU(nn.Module):
+    """Fast GELU-style activation used by the CLIP transformer.
+
+    """
     def forward(self, x: torch.Tensor):
+        """Compute the CLIP prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         return x * torch.sigmoid(1.702 * x)
 
 
 class ResidualAttentionBlock(nn.Module):
+    """Transformer block with multi-head self-attention and a residual MLP.
+
+    """
     def __init__(self, d_model: int, n_head: int, attn_mask: torch.Tensor = None):
+        """Initialize the residual attention block and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            d_model: Transformer embedding width.
+            n_head: Number of attention heads.
+            attn_mask: Optional attention mask controlling which query-key positions may interact.
+        """
         super().__init__()
 
         self.attn = nn.MultiheadAttention(d_model, n_head)
@@ -466,6 +610,14 @@ class ResidualAttentionBlock(nn.Module):
         self.attn_mask = attn_mask
 
     def attention(self, x: torch.Tensor):
+        """Apply self-attention to a sequence in the residual attention block.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         self.attn_mask = (
             self.attn_mask.to(dtype=x.dtype, device=x.device)
             if self.attn_mask is not None
@@ -474,15 +626,34 @@ class ResidualAttentionBlock(nn.Module):
         return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
 
     def forward(self, x: torch.Tensor):
+        """Apply the residual attention block computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = x + self.attention(self.ln_1(x))
         x = x + self.mlp(self.ln_2(x))
         return x
 
 
 class Transformer(nn.Module):
+    """Stack of residual attention blocks used by the CLIP text or visual encoder.
+
+    """
     def __init__(
         self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None
     ):
+        """Initialize the transformer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            width: Channel or embedding width of the configured network.
+            layers: Number of blocks in each stage or transformer stack.
+            heads: Number of attention heads.
+            attn_mask: Optional attention mask controlling which query-key positions may interact.
+        """
         super().__init__()
         self.width = width
         self.layers = layers
@@ -491,10 +662,21 @@ class Transformer(nn.Module):
         )
 
     def forward(self, x: torch.Tensor):
+        """Apply the transformer computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         return self.resblocks(x)
 
 
 class VisionTransformer(nn.Module):
+    """Patch-based visual transformer that maps an image batch to CLIP embeddings or patch tokens.
+
+    """
     def __init__(
         self,
         input_resolution: int,
@@ -504,6 +686,16 @@ class VisionTransformer(nn.Module):
         heads: int,
         output_dim: int,
     ):
+        """Initialize the vision transformer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            input_resolution: Expected input image resolution.
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            width: Channel or embedding width of the configured network.
+            layers: Number of blocks in each stage or transformer stack.
+            heads: Number of attention heads.
+            output_dim: Output feature or embedding dimension.
+        """
         super().__init__()
         self.input_resolution = input_resolution
         self.output_dim = output_dim
@@ -528,6 +720,16 @@ class VisionTransformer(nn.Module):
         self.proj = nn.Parameter(scale * torch.randn(width, output_dim))
 
     def forward(self, x: torch.Tensor, return_token=False, pos_embedding=False):
+        """Encode image patches with the visual transformer; optionally add interpolated positional embeddings and return patch tokens.
+
+        Args:
+            x: RGB image tensor shaped ``(B, 3, H, W)``.
+            return_token: If true, return patch-token features alongside the pooled image embedding.
+            pos_embedding: If true, interpolate and add positional embeddings for the current token grid.
+
+        Returns:
+            Image embedding shaped ``(B, output_dim)`` or a pair of image embeddings and patch-token features when ``return_token=True``.
+        """
         x = self.conv1(x)  # shape = [*, width, grid, grid]
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
         x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
@@ -574,6 +776,9 @@ class VisionTransformer(nn.Module):
 
 
 class CLIP(nn.Module):
+    """Dual encoder that maps images and tokenized text into a shared embedding space and computes scaled similarities.
+
+    """
     def __init__(
         self,
         embed_dim: int,
@@ -589,6 +794,20 @@ class CLIP(nn.Module):
         transformer_heads: int,
         transformer_layers: int,
     ):
+        """Initialize the clip and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            embed_dim: Dimension of the shared image-text or feature embedding.
+            image_resolution: Expected image resolution for the visual encoder.
+            vision_layers: Number of visual-transformer layers or residual blocks per visual stage.
+            vision_width: Channel width of the visual encoder.
+            vision_patch_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            context_length: Maximum number of tokens in the CLIP text context.
+            vocab_size: Number of token IDs supported by the text embedding.
+            transformer_width: Width of the text-transformer embeddings.
+            transformer_heads: Number of attention heads in the text transformer.
+            transformer_layers: Number of text-transformer blocks.
+        """
         super().__init__()
 
         self.context_length = context_length
@@ -633,6 +852,9 @@ class CLIP(nn.Module):
         self.initialize_parameters()
 
     def initialize_parameters(self):
+        """Initialize CLIP embedding, attention, and projection parameters.
+
+        """
         nn.init.normal_(self.token_embedding.weight, std=0.02)
         nn.init.normal_(self.positional_embedding, std=0.01)
 
@@ -671,6 +893,11 @@ class CLIP(nn.Module):
     def build_attention_mask(self):
         # lazily create causal attention mask, with full attention between the vision tokens
         # pytorch uses additive attention mask; fill with -inf
+        """Create the causal attention mask used by the CLIP text transformer.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         mask = torch.empty(self.context_length, self.context_length)
         mask.fill_(float('-inf'))
         mask.triu_(1)  # zero out the lower diagonal
@@ -678,12 +905,34 @@ class CLIP(nn.Module):
 
     @property
     def dtype(self):
+        """Perform the dtype operation for clip.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return self.visual.conv1.weight.dtype
 
     def encode_image(self, image, pos_embedding):
+        """Encode an image batch with the visual backbone, optionally adding interpolated visual positional embeddings.
+
+        Args:
+            image: RGB image tensor shaped ``(B, 3, H, W)``.
+            pos_embedding: If true, interpolate and add positional embeddings for the current visual token grid.
+
+        Returns:
+            Image embedding tensor shaped ``(B, embed_dim)``.
+        """
         return self.visual(image.type(self.dtype), pos_embedding=pos_embedding)
 
     def encode_text(self, text):
+        """Encode tokenized text into the model embedding space.
+
+        Args:
+            text: Text string or sequence of strings, depending on the API.
+
+        Returns:
+            Batch of embeddings with the model embedding dimension on the final axis.
+        """
         x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
 
         x = x + self.positional_embedding.type(self.dtype)
@@ -699,6 +948,17 @@ class CLIP(nn.Module):
         return x
 
     def forward(self, image, text, pos_embedding=False, text_features=None):
+        """Encode images and text, then return their scaled pairwise similarities. The positional-embedding flag enables interpolation in the vision transformer; optional text features bypass text encoding.
+
+        Args:
+            image: RGB image tensor shaped ``(B_image, 3, H, W)``.
+            text: Token IDs shaped ``(B_text, L)`` when ``text_features`` is not supplied.
+            pos_embedding: If true, interpolate and add visual positional embeddings for the current token grid.
+            text_features: Optional precomputed text embeddings shaped ``(B_text, embed_dim)``.
+
+        Returns:
+            Pair of image-to-text and text-to-image similarity-logit tensors, shaped ``(B_image, B_text)`` and ``(B_text, B_image)``.
+        """
         image_features = self.encode_image(image, pos_embedding)
         if text_features is None:
             text_features = self.encode_text(text)
@@ -720,6 +980,11 @@ def convert_weights(model: nn.Module):
     """Convert applicable model parameters to fp16"""
 
     def _convert_weights_to_fp16(l):
+        """Perform the internal convert weights to fp16 operation used by clip.
+
+        Args:
+            l: Token sequence or word-piece representation being merged.
+        """
         if isinstance(l, (nn.Conv1d, nn.Conv2d, nn.Linear)):
             l.weight.data = l.weight.data.half()
             if l.bias is not None:
@@ -746,6 +1011,14 @@ def convert_weights(model: nn.Module):
 
 
 def build_model(state_dict: dict):
+    """Construct the CLIP model architecture inferred from a checkpoint state dictionary.
+
+    Args:
+        state_dict: Checkpoint mapping parameter names to tensors.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     vit = 'visual.proj' in state_dict
 
     if vit:

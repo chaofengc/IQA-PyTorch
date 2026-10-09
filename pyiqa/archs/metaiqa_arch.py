@@ -20,7 +20,17 @@ default_model_urls = {
 
 
 class BaselineModel1(nn.Module):
+    """Convolutional regression baseline used by the MetaIQA meta-learning model.
+
+    """
     def __init__(self, num_classes=1, keep_probability=0.5, inputsize=1000):
+        """Initialize the baseline model1 and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            num_classes: Number of items, stages, tokens, or channels configured for this operation.
+            keep_probability: Probability of retaining activations during dropout.
+            inputsize: Expected spatial size of the model input.
+        """
         super(BaselineModel1, self).__init__()
         self.fc1 = nn.Linear(inputsize, 1024)
         self.bn1 = nn.BatchNorm1d(1024)
@@ -35,6 +45,14 @@ class BaselineModel1(nn.Module):
         self.sig = nn.Sigmoid()
 
     def forward(self, x):
+        """Compute the MetaIQA prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         out = self.fc1(x)
         out = self.bn1(out)
         out = self.relu1(out)
@@ -50,7 +68,17 @@ class BaselineModel1(nn.Module):
 
 @ARCH_REGISTRY.register()
 class MetaIQA(nn.Module):
+    """Meta-learning model that predicts image quality from query/reference image features.
+
+    """
     def __init__(self, pretrained=True, pretrained_model_path=None, **kwargs):
+        """Initialize the meta iqa and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            **kwargs: kwargs value used to configure or compute this operation.
+        """
         super(MetaIQA, self).__init__()
 
         self.metric_mode = 'NR'
@@ -90,12 +118,29 @@ class MetaIQA(nn.Module):
                 load_pretrained_network(self, default_model_urls['meta-train-seed'], strict=False, weight_keys=None)
 
     def preprocess(self, x):
+        """Perform the preprocess operation for meta iqa.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         if x.shape[2:] != (224, 224):
             x = nn.functional.interpolate(x, size=(224, 224), mode='bilinear', align_corners=False)
         x = (x - self.mean) / self.std
         return x
 
     def forward(self, x, ref=None):
+        """Compute the MetaIQA prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            ref: Reference-image tensor for full-reference quality assessment.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         x = self.preprocess(x)
 
         feat = self.resnet_layer(x)

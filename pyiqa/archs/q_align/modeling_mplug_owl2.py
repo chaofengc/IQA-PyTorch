@@ -12,6 +12,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+"""mPLUG-Owl2 multimodal causal language model and image-scoring interface."""
+
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple, Union
 
@@ -41,9 +43,27 @@ DEFAULT_IMAGE_TOKEN = "<|image|>"
 from icecream import ic
 
 def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX, return_tensors=None):
+    """Tokenize text segments while replacing each image marker with the image-token sentinel.
+
+    Args:
+        prompt: Text containing zero or more occurrences of the default image marker.
+        tokenizer: Tokenizer used to encode text chunks around image markers.
+        image_token_index: Integer sentinel inserted at each image marker.
+        return_tensors: Optional output format; only "pt" is accepted for tensor output.
+
+    Returns:
+        A list of token IDs, or a one-dimensional torch.long tensor when return_tensors="pt"."""
     prompt_chunks = [tokenizer(chunk).input_ids if len(chunk) > 0 else [] for chunk in prompt.split(DEFAULT_IMAGE_TOKEN)]
 
     def insert_separator(X, sep):
+        """Interleave each text-token segment with its corresponding separator, omitting the final separator.
+
+        Args:
+            X: Sequence of token-ID segments, typically one encoded text chunk per image-marker-delimited span.
+            sep: Separator values paired with the segments in X.
+
+        Returns:
+            A flattened list alternating each segment with its separator, without a trailing separator."""
         return [ele for sublist in zip(X, [sep]*len(X)) for ele in sublist][:-1]
 
     input_ids = []
@@ -62,6 +82,14 @@ def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX
     return input_ids
 
 def expand2square(pil_img, background_color):
+        """Pad a PIL image symmetrically to a square using the requested background color.
+
+        Args:
+            pil_img: PIL image returned unchanged if square or padded if rectangular.
+            background_color: Fill color for the added square-image border.
+
+        Returns:
+            A square PIL image; an already-square input is returned unchanged."""
         from PIL import Image
         width, height = pil_img.size
         if width == height:
@@ -76,7 +104,15 @@ def expand2square(pil_img, background_color):
             return result
 
 class MPLUGOwl2MetaModel:
+    """Mixin that constructs and exposes the vision encoder and visual abstractor."""
     def __init__(self, config):
+        """Initialize MPLUGOwl2MetaModel from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super(MPLUGOwl2MetaModel, self).__init__(config)
         self.vision_model = MplugOwlVisionModel(
             MplugOwlVisionConfig(**config.visual_config["visual_model"])
@@ -86,12 +122,20 @@ class MPLUGOwl2MetaModel:
         )
     
     def get_vision_tower(self):
+        """Return the vision encoder, unwrapping the first item when stored in a list.
+
+        Returns:
+            The vision encoder module, or None if it has not been initialized."""
         vision_model = getattr(self, 'vision_model', None)
         if type(vision_model) is list:
             vision_model = vision_model[0]
         return vision_model
 
     def get_visual_abstractor(self):
+        """Return the visual abstractor, unwrapping the first item when stored in a list.
+
+        Returns:
+            The visual abstractor module, or None if it has not been initialized."""
         visual_abstractor = getattr(self, 'visual_abstractor', None)
         if type(visual_abstractor) is list:
             visual_abstractor = visual_abstractor[0]
@@ -99,11 +143,24 @@ class MPLUGOwl2MetaModel:
 
 
 class MPLUGOwl2MetaForCausalLM(ABC):
+    """Mixin for encoding images and inserting visual features into causal-LM inputs."""
+
     @abstractmethod
     def get_model(self):
+        """Return the underlying multimodal LLaMA model.
+
+        Returns:
+            The underlying multimodal model module."""
         pass
 
     def encode_images(self, images):
+        """Encode pixel tensors with the vision transformer and visual abstractor.
+
+        Args:
+            images: Image tensor(s) or image/frame collections aligned with image sentinels in input_ids.
+
+        Returns:
+            Visual features shaped (batch, query_tokens, language_hidden_size)."""
         image_features = self.get_model().vision_model(images).last_hidden_state
         image_features = self.get_model().visual_abstractor(encoder_hidden_states=image_features).last_hidden_state
         return image_features
@@ -111,6 +168,17 @@ class MPLUGOwl2MetaForCausalLM(ABC):
     def prepare_inputs_labels_for_multimodal(
         self, input_ids, attention_mask, past_key_values, labels, images
     ):
+        """Replace image sentinels with visual embeddings and align modality, mask, and label tensors.
+
+        Args:
+            input_ids: Token IDs shaped (batch, sequence), with IMAGE_TOKEN_INDEX marking image insertion points.
+            attention_mask: Optional token mask expanded for inserted visual tokens and padding.
+            past_key_values: Optional decoder cache used to extend the mask during one-token generation.
+            labels: Optional labels aligned with input_ids; inserted visual positions receive IGNORE_INDEX.
+            images: Image pixel batch or per-sample image batches consumed in marker order.
+
+        Returns:
+            A six-item tuple of token IDs, modality IDs, mask, cache, embeddings, and labels."""
         if images is None or input_ids.shape[1] == 1:
             if past_key_values is not None and images is not None and input_ids.shape[1] == 1:
                 attention_mask = torch.ones((attention_mask.shape[0], past_key_values[-1][-1].shape[-2] + 1), dtype=attention_mask.dtype, device=attention_mask.device)
@@ -242,16 +310,32 @@ class MPLUGOwl2MetaForCausalLM(ABC):
 
 
 class MPLUGOwl2LlamaModel(MPLUGOwl2MetaModel, LlamaModel):
+    """LLaMA decoder combined with the mPLUG-Owl2 vision and abstractor modules."""
     config_class = MPLUGOwl2Config
 
     def __init__(self, config: MPLUGOwl2Config):
+        """Initialize MPLUGOwl2LlamaModel from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super(MPLUGOwl2LlamaModel, self).__init__(config)
 
 
 class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
+    """Multimodal LLaMA causal language model with image-based quality scoring."""
     config_class = MPLUGOwl2Config
 
     def __init__(self, config):
+        """Initialize MPLUGOwl2LlamaForCausalLM from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+
+        Returns:
+            None; initializes module state and parameters."""
         super(LlamaForCausalLM, self).__init__(config)
         self.model = MPLUGOwl2LlamaModel(config)
         
@@ -268,6 +352,10 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
         
 
     def get_model(self):
+        """Return the underlying multimodal LLaMA model.
+
+        Returns:
+            The underlying multimodal model module."""
         return self.model
     
     def score(self, images, 
@@ -276,6 +364,17 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
               return_dict = False,
               image_tensor = None,
              ):
+        """Estimate image quality from the model’s preference logits for the supported scoring input.
+
+        Args:
+            images: PIL image(s), or a collection of video frames for the non-image scoring path.
+            task_: Text label inserted into the rating prompt, such as the requested quality aspect.
+            input_: Prompt subject label; the image path scores images and the alternative path handles frames.
+            return_dict: For image scoring, whether to return a dictionary with logits and scores instead of the score tensor.
+            image_tensor: Optional preprocessed image tensor; when supplied, image preprocessing is skipped.
+
+        Returns:
+            A score tensor shaped by the input batch; with return_dict=True, image scoring returns a dictionary containing logits and scores."""
         if not hasattr(self, "weight_tensor"):
             self.weight_tensor = torch.Tensor([5.,4.,3.,2.,1.]).half().to(self.device)
         prompt = "USER: How would you rate the {} of this {}?\n<|image|>\nASSISTANT: The {} of the {} is".format(task_, input_, task_, input_)
@@ -316,6 +415,22 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
         images: Optional[torch.FloatTensor] = None,
         return_dict: Optional[bool] = None,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
+        """Run the MPLUGOwl2LlamaForCausalLM computation for the supplied inputs.
+
+        Args:
+            input_ids: Token IDs shaped (batch, sequence); multimodal calls may contain the image-token sentinel.
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            past_key_values: Optional collection of per-layer key/value caches.
+            inputs_embeds: Input embeddings used to obtain dtype and device when creating the mask.
+            labels: Optional target IDs shaped (batch, sequence); -100 entries are ignored by cross-entropy.
+            use_cache: Whether to return or update key/value cache state.
+            output_attentions: Whether attention probabilities should be returned when supported.
+            output_hidden_states: Whether intermediate layer states should be included in the output.
+            images: Image tensor(s) or image/frame collections aligned with image sentinels in input_ids.
+            return_dict: Whether to return a Transformers ModelOutput instead of a tuple.
+
+        Returns:
+            Causal-LM outputs or a tuple; logits have shape (batch, sequence, vocabulary)."""
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
@@ -368,6 +483,17 @@ class MPLUGOwl2LlamaForCausalLM(LlamaForCausalLM, MPLUGOwl2MetaForCausalLM):
     def prepare_inputs_for_generation(
         self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
     ):
+        """Prepare token, cache, mask, and image inputs for one autoregressive generation step.
+
+        Args:
+            input_ids: Token IDs shaped (batch, sequence); multimodal calls may contain the image-token sentinel.
+            past_key_values: Optional collection of per-layer key/value caches.
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            inputs_embeds: Input embeddings used to obtain dtype and device when creating the mask.
+            kwargs: Keyword arguments forwarded to the upstream implementation.
+
+        Returns:
+            A dictionary of model inputs, using only the newest token when a cache is present."""
         if past_key_values:
             input_ids = input_ids[:, -1:]
 

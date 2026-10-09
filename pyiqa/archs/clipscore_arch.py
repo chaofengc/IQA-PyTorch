@@ -46,6 +46,13 @@ class CLIPScore(nn.Module):
     """
 
     def __init__(self, backbone='ViT-B/32', w=2.5, prefix='A photo depicts') -> None:
+        """Initialize the clipscore and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            backbone: Feature-extractor backbone identifier or module.
+            w: Learned weight tensor or scalar used by the quality mapping.
+            prefix: Text or prompt prefix prepended to generated CLIP text inputs.
+        """
         super().__init__()
 
         self.clip_model, _ = clip.load(backbone)

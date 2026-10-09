@@ -150,8 +150,9 @@ python inference_iqa.py -m brisque -t ./ResultsCalibra/dist_dir/I03.bmp
 
 `pyiqa-gmad` is a standalone candidate-pool helper that uses two non-reference
 metrics to find pairs where one metric gives similar scores while the other
-metric differs. It is not a replacement for the official gMAD evaluation
-protocol.
+metric differs. See the [gMAD documentation](docs/gmad.rst) for input formats,
+score direction, output interpretation, and limitations. It is not a
+replacement for the official gMAD evaluation protocol.
 
 ```bash
 pyiqa-gmad ./candidate_images \

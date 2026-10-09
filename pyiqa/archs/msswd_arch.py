@@ -203,6 +203,14 @@ class MS_SWD_learned(nn.Module):
         pretrained_model_path: str = None,
         **kwargs,
     ):
+        """Initialize the ms swd learned and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            resize_input: Whether to resize the input image before feature extraction.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            **kwargs: kwargs value used to configure or compute this operation.
+        """
         super(MS_SWD_learned, self).__init__()
 
         self.conv11x11 = nn.Conv2d(

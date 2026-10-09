@@ -18,6 +18,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""PyTorch implementation of the vendored Qwen3.5 text, vision, and multimodal models."""
+
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Optional
@@ -82,6 +84,11 @@ class Qwen3_5DynamicCache:
     is_compileable = False
 
     def __init__(self, config: Qwen3_5Config):
+        """Initialize empty per-layer lists for attention, convolution, and recurrent states; tensors are created lazily.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+        """
         super().__init__()
         self.layer_types = config.layer_types
         self.transformer_layers = [
@@ -96,6 +103,11 @@ class Qwen3_5DynamicCache:
         self.value_cache = [None for _ in range(config.num_hidden_layers)]
 
     def __len__(self):
+        """Return the configured number of decoder layers.
+
+        Returns:
+            The configured number of decoder layers.
+        """
         return len(self.layer_types)
 
     def update(
@@ -105,6 +117,20 @@ class Qwen3_5DynamicCache:
         layer_idx: int,
         cache_kwargs: dict[str, Any] | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Append new key/value states along sequence dimension 2 and return the updated layer cache.
+
+        Args:
+            key_states: New keys shaped by batch, key/value heads, sequence, and head width.
+            value_states: New values with matching leading dimensions.
+            layer_idx: Decoder layer index used to select this layer’s cache slot.
+            cache_kwargs: Extra cache metadata; accepted but unused by this cache implementation.
+
+        Returns:
+            Updated key and value cache tensors for the selected layer.
+
+        Notes:
+            Attention cache tensors are concatenated along sequence dimension 2.
+        """
         if self.key_cache[layer_idx] is None:
             self.key_cache[layer_idx] = key_states
             self.value_cache[layer_idx] = value_states
@@ -156,9 +182,17 @@ class Qwen3_5DynamicCache:
 
 
 class Qwen3_5VisionRotaryEmbedding(nn.Module):
+    """Generate inverse-frequency rotary angles for vision patch coordinates.
+    """
     inv_freq: torch.Tensor  # fix linting for `register_buffer`
 
     def __init__(self, dim: int, theta: float = 10000.0) -> None:
+        """Initialize non-persistent inverse frequencies from the rotary width and base.
+
+        Args:
+            dim: Rotary or normalized feature width.
+            theta: Base used to compute inverse frequencies.
+        """
         super().__init__()
         self.dim = dim
         self.theta = theta
@@ -166,15 +200,34 @@ class Qwen3_5VisionRotaryEmbedding(nn.Module):
         self.register_buffer("inv_freq", inv_freq, persistent=False)
 
     def forward(self, seqlen: int) -> torch.Tensor:
+        """Compute the outer product of positions and inverse frequencies.
+
+        Args:
+            seqlen: Number of positions to encode.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+
+        Notes:
+            The result has shape (seqlen, dim // 2).
+        """
         seq = torch.arange(seqlen, device=self.inv_freq.device, dtype=self.inv_freq.dtype)
         freqs = torch.outer(seq, self.inv_freq)
         return freqs
 
 
 class Qwen3_5TextRotaryEmbedding(nn.Module):
+    """Generate cosine and sine rotary embeddings for three-axis text and vision positions.
+    """
     inv_freq: torch.Tensor  # fix linting for `register_buffer`
 
     def __init__(self, config: Qwen3_5TextConfig, device=None):
+        """Initialize configured RoPE frequencies, scaling, and MRoPE axis sections.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+            device: Optional device for initializing frequencies.
+        """
         super().__init__()
         self.max_seq_len_cached = config.max_position_embeddings
         self.original_max_seq_len = config.max_position_embeddings
@@ -228,6 +281,18 @@ class Qwen3_5TextRotaryEmbedding(nn.Module):
     def forward(self, x, position_ids):
         # In contrast to other models, Qwen3_5 has different position ids for the grids
         # So we expand the inv_freq to shape (3, ...)
+        """Compute three-axis rotary angles, interleave the configured axes, and return cosine/sine tensors in the input dtype.
+
+        Args:
+            x: Input tensor.
+            position_ids: Position indices; text RoPE accepts (batch, sequence) or (3, batch, sequence).
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+
+        Notes:
+            Each result has shape (batch, sequence, rotary_width).
+        """
         if position_ids.ndim == 2:
             position_ids = position_ids[None, ...].expand(3, position_ids.shape[0], -1)
         inv_freq_expanded = self.inv_freq[None, None, :, None].float().expand(3, position_ids.shape[1], -1, 1)
@@ -262,12 +327,30 @@ class Qwen3_5TextRotaryEmbedding(nn.Module):
 
 
 class Qwen3_5RMSNormGated(nn.Module):
+    """Apply RMS normalization followed by a SiLU gate.
+    """
     def __init__(self, hidden_size, eps=1e-6, **kwargs):
+        """Create a learned scale vector and store the normalization epsilon.
+
+        Args:
+            hidden_size: Width of hidden feature vectors.
+            eps: Numerical-stability epsilon.
+            **kwargs: Additional model/backend options forwarded where supported.
+        """
         super().__init__()
         self.weight = nn.Parameter(torch.ones(hidden_size))
         self.variance_epsilon = eps
 
     def forward(self, hidden_states, gate=None):
+        """Normalize in float32, multiply by the learned scale and SiLU gate, then restore the input dtype.
+
+        Args:
+            hidden_states: Input hidden states, typically shaped (batch, sequence, hidden_size).
+            gate: Gate values broadcastable to input features.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+        """
         input_dtype = hidden_states.dtype
         hidden_states = hidden_states.to(torch.float32)
         variance = hidden_states.pow(2).mean(-1, keepdim=True)
@@ -303,6 +386,18 @@ def torch_causal_conv1d_update(
     bias=None,
     activation=None,
 ):
+    """Update the convolution history buffer in place and compute causal depthwise-convolution outputs for new timesteps.
+
+    Args:
+        hidden_states: Input hidden states, typically shaped (batch, sequence, hidden_size).
+        conv_state: Value for conv state.
+        weight: Per-channel convolution weights.
+        bias: Optional convolution bias.
+        activation: Activation name; the torch fallback applies SiLU.
+
+    Returns:
+        Convolved new values shaped (batch, channels, sequence).
+    """
     _, hidden_size, seq_len = hidden_states.shape
     state_len = conv_state.shape[-1]
 
@@ -331,6 +426,22 @@ def torch_chunk_gated_delta_rule(
     output_final_state=False,
     use_qk_l2norm_in_kernel=False,
 ):
+    """Compute the gated delta-rule recurrence in chunks, optionally returning the final recurrent state.
+
+    Args:
+        query: Query vectors, arranged by batch, sequence, heads, and key width.
+        key: Key tensor paired with the query and value tensors.
+        value: Value vectors, arranged by batch, sequence, heads, and value width.
+        g: Per-head decay values aligned with sequence positions.
+        beta: Per-head update gates aligned with sequence positions.
+        chunk_size: Number of sequence positions processed per chunk.
+        initial_state: Optional initial recurrent state.
+        output_final_state: Whether to return the final recurrent state.
+        use_qk_l2norm_in_kernel: Whether to L2-normalize query and key vectors before recurrence.
+
+    Returns:
+        (output, final_state); final_state is None unless requested.
+    """
     initial_dtype = query.dtype
     if use_qk_l2norm_in_kernel:
         query = l2norm(query, dim=-1, eps=1e-6)
@@ -403,6 +514,21 @@ def torch_chunk_gated_delta_rule(
 def torch_recurrent_gated_delta_rule(
     query, key, value, g, beta, initial_state, output_final_state, use_qk_l2norm_in_kernel=False
 ):
+    """Compute the gated delta-rule recurrence timestep by timestep, optionally returning the final recurrent state.
+
+    Args:
+        query: Query vectors, arranged by batch, sequence, heads, and key width.
+        key: Key tensor paired with the query and value tensors.
+        value: Value vectors, arranged by batch, sequence, heads, and value width.
+        g: Per-head decay values aligned with sequence positions.
+        beta: Per-head update gates aligned with sequence positions.
+        initial_state: Optional initial recurrent state.
+        output_final_state: Whether to return the final recurrent state.
+        use_qk_l2norm_in_kernel: Whether to L2-normalize query and key vectors before recurrence.
+
+    Returns:
+        (output, final_state); final_state is None unless requested.
+    """
     initial_dtype = query.dtype
     if use_qk_l2norm_in_kernel:
         query = l2norm(query, dim=-1, eps=1e-6)
@@ -443,7 +569,15 @@ def torch_recurrent_gated_delta_rule(
 
 
 class Qwen3_5GatedDeltaNet(nn.Module):
+    """Project hidden states, apply causal convolution and gated delta recurrence, then normalize and project the result.
+    """
     def __init__(self, config: Qwen3_5Config, layer_idx: int):
+        """Create input projections, causal depthwise convolution, recurrent operators, normalization, and output projection for one layer.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+            layer_idx: Decoder layer index used to select this layer’s cache slot.
+        """
         super().__init__()
         self.hidden_size = config.hidden_size
         self.num_v_heads = config.linear_num_value_heads
@@ -515,6 +649,20 @@ class Qwen3_5GatedDeltaNet(nn.Module):
         cache_position: torch.LongTensor | None = None,
         attention_mask: torch.Tensor | None = None,
     ):
+        """Apply masked projections, cached or full-sequence convolution, gated recurrence, normalization, and output projection.
+
+        Args:
+            hidden_states: Input hidden states, typically shaped (batch, sequence, hidden_size).
+            cache_params: Optional dynamic cache whose per-layer convolution/recurrent states are updated.
+            cache_position: Positions of current tokens; single-token values enable cached recurrent decoding.
+            attention_mask: Optional attention or padding mask; for padding-state masking it is two-dimensional.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+
+        Notes:
+            Input and output are shaped (batch, sequence, hidden_size).
+        """
         hidden_states = apply_mask_to_padding_states(hidden_states, attention_mask)
 
         # Set up dimensions for reshapes later
@@ -694,6 +842,21 @@ def eager_attention_forward(
     dropout: float = 0.0,
     **kwargs: Unpack[TransformersKwargs],
 ):
+    """Compute scaled dot-product attention, add an optional mask, normalize probabilities, apply dropout, and aggregate values.
+
+    Args:
+        module: Attention module providing head grouping and training mode.
+        query: Query vectors, arranged by batch, sequence, heads, and key width.
+        key: Key tensor paired with the query and value tensors.
+        value: Value vectors, arranged by batch, sequence, heads, and value width.
+        attention_mask: Optional attention or padding mask; for padding-state masking it is two-dimensional.
+        scaling: Multiplier applied to query-key scores.
+        dropout: Attention-probability dropout rate.
+        **kwargs: Additional model/backend options forwarded where supported.
+
+    Returns:
+        Attention output and post-dropout attention weights.
+    """
     key_states = repeat_kv(key, module.num_key_value_groups)
     value_states = repeat_kv(value, module.num_key_value_groups)
 
@@ -714,6 +877,12 @@ class Qwen3_5Attention(nn.Module):
     """Multi-headed attention from 'Attention Is All You Need' paper"""
 
     def __init__(self, config: Qwen3_5Config, layer_idx: int):
+        """Create grouped-query projections, per-head Q/K RMS norms, and the output gate path.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+            layer_idx: Decoder layer index used to select this layer’s cache slot.
+        """
         super().__init__()
         self.config = config
         self.layer_idx = layer_idx
@@ -746,6 +915,22 @@ class Qwen3_5Attention(nn.Module):
         cache_position: torch.LongTensor | None = None,
         **kwargs: Unpack[FlashAttentionKwargs],
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
+        """Project Q/K/V and gate, apply rotary positions, update an optional cache, dispatch attention, then gate and project the output.
+
+        Args:
+            hidden_states: Input hidden states, typically shaped (batch, sequence, hidden_size).
+            position_embeddings: Cosine and sine rotary tensors.
+            attention_mask: Optional attention or padding mask; for padding-state masking it is two-dimensional.
+            past_key_values: Optional cache containing prior key/value or recurrent states.
+            cache_position: Positions of current tokens; single-token values enable cached recurrent decoding.
+            **kwargs: Additional model/backend options forwarded where supported.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+
+        Notes:
+            Attention output follows the input batch/sequence axes and has hidden_size features.
+        """
         input_shape = hidden_states.shape[:-1]
         hidden_shape = (*input_shape, -1, self.head_dim)
 
@@ -789,7 +974,15 @@ class Qwen3_5Attention(nn.Module):
 
 
 class Qwen3_5MLP(nn.Module):
+    """Gated feed-forward transformation using separate gate, up, and down projections.
+    """
     def __init__(self, config: Qwen3_5Config, intermediate_size: int):
+        """Create the gate, up, and down projections for the configured hidden and intermediate widths.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+            intermediate_size: Width of the MLP intermediate representation.
+        """
         super().__init__()
         self.config = config
         self.hidden_size = config.hidden_size
@@ -800,20 +993,52 @@ class Qwen3_5MLP(nn.Module):
         self.act_fn = ACT2FN[config.hidden_act]
 
     def forward(self, x):
+        """Apply ``down_proj(act(gate_proj(x)) * up_proj(x))``.
+
+        Args:
+            x: Input tensor.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+        """
         down_proj = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
         return down_proj
 
 
 class Qwen3_5RMSNorm(nn.Module):
+    """RMS normalization with a learned scale and configurable epsilon.
+    """
     def __init__(self, dim: int, eps: float = 1e-6):
+        """Create the learned scale parameter and store the RMS normalization epsilon.
+
+        Args:
+            dim: Rotary or normalized feature width.
+            eps: Numerical-stability epsilon.
+        """
         super().__init__()
         self.eps = eps
         self.weight = nn.Parameter(torch.zeros(dim))
 
     def _norm(self, x):
+        """Compute RMS-normalized values in float32 along the final feature axis.
+
+        Args:
+            x: Input tensor.
+
+        Returns:
+            Float32 values normalized along the final dimension.
+        """
         return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
 
     def forward(self, x):
+        """Normalize the final feature axis in float32, multiply by the learned scale, and cast back to input dtype.
+
+        Args:
+            x: Input tensor.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+        """
         output = self._norm(x.float())
         # Llama does x.to(float16) * w whilst Qwen3_5 is (x * w).to(float16)
         # See https://github.com/huggingface/transformers/pull/29402
@@ -821,11 +1046,24 @@ class Qwen3_5RMSNorm(nn.Module):
         return output.type_as(x)
 
     def extra_repr(self):
+        """Return the learned scale shape and epsilon for the module representation.
+
+        Returns:
+            A concise module representation string.
+        """
         return f"{tuple(self.weight.shape)}, eps={self.eps}"
 
 
 class Qwen3_5DecoderLayer(GradientCheckpointingLayer):
+    """Text decoder block selected as full self-attention or linear attention, followed by a gated MLP.
+    """
     def __init__(self, config: Qwen3_5TextConfig, layer_idx: int):
+        """Create the attention/linear-attention sublayer selected by ``layer_idx``, plus MLP and normalization layers.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+            layer_idx: Decoder layer index used to select this layer’s cache slot.
+        """
         super().__init__()
         self.hidden_size = config.hidden_size
         self.layer_type = config.layer_types[layer_idx]
@@ -847,6 +1085,20 @@ class Qwen3_5DecoderLayer(GradientCheckpointingLayer):
         cache_position: torch.LongTensor | None = None,
         **kwargs: Unpack[TransformersKwargs],
     ) -> torch.FloatTensor:
+        """Apply the selected attention operation and gated MLP with residual additions.
+
+        Args:
+            hidden_states: Input hidden states, typically shaped (batch, sequence, hidden_size).
+            position_embeddings: Cosine and sine rotary tensors.
+            attention_mask: Optional attention or padding mask; for padding-state masking it is two-dimensional.
+            position_ids: Position indices; text RoPE accepts (batch, sequence) or (3, batch, sequence).
+            past_key_values: Optional cache containing prior key/value or recurrent states.
+            cache_position: Positions of current tokens; single-token values enable cached recurrent decoding.
+            **kwargs: Additional model/backend options forwarded where supported.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+        """
         residual = hidden_states
 
         hidden_states = self.input_layernorm(hidden_states)
@@ -883,6 +1135,8 @@ class Qwen3_5DecoderLayer(GradientCheckpointingLayer):
 
 
 class Qwen3_5PreTrainedModel(PreTrainedModel):
+    """Base pretrained model class supplying the Qwen3.5 config type and parameter initialization rules.
+    """
     config: Qwen3_5Config
     base_model_prefix = "model"
     supports_gradient_checkpointing = True
@@ -899,6 +1153,11 @@ class Qwen3_5PreTrainedModel(PreTrainedModel):
 
     @torch.no_grad()
     def _init_weights(self, module):
+        """Initialize parameters of the supplied child module according to Qwen3.5 initialization rules.
+
+        Args:
+            module: Attention module providing head grouping and training mode.
+        """
         super()._init_weights(module)
         if isinstance(module, Qwen3_5GatedDeltaNet):
             init.ones_(module.dt_bias)
@@ -912,7 +1171,14 @@ class Qwen3_5PreTrainedModel(PreTrainedModel):
 
 
 class Qwen3_5VisionMLP(nn.Module):
+    """Two-layer vision feed-forward transformation using the configured activation.
+    """
     def __init__(self, config):
+        """Initialize this component from its configuration and constructor options.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+        """
         super().__init__()
         self.hidden_size = config.hidden_size
         self.intermediate_size = config.intermediate_size
@@ -921,11 +1187,26 @@ class Qwen3_5VisionMLP(nn.Module):
         self.act_fn = ACT2FN[config.hidden_act]
 
     def forward(self, hidden_state):
+        """Apply the configured activation between the expansion and projection layers.
+
+        Args:
+            hidden_state: Input feature tensor.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+        """
         return self.linear_fc2(self.act_fn(self.linear_fc1(hidden_state)))
 
 
 class Qwen3_5VisionPatchEmbed(nn.Module):
+    """Embed flattened spatiotemporal patches with a 3D convolution.
+    """
     def __init__(self, config) -> None:
+        """Initialize this component from its configuration and constructor options.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+        """
         super().__init__()
         self.patch_size = config.patch_size
         self.temporal_patch_size = config.temporal_patch_size
@@ -936,6 +1217,17 @@ class Qwen3_5VisionPatchEmbed(nn.Module):
         self.proj = nn.Conv3d(self.in_channels, self.embed_dim, kernel_size=kernel_size, stride=kernel_size, bias=True)
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        """Reshape flattened patch values to channel/temporal/spatial axes, convolve them, and return one vector per patch.
+
+        Args:
+            hidden_states: Input hidden states, typically shaped (batch, sequence, hidden_size).
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+
+        Notes:
+            Input is flattened patch data; output is (patches, embed_dim).
+        """
         target_dtype = self.proj.weight.dtype
         hidden_states = hidden_states.view(
             -1, self.in_channels, self.temporal_patch_size, self.patch_size, self.patch_size
@@ -945,7 +1237,15 @@ class Qwen3_5VisionPatchEmbed(nn.Module):
 
 
 class Qwen3_5VisionPatchMerger(nn.Module):
+    """Normalize groups of spatial patches, flatten each group, and project to the configured visual output width.
+    """
     def __init__(self, config: Qwen3_5VisionConfig, use_postshuffle_norm=False) -> None:
+        """Initialize this component from its configuration and constructor options.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+            use_postshuffle_norm: Whether normalization follows flattening of merged patches.
+        """
         super().__init__()
         self.hidden_size = config.hidden_size * (config.spatial_merge_size**2)
         self.use_postshuffle_norm = use_postshuffle_norm
@@ -955,6 +1255,17 @@ class Qwen3_5VisionPatchMerger(nn.Module):
         self.linear_fc2 = nn.Linear(self.hidden_size, config.out_hidden_size)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Normalize and flatten each spatial merge group, then apply the activated projection to output features.
+
+        Args:
+            x: Input tensor.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+
+        Notes:
+            Output is (merged_patches, out_hidden_size).
+        """
         x = self.norm(x.view(-1, self.hidden_size) if self.use_postshuffle_norm else x).view(-1, self.hidden_size)
         x = self.linear_fc2(self.act_fn(self.linear_fc1(x)))
         return x
@@ -963,6 +1274,17 @@ class Qwen3_5VisionPatchMerger(nn.Module):
 def apply_rotary_pos_emb_vision(
     q: torch.Tensor, k: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor
 ) -> tuple[torch.Tensor, torch.Tensor]:
+    """Apply rotary position embeddings to vision queries and keys using float32 arithmetic, then restore input dtypes.
+
+    Args:
+        q: Query tensor with feature width on the final axis.
+        k: Key tensor matching the query layout.
+        cos: Cosine rotary-position values.
+        sin: Sine rotary-position values.
+
+    Returns:
+        Rotated query and key tensors in their respective input dtypes.
+    """
     orig_q_dtype = q.dtype
     orig_k_dtype = k.dtype
     q, k = q.float(), k.float()
@@ -975,7 +1297,14 @@ def apply_rotary_pos_emb_vision(
 
 
 class Qwen3_5VisionAttention(nn.Module):
+    """Non-causal self-attention over packed visual sequences separated by cumulative sequence boundaries.
+    """
     def __init__(self, config: Qwen3_5VisionConfig) -> None:
+        """Initialize this component from its configuration and constructor options.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+        """
         super().__init__()
         self.dim = config.hidden_size
         self.num_heads = config.num_heads
@@ -996,6 +1325,21 @@ class Qwen3_5VisionAttention(nn.Module):
         position_embeddings: tuple[torch.Tensor, torch.Tensor] | None = None,
         **kwargs,
     ) -> torch.Tensor:
+        """Apply rotary encoding and non-causal attention separately to the variable-length sequences in ``cu_seqlens``.
+
+        Args:
+            hidden_states: Input hidden states, typically shaped (batch, sequence, hidden_size).
+            cu_seqlens: Cumulative sequence boundaries, including the initial zero, for packed visual sequences.
+            rotary_pos_emb: Optional rotary input accepted for call-interface compatibility.
+            position_embeddings: Cosine and sine rotary tensors.
+            **kwargs: Additional model/backend options forwarded where supported.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+
+        Notes:
+            Input and output are (total_patches, hidden_size).
+        """
         seq_length = hidden_states.shape[0]
         query_states, key_states, value_states = (
             self.qkv(hidden_states).reshape(seq_length, 3, self.num_heads, -1).permute(1, 0, 2, 3).unbind(0)
@@ -1058,7 +1402,15 @@ class Qwen3_5VisionAttention(nn.Module):
 
 
 class Qwen3_5VisionBlock(GradientCheckpointingLayer):
+    """Pre-normalized vision attention and MLP residual block.
+    """
     def __init__(self, config, attn_implementation: str = "sdpa") -> None:
+        """Initialize this component from its configuration and constructor options.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+            attn_implementation: Attention backend name accepted by the constructor.
+        """
         super().__init__()
         self.norm1 = nn.LayerNorm(config.hidden_size, eps=1e-6)
         self.norm2 = nn.LayerNorm(config.hidden_size, eps=1e-6)
@@ -1073,6 +1425,21 @@ class Qwen3_5VisionBlock(GradientCheckpointingLayer):
         position_embeddings: tuple[torch.Tensor, torch.Tensor] | None = None,
         **kwargs,
     ) -> torch.Tensor:
+        """Apply pre-normalized visual self-attention and MLP residual updates.
+
+        Args:
+            hidden_states: Input hidden states, typically shaped (batch, sequence, hidden_size).
+            cu_seqlens: Cumulative sequence boundaries, including the initial zero, for packed visual sequences.
+            rotary_pos_emb: Optional rotary input accepted for call-interface compatibility.
+            position_embeddings: Cosine and sine rotary tensors.
+            **kwargs: Additional model/backend options forwarded where supported.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+
+        Notes:
+            Input and output are (total_patches, hidden_size).
+        """
         hidden_states = hidden_states + self.attn(
             self.norm1(hidden_states),
             cu_seqlens=cu_seqlens,
@@ -1085,6 +1452,8 @@ class Qwen3_5VisionBlock(GradientCheckpointingLayer):
 
 
 class Qwen3_5VisionModel(Qwen3_5PreTrainedModel):
+    """Encode packed image/video patches using learned spatial positions, rotary positions, transformer blocks, and a patch merger.
+    """
     config: Qwen3_5VisionConfig
     _no_split_modules = ["Qwen3_5VisionBlock"]
     _can_record_outputs = {
@@ -1093,6 +1462,13 @@ class Qwen3_5VisionModel(Qwen3_5PreTrainedModel):
     }
 
     def __init__(self, config, *inputs, **kwargs) -> None:
+        """Construct patch embeddings, learned and rotary position encoders, vision blocks, and the patch merger.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+            *inputs: Value for inputs.
+            **kwargs: Additional model/backend options forwarded where supported.
+        """
         super().__init__(config, *inputs, **kwargs)
         self.spatial_merge_size = config.spatial_merge_size
         self.patch_size = config.patch_size
@@ -1119,6 +1495,14 @@ class Qwen3_5VisionModel(Qwen3_5PreTrainedModel):
         self.post_init()
 
     def rot_pos_emb(self, grid_thw: torch.Tensor) -> torch.Tensor:
+        """Build rotary embeddings for the row and column coordinates of each patch in the temporal-height-width grids.
+
+        Args:
+            grid_thw: Grid dimensions shaped (items, 3), ordered temporal, height, width.
+
+        Returns:
+            Flattened rotary embeddings aligned with spatially merged patches.
+        """
         merge_size = self.spatial_merge_size
         grid_thw_list = grid_thw.tolist()
 
@@ -1159,6 +1543,14 @@ class Qwen3_5VisionModel(Qwen3_5PreTrainedModel):
         return embeddings
 
     def fast_pos_embed_interpolate(self, grid_thw):
+        """Bilinearly interpolate learned spatial embeddings to each input grid and reorder them to patch-embedding order.
+
+        Args:
+            grid_thw: Grid dimensions shaped (items, 3), ordered temporal, height, width.
+
+        Returns:
+            Interpolated learned position embeddings aligned with patch embedding order.
+        """
         grid_thw_list = grid_thw.tolist()
         grid_ts = [row[0] for row in grid_thw_list]
         grid_hs = [row[1] for row in grid_thw_list]
@@ -1298,7 +1690,14 @@ class Qwen3_5ModelOutputWithPast(ModelOutput):
 
 
 class Qwen3_5TextModel(Qwen3_5PreTrainedModel):
+    """Decoder-only text backbone combining full-attention and linear-attention layers with a dynamic cache.
+    """
     def __init__(self, config: Qwen3_5TextConfig):
+        """Construct token embeddings, configured decoder layers, final RMS normalization, and text rotary embeddings.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+        """
         super().__init__(config)
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, config.pad_token_id)
         self.layers = nn.ModuleList(
@@ -1324,6 +1723,24 @@ class Qwen3_5TextModel(Qwen3_5PreTrainedModel):
         cache_position: torch.LongTensor | None = None,
         **kwargs: Unpack[TransformersKwargs],
     ) -> BaseModelOutputWithPast:
+        """Embed tokens or use supplied embeddings, prepare masks/positions/cache, run decoder layers, normalize, and return states.
+
+        Args:
+            input_ids: Optional token IDs shaped (batch, sequence); exactly one of these or inputs_embeds is required for text forward.
+            attention_mask: Optional attention or padding mask; for padding-state masking it is two-dimensional.
+            position_ids: Position indices; text RoPE accepts (batch, sequence) or (3, batch, sequence).
+            past_key_values: Optional cache containing prior key/value or recurrent states.
+            inputs_embeds: Optional input embeddings shaped (batch, sequence, hidden_size).
+            use_cache: Whether cached states should be created or returned.
+            cache_position: Positions of current tokens; single-token values enable cached recurrent decoding.
+            **kwargs: Additional model/backend options forwarded where supported.
+
+        Returns:
+            A tensor or Transformers model-output object, as indicated by the return annotation.
+
+        Notes:
+            Exactly one of input_ids and inputs_embeds must be provided; hidden states are (batch, sequence, hidden_size).
+        """
         if (input_ids is None) ^ (inputs_embeds is not None):
             raise ValueError("You must specify exactly one of input_ids or inputs_embeds")
 
@@ -1400,6 +1817,8 @@ class Qwen3_5TextModel(Qwen3_5PreTrainedModel):
 
 @auto_docstring
 class Qwen3_5Model(Qwen3_5PreTrainedModel):
+    """Multimodal backbone combining a Qwen3.5 vision encoder and text decoder.
+    """
     base_model_prefix = "model"
     _checkpoint_conversion_mapping = {}
     # Reference: fix gemma3 grad acc #37208
@@ -1408,6 +1827,11 @@ class Qwen3_5Model(Qwen3_5PreTrainedModel):
     _no_split_modules = ["Qwen3_5TextDecoderLayer", "Qwen3_5VisionBlock"]
 
     def __init__(self, config):
+        """Instantiate the visual encoder and language model from the corresponding sub-configurations.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+        """
         super().__init__(config)
         self.visual = Qwen3_5VisionModel._from_config(config.vision_config)
         self.language_model = Qwen3_5TextModel._from_config(config.text_config)
@@ -1417,9 +1841,19 @@ class Qwen3_5Model(Qwen3_5PreTrainedModel):
         self.post_init()
 
     def get_input_embeddings(self):
+        """Return the language model's token embedding layer.
+
+        Returns:
+            The text token embedding module.
+        """
         return self.language_model.get_input_embeddings()
 
     def set_input_embeddings(self, value):
+        """Replace the language model's token embedding layer.
+
+        Args:
+            value: Value vectors, arranged by batch, sequence, heads, and value width.
+        """
         self.language_model.set_input_embeddings(value)
 
     def get_rope_index(
@@ -1603,6 +2037,22 @@ class Qwen3_5Model(Qwen3_5PreTrainedModel):
         attention_mask: torch.Tensor | None = None,
         past_key_values: torch.Tensor | None = None,
     ) -> torch.Tensor | None:
+        """Derive three-axis text/multimodal position IDs from token IDs or embeddings, vision grids, masks, and cache state.
+
+        Args:
+            input_ids: Optional token IDs shaped (batch, sequence); exactly one of these or inputs_embeds is required for text forward.
+            inputs_embeds: Optional input embeddings shaped (batch, sequence, hidden_size).
+            image_grid_thw: Optional image grid dimensions.
+            video_grid_thw: Optional video grid dimensions.
+            attention_mask: Optional attention or padding mask; for padding-state masking it is two-dimensional.
+            past_key_values: Optional cache containing prior key/value or recurrent states.
+
+        Returns:
+            Position IDs shaped for the supplied batch and sequence.
+
+        Notes:
+            Position IDs use a leading temporal/height/width axis and batch/sequence axes.
+        """
         past_key_values_length = 0 if past_key_values is None else past_key_values.get_seq_length()
         can_compute_mrope = input_ids is not None and (image_grid_thw is not None or video_grid_thw is not None)
 
@@ -1709,6 +2159,8 @@ class Qwen3_5Model(Qwen3_5PreTrainedModel):
 
 @auto_docstring
 class Qwen3_5ForCausalLM(Qwen3_5PreTrainedModel, GenerationMixin):
+    """Text-only causal language model with a vocabulary projection and generation support.
+    """
     _tied_weights_keys = {"lm_head.weight": "model.embed_tokens.weight"}
     _tp_plan = {"lm_head": "colwise_gather_output"}
     _pp_plan = {"lm_head": (["hidden_states"], ["logits"])}
@@ -1716,6 +2168,11 @@ class Qwen3_5ForCausalLM(Qwen3_5PreTrainedModel, GenerationMixin):
     _keys_to_ignore_on_load_unexpected = [r"^mtp.*", r"^model.visual.*"]
 
     def __init__(self, config):
+        """Construct the text decoder and vocabulary projection.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+        """
         super().__init__(config)
         self.model = Qwen3_5TextModel(config)
         self.vocab_size = config.vocab_size
@@ -1820,6 +2277,8 @@ class Qwen3_5CausalLMOutputWithPast(ModelOutput):
 
 
 class Qwen3_5ForConditionalGeneration(Qwen3_5PreTrainedModel, GenerationMixin):
+    """Multimodal causal language model that inserts image/video features into text decoding and supports generation.
+    """
     _checkpoint_conversion_mapping = {}
     _tied_weights_keys = {"lm_head.weight": "model.language_model.embed_tokens.weight"}
     # Reference: fix gemma3 grad acc #37208
@@ -1827,6 +2286,11 @@ class Qwen3_5ForConditionalGeneration(Qwen3_5PreTrainedModel, GenerationMixin):
     config: Qwen3_5Config
 
     def __init__(self, config):
+        """Construct the multimodal backbone and language-model vocabulary projection.
+
+        Args:
+            config: Model configuration supplying this component’s dimensions and options.
+        """
         super().__init__(config)
         self.model = Qwen3_5Model(config)
         self.lm_head = nn.Linear(config.text_config.hidden_size, config.text_config.vocab_size, bias=False)
@@ -1834,9 +2298,19 @@ class Qwen3_5ForConditionalGeneration(Qwen3_5PreTrainedModel, GenerationMixin):
         self.post_init()
 
     def get_input_embeddings(self):
+        """Return the language model's token embedding layer.
+
+        Returns:
+            The text token embedding module.
+        """
         return self.model.get_input_embeddings()
 
     def set_input_embeddings(self, value):
+        """Replace the language model's token embedding layer.
+
+        Args:
+            value: Value vectors, arranged by batch, sequence, heads, and value width.
+        """
         self.model.set_input_embeddings(value)
 
     @auto_docstring
@@ -1986,6 +2460,26 @@ class Qwen3_5ForConditionalGeneration(Qwen3_5PreTrainedModel, GenerationMixin):
     ):
         # Overwritten -- in specific circumstances we don't want to forward image inputs to the model
 
+        """Prepare the text, cache, and optional visual inputs for the current generation step.
+
+        Args:
+            input_ids: Optional token IDs shaped (batch, sequence); exactly one of these or inputs_embeds is required for text forward.
+            past_key_values: Optional cache containing prior key/value or recurrent states.
+            attention_mask: Optional attention or padding mask; for padding-state masking it is two-dimensional.
+            inputs_embeds: Optional input embeddings shaped (batch, sequence, hidden_size).
+            cache_position: Positions of current tokens; single-token values enable cached recurrent decoding.
+            position_ids: Position indices; text RoPE accepts (batch, sequence) or (3, batch, sequence).
+            use_cache: Whether cached states should be created or returned.
+            pixel_values: Optional flattened image patch values.
+            pixel_values_videos: Optional flattened video patch values.
+            image_grid_thw: Optional image grid dimensions.
+            video_grid_thw: Optional video grid dimensions.
+            is_first_iteration: Whether this call processes the initial generation prompt.
+            **kwargs: Additional model/backend options forwarded where supported.
+
+        Returns:
+            Dictionary of model inputs for the current generation iteration.
+        """
         model_inputs = super().prepare_inputs_for_generation(
             input_ids,
             past_key_values=past_key_values,
@@ -2011,6 +2505,15 @@ class Qwen3_5ForConditionalGeneration(Qwen3_5PreTrainedModel, GenerationMixin):
     def _prepare_position_ids_for_generation(self, inputs_tensor, model_kwargs):
         # Overwritten -- requires 3D position ids
 
+        """Build generation position IDs and text-position indices for the supplied input.
+
+        Args:
+            inputs_tensor: Input token IDs or embeddings used to derive positions.
+            model_kwargs: Generation/model inputs and metadata, including masks and cache positions.
+
+        Returns:
+            Position IDs and text-position indices for the initial generation input.
+        """
         text_positions = super()._prepare_position_ids_for_generation(inputs_tensor, model_kwargs)
 
         # Early exit in case we are continuing generation from past kv
@@ -2108,12 +2611,31 @@ class Qwen3_5ForConditionalGeneration(Qwen3_5PreTrainedModel, GenerationMixin):
         # pixel_values.shape[0] is sum(seqlen_images for samples)
         # image_grid_thw.shape[0] is sum(num_images for samples)
 
+        """Repeat input IDs and applicable batch-shaped model inputs for multiple generation sequences.
+
+        Args:
+            expand_size: Number of copies created for each batch item.
+            is_encoder_decoder: Generation compatibility flag; this model implementation is decoder-only.
+            input_ids: Optional token IDs shaped (batch, sequence); exactly one of these or inputs_embeds is required for text forward.
+            **model_kwargs: Generation/model inputs and metadata, including masks and cache positions.
+
+        Returns:
+            Expanded input IDs and updated model kwargs.
+        """
         if expand_size == 1:
             return input_ids, model_kwargs
 
         visual_keys = ["pixel_values", "image_grid_thw", "pixel_values_videos", "video_grid_thw"]
 
         def _expand_dict_for_generation_visual(dict_to_expand):
+            """Repeat visual input segments and their grid metadata when expanding generation batches.
+
+            Args:
+                dict_to_expand: Mapping containing model inputs and optional visual data.
+
+            Returns:
+                Expanded mapping, or the original mapping when no visual expansion is needed.
+            """
             image_grid_thw = model_kwargs.get("image_grid_thw", None)
             video_grid_thw = model_kwargs.get("video_grid_thw", None)
             image_nums, video_nums = self._get_image_nums_and_video_nums(
@@ -2132,6 +2654,16 @@ class Qwen3_5ForConditionalGeneration(Qwen3_5PreTrainedModel, GenerationMixin):
                 video_nums = torch.diff(torch.cat([-video_boundary_indices.new_ones(1), video_boundary_indices]))
 
             def _repeat_interleave_samples(x, lengths, repeat_times):
+                """Split packed samples by their lengths and concatenate the requested repetitions of each segment.
+
+                Args:
+                    x: Input tensor.
+                    lengths: Per-sample lengths used to split packed tensors.
+                    repeat_times: Number of repeated copies per sample.
+
+                Returns:
+                    Concatenated tensor with each sample segment repeated the requested number of times.
+                """
                 samples = torch.split(x, lengths)
                 repeat_args = [repeat_times] + [1] * (x.dim() - 1)
                 result = torch.cat([sample.repeat(*repeat_args) for sample in samples], dim=0)
@@ -2166,6 +2698,14 @@ class Qwen3_5ForConditionalGeneration(Qwen3_5PreTrainedModel, GenerationMixin):
             return dict_to_expand
 
         def _expand_dict_for_generation(dict_to_expand):
+            """Expand supported batch-shaped values in a model-input dictionary.
+
+            Args:
+                dict_to_expand: Mapping containing model inputs and optional visual data.
+
+            Returns:
+                Mapping with supported batch-shaped values expanded.
+            """
             for key in dict_to_expand:
                 if key == "position_ids" and dict_to_expand[key].ndim == 3:
                     dict_to_expand[key] = dict_to_expand[key].repeat_interleave(expand_size, dim=1)

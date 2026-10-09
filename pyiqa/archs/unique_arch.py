@@ -36,11 +36,25 @@ class Normalize(nn.Module):
     """Channel-wise normalization module."""
 
     def __init__(self, mean, std):
+        """Initialize the normalize and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            mean: Per-channel input normalization means.
+            std: Per-channel input normalization standard deviations.
+        """
         super(Normalize, self).__init__()
         self.mean = torch.Tensor(mean)
         self.std = torch.Tensor(std)
 
     def forward(self, x):
+        """Apply the normalize computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         return (x - self.mean.type_as(x)[None, :, None, None]) / self.std.type_as(x)[
             None, :, None, None
         ]
@@ -50,26 +64,65 @@ class BCNN(nn.Module):
     """Bilinear CNN pooling block used in UNIQUE."""
 
     def __init__(self, thresh=1e-8, is_vec=True, input_dim=512):
+        """Initialize the bcnn and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            thresh: Threshold used to select or binarize the prediction.
+            is_vec: Whether the input is already represented as a vector.
+            input_dim: Input feature dimension expected by the projection layer.
+        """
         super(BCNN, self).__init__()
         self.thresh = thresh
         self.is_vec = is_vec
         self.output_dim = input_dim * input_dim
 
     def _bilinearpool(self, x):
+        """Perform the internal bilinearpool operation used by bcnn.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         batchSize, dim, h, w = x.data.shape
         x = x.reshape(batchSize, dim, h * w)
         x = 1.0 / (h * w) * x.bmm(x.transpose(1, 2))
         return x
 
     def _signed_sqrt(self, x):
+        """Perform the internal signed sqrt operation used by bcnn.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         x = torch.mul(x.sign(), torch.sqrt(x.abs() + self.thresh))
         return x
 
     def _l2norm(self, x):
+        """Perform the internal l2norm operation used by bcnn.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         x = nn.functional.normalize(x)
         return x
 
     def forward(self, x):
+        """Compute the UNIQUE prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         x = self._bilinearpool(x)
         x = self._signed_sqrt(x)
         if self.is_vec:
@@ -88,6 +141,9 @@ class UNIQUE(nn.Module):
     """
 
     def __init__(self):
+        """Initialize the unique and configure its layers, parameters, and optional pretrained state.
+
+        """
         super(UNIQUE, self).__init__()
 
         if ResNet34_Weights is not None:

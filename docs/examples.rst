@@ -1,39 +1,74 @@
 Examples
-===================
+========
 
-Basic Usage
---------------
+Basic Python API
+----------------
 ::
 
     import pyiqa
     import torch
 
-    # list all available metrics
+    # List configured metrics, including FR, NR, and task-specific metrics.
     print(pyiqa.list_models())
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    # create metric with default setting
-    iqa_metric = pyiqa.create_metric('lpips', device=device)
-    # Note that gradient propagation is disabled by default. set as_loss=True to enable it as a loss function.
-    iqa_loss = pyiqa.create_metric('lpips', device=device, as_loss=True)
+    # Create a metric with its default configuration.
+    lpips = pyiqa.create_metric('lpips', device=device)
 
-    # create metric with custom setting
-    iqa_metric = pyiqa.create_metric('psnr', test_y_channel=True, color_space='ycbcr').to(device)
+    # Gradients are disabled by default. Enable them for a supported loss.
+    lpips_loss = pyiqa.create_metric('lpips', device=device, as_loss=True)
 
-    # check if lower better or higher better
-    print(iqa_metric.lower_better)
+    # Override options supported by a metric's architecture.
+    psnr = pyiqa.create_metric(
+        'psnr', device=device, test_y_channel=True, color_space='ycbcr'
+    )
 
-    # example for iqa score inference
-    # Tensor inputs, img_tensor_x/y: (N, 3, H, W), RGB, 0 ~ 1
-    score_fr = iqa_metric(img_tensor_x, img_tensor_y)
-    score_nr = iqa_metric(img_tensor_x)
+    # Read score interpretation metadata.
+    print(lpips.lower_better)
 
-    # img path as inputs.
-    score_fr = iqa_metric('./ResultsCalibra/dist_dir/I03.bmp', './ResultsCalibra/ref_dir/I03.bmp')
+Inputs and outputs
+------------------
 
-    # For FID metric, use directory or precomputed statistics as inputs
-    # refer to clean-fid for more details: https://github.com/GaParmar/clean-fid
-    fid_metric = pyiqa.create_metric('fid')
-    score = fid_metric('./ResultsCalibra/dist_dir/', './ResultsCalibra/ref_dir')
-    score = fid_metric('./ResultsCalibra/dist_dir/', dataset_name="FFHQ", dataset_res=1024, dataset_split="trainval70k")
+Tensor inputs use ``(N, C, H, W)`` layout, one or three channels, and values in
+``[0, 1]``. Image paths are decoded as RGB. For full-reference (FR) metrics,
+pass the distorted/target image first and the reference image second. No-
+reference (NR) metrics require only the target image. Scores are returned as
+PyTorch tensors.
+
+::
+
+    # FR: distorted image, then reference image.
+    score_fr = lpips('./ResultsCalibra/dist_dir/I03.bmp',
+                     './ResultsCalibra/ref_dir/I03.bmp')
+
+    # NR: target image only.
+    musiq = pyiqa.create_metric('musiq', device=device)
+    score_nr = musiq('./ResultsCalibra/dist_dir/I03.bmp')
+
+    # Tensor input follows the same ordering and value range.
+    score_fr = lpips(distorted_tensor, reference_tensor)
+    score_nr = musiq(target_tensor)
+
+Distribution metrics
+--------------------
+
+FID and Inception Score operate on image collections rather than aligned
+individual images. FID compares two directories or an image directory against
+supported precomputed dataset statistics. Preprocessing modes and statistics
+affect results; consult the metric card and the
+`clean-fid documentation <https://github.com/GaParmar/clean-fid>`_ before
+comparing results from different implementations.
+
+::
+
+    fid = pyiqa.create_metric('fid', device=device)
+    score = fid('./generated_images', './reference_images')
+
+Command-line interface
+----------------------
+
+Use ``pyiqa -ls`` to list available metrics. For a single NR image, run
+``pyiqa musiq -t image.png``. For an FR metric, provide both paths, for example
+``pyiqa lpips -t distorted.png -r reference.png``. See :doc:`gmad` for
+candidate-pool comparisons of two NR metrics.

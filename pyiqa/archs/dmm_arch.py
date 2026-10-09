@@ -47,6 +47,15 @@ class FeaturesExtractor(nn.Module):
     """
 
     def __init__(self, target_features=('relu3_3','relu4_3'),  use_input_norm=False, requires_grad=False, replace_pooling=True):
+        """Initialize a VGG16 extractor and select its requested activations.
+
+        Args:
+            target_features (tuple[str, ...]): Named VGG activations to return.
+            use_input_norm (bool): Normalize inputs using ImageNet channel
+                statistics before feature extraction.
+            requires_grad (bool): Leave extractor feature parameters trainable.
+            replace_pooling (bool): Replace max-pooling layers with L2 pooling.
+        """
         super(FeaturesExtractor, self).__init__()
         self.use_input_norm = use_input_norm
         self.target_features = target_features
@@ -87,10 +96,27 @@ class FeaturesExtractor(nn.Module):
         return y
 
     def _normalize_tensor(sefl, in_feat, eps=1e-10):
+        """Normalize each feature vector across channels.
+
+        Args:
+            in_feat (torch.Tensor): Feature tensor, normalized along dimension 1.
+            eps (float): Stabilizer added to the channel-wise norm.
+
+        Returns:
+            torch.Tensor: Feature tensor divided by its channel-wise L2 norm.
+        """
         norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
         return in_feat / (norm_factor + eps)
     
     def replace_pooling(self, module: torch.nn.Module) -> torch.nn.Module:
+        """Recursively substitute MaxPool2d layers with L2Pool2d layers.
+
+        Args:
+            module (torch.nn.Module): Module tree to process.
+
+        Returns:
+            torch.nn.Module: The supplied module tree with pooling replacements.
+        """
         module_output = module
         if isinstance(module, torch.nn.MaxPool2d):
             module_output = L2Pool2d(kernel_size=3, stride=2, padding=1)
@@ -107,6 +133,13 @@ class L2Pool2d(torch.nn.Module):
         x: Tensor with shape (N, C, H, W)"""
     EPS = 1e-12
     def __init__(self, kernel_size: int = 3, stride: int = 2, padding=1) -> None:
+        """Configure the window size, stride, and convolution padding.
+
+        Args:
+            kernel_size (int): Side length of the Hann pooling window.
+            stride (int): Spatial step between pooling windows.
+            padding (int): Zero padding passed to the depthwise convolution.
+        """
         super().__init__()
         self.kernel_size = kernel_size
         self.stride = stride
@@ -152,6 +185,18 @@ class DMM(nn.Module):
     """
 
     def __init__(self, reduce_dim=256, kernel_size=5, features_to_compute=('relu3_3','relu4_3'), criterion=torch.nn.CosineSimilarity(), use_dropout=True, **kwargs):
+        """Initialize DMM's feature extractor and patch comparison settings.
+
+        Args:
+            reduce_dim (int): Compatibility argument; not used by this model.
+            kernel_size (int): Compatibility argument; patch size is fixed at
+                16 in the implementation.
+            features_to_compute (tuple[str, ...]): VGG feature names to compare.
+            criterion (torch.nn.Module): Similarity criterion retained by the
+                model.
+            use_dropout (bool): Compatibility argument; no dropout is applied.
+            **kwargs: Additional compatibility arguments (currently unused).
+        """
         super().__init__()
         self.criterion = criterion
         self.features_extractor = FeaturesExtractor(target_features=features_to_compute, replace_pooling=True)

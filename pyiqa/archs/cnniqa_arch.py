@@ -41,6 +41,16 @@ class CNNIQA(nn.Module):
         pretrained='koniq10k',
         pretrained_model_path=None,
     ):
+        """Initialize the cnniqa and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            ker_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            n_kers: Number of items, stages, tokens, or channels configured for this operation.
+            n1_nodes: Number of hidden units in the first fully connected layer.
+            n2_nodes: Number of hidden units in the second fully connected layer.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+        """
         super(CNNIQA, self).__init__()
 
         self.conv1 = nn.Conv2d(3, n_kers, ker_size)

@@ -22,6 +22,13 @@ class MLP(nn.Module):
     """Regression head used by LAION-Aesthetics predictor."""
 
     def __init__(self, input_size, xcol='emb', ycol='avg_rating'):
+        """Initialize the mlp and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            input_size: Model input resolution or spatial size.
+            xcol: Name or index of the target column used by the predictor.
+            ycol: Name or index of the target column used by the predictor.
+        """
         super().__init__()
         self.input_size = input_size
         self.xcol = xcol
@@ -60,6 +67,12 @@ class LAIONAes(nn.Module):
         pretrained=True,
         pretrained_model_path=None,
     ) -> None:
+        """Initialize the laionaes and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+        """
         super().__init__()
 
         clip_model, _ = clip.load('ViT-L/14')

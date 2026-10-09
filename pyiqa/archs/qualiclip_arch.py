@@ -178,6 +178,18 @@ class QualiCLIP(nn.Module):
         pretrained=True,
         pos_embedding=False,
     ) -> None:
+        """Initialize the quali clip and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            model_type: Registered model variant or task configuration.
+            backbone: Feature-extractor backbone identifier or module.
+            temperature: Positive temperature used to scale similarity logits.
+            n_ctx: Number of items, stages, tokens, or channels configured for this operation.
+            ctx_init: Initial text used to initialize learnable prompt context vectors.
+            prompt_specific_ctx: Whether to learn separate context tokens for each prompt/class.
+            pretrained: Whether to initialize or load pretrained weights.
+            pos_embedding: Optional positional-embedding setting or tensor used in feature encoding.
+        """
         super().__init__()
 
         self.clip_model = [load(backbone, 'cpu')]  # avoid saving clip weights
@@ -241,6 +253,14 @@ class QualiCLIP(nn.Module):
 
     def forward(self, x):
         # preprocess image
+        """Compute the QualiCLIP prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         clip_model = self.clip_model[0].to(x)
 

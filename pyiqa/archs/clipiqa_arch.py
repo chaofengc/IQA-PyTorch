@@ -152,6 +152,14 @@ class CLIPIQA(nn.Module):
         pretrained=True,
         pos_embedding=False,
     ) -> None:
+        """Initialize the clipiqa and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            model_type: Registered model variant or task configuration.
+            backbone: Feature-extractor backbone identifier or module.
+            pretrained: Whether to initialize or load pretrained weights.
+            pos_embedding: Optional positional-embedding setting or tensor used in feature encoding.
+        """
         super().__init__()
 
         self.clip_model = [load(backbone, 'cpu')]  # avoid saving clip weights

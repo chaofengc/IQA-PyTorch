@@ -239,6 +239,23 @@ class BRISQUE(torch.nn.Module):
         version: str = 'original',
         pretrained_model_path: str = None,
     ) -> None:
+        """Initialize BRISQUE and load its support-vector model.
+
+        Args:
+            kernel_size (int): Odd side length of the local normalization
+                window.
+            kernel_sigma (float): Standard deviation of the Gaussian window.
+            test_y_channel (bool): Whether to evaluate luminance; the bundled
+                BRISQUE models require this to be ``True``.
+            version (str): Selects the ``'original'`` or ``'matlab'`` model
+                parameters when no explicit model path is supplied.
+            pretrained_model_path (str, optional): Path to a serialized
+                support-vector model or MATLAB model file.
+
+        Raises:
+            AssertionError: If ``kernel_size`` is even or luminance processing
+                is disabled.
+        """
         super().__init__()
         self.kernel_size = kernel_size
 

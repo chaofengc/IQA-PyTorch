@@ -66,6 +66,11 @@ class ARNIQA(nn.Module):
     """
 
     def __init__(self, regressor_dataset: str = 'koniq'):
+        """Initialize the arniqa and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            regressor_dataset: Dataset identifier selecting the ARNIQA regression head.
+        """
         super().__init__()
 
         self.regressor_dataset = regressor_dataset

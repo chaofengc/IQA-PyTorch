@@ -56,6 +56,16 @@ class NIMA(nn.Module):
         pretrained=True,
         pretrained_model_path=None,
     ):
+        """Initialize the nima and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            base_model_name: Identifier of the backbone whose architecture and pretrained weights are used.
+            train_dataset: Training dataset/model variant used to select its weights or preprocessing.
+            num_classes: Number of items, stages, tokens, or channels configured for this operation.
+            dropout_rate: Dropout probability used by the model.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+        """
         super(NIMA, self).__init__()
         self.base_model = timm.create_model(
             base_model_name, pretrained=True, features_only=True

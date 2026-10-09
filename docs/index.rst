@@ -6,7 +6,10 @@
 Welcome to pyiqa's documentation!
 =================================
 
-``pyiqa`` is a image quality assessment toolbox **with pure python and pytorch**. We provide reimplementation of many mainstream full reference (FR) and no reference (NR) metrics (results are calibrated with official matlab scripts if exist). **With GPU acceleration, most of our implementations are much faster than Matlab.**
+``pyiqa`` is an image quality assessment toolbox built with Python and PyTorch.
+It provides full-reference (FR), no-reference (NR), and task-specific metrics.
+Implementations are calibrated against official MATLAB or Python references
+where available.
 
 Basic Information 
 -------------------------
@@ -16,6 +19,7 @@ Basic Information
 
    installation 
    examples
+   gmad
    ModelCard
    benchmark
 

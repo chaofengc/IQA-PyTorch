@@ -53,6 +53,11 @@ class Compare2Score(nn.Module):
     """
 
     def __init__(self, dtype='fp16') -> None:
+        """Initialize the compare2 score and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dtype: Floating-point data type used to load or execute the model.
+        """
         super().__init__()
 
         assert dtype in ['fp16', '4bit', '8bit'], (

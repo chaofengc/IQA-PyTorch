@@ -57,12 +57,30 @@ class PSNR(nn.Module):
     """
 
     def __init__(self, test_y_channel=False, crop_border=0, **kwargs):
+        """Configure luminance evaluation, border cropping, and PSNR options.
+
+        Args:
+            test_y_channel (bool): Compute PSNR on the luminance channel for
+                three-channel input.
+            crop_border (int): Number of pixels cropped from each image edge.
+            **kwargs: Additional keyword options forwarded to :func:`psnr`,
+                including its data range and numerical epsilon.
+        """
         super().__init__()
         self.test_y_channel = test_y_channel
         self.kwargs = kwargs
         self.crop_border = crop_border
 
     def forward(self, X, Y):
+        """Compute per-image PSNR for equally shaped distorted/reference inputs.
+
+        Args:
+            X (torch.Tensor): Distorted images shaped ``(N, C, H, W)``.
+            Y (torch.Tensor): Reference images with the same shape.
+
+        Returns:
+            torch.Tensor: PSNR values, one per batch item.
+        """
         assert X.shape == Y.shape, (
             f'Input and reference images should have the same shape, but got {X.shape} and {Y.shape}'
         )

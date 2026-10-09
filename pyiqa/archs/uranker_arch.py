@@ -32,6 +32,14 @@ default_model_urls = {
 
 
 def padding_img(img):
+    """Perform the padding img operation for uranker.
+
+    Args:
+        img: Image tensor; entry points expect batched channel-first data unless preprocessing is internal.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     b, c, h, w = img.shape
     h_out = math.ceil(h / 32) * 32
     w_out = math.ceil(w / 32) * 32
@@ -48,6 +56,14 @@ def padding_img(img):
 
 @torch.no_grad()
 def build_historgram(img):
+    """Build and return the historgram component from the supplied configuration.
+
+    Args:
+        img: Image tensor; entry points expect batched channel-first data unless preprocessing is internal.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     b, _, _, _ = img.shape
 
     r_his = torch.histc(img[0][0], 64, min=0.0, max=1.0)
@@ -68,6 +84,14 @@ def build_historgram(img):
 
 
 def preprocessing(d_img_org):
+    """Perform the preprocessing operation for uranker.
+
+    Args:
+        d_img_org: Original image feature dimension before projection.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     d_img_org = padding_img(d_img_org)
     x_his = build_historgram(d_img_org)
     return d_img_org, x_his
@@ -84,6 +108,15 @@ class Mlp(nn.Module):
         act_layer=nn.GELU,
         drop=0.0,
     ):
+        """Initialize the mlp and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            in_features: Number of input features.
+            hidden_features: Width of the MLP hidden layer.
+            out_features: Number of output features.
+            act_layer: Activation-layer constructor used between linear projections.
+            drop: Dropout probability applied by the layer.
+        """
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -93,6 +126,14 @@ class Mlp(nn.Module):
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
+        """Apply the mlp computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = self.fc1(x)
         x = self.act(x)
         x = self.drop(x)
@@ -144,6 +185,16 @@ class ConvRelPosEnc(nn.Module):
         self.channel_splits = [x * Ch for x in self.head_splits]
 
     def forward(self, q, v, size):
+        """Compute the URanker prediction for the supplied image or image pair.
+
+        Args:
+            q: Query feature tensor.
+            v: Value feature tensor.
+            size: Target spatial size.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         B, h, N, Ch = q.shape
         H, W = size
         assert N == 1 + H * W or N == 2 + H * W
@@ -187,6 +238,17 @@ class FactorAtt_ConvRelPosEnc(nn.Module):
         proj_drop=0.0,
         shared_crpe=None,
     ):
+        """Initialize the factor att conv rel pos enc and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            num_heads: Number of attention heads.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            qk_scale: Optional scale applied to query-key attention logits; defaults to the inverse square root of the head width.
+            attn_drop: Dropout probability applied to attention weights.
+            proj_drop: Dropout probability applied after the output projection.
+            shared_crpe: Whether to share convolutional relative-position embeddings across blocks.
+        """
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
@@ -201,6 +263,15 @@ class FactorAtt_ConvRelPosEnc(nn.Module):
         self.crpe = shared_crpe
 
     def forward(self, x, size):
+        """Compute the URanker prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            size: Target spatial size.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         B, N, C = x.shape
 
         # Generate Q, K, V.
@@ -242,10 +313,25 @@ class ConvPosEnc(nn.Module):
     """
 
     def __init__(self, dim, k=3):
+        """Initialize the conv pos enc and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            k: Number of learned weighting coefficients or feature groups.
+        """
         super(ConvPosEnc, self).__init__()
         self.proj = nn.Conv2d(dim, dim, k, 1, k // 2, groups=dim)
 
     def forward(self, x, size):
+        """Compute the URanker prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            size: Target spatial size.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         B, N, C = x.shape
         H, W = size
         assert N == 1 + H * W or N == 2 + H * W
@@ -286,6 +372,22 @@ class SerialBlock(nn.Module):
         shared_cpe=None,
         shared_crpe=None,
     ):
+        """Initialize the serial block and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            num_heads: Number of attention heads.
+            mlp_ratio: Ratio between the MLP hidden width and the block embedding width.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            qk_scale: Optional scale applied to query-key attention logits; defaults to the inverse square root of the head width.
+            drop: Dropout probability applied by the layer.
+            attn_drop: Dropout probability applied to attention weights.
+            drop_path: Stochastic depth probability applied by the layer.
+            act_layer: Activation-layer constructor used between linear projections.
+            norm_layer: Normalization-layer constructor used by the block.
+            shared_cpe: Whether to share conditional positional embeddings across blocks.
+            shared_crpe: Whether to share convolutional relative-position embeddings across blocks.
+        """
         super().__init__()
 
         # Conv-Attention.
@@ -315,6 +417,15 @@ class SerialBlock(nn.Module):
 
     def forward(self, x, size):
         # Conv-Attention.
+        """Apply the serial block computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            size: Target spatial size.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = self.cpe(x, size)  # Apply convolutional position encoding.
         cur = self.norm1(x)
         cur = self.factoratt_crpe(
@@ -349,6 +460,23 @@ class ParallelBlock(nn.Module):
         shared_crpes=None,
         connect_type='neighbor',
     ):
+        """Initialize the parallel block and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dims: Channel dimensions for the configured feature stages.
+            num_heads: Number of attention heads.
+            mlp_ratios: Feed-forward hidden-width multipliers for the transformer stages.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            qk_scale: Optional scale applied to query-key attention logits; defaults to the inverse square root of the head width.
+            drop: Dropout probability applied by the layer.
+            attn_drop: Dropout probability applied to attention weights.
+            drop_path: Stochastic depth probability applied by the layer.
+            act_layer: Activation-layer constructor used between linear projections.
+            norm_layer: Normalization-layer constructor used by the block.
+            shared_cpes: Whether to share conditional positional embeddings across stages.
+            shared_crpes: Whether to share convolutional relative-position embeddings across stages.
+            connect_type: Feature-connection strategy used to combine network branches.
+        """
         super().__init__()
 
         self.connect_type = connect_type
@@ -439,6 +567,18 @@ class ParallelBlock(nn.Module):
         return out
 
     def forward(self, x1, x2, x3, x4, sizes):
+        """Apply the parallel block computation to the provided activations.
+
+        Args:
+            x1: First scale or branch feature tensor.
+            x2: Second scale or branch feature tensor.
+            x3: Third scale or branch feature tensor.
+            x4: Fourth scale or branch feature tensor.
+            sizes: Spatial sizes or resolutions used by the multiscale architecture.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         _, (H2, W2), (H3, W3), (H4, W4) = sizes
 
         # Conv-Attention.
@@ -509,6 +649,13 @@ class PatchEmbed(nn.Module):
     """Image to Patch Embedding"""
 
     def __init__(self, patch_size=16, in_chans=3, embed_dim=768):
+        """Initialize the patch embed and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            in_chans: Number of image input channels.
+            embed_dim: Dimension of the shared image-text or feature embedding.
+        """
         super().__init__()
         patch_size = to_2tuple(patch_size)
 
@@ -519,6 +666,14 @@ class PatchEmbed(nn.Module):
         self.norm = nn.LayerNorm(embed_dim)
 
     def forward(self, x):
+        """Compute the URanker prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         _, _, H, W = x.shape
         out_H, out_W = H // self.patch_size[0], W // self.patch_size[1]
 
@@ -530,6 +685,9 @@ class PatchEmbed(nn.Module):
 
 @ARCH_REGISTRY.register()
 class URanker(nn.Module):
+    """Uncertainty-aware ranking model for predicting relative image quality.
+
+    """
     def __init__(
         self,
         patch_size=4,
@@ -556,6 +714,33 @@ class URanker(nn.Module):
         pretrained_model_path=None,
         **kwargs,
     ):
+        """Initialize the uranker and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            in_chans: Number of image input channels.
+            num_classes: Number of items, stages, tokens, or channels configured for this operation.
+            embed_dims: Embedding/channel dimensions for the configured stages.
+            serial_depths: Number of serial blocks in each stage.
+            parallel_depth: Number of parallel processing blocks.
+            num_heads: Number of attention heads.
+            mlp_ratios: Feed-forward hidden-width multipliers for the transformer stages.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            qk_scale: Optional scale applied to query-key attention logits; defaults to the inverse square root of the head width.
+            drop_rate: Dropout probability applied by the layer.
+            attn_drop_rate: Dropout probability applied to attention weights.
+            drop_path_rate: Maximum stochastic-depth probability across the network.
+            norm_layer: Normalization-layer constructor used by the block.
+            return_interm_layers: Whether to return intermediate feature maps from the backbone.
+            out_features: Number of output features.
+            crpe_window: Window size used by convolutional relative-position encoding.
+            add_historgram: Whether to add histogram features to the quality representation.
+            his_channel: Number of channels in the histogram representation.
+            connect_type: Feature-connection strategy used to combine network branches.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            **kwargs: kwargs value used to configure or compute this operation.
+        """
         super().__init__()
         self.return_interm_layers = return_interm_layers
         self.out_features = out_features
@@ -753,6 +938,11 @@ class URanker(nn.Module):
             )
 
     def _init_weights(self, m):
+        """Perform the internal init weights operation used by uranker.
+
+        Args:
+            m: Module whose parameters or initialization are being handled.
+        """
         if isinstance(m, nn.Linear):
             trunc_normal_(m.weight, std=0.02)
             if isinstance(m, nn.Linear) and m.bias is not None:
@@ -763,12 +953,28 @@ class URanker(nn.Module):
 
     @torch.jit.ignore
     def no_weight_decay(self):
+        """Perform the no weight decay operation for uranker.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return {'cls_token1', 'cls_token2', 'cls_token3', 'cls_token4'}
 
     def get_classifier(self):
+        """Return the classifier value derived from the supplied configuration or input.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return self.head
 
     def reset_classifier(self, num_classes, global_pool=''):
+        """Perform the reset classifier operation for uranker.
+
+        Args:
+            num_classes: Number of items, stages, tokens, or channels configured for this operation.
+            global_pool: Global pooling strategy used to produce the image representation.
+        """
         self.num_classes = num_classes
         self.head = (
             nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
@@ -781,6 +987,15 @@ class URanker(nn.Module):
         return x
 
     def insert_his(self, x, his_token):
+        """Perform the insert his operation for uranker.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            his_token: Number of histogram tokens added to the sequence.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         x = torch.cat((his_token, x), dim=1)
         return x
 
@@ -792,6 +1007,15 @@ class URanker(nn.Module):
             return x[:, 1:, :]
 
     def forward_features(self, x0, x_his):
+        """Perform the forward features operation for uranker.
+
+        Args:
+            x0: Input or initial-stage feature tensor.
+            x_his: Histogram feature tensor used by the model.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         B = x0.shape[0]
 
         # Serial blocks 1.
@@ -896,6 +1120,14 @@ class URanker(nn.Module):
             return x2_cls, x3_cls, x4_cls
 
     def forward(self, x):
+        """Compute the URanker prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         x, x_his = preprocessing(x)
         if (
             self.return_interm_layers

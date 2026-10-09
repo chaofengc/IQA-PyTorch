@@ -230,9 +230,24 @@ class FIDInceptionA(torchvision.models.inception.InceptionA):
     """InceptionA block patched for FID computation"""
 
     def __init__(self, in_channels, pool_features):
+        """Initialize the patched block with torchvision's branch widths.
+
+        Args:
+            in_channels (int): Number of input feature channels.
+            pool_features (int): Number of output channels in the pooling
+                branch.
+        """
         super(FIDInceptionA, self).__init__(in_channels, pool_features)
 
     def forward(self, x):
+        """Apply the four Inception-A branches and concatenate their outputs.
+
+        Args:
+            x (torch.Tensor): Input feature map shaped ``(N, C, H, W)``.
+
+        Returns:
+            torch.Tensor: Concatenated branch feature map.
+        """
         branch1x1 = self.branch1x1(x)
 
         branch5x5 = self.branch5x5_1(x)
@@ -257,9 +272,23 @@ class FIDInceptionC(torchvision.models.inception.InceptionC):
     """InceptionC block patched for FID computation"""
 
     def __init__(self, in_channels, channels_7x7):
+        """Initialize an Inception-C block with its 7x7 branch width.
+
+        Args:
+            in_channels (int): Number of input feature channels.
+            channels_7x7 (int): Intermediate channel width for 7x7 branches.
+        """
         super(FIDInceptionC, self).__init__(in_channels, channels_7x7)
 
     def forward(self, x):
+        """Apply the four Inception-C branches and concatenate their outputs.
+
+        Args:
+            x (torch.Tensor): Input feature map shaped ``(N, C, H, W)``.
+
+        Returns:
+            torch.Tensor: Concatenated branch feature map.
+        """
         branch1x1 = self.branch1x1(x)
 
         branch7x7 = self.branch7x7_1(x)
@@ -287,9 +316,22 @@ class FIDInceptionE_1(torchvision.models.inception.InceptionE):
     """First InceptionE block patched for FID computation"""
 
     def __init__(self, in_channels):
+        """Initialize the first patched Inception-E block.
+
+        Args:
+            in_channels (int): Number of input feature channels.
+        """
         super(FIDInceptionE_1, self).__init__(in_channels)
 
     def forward(self, x):
+        """Apply split-convolution Inception-E branches and concatenate them.
+
+        Args:
+            x (torch.Tensor): Input feature map shaped ``(N, C, H, W)``.
+
+        Returns:
+            torch.Tensor: Concatenated branch feature map.
+        """
         branch1x1 = self.branch1x1(x)
 
         branch3x3 = self.branch3x3_1(x)
@@ -322,9 +364,22 @@ class FIDInceptionE_2(torchvision.models.inception.InceptionE):
     """Second InceptionE block patched for FID computation"""
 
     def __init__(self, in_channels):
+        """Initialize the second patched Inception-E block.
+
+        Args:
+            in_channels (int): Number of input feature channels.
+        """
         super(FIDInceptionE_2, self).__init__(in_channels)
 
     def forward(self, x):
+        """Apply Inception-E branches, using max pooling in the pool branch.
+
+        Args:
+            x (torch.Tensor): Input feature map shaped ``(N, C, H, W)``.
+
+        Returns:
+            torch.Tensor: Concatenated branch feature map.
+        """
         branch1x1 = self.branch1x1(x)
 
         branch3x3 = self.branch3x3_1(x)

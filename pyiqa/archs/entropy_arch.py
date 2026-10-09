@@ -53,6 +53,12 @@ class Entropy(nn.Module):
     """
 
     def __init__(self, **kwargs):
+        """Store keyword options forwarded to :func:`entropy`.
+
+        Args:
+            **kwargs: Options such as ``data_range``, ``eps``, and
+                ``color_space`` accepted by :func:`entropy`.
+        """
         super().__init__()
         self.kwargs = kwargs
 

@@ -56,6 +56,16 @@ class HyperNet(nn.Module):
         default_mean=[0.485, 0.456, 0.406],
         default_std=[0.229, 0.224, 0.225],
     ):
+        """Initialize the hyper net and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            base_model_name: Identifier of the backbone whose architecture and pretrained weights are used.
+            num_crop: Number of image crops used for inference or training.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            default_mean: Per-channel input normalization means.
+            default_std: Per-channel input normalization standard deviations.
+        """
         super(HyperNet, self).__init__()
         self.base_model = timm.create_model(
             base_model_name, pretrained=True, features_only=True

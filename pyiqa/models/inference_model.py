@@ -11,7 +11,13 @@ from pyiqa.archs.arch_util import load_pretrained_network
 
 
 class InferenceModel(torch.nn.Module):
-    """Common interface for quality inference of images with default setting of each metric."""
+    """Callable inference wrapper around a configured FR or NR IQA network.
+
+    Image paths are decoded to RGB tensors; tensor inputs must have shape
+    ``(N, C, H, W)`` and values in ``[0, 1]`` unless range checking is disabled.
+    Full-reference metrics receive ``target`` followed by ``ref``. Gradient
+    propagation is disabled unless the wrapper is created with ``as_loss=True``.
+    """
 
     def __init__(
         self,
@@ -24,6 +30,18 @@ class InferenceModel(torch.nn.Module):
         check_input_range=True,
         **kwargs,  # Other metric options
     ):
+        """Initialize a metric using its default configuration and overrides.
+
+        Args:
+            metric_name (str): Key in ``DEFAULT_CONFIGS``.
+            as_loss (bool): Enable gradients and apply loss reduction.
+            loss_weight (float or Tensor, optional): Optional loss multiplier.
+            loss_reduction (str): Reduction passed to ``weight_reduce_loss``.
+            device (str or torch.device, optional): Inference device.
+            seed (int): Seed used by stochastic metric implementations.
+            check_input_range (bool): Validate ordinary inputs against ``[0, 1]``.
+            **kwargs: Architecture options overriding this metric's defaults.
+        """
         super(InferenceModel, self).__init__()
 
         if metric_name not in DEFAULT_CONFIGS:
@@ -74,9 +92,17 @@ class InferenceModel(torch.nn.Module):
         self.eps = 1e-6
 
     def load_weights(self, weights_path, weight_keys='params'):
+        """Load pretrained weights into the wrapped network.
+
+        Args:
+            weights_path (str): Local checkpoint path or supported URL.
+            weight_keys (str or None): Checkpoint key containing model weights;
+                use ``None`` when the checkpoint itself is a state dictionary.
+        """
         load_pretrained_network(self.net, weights_path, weight_keys=weight_keys)
 
     def is_valid_input(self, x):
+        """Validate a batched image tensor's type, shape, channels, and range."""
         if x is not None:
             assert isinstance(x, torch.Tensor), 'Input must be a torch.Tensor'
             assert x.dim() == 4, 'Input must be 4D tensor (B, C, H, W)'
@@ -88,11 +114,13 @@ class InferenceModel(torch.nn.Module):
                 )
 
     def _to_batched_tensor(self, img):
+        """Convert an image path to a one-image RGB batch; leave tensors intact."""
         if torch.is_tensor(img):
             return img
         return imread2tensor(img, rgb=True).unsqueeze(0)
 
     def _prepare_inputs(self, target, ref=None):
+        """Decode and validate target/reference inputs for image metrics."""
         target = self._to_batched_tensor(target)
         self.is_valid_input(target)
 
@@ -104,8 +132,23 @@ class InferenceModel(torch.nn.Module):
         return target, ref
 
     def forward(self, target, ref=None, **kwargs):
+        """Compute an IQA score or loss.
+
+        Args:
+            target: Target image path or ``(N, C, H, W)`` tensor. For FR metrics,
+                this is the distorted/test image.
+            ref: Reference image path or tensor; required for FR metrics and
+                ignored for NR metrics.
+            **kwargs: Options forwarded to the underlying metric network.
+
+        Returns:
+            Metric-specific score tensor. In loss mode, the configured
+            ``loss_weight`` and ``loss_reduction`` are applied.
+        """
         device = self.dummy_param.device
 
+        # Keep metric inference reproducible, including models with CUDA kernels
+        # whose default benchmark selection may otherwise vary between runs.
         with torch.backends.cudnn.flags(enabled=True, benchmark=False, deterministic=True):
             with torch.set_grad_enabled(self.as_loss):
                 if 'fid' in self.metric_name:

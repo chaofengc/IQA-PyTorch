@@ -27,12 +27,25 @@ class AdaptiveConcatPool2d(nn.Module):
     """Concatenate adaptive max and average pooling outputs."""
 
     def __init__(self, sz=None):
+        """Initialize the adaptive concat pool2d and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            sz: Output side length of the adaptive pooling layer.
+        """
         super().__init__()
         sz = sz or (1, 1)
         self.ap = nn.AdaptiveAvgPool2d(sz)
         self.mp = nn.AdaptiveMaxPool2d(sz)
 
     def forward(self, x):
+        """Apply the adaptive concat pool2d computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         return torch.cat([self.mp(x), self.ap(x)], 1)
 
 
@@ -49,6 +62,13 @@ class PAQ2PIQ(nn.Module):
     def __init__(
         self, backbone='resnet18', pretrained=True, pretrained_model_path=None
     ):
+        """Initialize the paq2 piq and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            backbone: Feature-extractor backbone identifier or module.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+        """
         super(PAQ2PIQ, self).__init__()
 
         if backbone == 'resnet18':

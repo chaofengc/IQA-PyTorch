@@ -32,6 +32,12 @@ class TABlock(nn.Module):
     """Token-attention block used in MANIQA stages."""
 
     def __init__(self, dim, drop=0.1):
+        """Initialize the tablock and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            drop: Dropout probability applied by the layer.
+        """
         super().__init__()
         self.c_q = nn.Linear(dim, dim)
         self.c_k = nn.Linear(dim, dim)
@@ -41,6 +47,14 @@ class TABlock(nn.Module):
         self.proj_drop = nn.Dropout(drop)
 
     def forward(self, x):
+        """Apply the token-attention block to the input sequence.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         _x = x
         B, C, N = x.shape
         q = self.c_q(x)
@@ -59,12 +73,25 @@ class SaveOutput:
     """Forward-hook collector for intermediate ViT block outputs."""
 
     def __init__(self):
+        """Initialize the save output and configure its layers, parameters, and optional pretrained state.
+
+        """
         self.outputs = []
 
     def __call__(self, module, module_in, module_out):
+        """Handle the save output callback using the supplied inputs.
+
+        Args:
+            module: Module whose forward hook was invoked.
+            module_in: Tuple of positional inputs received by the hooked module.
+            module_out: Output produced by the hooked module.
+        """
         self.outputs.append(module_out)
 
     def clear(self):
+        """Clear saved activations and move the hook storage to the requested device.
+
+        """
         self.outputs = []
 
 
@@ -114,6 +141,28 @@ class MANIQA(nn.Module):
         default_std=None,
         **kwargs,
     ):
+        """Initialize the maniqa and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            embed_dim: Dimension of the shared image-text or feature embedding.
+            num_outputs: Number of items, stages, tokens, or channels configured for this operation.
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            drop: Dropout probability applied by the layer.
+            depths: Number of transformer blocks in each stage or branch.
+            window_size: Spatial side length of each attention window.
+            dim_mlp: Hidden width of the feed-forward MLP.
+            num_heads: Number of attention heads.
+            img_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            num_tab: Number of items, stages, tokens, or channels configured for this operation.
+            scale: Scaling factor or embedding scale configured by this model.
+            test_sample: Number of test-time image samples or crops used to estimate the score.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            train_dataset: Training dataset/model variant used to select its weights or preprocessing.
+            default_mean: Per-channel input normalization means.
+            default_std: Per-channel input normalization standard deviations.
+            **kwargs: kwargs value used to configure or compute this operation.
+        """
         super().__init__()
         self.img_size = img_size
         self.patch_size = patch_size

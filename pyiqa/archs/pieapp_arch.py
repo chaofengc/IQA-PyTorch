@@ -25,12 +25,26 @@ default_model_urls = {'url': get_url_from_name('PieAPPv0.1-0937b014.pth')}
 
 
 class CompactLinear(nn.Module):
+    """Compact learned linear regressor used to predict the PieAPP quality score.
+
+    """
     def __init__(self):
+        """Initialize the compact linear and configure its layers, parameters, and optional pretrained state.
+
+        """
         super().__init__()
         self.weight = nn.parameter.Parameter(torch.randn(1))
         self.bias = nn.parameter.Parameter(torch.randn(1))
 
     def forward(self, x):
+        """Compute the PieAPP prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         return x * self.weight + self.bias
 
 
@@ -55,6 +69,14 @@ class PieAPP(nn.Module):
     def __init__(
         self, patch_size=64, stride=27, pretrained=True, pretrained_model_path=None
     ):
+        """Initialize the pie app and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            stride: Spatial stride for the convolutional stage.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+        """
         super(PieAPP, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, 3, padding=1)
         self.conv2 = nn.Conv2d(64, 64, 3, padding=1)
@@ -89,10 +111,26 @@ class PieAPP(nn.Module):
         self.pretrained = pretrained
 
     def flatten(self, matrix):  # takes NxCxHxW input and outputs NxHWC
+        """Perform the flatten operation for pie app.
+
+        Args:
+            matrix: Feature matrix with batch, channel, and spatial dimensions.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return torch.flatten(matrix, 1)
 
     def compute_features(self, input):
         # conv1 -> relu -> conv2 -> relu -> pool2 -> conv3 -> relu
+        """Compute and return features from the supplied inputs.
+
+        Args:
+            input: Image or feature tensor supplied to the feature extractor.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         x3 = F.relu(
             self.conv3(self.pool2(F.relu(self.conv2(F.relu(self.conv1(input))))))
         )
@@ -123,6 +161,15 @@ class PieAPP(nn.Module):
         return x
 
     def forward(self, dist, ref):
+        """Compute the PieAPP prediction for the supplied image or image pair.
+
+        Args:
+            dist: Distorted-image tensor for full-reference quality assessment.
+            ref: Reference-image tensor for full-reference quality assessment.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         assert dist.shape == ref.shape, (
             f'Input and reference images should have the same shape, but got {dist.shape}'
         )

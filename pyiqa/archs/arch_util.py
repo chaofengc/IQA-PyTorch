@@ -1,3 +1,5 @@
+"""Shared tensor, network, and model-loading utilities for IQA architectures."""
+
 from collections import OrderedDict
 import collections.abc
 from itertools import repeat
@@ -245,6 +247,7 @@ def _ntuple(n):
     """
 
     def parse(x):
+        """Convert a scalar to an n-tuple, leaving iterable inputs unchanged."""
         if isinstance(x, collections.abc.Iterable):
             return x
         return tuple(repeat(x, n))

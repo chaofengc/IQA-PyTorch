@@ -85,6 +85,16 @@ class TransformerEncoderLayer(nn.Module):
         activation='gelu',
         normalize_before=False,
     ):
+        """Initialize the transformer encoder layer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            d_model: Transformer embedding width.
+            nhead: Number of attention heads.
+            dim_feedforward: Hidden width of the transformer feed-forward network.
+            dropout: Dropout probability used by the projection or transformer layers.
+            activation: Activation-layer constructor or activation mode.
+            normalize_before: Whether to apply layer normalization before the attention/feed-forward operations.
+        """
         super().__init__()
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         # Implementation of Feedforward model
@@ -101,6 +111,14 @@ class TransformerEncoderLayer(nn.Module):
         self.normalize_before = normalize_before
 
     def forward(self, src):
+        """Apply the transformer encoder layer computation to the provided activations.
+
+        Args:
+            src: Source sequence or feature tensor supplied to the transformer encoder.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         src2 = self.norm1(src)
         q = k = src2
         src2, self.attn_map = self.self_attn(q, k, value=src2)
@@ -122,6 +140,16 @@ class TransformerDecoderLayer(nn.Module):
         activation='gelu',
         normalize_before=False,
     ):
+        """Initialize the transformer decoder layer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            d_model: Transformer embedding width.
+            nhead: Number of attention heads.
+            dim_feedforward: Hidden width of the transformer feed-forward network.
+            dropout: Dropout probability used by the projection or transformer layers.
+            activation: Activation-layer constructor or activation mode.
+            normalize_before: Whether to apply layer normalization before the attention/feed-forward operations.
+        """
         super().__init__()
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         self.multihead_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
@@ -141,6 +169,15 @@ class TransformerDecoderLayer(nn.Module):
         self.normalize_before = normalize_before
 
     def forward(self, tgt, memory):
+        """Apply the transformer decoder layer computation to the provided activations.
+
+        Args:
+            tgt: Target/decoder sequence tensor.
+            memory: Encoder output sequence attended to by the decoder.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         memory = self.norm2(memory)
         tgt2 = self.norm1(tgt)
         tgt2, self.attn_map = self.multihead_attn(query=tgt2, key=memory, value=memory)
@@ -154,11 +191,25 @@ class TransformerDecoderLayer(nn.Module):
 class TransformerEncoder(nn.Module):
     """Stacked wrapper for encoder layers."""
     def __init__(self, encoder_layer, num_layers):
+        """Initialize the transformer encoder and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            encoder_layer: Encoder-layer instance to clone for the transformer stack.
+            num_layers: Number of items, stages, tokens, or channels configured for this operation.
+        """
         super().__init__()
         self.layers = _get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
 
     def forward(self, src):
+        """Apply the transformer encoder computation to the provided activations.
+
+        Args:
+            src: Source sequence or feature tensor supplied to the transformer encoder.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         output = src
 
         for layer in self.layers:
@@ -170,11 +221,26 @@ class TransformerEncoder(nn.Module):
 class TransformerDecoder(nn.Module):
     """Stacked wrapper for decoder layers."""
     def __init__(self, decoder_layer, num_layers):
+        """Initialize the transformer decoder and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            decoder_layer: Decoder-layer instance to clone for the transformer stack.
+            num_layers: Number of items, stages, tokens, or channels configured for this operation.
+        """
         super().__init__()
         self.layers = _get_clones(decoder_layer, num_layers)
         self.num_layers = num_layers
 
     def forward(self, tgt, memory):
+        """Apply the transformer decoder computation to the provided activations.
+
+        Args:
+            tgt: Target/decoder sequence tensor.
+            memory: Encoder output sequence attended to by the decoder.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         output = tgt
 
         for layer in self.layers:
@@ -186,6 +252,12 @@ class TransformerDecoder(nn.Module):
 class GatedConv(nn.Module):
     """Gated local pooling module for no-reference feature aggregation."""
     def __init__(self, weightdim, ksz=3):
+        """Initialize the gated conv and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            weightdim: Number of learned gating weights or channels.
+            ksz: Spatial kernel size of the gated convolution.
+        """
         super().__init__()
 
         self.splitconv = nn.Conv2d(weightdim, weightdim * 2, 1, 1, 0)
@@ -201,6 +273,14 @@ class GatedConv(nn.Module):
         )
 
     def forward(self, x):
+        """Compute the TOPIQ prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         x1, x2 = self.splitconv(x).chunk(2, dim=1)
         weight = self.weight_blk(x2)
         x1 = self.act(x1)
@@ -264,6 +344,31 @@ class CFANet(nn.Module):
         default_mean=IMAGENET_DEFAULT_MEAN,
         default_std=IMAGENET_DEFAULT_STD,
     ):
+        """Initialize the cfanet and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            semantic_model_name: Identifier of the semantic feature model used for image/text guidance.
+            model_name: Registered backbone or model identifier.
+            backbone_pretrain: Whether to initialize the visual backbone from pretrained weights.
+            in_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            use_ref: Whether to use reference-image features in the model.
+            num_class: Number of items, stages, tokens, or channels configured for this operation.
+            num_crop: Number of image crops used for inference or training.
+            crop_size: Spatial size of each crop.
+            inter_dim: Intermediate embedding dimension used by cross-attention.
+            num_heads: Number of attention heads.
+            num_attn_layers: Number of items, stages, tokens, or channels configured for this operation.
+            dprate: Drop-path probability used by the attention blocks.
+            activation: Activation-layer constructor or activation mode.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            out_act: Output activation applied to the predicted quality value.
+            block_pool: Pooling configuration for transformer or feature blocks.
+            test_img_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            align_crop_face: Whether to align/crop face regions during preprocessing.
+            default_mean: Per-channel input normalization means.
+            default_std: Per-channel input normalization standard deviations.
+        """
         super().__init__()
 
         self.in_size = in_size
@@ -449,16 +554,34 @@ class CFANet(nn.Module):
                 )
 
     def _init_linear(self, m):
+        """Perform the internal init linear operation used by cfanet.
+
+        Args:
+            m: Module whose parameters or initialization are being handled.
+        """
         for module in m.modules():
             if isinstance(module, nn.Linear):
                 nn.init.kaiming_normal_(module.weight.data)
                 nn.init.constant_(module.bias.data, 0)
 
     def preprocess(self, x):
+        """Perform the preprocess operation for cfanet.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         x = (x - self.default_mean.to(x)) / self.default_std.to(x)
         return x
 
     def fix_bn(self, model):
+        """Perform the fix bn operation for cfanet.
+
+        Args:
+            model: Model instance whose parameters or attributes are used by this helper.
+        """
         for m in model.modules():
             if isinstance(m, nn.BatchNorm2d):
                 for p in m.parameters():
@@ -466,6 +589,15 @@ class CFANet(nn.Module):
                 m.eval()
 
     def get_swin_feature(self, model, x):
+        """Return the swin feature value derived from the supplied configuration or input.
+
+        Args:
+            model: Model instance whose parameters or attributes are used by this helper.
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         b, c, h, w = x.shape
         x = model.patch_embed(x)
         if model.absolute_pos_embed is not None:
@@ -485,10 +617,29 @@ class CFANet(nn.Module):
         return feat_list
 
     def dist_func(self, x, y, eps=1e-12):
+        """Perform the dist func operation for cfanet.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            y: Reference-image tensor or target quality value, depending on whether the metric is full-reference or regression-based.
+            eps: Small positive constant used to avoid division by zero.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return torch.sqrt((x - y) ** 2 + eps)
 
     def forward_cross_attention(self, x, y=None):
         # resize image when testing
+        """Compute cross-attention between the distorted and reference feature sequences.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            y: Reference-image tensor or target quality value, depending on whether the metric is full-reference or regression-based.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         if not self.training:
             if 'swin' in self.semantic_model_name:
                 x = TF.resize(
@@ -575,6 +726,14 @@ class CFANet(nn.Module):
         return out_score
 
     def preprocess_face(self, x):
+        """Perform the preprocess face operation for cfanet.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         warnings.warn(
             'The faces will be aligned, cropped and resized to 512x512 with facexlib. Currently, this metric does not support batch size > 1 and gradient backpropagation.',
             UserWarning,

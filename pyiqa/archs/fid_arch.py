@@ -52,20 +52,49 @@ class ResizeDataset(torch.utils.data.Dataset):
     """
 
     def __init__(self, files, mode, size=(299, 299)):
+        """Initialize the resize dataset and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            files: Sequence of image file paths or dataset entries.
+            mode: Image loading or resizing mode.
+            size: Target spatial size.
+        """
         self.files = files
         self.size = size
         self.mode = mode
 
     def __len__(self):
+        """Return the number of items in the dataset.
+
+        Returns:
+            Number of stored dataset items.
+        """
         return len(self.files)
 
     def __getitem__(self, i):
+        """Load and resize the indexed image for FID feature extraction.
+
+        Args:
+            i: Dataset index.
+
+
+        Returns:
+            Resized image sample and any dataset metadata returned by the wrapper.
+        """
         path = str(self.files[i])
         img_pil = Image.open(path).convert('RGB')
 
         if self.mode == 'clean':
 
             def resize_single_channel(x_np):
+                """Resize the supplied image or feature tensor to the requested spatial dimensions.
+
+                Args:
+                    x_np: Input image or feature array represented as a NumPy array.
+
+                Returns:
+                    Computed result; type and shape follow the supplied inputs and model configuration.
+                """
                 img = Image.fromarray(x_np.astype(np.float32), mode='F')
                 img = img.resize(self.size, resample=Image.BICUBIC)
                 return np.asarray(img).clip(0, 255).reshape(*self.size, 1)
@@ -181,6 +210,18 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
 def maximum_mean_discrepancy(
     feats1, feats2, kernel_type='polynomial', num_subsets=100, max_subset_size=1000
 ):
+    """Estimate the maximum mean discrepancy between two feature sets using random subsets and the selected kernel.
+
+    Args:
+        feats1: Feature tensor or collection extracted from the corresponding input.
+        feats2: Feature tensor or collection extracted from the corresponding input.
+        kernel_type: Kernel family used in the discrepancy calculation.
+        num_subsets: Number of random subsets used to estimate the discrepancy.
+        max_subset_size: Maximum number of feature vectors included in each subset.
+
+    Returns:
+        Scalar tensor containing the estimated discrepancy.
+    """
     if kernel_type == 'polynomial':
         return mmd_polynomial_kernel(
             feats1, feats2, num_subsets=num_subsets, max_subset_size=max_subset_size

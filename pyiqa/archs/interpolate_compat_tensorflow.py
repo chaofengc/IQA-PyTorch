@@ -57,6 +57,7 @@ def interpolate_bilinear_2d_like_tensorflow1x(
         )
 
     def _check_size_scale_factor(dim):
+        """Validate that exactly one output-size specification is usable."""
         if size is None and scale_factor is None:
             raise ValueError('either size or scale_factor should be defined')
         if size is not None and scale_factor is not None:
@@ -74,6 +75,7 @@ def interpolate_bilinear_2d_like_tensorflow1x(
     is_tracing = torch._C._get_tracing_state()
 
     def _output_size(dim):
+        """Compute output spatial dimensions while preserving traceable math."""
         _check_size_scale_factor(dim)
         if size is not None:
             if is_tracing:
@@ -103,6 +105,7 @@ def interpolate_bilinear_2d_like_tensorflow1x(
             ]
 
     def tf_calculate_resize_scale(in_size, out_size):
+        """Calculate source coordinates using TensorFlow's corner convention."""
         if align_corners:
             if is_tracing:
                 return (in_size - 1) / (out_size.float() - 1).clamp(min=1)
@@ -119,6 +122,7 @@ def interpolate_bilinear_2d_like_tensorflow1x(
     scale_y = tf_calculate_resize_scale(input.shape[2], out_size[0])
 
     def resample_using_grid_sample():
+        """Sample through grid_sample using a normalized coordinate grid."""
         grid_x = torch.arange(0, out_size[1], 1, dtype=input.dtype, device=input.device)
         grid_x = grid_x * (2 * scale_x / (input.shape[3] - 1)) - 1
 
@@ -139,6 +143,7 @@ def interpolate_bilinear_2d_like_tensorflow1x(
         return out
 
     def resample_manually():
+        """Perform explicit four-neighbor bilinear interpolation."""
         grid_x = torch.arange(0, out_size[1], 1, dtype=input.dtype, device=input.device)
         grid_x = grid_x * torch.tensor(scale_x, dtype=torch.float32)
         grid_x_lo = grid_x.long()

@@ -27,7 +27,15 @@ from pyiqa.archs.arch_util import load_pretrained_network, uniform_crop
 
 
 class IQARegression(nn.Module):
+    """Regression head that projects IQT encoder/decoder features into quality predictions.
+
+    """
     def __init__(self, config):
+        """Initialize the iqaregression and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            config: Model or transformer configuration containing dimensions and layer settings.
+        """
         super().__init__()
         self.config = config
 
@@ -47,6 +55,17 @@ class IQARegression(nn.Module):
 
     def forward(self, enc_inputs, enc_inputs_embed, dec_inputs, dec_inputs_embed):
         # batch x (320*6) x 29 x 29 -> batch x 256 x 29 x 29
+        """Compute the IQT prediction for the supplied image or image pair.
+
+        Args:
+            enc_inputs: Encoder token IDs or sequence inputs.
+            enc_inputs_embed: Encoder token embeddings.
+            dec_inputs: Decoder token IDs or sequence inputs.
+            dec_inputs_embed: Decoder token embeddings.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         enc_inputs_embed = self.conv_enc(enc_inputs_embed)
         dec_inputs_embed = self.conv_dec(dec_inputs_embed)
         # batch x 256 x 29 x 29 -> batch x 256 x (29*29)
@@ -77,7 +96,15 @@ class IQARegression(nn.Module):
 
 
 class Transformer(nn.Module):
+    """Transformer encoder-decoder used to compare distorted and reference image features.
+
+    """
     def __init__(self, config):
+        """Initialize the transformer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            config: Model or transformer configuration containing dimensions and layer settings.
+        """
         super().__init__()
         self.config = config
 
@@ -86,6 +113,17 @@ class Transformer(nn.Module):
 
     def forward(self, enc_inputs, enc_inputs_embed, dec_inputs, dec_inputs_embed):
         # (bs, n_enc_seq, d_hidn), [(bs, n_head, n_enc_seq, n_enc_seq)]
+        """Apply the transformer computation to the provided activations.
+
+        Args:
+            enc_inputs: Encoder token IDs or sequence inputs.
+            enc_inputs_embed: Encoder token embeddings.
+            dec_inputs: Decoder token IDs or sequence inputs.
+            dec_inputs_embed: Decoder token embeddings.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         enc_outputs, enc_self_attn_probs = self.encoder(enc_inputs, enc_inputs_embed)
         # (bs, n_seq, d_hidn), [(bs, n_head, n_dec_seq, n_dec_seq)], [(bs, n_head, n_dec_seq, n_enc_seq)]
         dec_outputs, dec_self_attn_probs, dec_enc_attn_probs = self.decoder(
@@ -100,7 +138,15 @@ class Transformer(nn.Module):
 
 
 class Encoder(nn.Module):
+    """Transformer encoder stack for IQT feature tokens.
+
+    """
     def __init__(self, config):
+        """Initialize the encoder and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            config: Model or transformer configuration containing dimensions and layer settings.
+        """
         super().__init__()
         self.config = config
 
@@ -121,6 +167,15 @@ class Encoder(nn.Module):
 
     def forward(self, inputs, inputs_embed):
         # inputs: batch x (len_seq+1) / inputs_embed: batch x len_seq x n_feat
+        """Apply the encoder computation to the provided activations.
+
+        Args:
+            inputs: Input sequence or feature tensor.
+            inputs_embed: Embedded input feature tensor; spatial dimensions are retained until tokenization.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         b, n, _ = inputs_embed.shape
 
         # positions: batch x (len_seq+1)
@@ -157,7 +212,15 @@ class Encoder(nn.Module):
 
 
 class EncoderLayer(nn.Module):
+    """Single IQT encoder layer with self-attention and position-wise feed-forward sublayers.
+
+    """
     def __init__(self, config):
+        """Initialize the encoder layer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            config: Model or transformer configuration containing dimensions and layer settings.
+        """
         super().__init__()
         self.config = config
 
@@ -172,6 +235,15 @@ class EncoderLayer(nn.Module):
 
     def forward(self, inputs, attn_mask):
         # (bs, n_enc_seq, d_hidn), (bs, n_head, n_enc_seq, n_enc_seq)
+        """Apply the encoder layer computation to the provided activations.
+
+        Args:
+            inputs: Input sequence or feature tensor.
+            attn_mask: Optional attention mask controlling which query-key positions may interact.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         att_outputs, attn_prob = self.self_attn(inputs, inputs, inputs, attn_mask)
         att_outputs = self.layer_norm1(inputs + att_outputs)
 
@@ -184,10 +256,36 @@ class EncoderLayer(nn.Module):
 
 
 def get_sinusoid_encoding_table(n_seq, d_hidn):
+    """Construct sinusoidal positional encodings with one row per sequence position.
+
+    Args:
+        n_seq: Number of sequence positions represented in the encoding table.
+        d_hidn: Width of each sinusoidal position vector.
+
+    Returns:
+        Positional-encoding tensor shaped ``(n_seq, d_hidn)``.
+    """
     def cal_angle(position, i_hidn):
+        """Perform the cal angle operation for iqt.
+
+        Args:
+            position: Position index or embedding associated with the current token.
+            i_hidn: Hidden width used to construct the transformer attention mask.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return position / np.power(10000, 2 * (i_hidn // 2) / d_hidn)
 
     def get_posi_angle_vec(position):
+        """Return the posi angle vec value derived from the supplied configuration or input.
+
+        Args:
+            position: Position index or embedding associated with the current token.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return [cal_angle(position, i_hidn) for i_hidn in range(d_hidn)]
 
     sinusoid_table = np.array([get_posi_angle_vec(i_seq) for i_seq in range(n_seq)])
@@ -201,6 +299,16 @@ def get_sinusoid_encoding_table(n_seq, d_hidn):
 
 
 def get_attn_pad_mask(seq_q, seq_k, i_pad):
+    """Mark padded key positions so attention queries cannot attend to padding tokens.
+
+    Args:
+        seq_q: Query token tensor shaped ``(B, Lq)``.
+        seq_k: Key token tensor shaped ``(B, Lk)``; padded key IDs are masked.
+        i_pad: Integer padding token ID masked out from attention.
+
+    Returns:
+        Boolean mask shaped ``(B, Lq, Lk)`` for query and key lengths from ``seq_q`` and ``seq_k``.
+    """
     batch_size, len_q = seq_q.size()
     batch_size, len_k = seq_k.size()
     pad_attn_mask = seq_k.data.eq(i_pad)
@@ -212,7 +320,15 @@ def get_attn_pad_mask(seq_q, seq_k, i_pad):
 
 
 class MultiHeadAttention(nn.Module):
+    """Multi-head attention projection and aggregation layer used by IQT.
+
+    """
     def __init__(self, config):
+        """Initialize the multi head attention and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            config: Model or transformer configuration containing dimensions and layer settings.
+        """
         super().__init__()
         self.config = config
 
@@ -232,6 +348,17 @@ class MultiHeadAttention(nn.Module):
         self.dropout = nn.Dropout(config.dropout)
 
     def forward(self, Q, K, V, attn_mask):
+        """Apply the multi head attention computation to the provided activations.
+
+        Args:
+            Q: Query tensor for attention, shaped ``(B, heads, Lq, D)`` in multi-head attention.
+            K: Key tensor for attention, shaped ``(B, heads, Lk, D)`` in multi-head attention.
+            V: Value tensor for attention, shaped ``(B, heads, Lk, Dv)`` in multi-head attention.
+            attn_mask: Optional attention mask controlling which query-key positions may interact.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         batch_size = Q.size(0)
 
         # (bs, n_head, n_q_seq, d_head)
@@ -276,7 +403,15 @@ class MultiHeadAttention(nn.Module):
 
 
 class ScaledDotProductAttention(nn.Module):
+    """Scaled dot-product attention with the supplied attention mask.
+
+    """
     def __init__(self, config):
+        """Initialize the scaled dot product attention and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            config: Model or transformer configuration containing dimensions and layer settings.
+        """
         super().__init__()
         self.config = config
         self.dropout = nn.Dropout(config.dropout)
@@ -284,6 +419,17 @@ class ScaledDotProductAttention(nn.Module):
 
     def forward(self, Q, K, V, attn_mask):
         # (bs, n_head, n_q_seq, n_k_seq)
+        """Apply the scaled dot product attention computation to the provided activations.
+
+        Args:
+            Q: Query tensor for attention, shaped ``(B, heads, Lq, D)`` in multi-head attention.
+            K: Key tensor for attention, shaped ``(B, heads, Lk, D)`` in multi-head attention.
+            V: Value tensor for attention, shaped ``(B, heads, Lk, Dv)`` in multi-head attention.
+            attn_mask: Optional attention mask controlling which query-key positions may interact.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         scores = torch.matmul(Q, K.transpose(-1, -2))
         scores = scores.mul_(self.scale)
         scores.masked_fill_(attn_mask, -1e9)
@@ -301,7 +447,15 @@ class ScaledDotProductAttention(nn.Module):
 
 
 class PoswiseFeedForwardNet(nn.Module):
+    """Position-wise feed-forward network used in an IQT transformer layer.
+
+    """
     def __init__(self, config):
+        """Initialize the poswise feed forward net and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            config: Model or transformer configuration containing dimensions and layer settings.
+        """
         super().__init__()
         self.config = config
 
@@ -316,6 +470,14 @@ class PoswiseFeedForwardNet(nn.Module):
 
     def forward(self, inputs):
         # (bs, d_ff, n_seq)
+        """Compute the IQT prediction for the supplied image or image pair.
+
+        Args:
+            inputs: Input sequence or feature tensor.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         output = self.conv1(inputs.transpose(1, 2))
         output = self.active(output)
         # (bs, n_seq, d_hidn)
@@ -330,7 +492,15 @@ class PoswiseFeedForwardNet(nn.Module):
 
 
 class Decoder(nn.Module):
+    """Transformer decoder stack that attends to IQT encoder features.
+
+    """
     def __init__(self, config):
+        """Initialize the decoder and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            config: Model or transformer configuration containing dimensions and layer settings.
+        """
         super().__init__()
         self.config = config
 
@@ -347,6 +517,17 @@ class Decoder(nn.Module):
     def forward(self, dec_inputs, dec_inputs_embed, enc_inputs, enc_outputs):
         # enc_inputs: batch x (len_seq+1) / enc_outputs: batch x (len_seq+1) x n_feat
         # dec_inputs: batch x (len_seq+1) / dec_inputs_embed: batch x len_seq x n_feat
+        """Apply the decoder computation to the provided activations.
+
+        Args:
+            dec_inputs: Decoder token IDs or sequence inputs.
+            dec_inputs_embed: Decoder token embeddings.
+            enc_inputs: Encoder token IDs or sequence inputs.
+            enc_outputs: Encoded source-sequence features supplied to the decoder.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         b, n, _ = dec_inputs_embed.shape
 
         cls_tokens = repeat(self.cls_token, '() n d -> b n d', b=b)
@@ -381,7 +562,15 @@ class Decoder(nn.Module):
 
 
 class DecoderLayer(nn.Module):
+    """Single IQT decoder layer with self-attention, cross-attention, and feed-forward sublayers.
+
+    """
     def __init__(self, config):
+        """Initialize the decoder layer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            config: Model or transformer configuration containing dimensions and layer settings.
+        """
         super().__init__()
         self.config = config
 
@@ -400,6 +589,17 @@ class DecoderLayer(nn.Module):
 
     def forward(self, dec_inputs, enc_outputs, self_attn_mask, dec_enc_attn_mask):
         # (bs, n_dec_seq, d_hidn), (bs, n_head, n_dec_seq, n_dec_seq)
+        """Apply the decoder layer computation to the provided activations.
+
+        Args:
+            dec_inputs: Decoder token IDs or sequence inputs.
+            enc_outputs: Encoded source-sequence features supplied to the decoder.
+            self_attn_mask: Mask applied to decoder self-attention, typically causal.
+            dec_enc_attn_mask: Mask applied to decoder-to-encoder attention.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         self_att_outputs, self_attn_prob = self.self_attn(
             dec_inputs, dec_inputs, dec_inputs, self_attn_mask
         )
@@ -421,6 +621,14 @@ class DecoderLayer(nn.Module):
 
 
 def get_attn_decoder_mask(seq):
+    """Construct a causal decoder mask that blocks attention to future positions.
+
+    Args:
+        seq: Batch of decoder token IDs shaped ``(B, L)``.
+
+    Returns:
+        Boolean mask shaped ``(B, L, L)`` for a batch of sequences of length ``L``.
+    """
     subsequent_mask = (
         torch.ones_like(seq).unsqueeze(-1).expand(seq.size(0), seq.size(1), seq.size(1))
     )
@@ -431,20 +639,41 @@ def get_attn_decoder_mask(seq):
 
 
 class SaveOutput:
+    """Forward-hook callback that stores intermediate module activations for IQT.
+
+    """
     def __init__(self):
+        """Initialize the save output and configure its layers, parameters, and optional pretrained state.
+
+        """
         self.outputs = {}
 
     def __call__(self, module, module_in, module_out):
+        """Handle the save output callback using the supplied inputs.
+
+        Args:
+            module: Module whose forward hook was invoked.
+            module_in: Tuple of positional inputs received by the hooked module.
+            module_out: Output produced by the hooked module.
+        """
         if module_out.device in self.outputs.keys():
             self.outputs[module_out.device].append(module_out)
         else:
             self.outputs[module_out.device] = [module_out]
 
     def clear(self, device):
+        """Clear saved activations and move the hook storage to the requested device.
+
+        Args:
+            device: Target PyTorch device, such as CPU or CUDA.
+        """
         self.outputs[device] = []
 
 
 class DeformFusion(nn.Module):
+    """Deformable-convolution fusion module for CNN and vision-transformer image features.
+
+    """
     def __init__(
         self,
         patch_size=8,
@@ -452,6 +681,14 @@ class DeformFusion(nn.Module):
         cnn_channels=256 * 3,
         out_channels=256 * 3,
     ):
+        """Initialize the deform fusion and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            in_channels: Number of input feature channels.
+            cnn_channels: Channel width of the convolutional feature branch.
+            out_channels: Number of output feature channels.
+        """
         super().__init__()
         # in_channels, out_channels, kernel_size, stride, padding
         self.d_hidn = 512
@@ -480,6 +717,15 @@ class DeformFusion(nn.Module):
         )
 
     def forward(self, cnn_feat, vit_feat):
+        """Fuse CNN feature maps and vision-transformer patch features using deformable convolution.
+
+        Args:
+            cnn_feat: Convolutional feature map, typically ``(B, C, H, W)``.
+            vit_feat: Vision-transformer patch features corresponding to the same image.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         vit_feat = F.interpolate(vit_feat, size=cnn_feat.shape[-2:], mode='nearest')
         offset = self.conv_offset(vit_feat)
         deform_feat = self.deform(cnn_feat, offset)
@@ -489,7 +735,17 @@ class DeformFusion(nn.Module):
 
 
 class Pixel_Prediction(nn.Module):
+    """Feature-fusion head that predicts a spatial quality map from an image pair.
+
+    """
     def __init__(self, inchannels=768 * 5 + 256 * 3, outchannels=256, d_hidn=1024):
+        """Initialize the pixel prediction and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            inchannels: Number of input feature channels.
+            outchannels: Number of output feature channels.
+            d_hidn: Transformer hidden-state width.
+        """
         super().__init__()
         self.d_hidn = d_hidn
         self.down_channel = nn.Conv2d(inchannels, outchannels, kernel_size=1)
@@ -515,6 +771,17 @@ class Pixel_Prediction(nn.Module):
         )
 
     def forward(self, f_dis, f_ref, cnn_dis, cnn_ref):
+        """Predict a spatial quality map from distorted/reference CNN and transformer features.
+
+        Args:
+            f_dis: Distorted-image feature representation.
+            f_ref: Reference-image feature representation.
+            cnn_dis: Convolutional features extracted from the distorted image.
+            cnn_ref: Convolutional features extracted from the reference image.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         f_dis = torch.cat((f_dis, cnn_dis), 1)
         f_ref = torch.cat((f_ref, cnn_ref), 1)
         f_dis = self.down_channel(f_dis)
@@ -566,6 +833,16 @@ class IQT(nn.Module):
         pretrained=False,
         pretrained_model_path=None,
     ):
+        """Initialize the iqt and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            num_crop: Number of image crops used for inference or training.
+            config_dataset: Dataset/model configuration used to select the appropriate pretrained head or settings.
+            default_mean: Per-channel input normalization means.
+            default_std: Per-channel input normalization standard deviations.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+        """
         super().__init__()
 
         # Initialize the backbone model
@@ -579,6 +856,11 @@ class IQT(nn.Module):
             """
 
             def __init__(self, dataset=config_dataset) -> None:
+                """Initialize the config and configure its layers, parameters, and optional pretrained state.
+
+                Args:
+                    dataset: Dataset split or dataset-specific configuration.
+                """
                 if dataset in ['live', 'csiq', 'tid']:
                     # model for PIPAL (NTIRE2021 Challenge)
                     self.n_enc_seq = (
@@ -747,6 +1029,15 @@ class IQT(nn.Module):
         return score
 
     def forward(self, x, y):
+        """Compute the IQT prediction for the supplied image or image pair.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            y: Reference-image tensor or target quality value, depending on whether the metric is full-reference or regression-based.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         bsz = x.shape[0]
 
         if self.crops > 1 and not self.training:

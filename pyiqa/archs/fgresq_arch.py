@@ -111,6 +111,21 @@ class FGResQ(nn.Module):
         default_std=OPENAI_CLIP_STD,
         score_scale=0.3,
     ):
+        """Initialize the fgres q and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            clip_model: CLIP model instance used to encode image or text features.
+            task_clip_model: Task-specific CLIP model or checkpoint configuration.
+            clip_freeze: Whether to freeze the CLIP backbone parameters during training.
+            pretrained: Whether to initialize or load pretrained weights.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            degradation_model_path: Optional path to degradation-estimation model weights.
+            input_size: Model input resolution or spatial size.
+            resize_size: Resolution used by preprocessing resize operation.
+            default_mean: Per-channel input normalization means.
+            default_std: Per-channel input normalization standard deviations.
+            score_scale: Multiplicative scale applied to the predicted quality score.
+        """
         super().__init__()
 
         self.input_size = input_size
@@ -192,6 +207,15 @@ class FGResQ(nn.Module):
 
     @staticmethod
     def _summarize_keys(keys, max_items=8):
+        """Format checkpoint key names for a bounded diagnostic message.
+
+        Args:
+            keys: Checkpoint parameter names to summarize or filter.
+            max_items: Maximum number of names to include in the summary.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         if not keys:
             return '[]'
         keys = list(keys)
@@ -218,10 +242,25 @@ class FGResQ(nn.Module):
 
     @staticmethod
     def _filter_expected_missing_keys(missing):
+        """Filter checkpoint omissions expected for this model configuration.
+
+        Args:
+            missing: Checkpoint keys absent from the model state.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         expected_missing = {'default_mean', 'default_std'}
         return [key for key in missing if key not in expected_missing]
 
     def _warn_load_mismatch(self, name, missing, unexpected):
+        """Log checkpoint keys that do not match the expected model state.
+
+        Args:
+            name: Registered model name or identifier.
+            missing: Checkpoint keys absent from the model state.
+            unexpected: Checkpoint keys that do not correspond to model parameters.
+        """
         missing = self._filter_expected_missing_keys(missing)
         if not missing and not unexpected:
             return

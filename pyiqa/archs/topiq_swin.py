@@ -37,6 +37,15 @@ from timm.layers import (
 
 
 def _cfg(url='', **kwargs):
+    """Perform the internal cfg operation used by topiq swin transformer.
+
+    Args:
+        url: Checkpoint URL; a hash embedded in the URL is checked when available.
+        **kwargs: kwargs value used to configure or compute this operation.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     return {
         'url': url,
         'num_classes': 1000,
@@ -111,6 +120,17 @@ default_cfgs = {
 def resize_pos_embed(posemb, posemb_new, num_prefix_tokens=1, gs_new=()):
     # Rescale the grid of position embeddings when loading from state_dict. Adapted from
     # https://github.com/google-research/vision_transformer/blob/00883dd691c63a6830751563748663526e811cee/vit_jax/checkpoint.py#L224
+    """Resize the supplied image or feature tensor to the requested spatial dimensions.
+
+    Args:
+        posemb: Source positional-embedding tensor to resize or interpolate.
+        posemb_new: Target positional-embedding tensor whose grid determines output size.
+        num_prefix_tokens: Number of items, stages, tokens, or channels configured for this operation.
+        gs_new: Target height and width of the positional-embedding grid.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     ntok_new = posemb_new.shape[1]
     if num_prefix_tokens:
         posemb_prefix, posemb_grid = (
@@ -208,6 +228,15 @@ def window_reverse(windows, window_size: int, H: int, W: int):
 
 def get_relative_position_index(win_h, win_w):
     # get pair-wise relative position index for each token inside the window
+    """Return the relative position index value derived from the supplied configuration or input.
+
+    Args:
+        win_h: Attention-window height in tokens.
+        win_w: Attention-window width in tokens.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     coords = torch.stack(
         torch.meshgrid(torch.arange(win_h), torch.arange(win_w), indexing='ij')
     )  # 2, Wh, Ww
@@ -246,6 +275,17 @@ class WindowAttention(nn.Module):
         attn_drop=0.0,
         proj_drop=0.0,
     ):
+        """Initialize the window attention and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            num_heads: Number of attention heads.
+            head_dim: Per-head embedding dimension.
+            window_size: Spatial side length of each attention window.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            attn_drop: Dropout probability applied to attention weights.
+            proj_drop: Dropout probability applied after the output projection.
+        """
         super().__init__()
         self.dim = dim
         self.window_size = to_2tuple(window_size)  # Wh, Ww
@@ -275,6 +315,11 @@ class WindowAttention(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
 
     def _get_rel_pos_bias(self) -> torch.Tensor:
+        """Perform the internal get rel pos bias operation used by window attention.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         relative_position_bias = self.relative_position_bias_table[
             self.relative_position_index.view(-1)
         ].view(self.window_area, self.window_area, -1)  # Wh*Ww,Wh*Ww,nH
@@ -350,6 +395,23 @@ class SwinTransformerBlock(nn.Module):
         act_layer=nn.GELU,
         norm_layer=nn.LayerNorm,
     ):
+        """Initialize the swin transformer block and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            input_resolution: Expected input image resolution.
+            num_heads: Number of attention heads.
+            head_dim: Per-head embedding dimension.
+            window_size: Spatial side length of each attention window.
+            shift_size: Offset used to shift the attention-window partition.
+            mlp_ratio: Ratio between the MLP hidden width and the block embedding width.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            drop: Dropout probability applied by the layer.
+            attn_drop: Dropout probability applied to attention weights.
+            drop_path: Stochastic depth probability applied by the layer.
+            act_layer: Activation-layer constructor used between linear projections.
+            norm_layer: Normalization-layer constructor used by the block.
+        """
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution
@@ -415,6 +477,14 @@ class SwinTransformerBlock(nn.Module):
         self.register_buffer('attn_mask', attn_mask)
 
     def forward(self, x):
+        """Apply the swin transformer block computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         H, W = self.input_resolution
         B, L, C = x.shape
         _assert(L == H * W, 'input feature has wrong size')
@@ -474,6 +544,14 @@ class PatchMerging(nn.Module):
     """
 
     def __init__(self, input_resolution, dim, out_dim=None, norm_layer=nn.LayerNorm):
+        """Initialize the patch merging and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            input_resolution: Expected input image resolution.
+            dim: Embedding or channel width of the attention/feature representation.
+            out_dim: Output embedding or channel dimension.
+            norm_layer: Normalization-layer constructor used by the block.
+        """
         super().__init__()
         self.input_resolution = input_resolution
         self.dim = dim
@@ -541,6 +619,24 @@ class BasicLayer(nn.Module):
         norm_layer=nn.LayerNorm,
         downsample=None,
     ):
+        """Initialize the basic layer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dim: Embedding or channel width of the attention/feature representation.
+            out_dim: Output embedding or channel dimension.
+            input_resolution: Expected input image resolution.
+            depth: Number of layers or blocks in this stage.
+            num_heads: Number of attention heads.
+            head_dim: Per-head embedding dimension.
+            window_size: Spatial side length of each attention window.
+            mlp_ratio: Ratio between the MLP hidden width and the block embedding width.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            drop: Dropout probability applied by the layer.
+            attn_drop: Dropout probability applied to attention weights.
+            drop_path: Stochastic depth probability applied by the layer.
+            norm_layer: Normalization-layer constructor used by the block.
+            downsample: Optional downsampling layer constructor for the stage transition.
+        """
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution
@@ -579,6 +675,14 @@ class BasicLayer(nn.Module):
             self.downsample = None
 
     def forward(self, x):
+        """Apply the basic layer computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         if self.grad_checkpointing and not torch.jit.is_scripting():
             x = checkpoint_seq(self.blocks, x)
         else:
@@ -636,6 +740,30 @@ class SwinTransformer(nn.Module):
         weight_init='',
         **kwargs,
     ):
+        """Initialize the swin transformer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            img_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            patch_size: Spatial size of each non-overlapping image patch or attention window.
+            in_chans: Number of image input channels.
+            num_classes: Number of items, stages, tokens, or channels configured for this operation.
+            global_pool: Global pooling strategy used to produce the image representation.
+            embed_dim: Dimension of the shared image-text or feature embedding.
+            depths: Number of transformer blocks in each stage or branch.
+            num_heads: Number of attention heads.
+            head_dim: Per-head embedding dimension.
+            window_size: Spatial side length of each attention window.
+            mlp_ratio: Ratio between the MLP hidden width and the block embedding width.
+            qkv_bias: Whether to add a learned bias to the query, key, and value projections.
+            drop_rate: Dropout probability applied by the layer.
+            attn_drop_rate: Dropout probability applied to attention weights.
+            drop_path_rate: Maximum stochastic-depth probability across the network.
+            norm_layer: Normalization-layer constructor used by the block.
+            ape: Whether to use absolute positional embeddings.
+            patch_norm: Whether to normalize patch embeddings after projection.
+            weight_init: Weight-initialization scheme for the transformer.
+            **kwargs: kwargs value used to configure or compute this operation.
+        """
         super().__init__()
         assert global_pool in ('', 'avg')
         self.num_classes = num_classes
@@ -715,6 +843,11 @@ class SwinTransformer(nn.Module):
 
     @torch.jit.ignore
     def no_weight_decay(self):
+        """Perform the no weight decay operation for swin transformer.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         nwd = {'absolute_pos_embed'}
         for n, _ in self.named_parameters():
             if 'relative_position_bias_table' in n:
@@ -723,6 +856,14 @@ class SwinTransformer(nn.Module):
 
     @torch.jit.ignore
     def group_matcher(self, coarse=False):
+        """Perform the group matcher operation for swin transformer.
+
+        Args:
+            coarse: Whether to use the coarse image representation.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return dict(
             stem=r'^absolute_pos_embed|patch_embed',  # stem and embed
             blocks=r'^layers\.(\d+)'
@@ -736,14 +877,30 @@ class SwinTransformer(nn.Module):
 
     @torch.jit.ignore
     def set_grad_checkpointing(self, enable=True):
+        """Perform the set grad checkpointing operation for swin transformer.
+
+        Args:
+            enable: Whether to enable the optional model component.
+        """
         for l in self.layers:
             l.grad_checkpointing = enable
 
     @torch.jit.ignore
     def get_classifier(self):
+        """Return the classifier value derived from the supplied configuration or input.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         return self.head
 
     def reset_classifier(self, num_classes, global_pool=None):
+        """Perform the reset classifier operation for swin transformer.
+
+        Args:
+            num_classes: Number of items, stages, tokens, or channels configured for this operation.
+            global_pool: Global pooling strategy used to produce the image representation.
+        """
         self.num_classes = num_classes
         if global_pool is not None:
             assert global_pool in ('', 'avg')
@@ -755,6 +912,14 @@ class SwinTransformer(nn.Module):
         )
 
     def forward_features(self, x):
+        """Perform the forward features operation for swin transformer.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         x = self.patch_embed(x)
         if self.absolute_pos_embed is not None:
             x = x + self.absolute_pos_embed
@@ -764,17 +929,44 @@ class SwinTransformer(nn.Module):
         return x
 
     def forward_head(self, x, pre_logits: bool = False):
+        """Perform the forward head operation for swin transformer.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+            pre_logits: Whether to return the pre-classification feature representation.
+
+        Returns:
+            Computed result; type and shape follow the supplied inputs and model configuration.
+        """
         if self.global_pool == 'avg':
             x = x.mean(dim=1)
         return x if pre_logits else self.head(x)
 
     def forward(self, x):
+        """Apply the swin transformer computation to the provided activations.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+        Returns:
+            Transformed tensor or feature representation; shape follows the layer configuration.
+        """
         x = self.forward_features(x)
         x = self.forward_head(x)
         return x
 
 
 def _create_swin_transformer(variant, pretrained=False, **kwargs):
+    """Perform the internal create swin transformer operation used by topiq swin transformer.
+
+    Args:
+        variant: Backbone, checkpoint, or model variant selector.
+        pretrained: Whether to initialize or load pretrained weights.
+        **kwargs: kwargs value used to configure or compute this operation.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     model = build_model_with_cfg(
         SwinTransformer,
         variant,
@@ -982,4 +1174,13 @@ def swin_s3_base_224(pretrained=False, **kwargs):
 
 
 def create_swin(name, **kwargs):
+    """Perform the create swin operation for topiq swin transformer.
+
+    Args:
+        name: Registered model name or identifier.
+        **kwargs: kwargs value used to configure or compute this operation.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     return eval(name)(pretrained_cfg=default_cfgs[name], **kwargs)

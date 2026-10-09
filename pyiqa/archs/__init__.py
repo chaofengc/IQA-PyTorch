@@ -1,3 +1,5 @@
+"""Architecture registry loading and network-construction helpers."""
+
 import importlib
 import copy
 import re
@@ -16,11 +18,24 @@ _ALL_ARCH_IMPORTED = False
 
 
 def _camel_to_snake(name: str) -> str:
+    """Convert a CamelCase name to lowercase snake_case.
+
+    Args:
+        name: Registered model name or identifier.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     s1 = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
 def _lazy_import_arch(network_type: str) -> None:
+    """Import the architecture module corresponding to a registered network type.
+
+    Args:
+        network_type: Registered network architecture identifier.
+    """
     global _ALL_ARCH_IMPORTED
 
     stem = network_type[:-5] if network_type.endswith('_arch') else network_type

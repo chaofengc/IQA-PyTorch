@@ -34,14 +34,41 @@ default_model_urls = {
 
 
 def upsample(in_tens, out_HW=(64, 64)):  # assumes scale factor is same for H and W
+    """Resize a feature tensor to the requested height and width using bilinear interpolation.
+
+    Args:
+        in_tens: Feature tensor shaped ``(B, C, H, W)`` to resize or spatially average.
+        out_HW: Output height and width as a two-element sequence.
+
+    Returns:
+        Tensor shaped ``(B, C, out_H, out_W)``.
+    """
     return nn.Upsample(size=out_HW, mode='bilinear', align_corners=False)(in_tens)
 
 
 def spatial_average(in_tens, keepdim=True):
+    """Average a feature tensor over its height and width dimensions.
+
+    Args:
+        in_tens: Feature tensor shaped ``(B, C, H, W)`` to resize or spatially average.
+        keepdim: Whether to retain singleton spatial dimensions after averaging.
+
+    Returns:
+        Tensor shaped ``(B, C, 1, 1)`` when ``keepdim=True`` or ``(B, C)`` otherwise.
+    """
     return in_tens.mean([2, 3], keepdim=keepdim)
 
 
 def normalize_tensor(in_feat, eps=1e-10):
+    """Normalize each spatial feature vector by its channel-wise Euclidean norm, with ``eps`` for numerical stability.
+
+    Args:
+        in_feat: Feature tensor shaped ``(B, C, H, W)`` to normalize across channels.
+        eps: Small positive constant added to the norm to avoid division by zero.
+
+    Returns:
+        Normalized tensor with the same shape as ``in_feat``.
+    """
     norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
     return in_feat / (norm_factor + eps)
 
@@ -83,6 +110,22 @@ class LPIPS(nn.Module):
         semantic_weight_layer=-1,
         **kwargs,
     ):
+        """Initialize the lpips and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            pretrained: Whether to initialize or load pretrained weights.
+            net: Feature-network backbone identifier used by LPIPS.
+            version: LPIPS calibration version or checkpoint variant.
+            lpips: Whether to apply learned LPIPS channel weights.
+            spatial: Whether to return a spatial distance map rather than a spatially averaged score.
+            pnet_rand: Whether to use randomly initialized perceptual-network weights.
+            pnet_tune: Whether to fine-tune the perceptual network.
+            use_dropout: Whether to use dropout in the learned calibration layers.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            eval_mode: Whether to put the network in evaluation mode after construction.
+            semantic_weight_layer: Feature layer used to compute the semantic LPIPS contribution.
+            **kwargs: kwargs value used to configure or compute this operation.
+        """
         super(LPIPS, self).__init__()
 
         self.pnet_type = net
@@ -216,7 +259,13 @@ class LPIPS(nn.Module):
 
 
 class ScalingLayer(nn.Module):
+    """Fixed channel-wise input scaling transform used before LPIPS feature extraction.
+
+    """
     def __init__(self):
+        """Initialize the scaling layer and configure its layers, parameters, and optional pretrained state.
+
+        """
         super(ScalingLayer, self).__init__()
         self.register_buffer(
             'shift', torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None]
@@ -226,6 +275,15 @@ class ScalingLayer(nn.Module):
         )
 
     def forward(self, inp):
+        """Apply the fixed channel-wise scaling transform to an RGB image tensor.
+
+        Args:
+            inp: Input tensor to rescale, filter, or downsample.
+
+
+        Returns:
+            Scaled image tensor with the same shape as the input.
+        """
         return (inp - self.shift) / self.scale
 
 
@@ -233,6 +291,13 @@ class NetLinLayer(nn.Module):
     """A single linear layer which does a 1x1 conv"""
 
     def __init__(self, chn_in, chn_out=1, use_dropout=False):
+        """Initialize the net lin layer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            chn_in: Number of input feature channels.
+            chn_out: Number of output feature channels.
+            use_dropout: Whether to use dropout in the learned calibration layers.
+        """
         super(NetLinLayer, self).__init__()
 
         layers = (
@@ -248,11 +313,29 @@ class NetLinLayer(nn.Module):
         self.model = nn.Sequential(*layers)
 
     def forward(self, x):
+        """Apply the learned linear calibration to a feature-distance map.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+
+        Returns:
+            Calibrated distance map; dimensions depend on the configured spatial mode.
+        """
         return self.model(x)
 
 
 class squeezenet(torch.nn.Module):
+    """SqueezeNet feature extractor that exposes intermediate activations for LPIPS.
+
+    """
     def __init__(self, requires_grad=False, pretrained=True):
+        """Initialize the squeezenet and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            requires_grad: Whether the feature extractor parameters require gradients.
+            pretrained: Whether to initialize or load pretrained weights.
+        """
         super(squeezenet, self).__init__()
         pretrained_features = models.squeezenet1_1(pretrained=pretrained).features
         self.slice1 = torch.nn.Sequential()
@@ -282,6 +365,14 @@ class squeezenet(torch.nn.Module):
                 param.requires_grad = False
 
     def forward(self, X):
+        """Run the SqueezeNet feature extractor and return intermediate perceptual features.
+
+        Args:
+            X: Input image or activation tensor, commonly in ``(B, C, H, W)`` layout for feature extractors.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         h = self.slice1(X)
         h_relu1 = h
         h = self.slice2(h)
@@ -306,7 +397,16 @@ class squeezenet(torch.nn.Module):
 
 
 class alexnet(torch.nn.Module):
+    """AlexNet feature extractor that exposes intermediate activations for LPIPS.
+
+    """
     def __init__(self, requires_grad=False, pretrained=True):
+        """Initialize the alexnet and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            requires_grad: Whether the feature extractor parameters require gradients.
+            pretrained: Whether to initialize or load pretrained weights.
+        """
         super(alexnet, self).__init__()
         alexnet_pretrained_features = models.alexnet(weights='IMAGENET1K_V1').features
         self.slice1 = torch.nn.Sequential()
@@ -330,6 +430,14 @@ class alexnet(torch.nn.Module):
                 param.requires_grad = False
 
     def forward(self, X):
+        """Run the AlexNet feature extractor and return intermediate perceptual features.
+
+        Args:
+            X: Input image or activation tensor, commonly in ``(B, C, H, W)`` layout for feature extractors.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         h = self.slice1(X)
         h_relu1 = h
         h = self.slice2(h)
@@ -349,7 +457,16 @@ class alexnet(torch.nn.Module):
 
 
 class vgg16(torch.nn.Module):
+    """VGG16 feature extractor that exposes intermediate activations for LPIPS.
+
+    """
     def __init__(self, requires_grad=False, pretrained=True):
+        """Initialize the vgg16 and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            requires_grad: Whether the feature extractor parameters require gradients.
+            pretrained: Whether to initialize or load pretrained weights.
+        """
         super(vgg16, self).__init__()
         vgg_pretrained_features = models.vgg16(weights='IMAGENET1K_V1').features
         self.slice1 = torch.nn.Sequential()
@@ -373,6 +490,14 @@ class vgg16(torch.nn.Module):
                 param.requires_grad = False
 
     def forward(self, X):
+        """Run the VGG16 feature extractor and return intermediate perceptual features.
+
+        Args:
+            X: Input image or activation tensor, commonly in ``(B, C, H, W)`` layout for feature extractors.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         h = self.slice1(X)
         h_relu1_2 = h
         h = self.slice2(h)
@@ -392,7 +517,17 @@ class vgg16(torch.nn.Module):
 
 
 class resnet(torch.nn.Module):
+    """ResNet feature extractor that exposes intermediate activations for LPIPS.
+
+    """
     def __init__(self, requires_grad=False, pretrained=True, num=18):
+        """Initialize the resnet and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            requires_grad: Whether the feature extractor parameters require gradients.
+            pretrained: Whether to initialize or load pretrained weights.
+            num: Network depth/count selector for the requested residual backbone.
+        """
         super(resnet, self).__init__()
         if num == 18:
             self.net = models.resnet18(pretrained=pretrained)
@@ -416,6 +551,14 @@ class resnet(torch.nn.Module):
         self.layer4 = self.net.layer4
 
     def forward(self, X):
+        """Run the ResNet feature extractor and return intermediate perceptual features.
+
+        Args:
+            X: Input image or activation tensor, commonly in ``(B, C, H, W)`` layout for feature extractors.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         h = self.conv1(X)
         h = self.bn1(h)
         h = self.relu(h)

@@ -1,3 +1,5 @@
+"""LLaMA decoder components with modality-adaptive projections and attention backends."""
+
 import math
 import inspect
 import warnings
@@ -41,11 +43,31 @@ try:
 except ImportError:
     # Transformers 5 removed these classes; lightweight wrappers preserve API.
     class LlamaLinearScalingRotaryEmbedding(LlamaRotaryEmbedding):
+        """Compatibility wrapper for linearly scaled LLaMA rotary embeddings."""
         def __init__(self, *args, scaling_factor=1.0, **kwargs):
+            """Initialize LlamaLinearScalingRotaryEmbedding from its configuration and constructor arguments.
+
+            Args:
+                scaling_factor: RoPE scaling multiplier passed to the upstream embedding implementation.
+                args: Positional arguments forwarded to the upstream implementation.
+                kwargs: Keyword arguments forwarded to the upstream implementation.
+
+            Returns:
+                None; initializes module state and parameters."""
             super().__init__(*args, **kwargs)
 
     class LlamaDynamicNTKScalingRotaryEmbedding(LlamaRotaryEmbedding):
+        """Compatibility wrapper for dynamic-NTK LLaMA rotary embeddings."""
         def __init__(self, *args, scaling_factor=1.0, **kwargs):
+            """Initialize LlamaDynamicNTKScalingRotaryEmbedding from its configuration and constructor arguments.
+
+            Args:
+                scaling_factor: RoPE scaling multiplier passed to the upstream embedding implementation.
+                args: Positional arguments forwarded to the upstream implementation.
+                kwargs: Keyword arguments forwarded to the upstream implementation.
+
+            Returns:
+                None; initializes module state and parameters."""
             super().__init__(*args, **kwargs)
 
 from .modeling_attn_mask_utils import _prepare_4d_causal_attention_mask, _prepare_4d_causal_attention_mask_for_sdpa
@@ -55,10 +77,22 @@ logger = logging.get_logger(__name__)
 
 
 def is_flash_attn_greater_or_equal_2_10():
+    """Report whether this compatibility module supports Flash Attention 2.10 or newer.
+
+    Returns:
+        False in this compatibility implementation."""
     return False
 
 
 def _flash_attn_unavailable(*args, **kwargs):
+    """Raise ImportError because the Flash Attention helper is unavailable in this Transformers build.
+
+    Args:
+        args: Positional arguments forwarded to the upstream implementation.
+        kwargs: Keyword arguments forwarded to the upstream implementation.
+
+    Returns:
+        Never returns; raises ImportError."""
     raise ImportError("flash-attn helpers are unavailable in this Transformers version")
 
 
@@ -79,13 +113,30 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids):
 
 class MultiwayNetwork(nn.Module):
 
+    """Parallel copies of a module selected per token by modality index."""
     def __init__(self, module_provider, num_multiway=2):
+        """Initialize MultiwayNetwork from its configuration and constructor arguments.
+
+        Args:
+            module_provider: Zero-argument callable that constructs each parallel module copy.
+            num_multiway: Number of module branches selected by modality indices.
+
+        Returns:
+            None; initializes module state and parameters."""
         super(MultiwayNetwork, self).__init__()
 
         self.multiway = torch.nn.ModuleList([module_provider() for _ in range(num_multiway)])
     
     def forward(self, hidden_states, multiway_indices):
 
+        """Run the MultiwayNetwork computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+            multiway_indices: Integer modality indices aligned with the first two hidden-state dimensions.
+
+        Returns:
+            A tensor shaped like hidden_states with the selected modality transforms applied."""
         if len(self.multiway) == 1:
             return self.multiway[0](hidden_states)
 
@@ -108,6 +159,14 @@ class LlamaAttention(nn.Module):
     """Multi-headed attention from 'Attention Is All You Need' paper"""
 
     def __init__(self, config: LlamaConfig, layer_idx: Optional[int] = None):
+        """Initialize LlamaAttention from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+            layer_idx: Index of this attention or decoder layer, used to access its key/value cache.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
         self.config = config
         self.layer_idx = layer_idx
@@ -144,6 +203,10 @@ class LlamaAttention(nn.Module):
         self._init_rope()
 
     def _init_rope(self):
+        """Create the rotary embedding module selected by the configured RoPE scaling mode.
+
+        Returns:
+            None; assigns the configured rotary embedding to self.rotary_emb."""
         if "config" in inspect.signature(LlamaRotaryEmbedding.__init__).parameters:
             # Transformers 5 constructs RoPE from config directly.
             self.rotary_emb = LlamaRotaryEmbedding(config=self.config)
@@ -182,6 +245,15 @@ class LlamaAttention(nn.Module):
                 raise ValueError(f"Unknown RoPE scaling type {scaling_type}")
 
     def _shape(self, tensor: torch.Tensor, seq_len: int, bsz: int):
+        """Reshape projected states to batch, head, sequence, and head-dimension order.
+
+        Args:
+            tensor: Projected states shaped (batch, sequence, hidden_size).
+            seq_len: Number of sequence positions represented by tensor.
+            bsz: Batch size represented by tensor.
+
+        Returns:
+            Projected states shaped (batch, heads, sequence, head_dim)."""
         return tensor.view(bsz, seq_len, self.num_heads, self.head_dim).transpose(1, 2).contiguous()
 
     def forward(
@@ -195,6 +267,20 @@ class LlamaAttention(nn.Module):
         use_cache: bool = False,
         padding_mask: Optional[torch.LongTensor] = None,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+        """Run the module’s forward computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+            modality_indicators: Per-token integer modality IDs aligned with hidden_states for selecting projection branches.
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            position_ids: Optional position indices aligned with the query sequence.
+            past_key_value: Optional per-layer key/value cache used for incremental decoding.
+            output_attentions: Whether attention probabilities should be returned when supported.
+            use_cache: Whether to return or update key/value cache state.
+            padding_mask: Deprecated alias for attention_mask; when supplied it replaces that mask.
+
+        Returns:
+            Attention output (batch, sequence, hidden), optional weights, and optional cache."""
         bsz, q_len, _ = hidden_states.size()
 
         query_states = self.q_proj(hidden_states, )
@@ -269,6 +355,14 @@ class LlamaFlashAttention2(LlamaAttention):
     """
 
     def __init__(self, *args, **kwargs):
+        """Initialize LlamaFlashAttention2 from its configuration and constructor arguments.
+
+        Args:
+            args: Positional arguments forwarded to the upstream implementation.
+            kwargs: Keyword arguments forwarded to the upstream implementation.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__(*args, **kwargs)
 
         # TODO: Should be removed once Flash Attention for RoCm is bumped to 2.1.
@@ -288,6 +382,20 @@ class LlamaFlashAttention2(LlamaAttention):
         **kwargs,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
         # LlamaFlashAttention2 attention does not support output_attentions
+        """Run the module’s forward computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+            modality_indicators: Per-token integer modality IDs aligned with hidden_states for selecting projection branches.
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            position_ids: Optional position indices aligned with the query sequence.
+            past_key_value: Optional per-layer key/value cache used for incremental decoding.
+            output_attentions: Whether attention probabilities should be returned when supported.
+            use_cache: Whether to return or update key/value cache state.
+            kwargs: Keyword arguments forwarded to the upstream implementation.
+
+        Returns:
+            Attention output, no attention weights, and optional cache."""
         if "padding_mask" in kwargs:
             warnings.warn(
                 "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
@@ -430,6 +538,17 @@ class LlamaFlashAttention2(LlamaAttention):
         return attn_output
 
     def _upad_input(self, query_layer, key_layer, value_layer, attention_mask, query_length):
+        """Unpad query, key, and value tensors and compute cumulative sequence offsets for Flash Attention.
+
+        Args:
+            query_layer: Projected query states shaped (batch, query_length, heads, head_dim).
+            key_layer: Projected key states shaped (batch, key_length, heads, head_dim).
+            value_layer: Projected value states with the same batch, key-length, and head layout as key_layer.
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            query_length: Number of query positions in the current step.
+
+        Returns:
+            Unpadded query/key/value states, indices, cumulative sequence lengths, and maximum lengths."""
         indices_k, cu_seqlens_k, max_seqlen_in_batch_k = _get_unpad_data(attention_mask)
         batch_size, kv_seq_len, num_key_value_heads, head_dim = key_layer.shape
 
@@ -486,6 +605,19 @@ class LlamaSdpaAttention(LlamaAttention):
         output_attentions: bool = False,
         use_cache: bool = False,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+        """Run the module’s forward computation for the supplied inputs.
+
+        Args:
+            hidden_states: Input activations, generally shaped (batch, sequence, hidden_size).
+            modality_indicators: Per-token integer modality IDs aligned with hidden_states for selecting projection branches.
+            attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+            position_ids: Optional position indices aligned with the query sequence.
+            past_key_value: Optional per-layer key/value cache used for incremental decoding.
+            output_attentions: Whether attention probabilities should be returned when supported.
+            use_cache: Whether to return or update key/value cache state.
+
+        Returns:
+            Attention output, no attention weights, and optional cache."""
         if output_attentions:
             # TODO: Improve this warning with e.g. `model.config.attn_implementation = "manual"` once this is implemented.
             logger.warning_once(
@@ -568,7 +700,16 @@ LLAMA_ATTENTION_CLASSES = {
 }
 
 class LlamaDecoderLayer(nn.Module):
+    """Single LLaMA decoder block with modality-aware attention and feed-forward layers."""
     def __init__(self, config: LlamaConfig, layer_idx):
+        """Initialize LlamaDecoderLayer from its configuration and constructor arguments.
+
+        Args:
+            config: Configuration object supplying architecture dimensions and options.
+            layer_idx: Index of this attention or decoder layer, used to access its key/value cache.
+
+        Returns:
+            None; initializes module state and parameters."""
         super().__init__()
 
         if not hasattr(config, "mlp_bias"):
@@ -654,6 +795,22 @@ def model_forward(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
+    """Run the LLaMA decoder and return final hidden states with optional cache and diagnostics.
+
+    Args:
+        input_ids: Token IDs shaped (batch, sequence); multimodal calls may contain the image-token sentinel.
+        modality_indicators: Integer modality IDs aligned with sequence positions for multiway projections.
+        attention_mask: Optional mask aligned with sequence positions; convention follows the selected attention backend.
+        position_ids: Optional position indices aligned with the query sequence.
+        past_key_values: Optional collection of per-layer key/value caches.
+        inputs_embeds: Input embeddings used to obtain dtype and device when creating the mask.
+        use_cache: Whether to return or update key/value cache state.
+        output_attentions: Whether attention probabilities should be returned when supported.
+        output_hidden_states: Whether intermediate layer states should be included in the output.
+        return_dict: Whether to return a Transformers ModelOutput instead of a tuple.
+
+    Returns:
+        A BaseModelOutputWithPast or tuple; last_hidden_state is (batch, sequence, hidden_size), with optional cache, hidden states, and attentions."""
     output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
     output_hidden_states = (
         output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
@@ -742,8 +899,22 @@ def model_forward(
         if self.gradient_checkpointing and self.training:
 
             def create_custom_forward(module):
+                """Wrap a module in a checkpoint-compatible forward callable.
+
+                Args:
+                    module: Layer module executed by this wrapper.
+
+                Returns:
+                    A callable suitable for checkpointing the given module."""
                 def custom_forward(*inputs):
                     # None for past_key_value
+                    """Call the wrapped layer with the captured cache and attention-output setting.
+
+                    Args:
+                        inputs: Positional tensors passed to the checkpointed layer.
+
+                    Returns:
+                        The wrapped module’s forward result."""
                     return module(*inputs, past_key_value, output_attentions)
 
                 return custom_forward
@@ -886,6 +1057,10 @@ def causal_model_forward(
     )
 
 def replace_llama_modality_adaptive():
+    """Install modality-aware LLaMA projections and forward methods on the imported model classes.
+
+    Returns:
+        None; replaces supported LLaMA classes’ forward methods and attention projections."""
     transformers.models.llama.configuration_llama.LlamaConfig = LlamaConfig
     transformers.models.llama.modeling_llama.LlamaAttention = LlamaAttention
     transformers.models.llama.modeling_llama.LlamaFlashAttention2 = LlamaFlashAttention2

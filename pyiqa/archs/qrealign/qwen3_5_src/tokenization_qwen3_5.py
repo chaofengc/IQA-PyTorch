@@ -26,6 +26,8 @@ PRETOKENIZE_REGEX = r"""(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?[\p{L}\p{
 
 
 class Qwen3_5Tokenizer(TokenizersBackend):
+    """Qwen3.5 byte-level BPE tokenizer with NFC normalization and the model-specific pre-tokenization pattern.
+    """
     model_input_names = ["input_ids", "attention_mask"]
     model = BPE
 
@@ -42,6 +44,20 @@ class Qwen3_5Tokenizer(TokenizersBackend):
         add_prefix_space=None,
         **kwargs,
     ):
+        """Build the BPE tokenizer, configure byte-level pre-tokenization and decoding, and pass special tokens to the backend.
+
+        Args:
+            vocab: BPE vocabulary mapping or vocabulary source.
+            merges: BPE merge rules or merge source.
+            vocab_file: Optional vocabulary file path passed to the tokenizer backend.
+            merges_file: Optional merge-rules file path passed to the tokenizer backend.
+            unk_token: Unknown-token string.
+            bos_token: Optional beginning-of-sequence token.
+            eos_token: End-of-sequence token.
+            pad_token: Padding token.
+            add_prefix_space: Whether byte-level pre-tokenization inserts a leading space; defaults to False.
+            **kwargs: Additional model/backend options forwarded where supported.
+        """
         self.add_prefix_space = add_prefix_space if add_prefix_space is not None else False
         self._vocab = (
             vocab

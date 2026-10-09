@@ -71,6 +71,15 @@ class QReAlign(nn.Module):
     """
 
     def __init__(self, model="mini", dtype="auto", task="quality"):
+        """Load a Q-ReAlign checkpoint and prepare its discrete score levels.
+
+        Args:
+            model (str): Checkpoint alias from ``MODELS`` or a Hugging Face
+                repository ID/local checkpoint path.
+            dtype (str or torch.dtype): Weight dtype accepted by Transformers'
+                ``from_pretrained``.
+            task (str): Default prompt family; must be a key in ``TASKS``.
+        """
         super().__init__()
         # Make qwen3_5 loadable (native on transformers>=5.2; vendored shim on 5.0/5.1).
         # Imported here -- not at module import -- so merely importing pyiqa never
@@ -101,6 +110,7 @@ class QReAlign(nn.Module):
 
     @staticmethod
     def _check_transformers():
+        """Require Transformers 5.0 or newer for the Qwen3.5 model type."""
         import re
         import transformers
         m = re.match(r"(\d+)\.(\d+)", transformers.__version__ or "0.0")

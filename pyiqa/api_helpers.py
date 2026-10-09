@@ -1,3 +1,5 @@
+"""Public helpers for constructing metrics and querying dataset metadata."""
+
 import fnmatch
 import re
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
@@ -9,6 +11,21 @@ from pyiqa.models.inference_model import InferenceModel
 
 
 def create_metric(metric_name, as_loss=False, device=None, **kwargs):
+    """Create a configured IQA metric.
+
+    Args:
+        metric_name (str): Name returned by :func:`list_models`.
+        as_loss (bool): Enable gradient propagation and loss reduction where
+            supported. This does not make every metric differentiable.
+        device (str or torch.device, optional): Device for the metric. Defaults
+            to CUDA when available, otherwise CPU.
+        **kwargs: Options that override the selected metric's default
+            architecture options.
+
+    Returns:
+        InferenceModel: A callable metric module exposing ``metric_mode``,
+        ``lower_better``, and ``score_range`` metadata.
+    """
     assert metric_name in DEFAULT_CONFIGS.keys(), (
         f'Metric {metric_name} not implemented yet.'
     )
@@ -23,12 +40,19 @@ def _natural_key(string_):
 
 
 def list_models(metric_mode=None, filter='', exclude_filters=''):
-    """Return list of available model names, sorted alphabetically
+    """Return available metric names in natural alphanumeric order.
+
     Args:
-        filter (str) - Wildcard filter string that works with fnmatch
-        exclude_filters (str or list[str]) - Wildcard filters to exclude models after including them with filter
-    Example:
-        model_list('*ssim*') -- returns all models including 'ssim'
+        metric_mode (str, optional): Restrict results to ``'FR'`` or ``'NR'``.
+            ``None`` includes all configured metrics.
+        filter (str or sequence[str]): ``fnmatch`` wildcard(s) selecting names.
+            Multiple patterns are combined.
+        exclude_filters (str or sequence[str]): Wildcard(s) removed from the
+            selected results after inclusion filtering.
+
+    Returns:
+        list[str]: Matching metric names, sorted naturally (for example,
+        ``metric2`` appears before ``metric10``).
     """
     if metric_mode is None:
         all_models = DEFAULT_CONFIGS.keys()
@@ -62,6 +86,15 @@ def list_models(metric_mode=None, filter='', exclude_filters=''):
 
 
 def get_dataset_info(dataset_name=None):
+    """Read default dataset loader configurations.
+
+    Args:
+        dataset_name (str, optional): Return only this dataset's configuration.
+            If omitted, return the full mapping.
+
+    Returns:
+        dict: Dataset configuration or the complete dataset configuration map.
+    """
     dataset_info = yaml.safe_load(
         open(
             f'{os.path.dirname(os.path.abspath(__file__))}/default_dataset_configs.yml',

@@ -50,6 +50,23 @@ def conv1x1(in_planes, out_planes, stride=1):
 
 
 class BasicBlock(nn.Module):
+    """Two-convolution residual block used by the CKDN ResNet backbone.
+
+    Args:
+        inplanes (int): Number of input channels.
+        planes (int): Number of channels produced by each convolution.
+        stride (int): Stride of the first convolution.
+        downsample (nn.Module, optional): Projection applied to the residual
+            when its shape differs from the block output.
+        groups (int): Convolution groups; only ``1`` is supported.
+        base_width (int): Base width; only ``64`` is supported.
+        dilation (int): Convolution dilation; values above ``1`` are unsupported.
+        norm_layer (callable, optional): Normalization layer constructor.
+
+    Raises:
+        ValueError: If groups or base width differ from the supported values.
+        NotImplementedError: If dilation is greater than one.
+    """
     expansion = 1
     __constants__ = ['downsample']
 
@@ -64,6 +81,7 @@ class BasicBlock(nn.Module):
         dilation=1,
         norm_layer=None,
     ):
+        """Build a basic residual block with optional projection shortcut."""
         super(BasicBlock, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -81,6 +99,14 @@ class BasicBlock(nn.Module):
         self.stride = stride
 
     def forward(self, x):
+        """Apply the residual block to an ``(N, C, H, W)`` feature tensor.
+
+        Args:
+            x (torch.Tensor): Input feature map.
+
+        Returns:
+            torch.Tensor: Activated residual output.
+        """
         identity = x
 
         out = self.conv1(x)
@@ -100,6 +126,18 @@ class BasicBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
+    """Three-convolution residual bottleneck used by the CKDN backbone.
+
+    Args:
+        inplanes (int): Number of input channels.
+        planes (int): Bottleneck base channel width.
+        stride (int): Stride of the middle 3x3 convolution.
+        downsample (nn.Module, optional): Projection applied to the residual.
+        groups (int): Number of convolution groups.
+        base_width (int): Width multiplier relative to 64 channels.
+        dilation (int): Dilation of the middle convolution.
+        norm_layer (callable, optional): Normalization layer constructor.
+    """
     expansion = 4
     __constants__ = ['downsample']
 
@@ -114,6 +152,7 @@ class Bottleneck(nn.Module):
         dilation=1,
         norm_layer=None,
     ):
+        """Create the 1x1, 3x3, and 1x1 bottleneck convolutions."""
         super(Bottleneck, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -130,6 +169,14 @@ class Bottleneck(nn.Module):
         self.stride = stride
 
     def forward(self, x):
+        """Apply the bottleneck and residual connection.
+
+        Args:
+            x (torch.Tensor): Input feature map with shape ``(N, C, H, W)``.
+
+        Returns:
+            torch.Tensor: Activated residual output.
+        """
         identity = x
 
         out = self.conv1(x)
@@ -153,6 +200,12 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
+    """Dual-stream residual network backbone for conditional quality scoring.
+
+    The model uses separate quality and distortion feature streams followed by
+    learned scalar prediction heads.
+    """
+
     def __init__(
         self,
         block,
@@ -164,6 +217,24 @@ class ResNet(nn.Module):
         replace_stride_with_dilation=None,
         norm_layer=None,
     ):
+        """Construct the dual-stream residual network used by CKDN.
+
+        Args:
+            block (type[nn.Module]): Residual block class.
+            layers (Sequence[int]): Number of blocks in each configured stage.
+            num_classes (int): Compatibility argument; this architecture uses
+                scalar quality-prediction heads.
+            zero_init_residual (bool): Whether to zero the final normalization
+                scale in each residual branch.
+            groups (int): Convolution group count.
+            width_per_group (int): Base width used by bottleneck blocks.
+            replace_stride_with_dilation (Sequence[bool], optional): Three
+                flags controlling stage stride replacement.
+            norm_layer (callable, optional): Normalization layer constructor.
+
+        Raises:
+            ValueError: If stride-replacement flags do not have length three.
+        """
         super(ResNet, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -230,6 +301,18 @@ class ResNet(nn.Module):
                     nn.init.constant_(m.bn2.weight, 0)
 
     def _make_layer(self, block, planes, blocks, stride=1, dilate=False):
+        """Build a residual stage and update the current channel width.
+
+        Args:
+            block (type[nn.Module]): Residual block class to instantiate.
+            planes (int): Base output channel count for the stage.
+            blocks (int): Number of blocks in the stage.
+            stride (int): Initial block stride.
+            dilate (bool): Whether to replace the stride with dilation.
+
+        Returns:
+            nn.Sequential: The constructed residual stage.
+        """
         norm_layer = self._norm_layer
         downsample = None
         previous_dilation = self.dilation
@@ -355,6 +438,18 @@ class CKDN(nn.Module):
         default_std=(0.229, 0.224, 0.225),
         **kwargs,
     ):
+        """Create CKDN's ResNet-50-based image quality model.
+
+        Args:
+            pretrained (bool): Load the default pretrained weights when no
+                explicit checkpoint path is provided.
+            pretrained_model_path (str, optional): Checkpoint path to load.
+            use_default_preprocess (bool): Apply the model's default resize,
+                crop, and normalization in its forward path.
+            default_mean (tuple[float, ...]): Per-channel normalization mean.
+            default_std (tuple[float, ...]): Per-channel normalization scale.
+            **kwargs: Arguments forwarded to the internal ResNet constructor.
+        """
         super().__init__()
         self.net = _resnet('resnet50', Bottleneck, [3, 4, 6, 3], True, True, **kwargs)
         self.use_default_preprocess = use_default_preprocess

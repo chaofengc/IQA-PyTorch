@@ -37,6 +37,24 @@ def ssim(
     downsample=False,
     data_range=1.0,
 ):
+    """Compute single-scale SSIM or return a requested intermediate map.
+
+    Args:
+        X (torch.Tensor): First image batch shaped ``(N, C, H, W)``.
+        Y (torch.Tensor): Second image batch with matching shape.
+        win (torch.Tensor, optional): Spatial SSIM window. Defaults to an
+            11x11 Gaussian window.
+        get_ssim_map (bool): Return the per-pixel SSIM map instead of averages.
+        get_cs (bool): Return per-image SSIM and contrast-structure averages.
+        get_weight (bool): Return the SSIM map and local variance weights.
+        downsample (bool): Apply the implementation's size-dependent average
+            pooling before local statistics.
+        data_range (float): Maximum signal value used for the SSIM constants.
+
+    Returns:
+        torch.Tensor or tuple[torch.Tensor, torch.Tensor]: Per-image SSIM by
+        default, or the map/auxiliary outputs selected by the flags.
+    """
     if win is None:
         win = fspecial(11, 1.5, X.shape[1]).to(X)
 
@@ -95,6 +113,16 @@ class SSIM(torch.nn.Module):
         color_space='yiq',
         crop_border=0.0,
     ):
+        """Configure SSIM preprocessing and comparison options.
+
+        Args:
+            channels (int): Compatibility setting; input channel count is read
+                from the input tensor.
+            downsample (bool): Enable size-dependent average-pool downsampling.
+            test_y_channel (bool): Evaluate the luminance channel for RGB input.
+            color_space (str): Color space used for luminance conversion.
+            crop_border (int): Number of pixels cropped from each image edge.
+        """
         super(SSIM, self).__init__()
         self.downsample = downsample
         self.test_y_channel = test_y_channel
@@ -103,6 +131,15 @@ class SSIM(torch.nn.Module):
         self.data_range = 255
 
     def forward(self, X, Y):
+        """Compute single-scale SSIM for a pair of image batches.
+
+        Args:
+            X (torch.Tensor): Distorted images shaped ``(N, C, H, W)``.
+            Y (torch.Tensor): Reference images with the same shape.
+
+        Returns:
+            torch.Tensor: Per-image SSIM values.
+        """
         assert X.shape == Y.shape, (
             f'Input {X.shape} and reference images should have the same shape'
         )
@@ -204,6 +241,16 @@ class MS_SSIM(torch.nn.Module):
         is_prod=True,
         color_space='yiq',
     ):
+        """Configure multiscale SSIM input conversion and aggregation.
+
+        Args:
+            channels (int): Compatibility setting; input channels are inferred.
+            downsample (bool): Enable the SSIM routine's initial downsampling.
+            test_y_channel (bool): Evaluate luminance for RGB images.
+            is_prod (bool): Combine scale terms by product rather than the
+                implementation's alternative aggregation.
+            color_space (str): Color space used for luminance conversion.
+        """
         super(MS_SSIM, self).__init__()
         self.downsample = downsample
         self.test_y_channel = test_y_channel
@@ -269,6 +316,18 @@ class CW_SSIM(torch.nn.Module):
         test_y_channel=True,
         color_space='yiq',
     ):
+        """Configure the complex-wavelet decomposition and input conversion.
+
+        Args:
+            channels (int): Number of channels used to create the averaging
+                window.
+            level (int): Number of complex steerable-pyramid levels.
+            ori (int): Number of orientations in each level.
+            guardb (int): Border width discarded in the similarity calculation.
+            K (float): Stabilizing constant in the CW-SSIM formula.
+            test_y_channel (bool): Convert RGB images to luminance.
+            color_space (str): Color space used for luminance conversion.
+        """
         super(CW_SSIM, self).__init__()
         self.channels = channels
         self.level = level
@@ -280,6 +339,16 @@ class CW_SSIM(torch.nn.Module):
         self.register_buffer('win7', torch.ones(channels, 1, 7, 7) / (7 * 7))
 
     def conj(self, x, y):
+        """Multiply paired real/imaginary coefficients by the conjugate of y.
+
+        Args:
+            x (torch.Tensor): Complex values represented in the final
+                real/imaginary coordinate.
+            y (torch.Tensor): Complex values with a compatible shape.
+
+        Returns:
+            torch.Tensor: Complex product, stacked in the second dimension.
+        """
         a = x[..., 0]
         b = x[..., 1]
         c = y[..., 0]
@@ -287,6 +356,18 @@ class CW_SSIM(torch.nn.Module):
         return torch.stack((a * c - b * d, b * c + a * d), dim=1)
 
     def conv2d_complex(self, x, win, groups=1):
+        """Convolve real and imaginary components with the same real filter.
+
+        Args:
+            x (torch.Tensor): Complex feature tensor with real/imaginary values
+                along dimension 1.
+            win (torch.Tensor): Convolution kernel.
+            groups (int): Group count forwarded to :func:`torch.nn.functional.conv2d`.
+
+        Returns:
+            torch.Tensor: Real and imaginary convolution results stacked in
+            the last dimension.
+        """
         real = F.conv2d(x[:, 0, ...].unsqueeze(1), win, groups=groups)
         imaginary = F.conv2d(x[:, 1, ...].unsqueeze(1), win, groups=groups)
         return torch.stack((real, imaginary), dim=-1)

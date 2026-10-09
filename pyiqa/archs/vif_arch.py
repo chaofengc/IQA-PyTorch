@@ -632,6 +632,14 @@ class VIF(torch.nn.Module):
     """
 
     def __init__(self, channels=1, level=4, ori=6):
+        """Configure the channel count and complex-pyramid decomposition.
+
+        Args:
+            channels (int): Number of image channels processed.
+            level (int): Number of pyramid levels.
+            ori (int): Orientation count used to configure the subbands; the
+                implementation stores ``ori - 1`` internally.
+        """
         super(VIF, self).__init__()
         self.ori = ori - 1
         self.level = level

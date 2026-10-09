@@ -30,15 +30,42 @@ default_model_urls = {
 
 
 def spatial_average(in_tens, keepdim=True):
+    """Average a feature tensor over its height and width dimensions.
+
+    Args:
+        in_tens: Feature tensor shaped ``(B, C, H, W)`` to resize or spatially average.
+        keepdim: Whether to retain singleton spatial dimensions after averaging.
+
+    Returns:
+        Tensor shaped ``(B, C, 1, 1)`` when ``keepdim=True`` or ``(B, C)`` otherwise.
+    """
     return in_tens.mean([2, 3], keepdim=keepdim)
 
 
 def upsample(in_tens, out_HW=(64, 64)):  # assumes scale factor is same for H and W
+    """Resize a feature tensor to the requested height and width using bilinear interpolation.
+
+    Args:
+        in_tens: Feature tensor shaped ``(B, C, H, W)`` to resize or spatially average.
+        out_HW: Output height and width as a two-element sequence.
+
+    Returns:
+        Tensor shaped ``(B, C, out_H, out_W)``.
+    """
     in_H, in_W = in_tens.shape[2], in_tens.shape[3]
     return nn.Upsample(size=out_HW, mode='bilinear', align_corners=False)(in_tens)
 
 
 def normalize_tensor(in_feat, eps=1e-10):
+    """Normalize each spatial feature vector by its channel-wise Euclidean norm, with ``eps`` for numerical stability.
+
+    Args:
+        in_feat: Feature tensor shaped ``(B, C, H, W)`` to normalize across channels.
+        eps: Small positive constant added to the norm to avoid division by zero.
+
+    Returns:
+        Normalized tensor with the same shape as ``in_feat``.
+    """
     norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
     return in_feat / (norm_factor + eps)
 
@@ -73,6 +100,20 @@ class STLPIPS(nn.Module):
         eval_mode=True,
         blur_filter_size=3,
     ):
+        """Initialize the stlpips and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            pretrained: Whether to initialize or load pretrained weights.
+            net: Feature-network backbone identifier used by LPIPS.
+            variant: Backbone, checkpoint, or model variant selector.
+            lpips: Whether to apply learned LPIPS channel weights.
+            spatial: Whether to return a spatial distance map rather than a spatially averaged score.
+            pnet_tune: Whether to fine-tune the perceptual network.
+            use_dropout: Whether to use dropout in the learned calibration layers.
+            pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            eval_mode: Whether to put the network in evaluation mode after construction.
+            blur_filter_size: Requested spatial or sequence dimension, compatible with the model configuration.
+        """
         super(STLPIPS, self).__init__()
 
         self.pnet_type = net
@@ -183,7 +224,13 @@ class STLPIPS(nn.Module):
 
 
 class ScalingLayer(nn.Module):
+    """Fixed channel-wise input scaling transform used before spatiotemporal LPIPS feature extraction.
+
+    """
     def __init__(self):
+        """Initialize the scaling layer and configure its layers, parameters, and optional pretrained state.
+
+        """
         super(ScalingLayer, self).__init__()
         self.register_buffer(
             'shift', torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None]
@@ -193,6 +240,15 @@ class ScalingLayer(nn.Module):
         )
 
     def forward(self, inp):
+        """Apply the fixed channel-wise scaling transform to an RGB image tensor.
+
+        Args:
+            inp: Input tensor to rescale, filter, or downsample.
+
+
+        Returns:
+            Scaled image tensor with the same shape as the input.
+        """
         return (inp - self.shift) / self.scale
 
 
@@ -200,6 +256,13 @@ class NetLinLayer(nn.Module):
     """A single linear layer which does a 1x1 conv"""
 
     def __init__(self, chn_in, chn_out=1, use_dropout=False):
+        """Initialize the net lin layer and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            chn_in: Number of input feature channels.
+            chn_out: Number of output feature channels.
+            use_dropout: Whether to use dropout in the learned calibration layers.
+        """
         super(NetLinLayer, self).__init__()
 
         layers = (
@@ -215,11 +278,30 @@ class NetLinLayer(nn.Module):
         self.model = nn.Sequential(*layers)
 
     def forward(self, x):
+        """Apply the learned linear calibration to a feature-distance map.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+
+        Returns:
+            Calibrated distance map; dimensions depend on the configured spatial mode.
+        """
         return self.model(x)
 
 
 class alexnet(nn.Module):
+    """AlexNet feature extractor that exposes intermediate activations for ST-LPIPS.
+
+    """
     def __init__(self, requires_grad=False, variant='shift_tolerant', filter_size=3):
+        """Initialize the alexnet and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            requires_grad: Whether the feature extractor parameters require gradients.
+            variant: Backbone, checkpoint, or model variant selector.
+            filter_size: Requested spatial or sequence dimension, compatible with the model configuration.
+        """
         super(alexnet, self).__init__()
 
         self.slice1 = nn.Sequential()
@@ -327,6 +409,14 @@ class alexnet(nn.Module):
                 param.requires_grad = False
 
     def forward(self, X):
+        """Run the AlexNet feature extractor and return intermediate perceptual features.
+
+        Args:
+            X: Input image or activation tensor, commonly in ``(B, C, H, W)`` layout for feature extractors.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         h = self.slice1(X)
         h_relu1 = h
         h = self.slice2(h)
@@ -346,7 +436,17 @@ class alexnet(nn.Module):
 
 
 class vggnet(nn.Module):
+    """VGG feature extractor that exposes intermediate activations for ST-LPIPS.
+
+    """
     def __init__(self, requires_grad=False, variant='shift_tolerant', filter_size=3):
+        """Initialize the vggnet and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            requires_grad: Whether the feature extractor parameters require gradients.
+            variant: Backbone, checkpoint, or model variant selector.
+            filter_size: Requested spatial or sequence dimension, compatible with the model configuration.
+        """
         super(vggnet, self).__init__()
 
         filter_size = 3
@@ -387,6 +487,14 @@ class vggnet(nn.Module):
                 param.requires_grad = False
 
     def forward(self, X):
+        """Run the VGG feature extractor and return intermediate perceptual features.
+
+        Args:
+            X: Input image or activation tensor, commonly in ``(B, C, H, W)`` layout for feature extractors.
+
+        Returns:
+            Quality score tensor, generally one score per input image or image pair.
+        """
         h = self.slice1(X)
         h_relu1_2 = h
         h = self.slice2(h)
@@ -413,6 +521,9 @@ class vggnet(nn.Module):
 
 
 class Downsample(nn.Module):
+    """Low-pass filtering and spatial downsampling module used by ST-LPIPS.
+
+    """
     def __init__(
         self,
         pad_type='reflect',
@@ -423,6 +534,17 @@ class Downsample(nn.Module):
         pad_size='',
         pad_more=False,
     ):
+        """Initialize the downsample and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            pad_type: Padding mode used by the downsampling filter.
+            filt_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            stride: Spatial stride for the convolutional stage.
+            channels: Number of feature channels processed by the filter.
+            pad_off: Spatial offset applied to the padding operation.
+            pad_size: Requested spatial or sequence dimension, compatible with the model configuration.
+            pad_more: Whether to extend padding to preserve the desired spatial alignment.
+        """
         super(Downsample, self).__init__()
         self.filt_size = filt_size
         self.pad_off = pad_off
@@ -475,6 +597,15 @@ class Downsample(nn.Module):
         self.pad = get_pad_layer(pad_type)(self.pad_sizes)
 
     def forward(self, inp):
+        """Low-pass filter and downsample the input feature tensor.
+
+        Args:
+            inp: Input tensor to rescale, filter, or downsample.
+
+
+        Returns:
+            Downsampled tensor with the configured spatial stride.
+        """
         if self.filt_size == 1:
             if self.pad_off == 0:
                 return inp[:, :, :: self.stride, :: self.stride]
@@ -487,6 +618,14 @@ class Downsample(nn.Module):
 
 
 def get_pad_layer(pad_type):
+    """Return the pad layer value derived from the supplied configuration or input.
+
+    Args:
+        pad_type: Padding mode used by the downsampling filter.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     if pad_type in ['refl', 'reflect']:
         PadLayer = nn.ReflectionPad2d
     elif pad_type in ['repl', 'replicate']:
@@ -539,7 +678,17 @@ def get_pad_layer(pad_type):
 
 
 class VGG(nn.Module):
+    """VGG feature network used to extract perceptual representations for ST-LPIPS.
+
+    """
     def __init__(self, features, num_classes=1000, init_weights=True):
+        """Initialize the vgg and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            features: Feature tensor or collection extracted from the corresponding input.
+            num_classes: Number of items, stages, tokens, or channels configured for this operation.
+            init_weights: Whether to initialize the feature extractor weights at construction.
+        """
         super(VGG, self).__init__()
         self.features = features
         self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
@@ -556,6 +705,15 @@ class VGG(nn.Module):
             self._initialize_weights()
 
     def forward(self, x):
+        """Extract intermediate VGG feature activations from the input batch.
+
+        Args:
+            x: Input tensor or activation; image entry points generally use ``(B, C, H, W)`` layout, while internal layers may use other layouts.
+
+
+        Returns:
+            List of feature tensors from the configured VGG stages.
+        """
         x = self.features(x)
         # print(x.shape)
         x = self.avgpool(x)
@@ -564,6 +722,9 @@ class VGG(nn.Module):
         return x
 
     def _initialize_weights(self):
+        """Perform the internal initialize weights operation used by vgg.
+
+        """
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 if (
@@ -588,6 +749,18 @@ class VGG(nn.Module):
 
 
 def make_layers(cfg, batch_norm=False, filter_size=1, pad_more=False, fconv=False):
+    """Perform the make layers operation for st-lpips.
+
+    Args:
+        cfg: Layer configuration describing the feature-extractor stages.
+        batch_norm: Whether to insert batch-normalization layers in the feature stack.
+        filter_size: Requested spatial or sequence dimension, compatible with the model configuration.
+        pad_more: Whether to extend padding to preserve the desired spatial alignment.
+        fconv: Convolution constructor used to create feature-extractor layers.
+
+    Returns:
+        Computed result; type and shape follow the supplied inputs and model configuration.
+    """
     layers = []
     in_channels = 3
     for v in cfg:

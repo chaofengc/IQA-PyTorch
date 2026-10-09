@@ -279,6 +279,21 @@ class VSI(nn.Module):
         sigma_d: float = 145.0,
         sigma_c: float = 0.001,
     ) -> None:
+        """Bind the constants used by the VSI computation.
+
+        Args:
+            c1 (float): Stabilizer for gradient similarity.
+            c2 (float): Stabilizer for chromatic similarity.
+            c3 (float): Stabilizer for saliency weighting.
+            alpha (float): Exponent for the gradient-similarity component.
+            beta (float): Exponent for the color-similarity component.
+            data_range (int | float): Input signal range.
+            omega_0 (float): Central-frequency parameter of the log-Gabor
+                filter used by the saliency map.
+            sigma_f (float): Relative frequency bandwidth parameter.
+            sigma_d (float): Spatial spread parameter for the saliency map.
+            sigma_c (float): Color spread parameter for the saliency map.
+        """
         super().__init__()
         self.data_range = data_range
 

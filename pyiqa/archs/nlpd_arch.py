@@ -57,6 +57,15 @@ class NLPD(nn.Module):
     """
 
     def __init__(self, channels=1, test_y_channel=True, k=6, filt=None):
+        """Initialize the normalized Laplacian pyramid and filters.
+
+        Args:
+            channels (int): Number of channels handled by the stored filters.
+            test_y_channel (bool): Convert RGB inputs to luminance when enabled.
+            k (int): Number of pyramid levels used during comparison.
+            filt (array-like, optional): Custom Laplacian filter bank; when
+                omitted, the built-in filter is replicated per channel.
+        """
         super(NLPD, self).__init__()
         if filt is None:
             filt = np.reshape(

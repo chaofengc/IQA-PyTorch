@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Utilities for converting sequence masks to broadcastable attention masks."""
+
 from typing import List, Optional, Tuple, Union
 
 import torch
@@ -33,6 +35,14 @@ class AttentionMaskConverter:
     """
 
     def __init__(self, is_causal: bool, sliding_window: Optional[int] = None):
+        """Initialize AttentionMaskConverter from its configuration and constructor arguments.
+
+        Args:
+            is_causal: Whether generated masks prevent queries from attending to future key positions.
+            sliding_window: Optional positive attention-window width; currently supported for causal masks.
+
+        Returns:
+            None; initializes module state and parameters."""
         self.is_causal = is_causal
         self.sliding_window = sliding_window
 

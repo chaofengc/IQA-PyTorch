@@ -2,6 +2,8 @@
 #
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
+"""Configuration classes for LLaMA, mPLUG-Owl vision, and Q-Align models."""
+
 import os
 from typing import Union
 
@@ -120,6 +122,33 @@ class LlamaConfig(PretrainedConfig):
         attention_dropout=0.0,
         **kwargs,
     ):
+        """Initialize LLaMA architecture settings and validate optional RoPE scaling.
+
+        Args:
+            vocab_size: Number of token IDs in the vocabulary.
+            hidden_size: Width of token and decoder hidden states.
+            intermediate_size: Width of the feed-forward network in each decoder layer.
+            num_hidden_layers: Number of decoder layers.
+            num_attention_heads: Number of query attention heads.
+            num_key_value_heads: Number of key/value heads; defaults to num_attention_heads for standard multi-head attention.
+            hidden_act: Activation name or callable used by the feed-forward network.
+            max_position_embeddings: Maximum configured sequence length for rotary positions.
+            initializer_range: Standard deviation used to initialize model weights.
+            rms_norm_eps: Epsilon used by RMS normalization.
+            use_cache: Whether decoder key/value states are returned for incremental decoding.
+            pad_token_id: Optional token ID used for padding.
+            bos_token_id: Beginning-of-sequence token ID.
+            eos_token_id: End-of-sequence token ID.
+            pretraining_tp: Tensor-parallel split count used for pretraining-compatible projections.
+            tie_word_embeddings: Whether input and output token embeddings are tied.
+            rope_theta: Base period of rotary position embeddings.
+            rope_scaling: Optional mapping with a supported type (linear or dynamic) and factor greater than one.
+            attention_bias: Whether attention projection layers include bias terms.
+            attention_dropout: Dropout probability applied to attention weights.
+            kwargs: Additional options forwarded to PretrainedConfig.
+
+        Returns:
+            None. Sets configuration attributes used to construct a LLaMA model."""
         self.vocab_size = vocab_size
         self.max_position_embeddings = max_position_embeddings
         self.hidden_size = hidden_size
@@ -234,6 +263,27 @@ class MplugOwlVisionConfig(PretrainedConfig):
         use_flash_attn=False,
         **kwargs,
     ):
+        """Initialize image-transformer dimensions, preprocessing geometry, and dropout settings.
+
+        Args:
+            hidden_size: Width of each vision-transformer token representation.
+            intermediate_size: Width of the vision feed-forward layer.
+            projection_dim: Configured output projection dimension.
+            num_hidden_layers: Number of vision-transformer blocks.
+            num_attention_heads: Number of attention heads in each block; must divide hidden_size.
+            num_channels: Number of input image channels.
+            image_size: Configured square input resolution in pixels.
+            patch_size: Convolutional patch width and stride in pixels.
+            hidden_act: Activation name used by the vision layers.
+            layer_norm_eps: Epsilon for vision layer normalization.
+            attention_dropout: Dropout probability for attention probabilities.
+            initializer_range: Weight initialization standard deviation.
+            initializer_factor: Scale factor used by model initialization.
+            use_flash_attn: Whether the config requests Flash Attention support.
+            kwargs: Additional options forwarded to PretrainedConfig.
+
+        Returns:
+            None. Stores the vision architecture settings on the configuration."""
         super().__init__(**kwargs)
         self.hidden_size = hidden_size
         self.intermediate_size = intermediate_size
@@ -252,6 +302,14 @@ class MplugOwlVisionConfig(PretrainedConfig):
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path: Union[str, os.PathLike], **kwargs) -> "PretrainedConfig":
+        """Load configuration data from a pretrained model identifier or local path.
+
+        Args:
+            pretrained_model_name_or_path: Hugging Face model ID or local path from which to load the configuration.
+            kwargs: Keyword arguments forwarded to the upstream implementation.
+
+        Returns:
+            An instance of the configuration class populated from the loaded dictionary."""
         config_dict, kwargs = cls.get_config_dict(pretrained_model_name_or_path, **kwargs)
 
         # get the vision config dict if we are loading from MplugOwlConfig
@@ -268,6 +326,7 @@ class MplugOwlVisionConfig(PretrainedConfig):
 
 
 class MplugOwlVisualAbstractorConfig(PretrainedConfig):
+    """Configuration for the learnable-query visual cross-attention abstractor."""
     model_type = "mplug_owl_visual_abstract"
 
     def __init__(
@@ -284,6 +343,23 @@ class MplugOwlVisualAbstractorConfig(PretrainedConfig):
         grid_size=None,
         **kwargs,
     ):
+        """Initialize the learnable-query abstractor architecture settings.
+
+        Args:
+            num_learnable_queries: Number of learned query tokens produced by the abstractor.
+            hidden_size: Width of query and abstractor hidden states.
+            num_hidden_layers: Number of cross-attention layers.
+            num_attention_heads: Number of attention heads; must divide hidden_size.
+            intermediate_size: Width of the abstractor feed-forward network.
+            attention_probs_dropout_prob: Dropout probability for cross-attention probabilities.
+            initializer_range: Weight initialization standard deviation.
+            layer_norm_eps: Epsilon used by layer normalization.
+            encoder_hidden_size: Width of vision-encoder features consumed as keys and values.
+            grid_size: Side length for the positional-embedding grid; defaults to 32 when unset.
+            kwargs: Additional options forwarded to PretrainedConfig.
+
+        Returns:
+            None. Stores the abstractor dimensions and uses grid_size=32 when no grid is supplied."""
         super().__init__(**kwargs)
         self.hidden_size = hidden_size
         self.num_learnable_queries = num_learnable_queries
@@ -298,6 +374,14 @@ class MplugOwlVisualAbstractorConfig(PretrainedConfig):
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path: Union[str, os.PathLike], **kwargs) -> "PretrainedConfig":
+        """Load configuration data from a pretrained model identifier or local path.
+
+        Args:
+            pretrained_model_name_or_path: Hugging Face model ID or local path from which to load the configuration.
+            kwargs: Keyword arguments forwarded to the upstream implementation.
+
+        Returns:
+            An instance of the configuration class populated from the loaded dictionary."""
         config_dict, kwargs = cls.get_config_dict(pretrained_model_name_or_path, **kwargs)
 
         # get the visual_abstractor config dict if we are loading from MplugOwlConfig
@@ -320,9 +404,18 @@ DEFAULT_VISUAL_CONFIG = {
 }
 
 class MPLUGOwl2Config(LlamaConfig):
+    """Combined LLaMA and visual configuration for the mPLUG-Owl2 model."""
     model_type = "mplug_owl2"
 
     def __init__(self, visual_config=None, **kwargs):
+        """Initialize combined language and visual model configuration.
+
+        Args:
+            visual_config: Optional mapping containing visual_model and visual_abstractor configuration dictionaries; defaults to the module's vision and abstractor defaults.
+            kwargs: LLaMA configuration options forwarded to LlamaConfig.
+
+        Returns:
+            None. Stores visual_config and initializes inherited language-model settings."""
         if visual_config is None:
             self.visual_config = DEFAULT_VISUAL_CONFIG
         else:

@@ -28,7 +28,18 @@ default_model_urls = {'url': get_url_from_name('DISTS_weights-f5e65c96.pth')}
 
 
 class L2pooling(nn.Module):
+    """Channel-wise L2 pooling with a normalized Hann-window filter.
+
+    Args:
+        filter_size (int): Side length of the Hann filter.
+        stride (int): Convolution stride.
+        channels (int): Number of input channels; the filter is repeated for
+            this count.
+        pad_off (int): Accepted for compatibility; the implementation derives
+            padding from ``filter_size`` and does not use this value.
+    """
     def __init__(self, filter_size=5, stride=2, channels=None, pad_off=0):
+        """Create and register the fixed per-channel pooling filter."""
         super(L2pooling, self).__init__()
         self.padding = (filter_size - 2) // 2
         self.stride = stride
@@ -41,6 +52,15 @@ class L2pooling(nn.Module):
         )
 
     def forward(self, input):
+        """Pool squared input values and take their stabilized square root.
+
+        Args:
+            input (torch.Tensor): Feature tensor of shape ``(N, C, H, W)``;
+                ``C`` must match the configured filter channel count.
+
+        Returns:
+            torch.Tensor: Channel-wise L2-pooled feature map.
+        """
         input = input**2
         out = F.conv2d(
             input,
@@ -110,6 +130,15 @@ class DISTS(torch.nn.Module):
             load_pretrained_network(self, default_model_urls['url'], False)
 
     def forward_once(self, x):
+        """Extract the input and five progressively deeper VGG feature maps.
+
+        Args:
+            x (torch.Tensor): RGB image batch with shape ``(N, 3, H, W)``.
+
+        Returns:
+            list[torch.Tensor]: Original input followed by activations at the
+            selected VGG stages.
+        """
         h = (x - self.mean) / self.std
         h = self.stage1(h)
         h_relu1_2 = h

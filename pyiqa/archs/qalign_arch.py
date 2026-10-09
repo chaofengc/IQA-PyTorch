@@ -55,6 +55,11 @@ class QAlign(nn.Module):
     """
 
     def __init__(self, dtype='fp16') -> None:
+        """Initialize the qalign and configure its layers, parameters, and optional pretrained state.
+
+        Args:
+            dtype: Floating-point data type used to load or execute the model.
+        """
         super().__init__()
 
         self.dtype = dtype
