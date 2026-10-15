@@ -14,17 +14,23 @@ The full licence text is at the end of this file.
 
 <https://github.com/XPixelGroup/BasicSR>
 
+Copyright 2018-2022 BasicSR Authors
+
 Used in: `pyiqa/train.py`, `pyiqa/models/base_model.py`, `pyiqa/models/general_iqa_model.py`, `pyiqa/models/lr_scheduler.py`, `pyiqa/data/__init__.py`, `pyiqa/data/data_sampler.py`, `pyiqa/data/data_util.py`, `pyiqa/data/prefetch_dataloader.py`, `pyiqa/data/transforms.py`, `pyiqa/losses/loss_util.py`, `pyiqa/losses/losses.py`, `pyiqa/utils/dist_util.py`, `pyiqa/utils/download_util.py`, `pyiqa/utils/img_util.py`, `pyiqa/utils/logger.py`, `pyiqa/utils/misc.py`, `pyiqa/utils/options.py`, `pyiqa/archs/niqe_arch.py`
 
 ### PIQ
 
 <https://github.com/photosynthesis-team/piq>
 
+No copyright line is stated in the project.
+
 Used in: `pyiqa/archs/brisque_arch.py`, `pyiqa/archs/fsim_arch.py`, `pyiqa/archs/vsi_arch.py`, `pyiqa/archs/func_util.py`, `pyiqa/utils/color_util.py`, `pyiqa/matlab_utils/resize.py`
 
 ### pytorch-fid
 
 <https://github.com/mseitzer/pytorch-fid>
+
+No copyright line is stated in the project.
 
 Used in: `pyiqa/archs/inception.py`
 
@@ -48,6 +54,8 @@ Used in: `pyiqa/archs/afine_arch.py`, `pyiqa/archs/afineclip_model.py`
 
 <https://github.com/IIGROUP/MANIQA>
 
+No copyright line is stated in the project.
+
 Used in: `pyiqa/archs/maniqa_arch.py`, `pyiqa/archs/maniqa_swin.py`
 
 ### DETR
@@ -61,6 +69,8 @@ Used in: `pyiqa/archs/topiq_arch.py`, `pyiqa/archs/tres_arch.py`
 ### IL-NIQE (PyTorch)
 
 <https://github.com/IceClear/IL-NIQE>
+
+No copyright line is stated in the project.
 
 Used in: `pyiqa/archs/niqe_arch.py`
 
@@ -76,7 +86,7 @@ Used in: `pyiqa/archs/topiq_swin.py`, `pyiqa/archs/uranker_arch.py`
 
 <https://github.com/google-research/google-research/tree/master/musiq>
 
-Copyright The Google Research Authors
+Copyright 2026 The Google Research Authors.
 
 Used in: `pyiqa/data/multiscale_trans_util.py`
 
@@ -84,7 +94,9 @@ Used in: `pyiqa/data/multiscale_trans_util.py`
 
 <https://github.com/huggingface/transformers>
 
-Copyright The HuggingFace Team
+Copyright 2023 The HuggingFace Team. All rights reserved. (`modeling_attn_mask_utils.py`)
+
+Copyright 2025 The HuggingFace Team. All rights reserved. (`qwen3_5_src/`)
 
 Used in: `pyiqa/archs/q_align/modeling_attn_mask_utils.py`, `pyiqa/archs/qrealign/qwen3_5_src/`
 
