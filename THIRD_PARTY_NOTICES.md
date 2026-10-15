@@ -16,6 +16,8 @@ The full licence text is at the end of this file.
 
 Copyright 2018-2022 BasicSR Authors
 
+License: Apache License 2.0
+
 Used in: `pyiqa/train.py`, `pyiqa/models/base_model.py`, `pyiqa/models/general_iqa_model.py`, `pyiqa/models/lr_scheduler.py`, `pyiqa/data/__init__.py`, `pyiqa/data/data_sampler.py`, `pyiqa/data/data_util.py`, `pyiqa/data/prefetch_dataloader.py`, `pyiqa/data/transforms.py`, `pyiqa/losses/loss_util.py`, `pyiqa/losses/losses.py`, `pyiqa/utils/dist_util.py`, `pyiqa/utils/download_util.py`, `pyiqa/utils/img_util.py`, `pyiqa/utils/logger.py`, `pyiqa/utils/misc.py`, `pyiqa/utils/options.py`, `pyiqa/archs/niqe_arch.py`
 
 ### PIQ
@@ -23,6 +25,8 @@ Used in: `pyiqa/train.py`, `pyiqa/models/base_model.py`, `pyiqa/models/general_i
 <https://github.com/photosynthesis-team/piq>
 
 No copyright line is stated in the project.
+
+License: Apache License 2.0
 
 Used in: `pyiqa/archs/brisque_arch.py`, `pyiqa/archs/fsim_arch.py`, `pyiqa/archs/vsi_arch.py`, `pyiqa/archs/func_util.py`, `pyiqa/utils/color_util.py`, `pyiqa/matlab_utils/resize.py`
 
@@ -32,6 +36,8 @@ Used in: `pyiqa/archs/brisque_arch.py`, `pyiqa/archs/fsim_arch.py`, `pyiqa/archs
 
 No copyright line is stated in the project.
 
+License: Apache License 2.0
+
 Used in: `pyiqa/archs/inception.py`
 
 ### torch-fidelity
@@ -39,6 +45,8 @@ Used in: `pyiqa/archs/inception.py`
 <https://github.com/toshas/torch-fidelity>
 
 Copyright 2020 Anton Obukhov
+
+License: Apache License 2.0
 
 Used in: `pyiqa/archs/interpolate_compat_tensorflow.py`
 
@@ -48,6 +56,8 @@ Used in: `pyiqa/archs/interpolate_compat_tensorflow.py`
 
 Copyright 2025 CHEN Du
 
+License: Apache License 2.0
+
 Used in: `pyiqa/archs/afine_arch.py`, `pyiqa/archs/afineclip_model.py`
 
 ### MANIQA
@@ -55,6 +65,8 @@ Used in: `pyiqa/archs/afine_arch.py`, `pyiqa/archs/afineclip_model.py`
 <https://github.com/IIGROUP/MANIQA>
 
 No copyright line is stated in the project.
+
+License: Apache License 2.0
 
 Used in: `pyiqa/archs/maniqa_arch.py`, `pyiqa/archs/maniqa_swin.py`
 
@@ -64,6 +76,8 @@ Used in: `pyiqa/archs/maniqa_arch.py`, `pyiqa/archs/maniqa_swin.py`
 
 Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
+License: Apache License 2.0
+
 Used in: `pyiqa/archs/topiq_arch.py`, `pyiqa/archs/tres_arch.py`
 
 ### IL-NIQE (PyTorch)
@@ -71,6 +85,8 @@ Used in: `pyiqa/archs/topiq_arch.py`, `pyiqa/archs/tres_arch.py`
 <https://github.com/IceClear/IL-NIQE>
 
 No copyright line is stated in the project.
+
+License: Apache License 2.0
 
 Used in: `pyiqa/archs/niqe_arch.py`
 
@@ -80,6 +96,8 @@ Used in: `pyiqa/archs/niqe_arch.py`
 
 Copyright 2019 Ross Wightman
 
+License: Apache License 2.0
+
 Used in: `pyiqa/archs/topiq_swin.py`, `pyiqa/archs/uranker_arch.py`
 
 ### MUSIQ (google-research)
@@ -87,6 +105,8 @@ Used in: `pyiqa/archs/topiq_swin.py`, `pyiqa/archs/uranker_arch.py`
 <https://github.com/google-research/google-research/tree/master/musiq>
 
 Copyright 2026 The Google Research Authors.
+
+License: Apache License 2.0
 
 Used in: `pyiqa/data/multiscale_trans_util.py`
 
@@ -97,6 +117,8 @@ Used in: `pyiqa/data/multiscale_trans_util.py`
 Copyright 2023 The HuggingFace Team. All rights reserved. (`modeling_attn_mask_utils.py`)
 
 Copyright 2025 The HuggingFace Team. All rights reserved. (`qwen3_5_src/`)
+
+License: Apache License 2.0
 
 Used in: `pyiqa/archs/q_align/modeling_attn_mask_utils.py`, `pyiqa/archs/qrealign/qwen3_5_src/`
 
@@ -110,6 +132,8 @@ Each project below is under the MIT License with the copyright line shown:
 
 Copyright (c) 2020 Keyan Ding
 
+License: MIT License
+
 Used in: `pyiqa/archs/dists_arch.py`
 
 ### DeepDC
@@ -117,6 +141,8 @@ Used in: `pyiqa/archs/dists_arch.py`
 <https://github.com/h4nwei/DeepDC>
 
 Copyright (c) 2020 Keyan Ding
+
+License: MIT License
 
 Used in: `pyiqa/archs/deepdc_arch.py`
 
@@ -126,6 +152,8 @@ Used in: `pyiqa/archs/deepdc_arch.py`
 
 Copyright (c) 2020 dingkeyan93
 
+License: MIT License
+
 Used in: `pyiqa/archs/mad_arch.py`, `pyiqa/archs/ssim_arch.py`, `pyiqa/archs/vif_arch.py`
 
 ### DMM
@@ -133,6 +161,8 @@ Used in: `pyiqa/archs/mad_arch.py`, `pyiqa/archs/ssim_arch.py`, `pyiqa/archs/vif
 <https://github.com/Baoliang93/DMM>
 
 Copyright (c) 2024 Baoliang CHEN（陈宝亮）
+
+License: MIT License
 
 Used in: `pyiqa/archs/dmm_arch.py`
 
@@ -142,6 +172,8 @@ Used in: `pyiqa/archs/dmm_arch.py`
 
 Copyright (c) 2021 Gaurav Parmar
 
+License: MIT License
+
 Used in: `pyiqa/archs/fid_arch.py`
 
 ### AHIQ
@@ -149,6 +181,8 @@ Used in: `pyiqa/archs/fid_arch.py`
 <https://github.com/IIGROUP/AHIQ>
 
 Copyright (c) 2022 ShanShan Lao
+
+License: MIT License
 
 Used in: `pyiqa/archs/ahiq_arch.py`
 
@@ -158,6 +192,8 @@ Used in: `pyiqa/archs/ahiq_arch.py`
 
 Copyright (c) 2018 Tom Runia (tomrunia@gmail.com)
 
+License: MIT License
+
 Used in: `pyiqa/matlab_utils/scfpyr_util.py`, `pyiqa/matlab_utils/math_util.py`
 
 ### mPLUG-Owl
@@ -165,6 +201,8 @@ Used in: `pyiqa/matlab_utils/scfpyr_util.py`, `pyiqa/matlab_utils/math_util.py`
 <https://github.com/X-PLUG/mPLUG-Owl>
 
 Copyright (c) 2022 mPLUG
+
+License: MIT License
 
 Used in: `pyiqa/archs/q_align/configuration_mplug_owl2.py`, `pyiqa/archs/q_align/modeling_mplug_owl2.py`, `pyiqa/archs/q_align/cmp_modelling_mplug_owl2.py`, `pyiqa/archs/q_align/modeling_llama2.py`, `pyiqa/archs/q_align/visual_encoder.py`
 
@@ -198,6 +236,8 @@ SOFTWARE.
 
 Copyright (c) 2018, Richard Zhang, Phillip Isola, Alexei A. Efros, Eli Shechtman, Oliver Wang
 
+License: BSD 2-Clause License
+
 Used in: `pyiqa/archs/lpips_arch.py`, `pyiqa/archs/stlpips_arch.py`
 
 ### ST-LPIPS
@@ -205,6 +245,8 @@ Used in: `pyiqa/archs/lpips_arch.py`, `pyiqa/archs/stlpips_arch.py`
 <https://github.com/abhijay9/ShiftTolerant-LPIPS>
 
 Copyright (c) 2022, Abhijay Ghildyal, Feng Liu
+
+License: BSD 2-Clause License
 
 Used in: `pyiqa/archs/stlpips_arch.py`
 
@@ -238,6 +280,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## PieAPP: Modified BSD-2 License, for non-commercial use only
 
 <https://github.com/prashnani/PerceptualImageError>
+
+License: Modified BSD-2 License, for Non-Commercial Use Only
 
 Used in: `pyiqa/archs/pieapp_arch.py`
 
@@ -276,16 +320,24 @@ Office of Technology & Industry Alliances at 805-893-5180 or info@tia.ucsb.edu.
 
 ### Underwater Ranker (URanker)
 
-<https://github.com/RQ-Wu/UnderwaterRanker>, by the URanker authors, licensed under
-[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). Adapted.
+<https://github.com/RQ-Wu/UnderwaterRanker>
+
+By the URanker authors. No copyright line is stated in the project.
+
+License: Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0),
+<https://creativecommons.org/licenses/by-nc/4.0/>. The pyiqa file is adapted from it.
 
 Used in: `pyiqa/archs/uranker_arch.py`
 
 ### antialiased-cnns (Adobe)
 
-<https://github.com/adobe/antialiased-cnns>, Copyright 2019 Adobe, licensed under
-[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Adapted. The full
-notice is also kept in the file.
+<https://github.com/adobe/antialiased-cnns>
+
+Copyright 2019 Adobe. All rights reserved.
+
+License: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0),
+<https://creativecommons.org/licenses/by-nc-sa/4.0/>. The pyiqa file is adapted from it,
+and keeps the full notice.
 
 Used in: `pyiqa/archs/stlpips_arch.py`
 
