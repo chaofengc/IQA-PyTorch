@@ -56,6 +56,8 @@ class PieAPP(nn.Module):
     Args:
         - patch_size (int): Size of the patches to extract from the images.
         - stride (int): Stride to use when extracting patches.
+        - patch_batch_size (int or None): Maximum number of patches to process
+          together during inference. ``None`` processes all patches at once.
         - pretrained (bool): Whether to use a pretrained model or not.
         - pretrained_model_path (str): Path to the pretrained model.
 
@@ -67,7 +69,12 @@ class PieAPP(nn.Module):
     """
 
     def __init__(
-        self, patch_size=64, stride=27, pretrained=True, pretrained_model_path=None
+        self,
+        patch_size=64,
+        stride=27,
+        pretrained=True,
+        pretrained_model_path=None,
+        patch_batch_size=64,
     ):
         """Initialize the pie app and configure its layers, parameters, and optional pretrained state.
 
@@ -76,8 +83,21 @@ class PieAPP(nn.Module):
             stride: Spatial stride for the convolutional stage.
             pretrained: Whether to initialize or load pretrained weights.
             pretrained_model_path: Optional local checkpoint path; ``None`` selects the implementation default.
+            patch_batch_size: Maximum number of patches evaluated together
+                during inference. Positive values stream patches in bounded
+                batches. ``None`` restores the original all-at-once evaluation.
         """
         super(PieAPP, self).__init__()
+        if (
+            patch_batch_size is not None
+            and (
+                isinstance(patch_batch_size, bool)
+                or not isinstance(patch_batch_size, int)
+                or patch_batch_size <= 0
+            )
+        ):
+            raise ValueError('patch_batch_size must be a positive integer or None.')
+
         self.conv1 = nn.Conv2d(3, 64, 3, padding=1)
         self.conv2 = nn.Conv2d(64, 64, 3, padding=1)
         self.pool2 = nn.MaxPool2d(2, 2)
@@ -102,6 +122,7 @@ class PieAPP(nn.Module):
 
         self.patch_size = patch_size
         self.stride = stride
+        self.patch_batch_size = patch_batch_size
 
         if pretrained_model_path is not None:
             load_pretrained_network(self, pretrained_model_path)
@@ -160,6 +181,39 @@ class PieAPP(nn.Module):
         x = x[:, [2, 1, 0]] * 255.0
         return x
 
+    def _compute_patch_outputs(self, dist_patches, ref_patches):
+        """Compute scores and weights for one batch of paired patches."""
+        dist_multi_scale, dist_coarse = self.compute_features(dist_patches)
+        ref_multi_scale, ref_coarse = self.compute_features(ref_patches)
+        diff_ms = ref_multi_scale - dist_multi_scale
+        diff_coarse = ref_coarse - dist_coarse
+
+        per_patch_score = self.ref_score_subtract(
+            0.01 * self.fc2_score(F.relu(self.fc1_score(diff_ms)))
+        )
+        per_patch_weight = (
+            self.fc2_weight(F.relu(self.fc1_weight(diff_coarse))) + 1e-6
+        )
+        return per_patch_score, per_patch_weight
+
+    def _extract_patch_grid(self, image):
+        """Return a zero-copy grid view over all valid image patches."""
+        return image.unfold(2, self.patch_size, self.stride).unfold(
+            3, self.patch_size, self.stride
+        )
+
+    def _get_patch_batch(self, patch_grid, start, end):
+        """Materialize a contiguous batch from a flattened patch-grid range."""
+        patch_rows = patch_grid.shape[2]
+        patch_columns = patch_grid.shape[3]
+        patches_per_image = patch_rows * patch_columns
+        flat_indices = torch.arange(start, end, device=patch_grid.device)
+        image_indices = flat_indices // patches_per_image
+        patch_indices = flat_indices % patches_per_image
+        row_indices = patch_indices // patch_columns
+        column_indices = patch_indices % patch_columns
+        return patch_grid[image_indices, :, row_indices, column_indices]
+
     def forward(self, dist, ref):
         """Compute the PieAPP prediction for the supplied image or image pair.
 
@@ -178,33 +232,77 @@ class PieAPP(nn.Module):
         dist = self.preprocess(dist)
         ref = self.preprocess(ref)
 
-        if not self.training:
-            image_A_patches = extract_2d_patches(
-                dist, self.patch_size, self.stride, padding='none'
+        if not self.training and self.patch_batch_size is not None:
+            image_A_patch_grid = self._extract_patch_grid(dist)
+            image_ref_patch_grid = self._extract_patch_grid(ref)
+            bsz = image_A_patch_grid.shape[0]
+            num_patches = (
+                image_A_patch_grid.shape[2] * image_A_patch_grid.shape[3]
             )
-            image_ref_patches = extract_2d_patches(
-                ref, self.patch_size, self.stride, padding='none'
+            total_patches = bsz * num_patches
+            patch_batch_size = self.patch_batch_size
+            patch_pairs = (
+                (
+                    self._get_patch_batch(
+                        image_A_patch_grid,
+                        start,
+                        min(start + patch_batch_size, total_patches),
+                    ),
+                    self._get_patch_batch(
+                        image_ref_patch_grid,
+                        start,
+                        min(start + patch_batch_size, total_patches),
+                    ),
+                )
+                for start in range(0, total_patches, patch_batch_size)
             )
         else:
-            image_A_patches, image_ref_patches = dist, ref
-            image_A_patches = image_A_patches.unsqueeze(1)
-            image_ref_patches = image_ref_patches.unsqueeze(1)
+            if not self.training:
+                image_A_patches = extract_2d_patches(
+                    dist, self.patch_size, self.stride, padding='none'
+                )
+                image_ref_patches = extract_2d_patches(
+                    ref, self.patch_size, self.stride, padding='none'
+                )
+            else:
+                image_A_patches, image_ref_patches = dist, ref
+                image_A_patches = image_A_patches.unsqueeze(1)
+                image_ref_patches = image_ref_patches.unsqueeze(1)
 
-        bsz, num_patches, c, psz, psz = image_A_patches.shape
-        image_A_patches = image_A_patches.reshape(bsz * num_patches, c, psz, psz)
-        image_ref_patches = image_ref_patches.reshape(bsz * num_patches, c, psz, psz)
+            bsz, num_patches, c, patch_height, patch_width = image_A_patches.shape
+            image_A_patches = image_A_patches.reshape(
+                bsz * num_patches, c, patch_height, patch_width
+            )
+            image_ref_patches = image_ref_patches.reshape(
+                bsz * num_patches, c, patch_height, patch_width
+            )
+            total_patches = bsz * num_patches
+            patch_batch_size = total_patches
+            patch_pairs = (
+                (
+                    image_A_patches[start : start + patch_batch_size],
+                    image_ref_patches[start : start + patch_batch_size],
+                )
+                for start in range(0, total_patches, patch_batch_size)
+            )
 
-        A_multi_scale, A_coarse = self.compute_features(image_A_patches)
-        ref_multi_scale, ref_coarse = self.compute_features(image_ref_patches)
-        diff_ms = ref_multi_scale - A_multi_scale
-        diff_coarse = ref_coarse - A_coarse
-        # per patch score: fc1_score -> relu -> fc2_score
-        per_patch_score = self.ref_score_subtract(
-            0.01 * self.fc2_score(F.relu(self.fc1_score(diff_ms)))
-        )
+        score_chunks = []
+        weight_chunks = []
+        for image_A_patch_batch, image_ref_patch_batch in patch_pairs:
+            chunk_score, chunk_weight = self._compute_patch_outputs(
+                image_A_patch_batch, image_ref_patch_batch
+            )
+            score_chunks.append(chunk_score)
+            weight_chunks.append(chunk_weight)
+
+        if len(score_chunks) == 1:
+            per_patch_score = score_chunks[0]
+            per_patch_weight = weight_chunks[0]
+        else:
+            per_patch_score = torch.cat(score_chunks)
+            per_patch_weight = torch.cat(weight_chunks)
+
         per_patch_score = per_patch_score.view((-1, num_patches))
-        # per patch weight: fc1_weight -> relu -> fc2_weight
-        per_patch_weight = self.fc2_weight(F.relu(self.fc1_weight(diff_coarse))) + 1e-6
         per_patch_weight = per_patch_weight.view((-1, num_patches))
 
         score = (per_patch_weight * per_patch_score).sum(dim=-1) / per_patch_weight.sum(
