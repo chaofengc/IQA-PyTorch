@@ -154,7 +154,8 @@ class LIQE(nn.Module):
 
     def get_text_features(self, x):
         """Encode and normalize text features for prompt set."""
-        text_features = self.clip_model.encode_text(self.joint_texts.to(x.device))
+        device = next(self.clip_model.parameters()).device
+        text_features = self.clip_model.encode_text(x.to(device))
         text_features = text_features / text_features.norm(dim=1, keepdim=True)
         return text_features
 
