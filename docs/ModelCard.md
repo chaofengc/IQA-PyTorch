@@ -10,6 +10,7 @@ print(pyiqa.list_models())
 
 | FR Method                | Model names                                                            | Description                                                | Score Direction  |
 | ------------------------ | ---------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------- |
+| JLD                      | `jld`, `jld_fast`                                                      | [JLD](https://arxiv.org/abs/2610.05967): DINOv2-S/14 block-1 features through a fitted 64-direction lens. `jld_fast` drops the final-CLS term and stops after block 1. Native resolution, center-cropped to a multiple of 14; images must be at least 14x14 | Lower is better  |
 | DMM                      | `dmm`                                                     | Published in [TMM](https://ieeexplore.ieee.org/abstract/document/10886996) | Higher is better |
 | TOPIQ                    | `topiq_fr`, `topiq_fr-pipal`                                           | Proposed in [this paper](https://arxiv.org/abs/2308.03060) | Higher is better |
 | AHIQ                     | `ahiq`                                                                 |                                                            | Higher is better |

@@ -91,6 +91,24 @@ DEFAULT_CONFIGS = OrderedDict(
             'lower_better': True,
             'score_range': '0, 1',
         },
+        'jld': {
+            'metric_opts': {
+                'type': 'JLD',
+                'variant': 'full',
+            },
+            'metric_mode': 'FR',
+            'lower_better': True,
+            'score_range': '0, +inf',
+        },
+        'jld_fast': {
+            'metric_opts': {
+                'type': 'JLD',
+                'variant': 'fast',
+            },
+            'metric_mode': 'FR',
+            'lower_better': True,
+            'score_range': '0, +inf',
+        },
         'deepdc': {
             'metric_opts': {
                 'type': 'DeepDC',
