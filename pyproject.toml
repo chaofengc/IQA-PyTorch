@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "pyiqa"
 description = "PyTorch Toolbox for Image Quality Assessment"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.10"
 license = "PolyForm-Noncommercial-1.0.0"
 license-files = ["LICENSE", "LICENSE-S-Lab", "LICENSE-OpenAI-CLIP", "THIRD_PARTY_NOTICES.md"]
 authors = [
@@ -17,9 +17,11 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Image Processing",
 ]
@@ -35,6 +37,17 @@ Issues = "https://github.com/chaofengc/IQA-PyTorch/issues"
 [project.scripts]
 pyiqa = "pyiqa.pyiqa_cmd:main"
 pyiqa-gmad = "pyiqa.gmad_test:main"
+
+# Development-only tooling. Kept out of requirements.txt so that it is not
+# installed into end users' environments via `pip install pyiqa`.
+# Install with: pip install -e ".[dev]"
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+    "pytest",
+    "ruff",
+    "yapf",
+]
 
 [tool.setuptools]
 include-package-data = true

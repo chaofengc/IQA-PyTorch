@@ -67,7 +67,7 @@ pip install git+https://github.com/chaofengc/IQA-PyTorch.git
 # Install with git clone
 git clone https://github.com/chaofengc/IQA-PyTorch.git
 cd IQA-PyTorch
-pip install -e .
+pip install -e .          # or: pip install -e ".[dev]" to also get pytest/ruff/pre-commit
 ```
 
 ### Basic Usage 

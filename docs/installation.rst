@@ -3,7 +3,7 @@ Installation
 
 Requirements
 ------------
-- Python 3.8 or later is recommended.
+- Python 3.10 or later (required by ``transformers>=5.0``).
 - PyTorch and torchvision must be compatible with each other. Install a build
   appropriate for your CPU/CUDA setup using the
   `official PyTorch instructions <https://pytorch.org/get-started/locally/>`_.
@@ -31,6 +31,12 @@ Install a local checkout
     git clone https://github.com/chaofengc/IQA-PyTorch.git
     cd IQA-PyTorch
     pip install -e .
+
+To also install the development tools used by the test suite and pre-commit
+hooks (``pytest``, ``ruff``, ``yapf``, ``pre-commit``), install the ``dev``
+extra::
+
+    pip install -e ".[dev]"
 
 The editable install includes the ``pyiqa`` and ``pyiqa-gmad`` command-line
 entry points. To build a wheel and source distribution from a checkout, install

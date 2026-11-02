@@ -10,12 +10,9 @@ numpy
 opencv-python-headless
 pandas
 Pillow
-pre-commit
-pytest
 pyyaml
 regex
 requests
-ruff
 scikit-image
 scipy
 sentencepiece
@@ -28,4 +25,3 @@ tqdm
 # the toolbox is verified healthy on 5.x. qrealign needs 5.2 for native qwen3_5,
 # and runs on 5.0/5.1 via the vendored shim in pyiqa/archs/qrealign/.
 transformers>=5.0
-yapf
