@@ -1,5 +1,6 @@
 import math
 import os
+import re
 import requests
 from torch.hub import download_url_to_file, get_dir
 from tqdm import tqdm
@@ -9,6 +10,17 @@ from .misc import sizeof_fmt
 
 
 DEFAULT_CACHE_DIR = os.path.join(get_dir(), 'pyiqa')
+
+# Release weights are named ``<name>-<first 8+ hex digits of sha256>.<ext>``
+# (e.g. ``tres_koniq-f0502926.pth``). Unlike ``torch.hub.HASH_REGEX`` this
+# requires at least 8 hex digits right before the final extension, so names
+# such as ``ViT-B-32.pt`` are not mistaken for a hash prefix of ``32``.
+_HASH_PREFIX_REGEX = re.compile(r'-([a-f0-9]{8,})\.[^.]+$')
+
+
+def _hash_prefix_from_name(filename):
+    match = _HASH_PREFIX_REGEX.search(filename)
+    return match.group(1) if match else None
 
 
 def download_file_from_google_drive(file_id, save_path):
@@ -100,5 +112,15 @@ def load_file_from_url(url, model_dir=None, progress=True, file_name=None):
     cached_file = os.path.abspath(os.path.join(model_dir, filename))
     if not os.path.exists(cached_file):
         print(f'Downloading: "{url}" to {cached_file}\n')
-        download_url_to_file(url, cached_file, hash_prefix=None, progress=progress)
+        # Verify against the hash embedded in the file name when there is one.
+        # download_url_to_file writes to a temporary file and only moves it into
+        # place after the check passes, so an interrupted or corrupted download
+        # raises here instead of leaving a broken file that every later run
+        # would treat as cached.
+        download_url_to_file(
+            url,
+            cached_file,
+            hash_prefix=_hash_prefix_from_name(filename),
+            progress=progress,
+        )
     return cached_file
