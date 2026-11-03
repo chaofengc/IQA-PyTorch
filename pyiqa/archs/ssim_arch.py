@@ -55,9 +55,6 @@ def ssim(
         torch.Tensor or tuple[torch.Tensor, torch.Tensor]: Per-image SSIM by
         default, or the map/auxiliary outputs selected by the flags.
     """
-    if win is None:
-        win = fspecial(11, 1.5, X.shape[1]).to(X)
-
     C1 = (0.01 * data_range) ** 2
     C2 = (0.03 * data_range) ** 2
 
@@ -68,14 +65,37 @@ def ssim(
         X = F.avg_pool2d(X, kernel_size=f)
         Y = F.avg_pool2d(Y, kernel_size=f)
 
-    mu1 = filter2(X, win, 'valid')
-    mu2 = filter2(Y, win, 'valid')
+    if win is None:
+        # The default Gaussian window is separable, so filter rows then columns
+        # with 1-D taps whose outer product keeps the sum of the 2-D window.
+        win = fspecial(11, 1.5).to(X)[0, 0]
+        taps = (win.sum(1) / win.sum().sqrt()).tolist()
+
+        def valid_filter(x, dim):
+            size = x.shape[dim] - len(taps) + 1
+            out = x.narrow(dim, 0, size) * taps[0]
+            for i, tap in enumerate(taps[1:], 1):
+                out.add_(x.narrow(dim, i, size), alpha=tap)
+            return out
+
+        # Filter all local moments together in one pass.
+        moments = torch.stack([X, Y, X * X, Y * Y, X * Y], dim=1)
+        mu1, mu2, mu11, mu22, mu12 = valid_filter(
+            valid_filter(moments, -1), -2
+        ).unbind(1)
+    else:
+        mu1 = filter2(X, win, 'valid')
+        mu2 = filter2(Y, win, 'valid')
+        mu11 = filter2(X * X, win, 'valid')
+        mu22 = filter2(Y * Y, win, 'valid')
+        mu12 = filter2(X * Y, win, 'valid')
+
     mu1_sq = mu1.pow(2)
     mu2_sq = mu2.pow(2)
     mu1_mu2 = mu1 * mu2
-    sigma1_sq = filter2(X * X, win, 'valid') - mu1_sq
-    sigma2_sq = filter2(Y * Y, win, 'valid') - mu2_sq
-    sigma12 = filter2(X * Y, win, 'valid') - mu1_mu2
+    sigma1_sq = mu11 - mu1_sq
+    sigma2_sq = mu22 - mu2_sq
+    sigma12 = mu12 - mu1_mu2
 
     cs_map = (2 * sigma12 + C2) / (sigma1_sq + sigma2_sq + C2)
     cs_map = F.relu(
