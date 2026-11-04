@@ -149,15 +149,23 @@ def get_moments(d, sk=False):
     # Return the first 4 moments of the data provided
     mean = torch.mean(d, dim=[3, 4], keepdim=True)
     diffs = d - mean
-    var = torch.mean(torch.pow(diffs, 2.0), dim=[3, 4], keepdim=True)
-    std = torch.pow(var + 1e-12, 0.5)
+    var = (
+        torch.linalg.vector_norm(diffs, dim=[3, 4], keepdim=True).square()
+        / (diffs.shape[3] * diffs.shape[4])
+    )
+    std = torch.sqrt(var + 1e-12)
 
     if sk:
-        zscores = diffs / std
-        skews = torch.mean(torch.pow(zscores, 3.0), dim=[3, 4], keepdim=True)
+        # Reuse private temporaries when backward does not need their values.
+        normalize = diffs.div if diffs.requires_grad else diffs.div_
+        zscores = normalize(std)
+        squares = zscores * zscores
         kurtoses = (
-            torch.mean(torch.pow(zscores, 4.0), dim=[3, 4], keepdim=True) - 3.0
+            torch.linalg.vector_norm(squares, dim=[3, 4], keepdim=True).square()
+            / (diffs.shape[3] * diffs.shape[4]) - 3.0
         )  # excess kurtosis, should be 0 for Gaussian
+        multiply = squares.mul if squares.requires_grad else squares.mul_
+        skews = torch.mean(multiply(zscores), dim=[3, 4], keepdim=True)
         return mean, std, skews, kurtoses
     else:
         return mean, std
