@@ -20,6 +20,7 @@ Refer to:
     Official matlab code is not available
 """
 
+import math
 import warnings
 import functools
 from typing import Union, Tuple
@@ -90,8 +91,8 @@ def vsi(
         )
 
     # Scale to [0, 255] range to match scale of constant
-    x = x * 255.0 / data_range
-    y = y * 255.0 / data_range
+    x = (x * 255.0).div_(data_range)
+    y = (y * 255.0).div_(data_range)
 
     vs_x = sdsp(
         x,
@@ -110,10 +111,6 @@ def vsi(
         sigma_c=sigma_c,
     )
 
-    # Convert to LMN colour space
-    x_lmn = rgb2lmn(x)
-    y_lmn = rgb2lmn(y)
-
     # Averaging image if the size is large enough
     kernel_size = max(1, round(min(vs_x.size()[-2:]) / 256))
     padding = kernel_size // 2
@@ -125,30 +122,36 @@ def vsi(
         mode = 'replicate'
         vs_x = pad(vs_x, pad=pad_to_use, mode=mode)
         vs_y = pad(vs_y, pad=pad_to_use, mode=mode)
-        x_lmn = pad(x_lmn, pad=pad_to_use, mode=mode)
-        y_lmn = pad(y_lmn, pad=pad_to_use, mode=mode)
+        x = pad(x, pad=pad_to_use, mode=mode)
+        y = pad(y, pad=pad_to_use, mode=mode)
 
-    vs_x = avg_pool2d(vs_x, kernel_size=kernel_size)
-    vs_y = avg_pool2d(vs_y, kernel_size=kernel_size)
+    if kernel_size > 1:
+        vs_x = avg_pool2d(vs_x, kernel_size=kernel_size)
+        vs_y = avg_pool2d(vs_y, kernel_size=kernel_size)
+        x = avg_pool2d(x, kernel_size=kernel_size)
+        y = avg_pool2d(y, kernel_size=kernel_size)
 
-    x_lmn = avg_pool2d(x_lmn, kernel_size=kernel_size)
-    y_lmn = avg_pool2d(y_lmn, kernel_size=kernel_size)
+    # Convert to LMN colour space (linear, so it commutes with padding and pooling)
+    x_lmn = rgb2lmn(x)
+    y_lmn = rgb2lmn(y)
 
     # Calculate gradient map
-    kernels = torch.stack([scharr_filter(), scharr_filter().transpose(1, 2)]).to(x_lmn)
+    scharr = scharr_filter()
+    kernels = torch.stack([scharr, scharr.transpose(1, 2)]).to(x_lmn)
     gm_x = gradient_map(x_lmn[:, :1], kernels)
     gm_y = gradient_map(y_lmn[:, :1], kernels)
 
     # Calculate all similarity maps
     s_vs = similarity_map(vs_x, vs_y, c1)
     s_gm = similarity_map(gm_x, gm_y, c2)
-    s_m = similarity_map(x_lmn[:, 1:2], y_lmn[:, 1:2], c3)
-    s_n = similarity_map(x_lmn[:, 2:], y_lmn[:, 2:], c3)
-    s_c = s_m * s_n
+    s_mn = similarity_map(x_lmn[:, 1:], y_lmn[:, 1:], c3)
+    s_c = s_mn[:, :1] * s_mn[:, 1:]
 
-    s_c_complex = [s_c.abs(), torch.atan2(torch.zeros_like(s_c), s_c)]
-    s_c_complex_pow = [s_c_complex[0] ** beta, s_c_complex[1] * beta]
-    s_c_real_pow = s_c_complex_pow[0] * torch.cos(s_c_complex_pow[1])
+    # Real part of s_c ** beta: the phase is pi for negative values and 0 otherwise
+    s_c_abs_pow = s_c.abs() ** beta
+    s_c_real_pow = torch.where(
+        s_c < 0, s_c_abs_pow * math.cos(math.pi * beta), s_c_abs_pow
+    )
 
     s = s_vs * s_gm.pow(alpha) * s_c_real_pow
     vs_max = torch.max(vs_x, vs_y)
@@ -183,40 +186,42 @@ def sdsp(
     Returns:
         torch.Tensor: Visual saliency map
     """
-    x = x / data_range * 255
     size = x.size()
     size_to_use = (256, 256)
+    # Bilinear resizing is linear, so resize first and scale only the small image
     x = interpolate(input=x, size=size_to_use, mode='bilinear', align_corners=False)
 
-    x_lab = rgb2lab(x, data_range=255)
+    x_lab = rgb2lab(x, data_range=data_range)
 
-    lg = _log_gabor(size_to_use, omega_0, sigma_f).to(x).view(1, 1, *size_to_use)
+    # The log Gabor filter is Hermitian symmetric, so the real FFT needs only half of it
+    half_width = size_to_use[1] // 2 + 1
+    lg = _log_gabor(size_to_use, omega_0, sigma_f)[:, :half_width].to(x)
 
     # torch version >= '1.8.0'
-    x_fft = torch.fft.fft2(x_lab)
-    x_ifft_real = torch.fft.ifft2(x_fft * lg).real
+    x_fft = torch.fft.rfft2(x_lab)
+    x_ifft_real = torch.fft.irfft2(x_fft * lg, s=size_to_use)
 
     s_f = safe_sqrt(x_ifft_real.pow(2).sum(dim=1, keepdim=True))
 
-    coordinates = torch.stack(get_meshgrid(size_to_use), dim=0).to(x)
-    coordinates = coordinates * size_to_use[0] + 1
-    s_d = torch.exp(-torch.sum(coordinates**2, dim=0) / sigma_d**2).view(
-        1, 1, *size_to_use
-    )
+    xx, yy = get_meshgrid(size_to_use)
+    rows = (xx[:, :1].to(x) * size_to_use[0] + 1) ** 2
+    cols = (yy[:1, :].to(x) * size_to_use[0] + 1) ** 2
+    s_d = torch.exp(-(rows + cols) / sigma_d**2)
 
     eps = torch.finfo(x_lab.dtype).eps
     min_x = x_lab.min(dim=-1, keepdim=True).values.min(dim=-2, keepdim=True).values
     max_x = x_lab.max(dim=-1, keepdim=True).values.max(dim=-2, keepdim=True).values
-    normalized = (x_lab - min_x) / (max_x - min_x + eps)
+    # Only the chromatic channels contribute to the colour prior
+    normalized = (x_lab[:, 1:] - min_x[:, 1:]) / (max_x[:, 1:] - min_x[:, 1:] + eps)
 
-    norm = normalized[:, 1:].pow(2).sum(dim=1, keepdim=True)
+    norm = normalized.pow(2).sum(dim=1, keepdim=True)
     s_c = 1 - torch.exp(-norm / sigma_c**2)
 
     vs_m = s_f * s_d * s_c
     vs_m = interpolate(vs_m, size[-2:], mode='bilinear', align_corners=True)
     min_vs_m = vs_m.min(dim=-1, keepdim=True).values.min(dim=-2, keepdim=True).values
     max_vs_m = vs_m.max(dim=-1, keepdim=True).values.max(dim=-2, keepdim=True).values
-    return (vs_m - min_vs_m) / (max_vs_m - min_vs_m + eps)
+    return vs_m.sub_(min_vs_m).div_(max_vs_m - min_vs_m + eps)
 
 
 def _log_gabor(size: Tuple[int, int], omega_0: float, sigma_f: float) -> torch.Tensor:
