@@ -32,10 +32,14 @@ def entropy(x, data_range=255.0, eps=1e-8, color_space='yiq'):
         # Convert RGB image to gray scale and use Y-channel
         x = to_y_channel(x, data_range, color_space)
 
-    # Compute histogram
-    hist = nn.functional.one_hot(x.long(), num_classes=int(data_range + 1)).sum(
-        dim=[1, 2, 3]
-    )
+    # Compute histogram with one bincount over per-image offset bins instead of a
+    # dense one-hot tensor
+    n, num_bins = x.shape[0], int(data_range + 1)
+    if x.numel() and not (x.min().item() > -1 and x.max().item() < num_bins):
+        raise RuntimeError('Pixel values must map to bins in [0, num_bins).')
+    offsets = torch.arange(n, dtype=torch.int32, device=x.device) * num_bins
+    idx = x.to(torch.int32) + offsets.view(-1, 1, 1, 1)
+    hist = torch.bincount(idx.flatten(), minlength=n * num_bins).view(n, num_bins)
     hist = hist / hist.sum(dim=1, keepdim=True)
 
     # Compute entropy
