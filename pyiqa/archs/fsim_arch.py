@@ -295,21 +295,14 @@ def _phase_congruency(
     )
 
     imagefft = torch.fft.fft2(x)
-    filters_ifft = torch.fft.ifft2(filters)
-    filters_ifft = filters_ifft.real * math.sqrt(H * W)
     even_odd = torch.view_as_real(torch.fft.ifft2(imagefft * filters)).view(
         N, orientations, scales, H, W, 2
     )
 
     # Amplitude of even & odd filter response. An = sqrt(real^2 + imag^2)
-    an = torch.sqrt(torch.sum(even_odd**2, dim=-1))
-
-    # Take filter at scale 0 and sum spatially
-    # Record mean squared filter value at smallest scale.
-    # This is used for noise estimation.
-    em_n = (filters.view(1, orientations, scales, H, W)[:, :, :1, ...] ** 2).sum(
-        dim=[-2, -1], keepdims=True
-    )
+    even = even_odd[..., 0]
+    odd = even_odd[..., 1]
+    an = torch.sqrt(even.square() + odd.square())
 
     # Sum of even filter convolution results.
     sum_e = even_odd[..., 0].sum(dim=2, keepdims=True)
@@ -328,10 +321,6 @@ def _phase_congruency(
     # vector and the individual filter response vectors at each scale.
     # This quantity is phase congruency multiplied by An, which we call energy.
 
-    # Extract even and odd convolution results.
-    even = even_odd[..., 0]
-    odd = even_odd[..., 1]
-
     energy = (
         even * mean_e + odd * mean_o - torch.abs(even * mean_o - odd * mean_e)
     ).sum(dim=2, keepdim=True)
@@ -344,23 +333,33 @@ def _phase_congruency(
     # The estimate of noise power is obtained by dividing the mean squared
     # energy value by the mean squared filter value
 
-    abs_eo = torch.sqrt(torch.sum(even_odd[:, :, :1, ...] ** 2, dim=-1)).reshape(
-        N, orientations, 1, 1, H * W
-    )
+    abs_eo = an[:, :, :1, ...].reshape(N, orientations, 1, 1, H * W)
     median_e2n = torch.median(abs_eo**2, dim=-1, keepdim=True).values
 
+    an_all = an.sum(dim=[1, 2])
+    del abs_eo, an
+
     mean_e2n = -median_e2n / math.log(0.5)
+
+    # Take filter at scale 0 and sum spatially
+    # Record mean squared filter value at smallest scale.
+    # This is used for noise estimation.
+    em_n = (filters.view(1, orientations, scales, H, W)[:, :, :1, ...] ** 2).sum(
+        dim=[-2, -1], keepdims=True
+    )
 
     # Estimate of noise power.
     noise_power = mean_e2n / em_n
 
     # Now estimate the total energy^2 due to noise
     # Estimate for sum(An^2) + sum(Ai.*Aj.*(cphi.*cphj + sphi.*sphj))
+    filters_ifft = torch.fft.ifft2(filters)
+    filters_ifft = filters_ifft.real * math.sqrt(H * W)
     filters_ifft = filters_ifft.view(1, orientations, scales, H, W)
 
     sum_an2 = torch.sum(filters_ifft**2, dim=-3, keepdim=True)
 
-    sum_ai_aj = torch.zeros(N, orientations, 1, H, W).to(x)
+    sum_ai_aj = x.new_zeros(1, orientations, 1, H, W)
     for s in range(scales - 1):
         sum_ai_aj = sum_ai_aj + (
             filters_ifft[:, :, s : s + 1] * filters_ifft[:, :, s + 1 :]
@@ -394,7 +393,7 @@ def _phase_congruency(
 
     eps = torch.finfo(energy.dtype).eps
     energy_all = energy.sum(dim=[1, 2]) + eps
-    an_all = an.sum(dim=[1, 2]) + eps
+    an_all = an_all + eps
     result_pc = energy_all / an_all
     return result_pc.unsqueeze(1)
 
