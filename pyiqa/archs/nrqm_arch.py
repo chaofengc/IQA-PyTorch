@@ -72,21 +72,77 @@ def gamma_gen_gauss(x: Tensor, block_seg=1e4):
     ).exp()
     r_table = r_table.unsqueeze(0)
 
+    def absolute(temporary):
+        # Subtractions own their storage; preserve subclass dispatch otherwise.
+        if type(temporary) is torch.Tensor:
+            return temporary.abs_()
+        return temporary.abs()
+
     mean = x.mean(dim=-1, keepdim=True)
     var = x.var(dim=-1, keepdim=True, unbiased=True)
-    mean_abs = (x - mean).abs().mean(dim=-1, keepdim=True) ** 2
+    mean_abs = absolute(x - mean).mean(dim=-1, keepdim=True) ** 2
 
     rho = var / (mean_abs + eps)
+
+    def scan(r):
+        distance = absolute(r - r_table)
+        return distance.argmin(dim=-1)
+
+    # Sort the actual table: rounding can break its expected monotonic order.
+    use_search = (
+        type(rho) is torch.Tensor
+        and rho.dtype == torch.float64
+        and rho.device.type == 'cpu'
+        and rho.shape[0] >= 32
+    )
+    if use_search:
+        sorted_table, original_indexes = r_table[0].sort()
+
+    def nearest(r):
+        if not use_search:
+            return scan(r)
+        values = r.reshape(-1).contiguous()
+        position = torch.searchsorted(sorted_table, values)
+        left = (position - 1).clamp(min=0)
+        right = position.clamp(max=sorted_table.numel() - 1)
+        left_distance = absolute(values - sorted_table[left])
+        right_distance = absolute(values - sorted_table[right])
+        left_index = original_indexes[left]
+        right_index = original_indexes[right]
+        indexes = torch.where(
+            left_distance < right_distance,
+            left_index,
+            torch.where(
+                right_distance < left_distance,
+                right_index,
+                torch.minimum(left_index, right_index),
+            ),
+        )
+        # A rounded distance can tie beyond the two enclosing table entries.
+        distance = torch.minimum(left_distance, right_distance)
+        before = (left - 1).clamp(min=0)
+        after = (right + 1).clamp(max=sorted_table.numel() - 1)
+        ambiguous = (
+            ~torch.isfinite(values)
+            | ((left > 0) & (absolute(values - sorted_table[before]) == distance))
+            | (
+                (right < sorted_table.numel() - 1)
+                & (absolute(values - sorted_table[after]) == distance)
+            )
+        )
+        if ambiguous.any():
+            indexes[ambiguous] = scan(r[ambiguous])
+        return indexes
 
     if rho.shape[0] > block_seg:
         rho_seg = rho.chunk(int(rho.shape[0] // block_seg))
         indexes = []
         for r in rho_seg:
-            tmp_idx = (r - r_table).abs().argmin(dim=-1)
+            tmp_idx = nearest(r)
             indexes.append(tmp_idx)
         indexes = torch.cat(indexes)
     else:
-        indexes = (rho - r_table).abs().argmin(dim=-1)
+        indexes = nearest(rho)
 
     solution = gamma[indexes].reshape(*pshape)
     return solution
