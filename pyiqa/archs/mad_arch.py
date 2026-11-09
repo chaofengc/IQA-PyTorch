@@ -184,12 +184,45 @@ def ical_stat(x, p=16, s=4):
         skewness, and excess-kurtosis maps reshaped to the patch grid.
     """
     B, C, H, W = x.shape
-    x1 = extract_patches_2d(x, patch_shape=[p, p], step=[s, s])
-    _, std, skews, kurt = get_moments(x1, sk=True)
+    rows, cols = (H - (p - s)) // s, (W - (p - s)) // s
 
-    STD = std.reshape(B, C, (H - (p - s)) // s, (W - (p - s)) // s)
-    SKEWS = skews.reshape(B, C, (H - (p - s)) // s, (W - (p - s)) // s)
-    KURT = kurt.reshape(B, C, (H - (p - s)) // s, (W - (p - s)) // s)
+    # Every patch is a k x k grid of non-overlapping g x g blocks. Take centred
+    # moments of each block once, then merge them per patch with the pairwise
+    # (Chan et al.) update, which stays stable on nearly flat patches.
+    g = math.gcd(p, s)
+    k, t = p // g, s // g
+    Hc, Wc = (rows - 1) * s + p, (cols - 1) * s + p
+    # Lay each block out as one contiguous row so its sums are plain dot products.
+    blocks = (
+        x[:, :, :Hc, :Wc].reshape(B, C, Hc // g, g, Wc // g, g).transpose(3, 4).reshape(B, C, Hc // g, Wc // g, g * g)
+    )
+    block_mean = blocks.mean(dim=-1, keepdim=True)
+    d = blocks - block_mean
+    d2 = d * d
+    block_stats = (block_mean.squeeze(-1), d2.sum(dim=-1), torch.linalg.vecdot(d2, d), torch.linalg.vecdot(d2, d2))
+
+    def merge(stats, dim, n):
+        # Merge each run of k overlapping groups of n values along ``dim``.
+        mb, s2, s3, s4 = (v.unfold(dim, k, t) for v in stats)
+        mean = mb.mean(dim=-1, keepdim=True)
+        delta = mb - mean
+        delta2 = delta * delta
+        return (
+            mean.squeeze(-1),
+            (s2 + n * delta2).sum(dim=-1),
+            (s3 + delta * (3 * s2 + n * delta2)).sum(dim=-1),
+            (s4 + delta * (4 * s3 + delta * (6 * s2 + n * delta2))).sum(dim=-1),
+        )
+
+    # Merge separably: blocks into g x p row strips, then strips into patches.
+    _, m2, m3, m4 = merge(merge(block_stats, 3, g * g), 2, g * g * k)
+
+    std = torch.sqrt(m2 / (p * p) + 1e-12)
+    skews = m3 / (p * p) / std**3
+    kurt = m4 / (p * p) / std**4 - 3.0  # excess kurtosis, should be 0 for Gaussian
+
+    # Match the patch-major (B, P, C) element order of the reference layout.
+    STD, SKEWS, KURT = (v.flatten(2).transpose(1, 2).reshape(B, C, rows, cols) for v in (std, skews, kurt))
 
     return STD, SKEWS, KURT  # different with original version
 
