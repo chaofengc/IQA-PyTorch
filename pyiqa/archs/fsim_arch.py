@@ -290,112 +290,114 @@ def _phase_congruency(
     N, _, H, W = x.shape
 
     # Fourier transform
-    filters = _construct_filters(
-        x, scales, orientations, min_length, mult, sigma_f, delta_theta, k
+    # Build the filter bank one scale at a time (a single scale with the matching
+    # wavelength), so that the temporaries of the construction stay small.
+    filters = torch.stack(
+        [
+            _construct_filters(
+                x, 1, orientations, min_length * mult**s, mult, sigma_f, delta_theta, k
+            )[0]
+            for s in range(scales)
+        ],
+        dim=1,
     )
 
-    imagefft = torch.fft.fft2(x)
-    even_odd = torch.view_as_real(torch.fft.ifft2(imagefft * filters)).view(
-        N, orientations, scales, H, W, 2
-    )
+    # The noise statistics of the filters do not depend on the image.
+    noise_gains = []
+    for orientation_filters in filters:
+        # Take filter at scale 0 and sum spatially
+        # Record mean squared filter value at smallest scale.
+        # This is used for noise estimation.
+        em_n = (orientation_filters[0] ** 2).sum()
 
-    # Amplitude of even & odd filter response. An = sqrt(real^2 + imag^2)
-    even = even_odd[..., 0]
-    odd = even_odd[..., 1]
-    an = torch.sqrt(even.square() + odd.square())
+        # Now estimate the total energy^2 due to noise
+        # Estimate for sum(An^2) + sum(Ai.*Aj.*(cphi.*cphj + sphi.*sphj))
+        filters_ifft = torch.fft.ifft2(orientation_filters).real * math.sqrt(H * W)
 
-    # Sum of even filter convolution results.
-    sum_e = even_odd[..., 0].sum(dim=2, keepdims=True)
+        sum_an2 = (filters_ifft**2).sum()
 
-    # Sum of odd filter convolution results.
-    sum_o = even_odd[..., 1].sum(dim=2, keepdims=True)
+        sum_ai_aj = x.new_zeros(())
+        for s in range(scales - 1):
+            sum_ai_aj = sum_ai_aj + (filters_ifft[s] * filters_ifft[s + 1 :]).sum()
+        del filters_ifft
 
-    # Get weighted mean filter response vector, this gives the weighted mean phase angle.
-    x_energy = torch.sqrt(sum_e**2 + sum_o**2) + EPS
+        # Noise energy^2 for a unit mean squared energy at the smallest scale.
+        noise_gains.append((2 * sum_an2 + 4 * sum_ai_aj) / em_n)
 
-    mean_e = sum_e / x_energy
-    mean_o = sum_o / x_energy
+    # Images are independent, so process one at a time to keep the complex
+    # filter responses at the size of a single image.
+    result = []
+    for image in x:
+        imagefft = torch.fft.fft2(image)
+        # Orientations only meet in the final sums, so process one at a time
+        # and accumulate the thresholded energy and the amplitudes.
+        energy_all = 0
+        an_all = 0
+        for orientation_filters, noise_gain in zip(filters, noise_gains):
+            # Filter responses of all scales. The real part is the even filter
+            # response, the imaginary part the odd one.
+            responses = torch.fft.ifft2(imagefft * orientation_filters)
 
-    # Now calculate An(cos(phase_deviation) - | sin(phase_deviation)) | by
-    # using dot and cross products between the weighted mean filter response
-    # vector and the individual filter response vectors at each scale.
-    # This quantity is phase congruency multiplied by An, which we call energy.
+            # Amplitude of even & odd filter response. An = sqrt(real^2 + imag^2)
+            an = responses.abs()
+            an_all = an_all + an.sum(dim=0, keepdim=True)
 
-    energy = (
-        even * mean_e + odd * mean_o - torch.abs(even * mean_o - odd * mean_e)
-    ).sum(dim=2, keepdim=True)
+            # Compensate for noise
+            # We estimate the noise power from the energy squared response at the
+            # smallest scale.  If the noise is Gaussian the energy squared will have a
+            # Chi-squared 2DOF pdf.  We calculate the median energy squared response
+            # as this is a robust statistic.  From this we estimate the mean.
+            # The estimate of noise power is obtained by dividing the mean squared
+            # energy value by the mean squared filter value
+            mean_e2n = -an[0].square().median() / math.log(0.5)
+            del an
 
-    # Compensate for noise
-    # We estimate the noise power from the energy squared response at the
-    # smallest scale.  If the noise is Gaussian the energy squared will have a
-    # Chi-squared 2DOF pdf.  We calculate the median energy squared response
-    # as this is a robust statistic.  From this we estimate the mean.
-    # The estimate of noise power is obtained by dividing the mean squared
-    # energy value by the mean squared filter value
+            # Sum of even & odd filter convolution results.
+            sum_eo = responses.sum(dim=0, keepdim=True)
 
-    abs_eo = an[:, :, :1, ...].reshape(N, orientations, 1, 1, H * W)
-    median_e2n = torch.median(abs_eo**2, dim=-1, keepdim=True).values
+            # Get weighted mean filter response vector, this gives the weighted mean phase angle.
+            mean_eo = (sum_eo / (sum_eo.abs() + EPS)).conj()
+            del sum_eo
 
-    an_all = an.sum(dim=[1, 2])
-    del abs_eo, an
+            # Now calculate An(cos(phase_deviation) - | sin(phase_deviation)) | by
+            # using dot and cross products between the weighted mean filter response
+            # vector and the individual filter response vectors at each scale.
+            # This quantity is phase congruency multiplied by An, which we call energy.
+            # The real part of response * conj(mean) is the dot product and the
+            # imaginary part is the cross product.
+            projection = torch.view_as_real(responses * mean_eo)
+            del responses, mean_eo
+            energy = (projection[..., 0] - projection[..., 1].abs()).sum(
+                dim=0, keepdim=True
+            )
+            del projection
 
-    mean_e2n = -median_e2n / math.log(0.5)
+            # Rayleigh parameter
+            tau = torch.sqrt(mean_e2n * noise_gain / 2)
 
-    # Take filter at scale 0 and sum spatially
-    # Record mean squared filter value at smallest scale.
-    # This is used for noise estimation.
-    em_n = (filters.view(1, orientations, scales, H, W)[:, :, :1, ...] ** 2).sum(
-        dim=[-2, -1], keepdims=True
-    )
+            # Expected value of noise energy
+            noise_energy = tau * math.sqrt(math.pi / 2)
+            moise_energy_sigma = torch.sqrt((2 - math.pi / 2) * tau**2)
 
-    # Estimate of noise power.
-    noise_power = mean_e2n / em_n
+            # Noise threshold
+            T = noise_energy + k * moise_energy_sigma
 
-    # Now estimate the total energy^2 due to noise
-    # Estimate for sum(An^2) + sum(Ai.*Aj.*(cphi.*cphj + sphi.*sphj))
-    filters_ifft = torch.fft.ifft2(filters)
-    filters_ifft = filters_ifft.real * math.sqrt(H * W)
-    filters_ifft = filters_ifft.view(1, orientations, scales, H, W)
+            # The estimated noise effect calculated above is only valid for the PC_1 measure.
+            # The PC_2 measure does not lend itself readily to the same analysis.  However
+            # empirically it seems that the noise effect is overestimated roughly by a factor
+            # of 1.7 for the filter parameters used here.
 
-    sum_an2 = torch.sum(filters_ifft**2, dim=-3, keepdim=True)
+            # Empirical rescaling of the estimated noise effect to suit the PC_2 phase congruency measure
+            T = T / 1.7
 
-    sum_ai_aj = x.new_zeros(1, orientations, 1, H, W)
-    for s in range(scales - 1):
-        sum_ai_aj = sum_ai_aj + (
-            filters_ifft[:, :, s : s + 1] * filters_ifft[:, :, s + 1 :]
-        ).sum(dim=-3, keepdim=True)
+            # Apply noise threshold
+            energy_all = energy_all + torch.max(energy - T, torch.zeros_like(T))
+            del energy
 
-    sum_an2 = torch.sum(sum_an2, dim=[-1, -2], keepdim=True)
-    sum_ai_aj = torch.sum(sum_ai_aj, dim=[-1, -2], keepdim=True)
+        eps = torch.finfo(energy_all.dtype).eps
+        result.append((energy_all + eps) / (an_all + eps))
 
-    noise_energy2 = 2 * noise_power * sum_an2 + 4 * noise_power * sum_ai_aj
-
-    # Rayleigh parameter
-    tau = torch.sqrt(noise_energy2 / 2)
-
-    # Expected value of noise energy
-    noise_energy = tau * math.sqrt(math.pi / 2)
-    moise_energy_sigma = torch.sqrt((2 - math.pi / 2) * tau**2)
-
-    # Noise threshold
-    T = noise_energy + k * moise_energy_sigma
-
-    # The estimated noise effect calculated above is only valid for the PC_1 measure.
-    # The PC_2 measure does not lend itself readily to the same analysis.  However
-    # empirically it seems that the noise effect is overestimated roughly by a factor
-    # of 1.7 for the filter parameters used here.
-
-    # Empirical rescaling of the estimated noise effect to suit the PC_2 phase congruency measure
-    T = T / 1.7
-
-    # Apply noise threshold
-    energy = torch.max(energy - T, torch.zeros_like(T))
-
-    eps = torch.finfo(energy.dtype).eps
-    energy_all = energy.sum(dim=[1, 2]) + eps
-    an_all = an_all + eps
-    result_pc = energy_all / an_all
-    return result_pc.unsqueeze(1)
+    return torch.stack(result)
 
 
 def _lowpassfilter(size: Tuple[int, int], cutoff: float, n: int) -> torch.Tensor:
