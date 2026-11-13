@@ -665,13 +665,28 @@ class VIF(torch.nn.Module):
             .float()
             .unsqueeze(0)
             .unsqueeze(0)
-            .repeat(channels, 1, 1, 1)
+            .expand(channels, -1, -1, -1)
             .to(image.device)
         )
         p = (filt_.shape[2] - 1) // 2
         image = F.pad(image, (p, p, p, p), 'reflect')
-        img = F.conv2d(image, filt_, stride=1, padding=0, groups=channels)
-        img = img[:, :, start[0] : end[0] : step, start[1] : end[1] : step]
+        stride = 1
+        sampled = False
+        if step > 0:
+            height = image.shape[2] - filt_.shape[2] + 1
+            width = image.shape[3] - filt_.shape[3] + 1
+            top, bottom, _ = slice(start[0], end[0], step).indices(height)
+            left, right, _ = slice(start[1], end[1], step).indices(width)
+            if top < bottom and left < right:
+                image = image[
+                    :, :, top : bottom + filt_.shape[2] - 1,
+                    left : right + filt_.shape[3] - 1,
+                ]
+                stride = step
+                sampled = True
+        img = F.conv2d(image, filt_, stride=stride, padding=0, groups=channels)
+        if not sampled:
+            img = img[:, :, start[0] : end[0] : step, start[1] : end[1] : step]
         return img
 
     def vifsub_est_M(self, org, dist):
@@ -702,55 +717,26 @@ class VIF(torch.nn.Module):
                 int(y.shape[3] - np.ceil(self.M / 2)) + 1,
             ]
 
-            mean_x = self.corrDn_win(
-                y,
+            # Batch independent statistics with the same filter.
+            mean_x, mean_y = self.corrDn_win(
+                torch.cat((y, yn), dim=0),
                 win / (winsize**2),
                 step=self.M,
                 channels=self.channels,
                 start=winstart,
                 end=winend,
-            )
-            mean_y = self.corrDn_win(
-                yn,
-                win / (winsize**2),
+            ).chunk(2, dim=0)
+            sum_xy, sum_xx, sum_yy = self.corrDn_win(
+                torch.cat((y * yn, y * y, yn * yn), dim=0),
+                win,
                 step=self.M,
                 channels=self.channels,
                 start=winstart,
                 end=winend,
-            )
-            cov_xy = (
-                self.corrDn_win(
-                    y * yn,
-                    win,
-                    step=self.M,
-                    channels=self.channels,
-                    start=winstart,
-                    end=winend,
-                )
-                - (winsize**2) * mean_x * mean_y
-            )
-            ss_x = (
-                self.corrDn_win(
-                    y**2,
-                    win,
-                    step=self.M,
-                    channels=self.channels,
-                    start=winstart,
-                    end=winend,
-                )
-                - (winsize**2) * mean_x**2
-            )
-            ss_y = (
-                self.corrDn_win(
-                    yn**2,
-                    win,
-                    step=self.M,
-                    channels=self.channels,
-                    start=winstart,
-                    end=winend,
-                )
-                - (winsize**2) * mean_y**2
-            )
+            ).chunk(3, dim=0)
+            cov_xy = sum_xy - (winsize**2) * mean_x * mean_y
+            ss_x = sum_xx - (winsize**2) * (mean_x * mean_x)
+            ss_y = sum_yy - (winsize**2) * (mean_y * mean_y)
 
             ss_x = F.relu(ss_x)
             ss_y = F.relu(ss_y)
@@ -758,14 +744,15 @@ class VIF(torch.nn.Module):
             g = cov_xy / (ss_x + self.tol)
             vv = (ss_y - g * cov_xy) / (winsize**2)
 
-            g = g.masked_fill(ss_x < self.tol, 0)
-            vv[ss_x < self.tol] = ss_y[ss_x < self.tol]
-            ss_x = ss_x.masked_fill(ss_x < self.tol, 0)
+            low_x = ss_x < self.tol
+            low_y = ss_y < self.tol
+            g = g.masked_fill(low_x, 0)
+            vv = torch.where(low_x, ss_y, vv)
 
-            g = g.masked_fill(ss_y < self.tol, 0)
-            vv = vv.masked_fill(ss_y < self.tol, 0)
+            g = g.masked_fill(low_y, 0)
+            vv = vv.masked_fill(low_y, 0)
 
-            vv[g < 0] = ss_y[g < 0]
+            vv = torch.where(g < 0, ss_y, vv)
             g = F.relu(g)
 
             vv = vv.masked_fill(vv < self.tol, self.tol)
